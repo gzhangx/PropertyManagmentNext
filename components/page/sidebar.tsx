@@ -1,8 +1,6 @@
 import Link from 'next/link'
 import { PageNavTab } from './navTab';
-export function MainSideBar(props) {
-    const pstate = props.pstate;
-    const [state, setState] = pstate;
+export function MainSideBar(props) {    
     return <ul className="navbar-nav bg-gradient-primary sidebar sidebar-dark accordion" id="accordionSidebar">
 
         <a className="sidebar-brand d-flex align-items-center justify-content-center" href="index.html">
@@ -27,7 +25,6 @@ export function MainSideBar(props) {
         </div>
 
         <PageNavTab name="Components"
-            pstate={pstate}
             header={
                 <>
                     <i className="fas fa-fw fa-cog"></i>
@@ -44,7 +41,6 @@ export function MainSideBar(props) {
         ></PageNavTab>
 
         <PageNavTab name="PM Reports"
-            pstate={pstate}
             header={
                 <>
                     <a>
@@ -56,7 +52,7 @@ export function MainSideBar(props) {
             body={
                 <>
                     <h6 className="collapse-header">Demo Reports:</h6>
-                    {
+                    {/*
                         (state.mainReports || []).map(r => {
                             return <a className="collapse-item" href="#"
                                 onClick={e => {
@@ -68,6 +64,7 @@ export function MainSideBar(props) {
                                 }}
                             >{r.title.length > 24 ? r.title.substr(0, 19) + '...' : r.title} ({ r.entries})</a>
                         })
+                    */
                     }                    
                 </>
             }
@@ -80,7 +77,6 @@ export function MainSideBar(props) {
         </div>
 
         <PageNavTab name="Pages"
-            pstate={pstate}
             header={
                 <>
                     <i className="fas fa-fw fa-folder"></i>
@@ -125,7 +121,7 @@ export function MainSideBar(props) {
         </div>
 
         <div className="sidebar-card d-none d-lg-flex">
-            <img className="sidebar-card-illustration mb-2" src="/img/undraw_rocket.svg" alt="..." layout='fixed' width={100} height={100} />
+            <img className="sidebar-card-illustration mb-2" src="/img/undraw_rocket.svg" alt="..."   width={100} height={100} />
             <p className="text-center mb-2"><strong>SB Admin Pro</strong> is packed with premium features, components, and more!</p>
             <a className="btn btn-success btn-sm" href="#">Upgrade to Pro!</a>
         </div>

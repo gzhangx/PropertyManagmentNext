@@ -1,7 +1,8 @@
 
 import { useEffect, useState } from 'react';
 import { withRouter } from 'next/router'
-import {MainSideBar} from '../components/page/sidebar.js'
+import { useRootPageContext, IRootPageState } from "../components/states/RootState"
+import {MainSideBar} from '../components/page/sidebar'
 import { TopBar } from '../components/page/topbar'
 import { Footer } from '../components/page/pageFooter'
 import BoardItemHalfSmall from '../components/page/boardItemHaflSmall'
@@ -10,27 +11,20 @@ import DemoGraphicsRow from '../components/page/demoGraphicsRow'
 
 export default withRouter(function MainDashboard(props) {
   //const { state, setMainState } = props;  
-  const pstate = useState({
-    sideBarComponentExpanded: false,
-    sideBarUtilitiesExpanded: false,
-    userInfo: {},
-    mainReports: [],
-    currentSelectedGfReport: null,
-  });
-  const [state, setMainState] = pstate;
+  const rstate = useRootPageContext();
   //const [pageState, setPageState] = pstate;
   
   return (
     
     <div id="page-top">
       <div id="wrapper">
-        <MainSideBar pstate={pstate}></MainSideBar>
+        <MainSideBar></MainSideBar>
 
         <div id="content-wrapper" className="d-flex flex-column">
 
           <div id="content">
 
-            <TopBar pstate={pstate} state={state} />
+            <TopBar/>
             
             <div className="container-fluid">
 
@@ -57,8 +51,8 @@ export default withRouter(function MainDashboard(props) {
                         <div className="col">
                           <div className="progress progress-sm mr-2">
                             <div className="progress-bar bg-info" role="progressbar"
-                              style={{ width: '50%' }} aria-valuenow="50" aria-valuemin="0"
-                              aria-valuemax="100"></div>
+                              style={{ width: '50%' }} aria-valuenow={50} aria-valuemin={0}
+                              aria-valuemax={100}></div>
                           </div>
                         </div>
                       </div>
@@ -72,7 +66,7 @@ export default withRouter(function MainDashboard(props) {
 
               <DemoGraphicsRow />
 
-              <DemoRow mainState={state}></DemoRow>
+              <DemoRow></DemoRow>
 
             </div>
 
@@ -89,7 +83,7 @@ export default withRouter(function MainDashboard(props) {
       </a>
 
                 
-      <div className="modal fade" id="logoutModal" tabIndex="-1" role="dialog" aria-labelledby="exampleModalLabel"
+      <div className="modal fade" id="logoutModal" tabIndex={-1} role="dialog" aria-labelledby="exampleModalLabel"
         aria-hidden="true">
         <div className="modal-dialog" role="document">
           <div className="modal-content">
