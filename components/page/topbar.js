@@ -1,4 +1,5 @@
 import TinyIconNotify from './tinyIconNotify'
+import { GenericDropdown } from '../generic/GenericDropdown'
 export function TopBar(props) {
 
     const { state } = props;
@@ -20,6 +21,11 @@ export function TopBar(props) {
                 </div>
             </div>
         </form>
+        <div>
+            <GenericDropdown items={ 
+                [{ subject: 'test1', text:'tt' }, { subject:'test2', text:'tt'}]
+            }  />
+        </div>
 
         <ul className="navbar-nav ml-auto">
 
