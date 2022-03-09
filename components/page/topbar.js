@@ -1,5 +1,5 @@
 import TinyIconNotify from './tinyIconNotify'
-import { GenericDropdown } from '../generic/GenericDropdown'
+import { EditTextDropdown } from '../generic/EditTextDropdown'
 export function TopBar(props) {
 
     const { state } = props;
@@ -22,9 +22,11 @@ export function TopBar(props) {
             </div>
         </form>
         <div>
-            <GenericDropdown items={ 
-                [{ subject: 'test1', text:'tt' }, { subject:'test2', text:'tt'}]
-            }  />
+            <EditTextDropdown items={[{ displayName: 'test1', value: 'tt1' }, { displayName: 'test2', value: 'tt2' }]}
+                onSelectionChanged={itm => console.log(itm)}
+                
+                
+        />
         </div>
 
         <ul className="navbar-nav ml-auto">

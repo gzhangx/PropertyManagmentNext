@@ -23,7 +23,7 @@ export default function TinyIconNotify(props) {
                 items && items.map((data, keyInd) => {
                     if (data.body) return data.body;
                     if (data.header) {
-                        return <h6 className="dropdown-header">
+                        return <h6 className="dropdown-header" key={keyInd}>
                             { data.header}
                         </h6>
                     }
