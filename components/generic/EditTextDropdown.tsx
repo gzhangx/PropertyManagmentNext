@@ -21,6 +21,11 @@ export function EditTextDropdown(props: IEditTextDropdownProps) {
         opts.selected = oselected;
         opts.setSelected = osetSelected;
     }
+    if (!opts.selected) {
+        if (props.items.length) {
+            opts.setSelected(props.items[0])
+        }
+    }
     /*    
     const dropDownControl = (show: boolean) => {
         return <div className="input-group">
