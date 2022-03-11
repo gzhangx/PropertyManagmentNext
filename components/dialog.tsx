@@ -1,5 +1,19 @@
-import react, {useState} from "react";
-export function Dialog(props) {    
+import react, { Dispatch, SetStateAction } from "react";
+
+export interface IDialogInfo {
+    show: boolean;
+    title: string;
+    body: string;
+    onClose?: () => void;
+}
+
+export interface IDialogProps {
+    dialogInfo: IDialogInfo;
+    setDialogInfo: Dispatch<SetStateAction<IDialogInfo>>;
+    children?: any;
+    onClose?: () => void;
+}
+export function Dialog(props: IDialogProps) {    
     const { dialogInfo, setDialogInfo, children } = props;
     const { title, body } = dialogInfo;
     console.log('dialog info')
@@ -7,12 +21,14 @@ export function Dialog(props) {
     const onClose = () => {
         setDialogInfo({
             show: false,
+            title: '',
+            body:'',
         });
         if (props.onClose) props.onClose();
         if (dialogInfo.onClose) dialogInfo.onClose();
     };
     const dspClassName = `modal ${dialogInfo.show ? ' modal-show ' : 'modal'}`;
-    return <div className={dspClassName} tabindex="-1" role="dialog">
+    return <div className={dspClassName} tabIndex={-1} role="dialog">
         <div className="modal-dialog" role="document">
             <div className="modal-content">
                 <div className="modal-header">

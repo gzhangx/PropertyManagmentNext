@@ -1,19 +1,15 @@
 import react, {useState} from 'react';
 import { useRouter } from 'next/router'
 import * as api from '../components/api';
-import { Dialog } from '../components/dialog';
+import { Dialog, IDialogInfo } from '../components/dialog';
 import Link from 'next/link';
 
-interface IDialogInfo {
-    show: boolean;
-    title?: string;
-    body?: string;
-}
 export default function Login(props) {
     const router = useRouter();
 
     const [dialogInfo, setDialogInfo] = useState <IDialogInfo>({
-        show: false
+        show: false,
+        title:'',body:'',
     });
     const [state, setMainState] = useState({
             username: '',
