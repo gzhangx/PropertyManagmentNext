@@ -1,5 +1,5 @@
 
-const baseUrl = 'localhost:8081/pmapi'
+const baseUrl = 'http://localhost:8081/pmapi'
 export const emailRegx = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/;
 
 async function doPost(path: string, data: object): Promise<any> {    
