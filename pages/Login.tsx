@@ -4,10 +4,15 @@ import * as api from '../components/api';
 import { Dialog } from '../components/dialog';
 import Link from 'next/link';
 
+interface IDialogInfo {
+    show: boolean;
+    title?: string;
+    body?: string;
+}
 export default function Login(props) {
     const router = useRouter();
 
-    const [dialogInfo, setDialogInfo] = useState({
+    const [dialogInfo, setDialogInfo] = useState <IDialogInfo>({
         show: false
     });
     const [state, setMainState] = useState({
@@ -24,7 +29,7 @@ export default function Login(props) {
     const doLogin = () => {
         console.log('doLogin')
         console.log(state)
-        api.login(state.username, state.password).then(res => {
+        api.loginUserSetToken(state.username, state.password).then(res => {
             if (!res.error) {
                 router.push('/dashboard');
             } else {
@@ -95,7 +100,7 @@ export default function Login(props) {
                                             <a href="index.html" className="btn btn-primary btn-user btn-block"
                                                 onClick={(e => {
                                                     e.preventDefault();
-                                                    state.isLoggedIn = true;
+                                                    //state.isLoggedIn = true;
                                                     updateUser();
                                                     doLogin();
                                                 })}
