@@ -109,7 +109,7 @@ export interface ISqlRequest {
 }
 
 
-export async function sqlGet(input: ISqlRequest) : Promise<any[]> {
+export async function sqlGet(input: ISqlRequest) : Promise<any> {
     return doPost(`auth/login`, input);
 }
 

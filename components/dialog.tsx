@@ -1,25 +1,43 @@
-import react, { Dispatch, SetStateAction } from "react";
+import react, { Dispatch, SetStateAction, useState } from "react";
 
 export interface IDialogInfo {
     show: boolean;
     title: string;
     body: string;
+    raw?: boolean; //set to raw for raw body.
     onClose?: () => void;
 }
 
-export interface IDialogProps {
+export interface IDialogInfoPrm {
     dialogInfo: IDialogInfo;
     setDialogInfo: Dispatch<SetStateAction<IDialogInfo>>;
-    children?: any;
-    onClose?: () => void;
+    onClose: () => void;
 }
+
+export interface IDialogProps {
+    dialogInfo: IDialogInfoPrm;
+    onClose?: () => void;
+    children?: any;
+}
+
+export function createDialogPrms(raw?: boolean): IDialogInfoPrm{
+    const [dialogInfo, setDialogInfo] = useState<IDialogInfo>({
+        show: false,
+        title: '', body: '',
+        raw,
+    });
+    return {
+        dialogInfo,
+        setDialogInfo,
+        onClose: () => { },
+    }
+}
+
 export function Dialog(props: IDialogProps) {    
-    const { dialogInfo, setDialogInfo, children } = props;
-    const { title, body } = dialogInfo;
-    console.log('dialog info')
-    console.log(dialogInfo)
+    const { dialogInfo, children } = props;
+    const { title, body } = dialogInfo.dialogInfo;
     const onClose = () => {
-        setDialogInfo({
+        dialogInfo.setDialogInfo({
             show: false,
             title: '',
             body:'',
@@ -27,7 +45,11 @@ export function Dialog(props: IDialogProps) {
         if (props.onClose) props.onClose();
         if (dialogInfo.onClose) dialogInfo.onClose();
     };
-    const dspClassName = `modal ${dialogInfo.show ? ' modal-show ' : 'modal'}`;
+    const dspClassName = `modal ${dialogInfo.dialogInfo.show ? ' modal-show ' : 'modal'}`;
+    if (dialogInfo.dialogInfo.raw)
+        return <div className={dspClassName} tabIndex={-1} role="dialog">
+            {children}
+        </div>
     return <div className={dspClassName} tabIndex={-1} role="dialog">
         <div className="modal-dialog" role="document">
             <div className="modal-content">

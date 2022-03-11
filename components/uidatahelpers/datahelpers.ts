@@ -33,7 +33,7 @@ export function createHelper(table: string) {
             const { whereArray, order, rowCount, offset } = opts;
             const modFields = accModelFields().map(f => f.field);
             const viewFields = get(accModel(), 'view.fields', []).map(f => f.name || f.field);
-            return sqlGet({
+            return (await sqlGet({
                 table,
                 fields: loadMapper('fields', modFields.concat(viewFields)),
                 joins: loadMapper('joins', null),
@@ -41,7 +41,9 @@ export function createHelper(table: string) {
                 order,
                 rowCount, offset,
                 groupByArray:null,
-            });
+            })) as {
+                rows: any[];
+            };
         },
         saveData: async (data, id) => {
             const submitData = accModelFields().reduce((acc, f) => {

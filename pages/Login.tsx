@@ -1,16 +1,16 @@
 import react, {useState} from 'react';
 import { useRouter } from 'next/router'
 import * as api from '../components/api';
-import { Dialog, IDialogInfo } from '../components/dialog';
+import { Dialog, IDialogInfo, createDialogPrms } from '../components/dialog';
 import Link from 'next/link';
 
 export default function Login(props) {
     const router = useRouter();
 
-    const [dialogInfo, setDialogInfo] = useState <IDialogInfo>({
-        show: false,
-        title:'',body:'',
-    });
+    //const [dialogInfo, setDialogInfo] = useState <IDialogInfo>({
+    //    show: false,
+    //    title:'',body:'',
+    //});
     const [state, setMainState] = useState({
             username: '',
             password:'',
@@ -22,6 +22,7 @@ export default function Login(props) {
         })
     }
 
+    const dlgPrm = createDialogPrms();
     const doLogin = () => {
         console.log('doLogin')
         console.log(state)
@@ -29,7 +30,7 @@ export default function Login(props) {
             if (!res.error) {
                 router.push('/dashboard');
             } else {
-                setDialogInfo({
+                dlgPrm.setDialogInfo({
                     show: true,
                     title: 'Login Error',
                     body: res.error
@@ -41,14 +42,14 @@ export default function Login(props) {
 
     const commingSoon = e => {
         e.preventDefault();
-        setDialogInfo({
+        dlgPrm.setDialogInfo({
             show: true,
             title: 'Not implemented',
             body: 'Comming Soon'
         })
     }
     return (<div className="bg-gradient-primary">
-        <Dialog dialogInfo={dialogInfo} setDialogInfo={setDialogInfo}></Dialog>
+        <Dialog dialogInfo={dlgPrm} ></Dialog>
         <div className="container">
 
             <div className="row justify-content-center">
