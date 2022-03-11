@@ -3,9 +3,9 @@ const baseUrl = 'http://localhost:8081/pmapi'
 export const emailRegx = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/;
 
 import { useRootPageContext } from './states/RootState'
-async function doPost(path: string, data: object): Promise<any> {    
+async function doPost(path: string, data: object, method?:string): Promise<any> {    
     const pdata = {
-        method: 'POST',
+        method: method || 'POST',
         headers: {
             'Content-Type': 'application/json',            
         },
@@ -75,4 +75,62 @@ export async function registerUser({ username, firstName, lastName }) {
 export async function resetPassword({ username }) {
     console.log('in reset')
     
+}
+
+
+//copied from sql.ts
+interface ISqlRequestFieldDef {
+    field: string;
+    op: string;
+    name: string;
+}
+interface ISqlOrderDef {
+    name: string;
+    op: 'asc' | 'desc';
+}
+
+interface ISqlRequestWhereItem {
+    field: string;
+    op: string;
+    val: string | number | (string | number)[];
+}
+
+interface ISqlRequest {
+    table: string;
+    fields: (ISqlRequestFieldDef | string)[];
+    joins: any;
+    order: ISqlOrderDef[];
+    whereArray: ISqlRequestWhereItem[];
+    groupByArray: {
+        field: string;
+    }[];
+    offset: number | string;
+    rowCount: number | string;
+}
+
+
+export async function sqlGet(input: ISqlRequest) : Promise<any[]> {
+    return doPost(`auth/login`, input);
+}
+
+export async function sqlAdd(table, fields, create) {
+    //     "table":"tenantInfo",
+    //     "fields":{"tenantID":"289a8120-01fd-11eb-8993-ab1bf8206feb", "firstName":"gang", "lastName":"testlong"},
+    //    "create":true
+    //return id
+    return doPost(`sql/create`, {
+        table,
+        fields,
+        create,
+    })
+}
+
+export function sqlDelete(table, id) {
+    return doPost(`sql/del`, {
+        table, id,
+    })
+}
+
+export async function getModel(name: string) {
+    return doPost(`getModel?name=${name}`, null, 'GET');
 }
