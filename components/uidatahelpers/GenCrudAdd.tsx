@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { createAndLoadHelper } from './datahelpers';
 import { get } from 'lodash';
-import { EditTextDropdown} from '../generic/EditTextDropdown';
+import { EditTextDropdown, IEditTextDropdownItem } from '../generic/EditTextDropdown';
 import * as bluebird from 'bluebird';
 import {Dialog, createDialogPrms} from '../dialog'
 
@@ -45,7 +45,7 @@ const GenCrudAdd = (props) => {
     }, {});
 
     const [data, setData] = useState(initData);
-    const [errorText, setErrorText] = useState('');
+    //const [errorText, setErrorText] = useState('');
     const [addNewForField, setAddNewForField] = useState('');
     const [optsData, setOptsData] = useState(customSelData || {});
     const handleChange = e => {
@@ -93,7 +93,7 @@ const GenCrudAdd = (props) => {
                     if (processForeignKey && !optsData[optKey]) {
                         const helper = await createAndLoadHelper(optKey);
                         //await helper.loadModel();
-                        const optDataOrig = await helper.loadData();
+                        const optDataOrig = await helper.loadData(null);
                         const optData = optDataOrig.rows;
                         cur = Object.assign({}, cur, {
                             [optKey]: processForeignKey(c.foreignKey, optData)
@@ -114,7 +114,7 @@ const GenCrudAdd = (props) => {
     const [columnInfoMaps, setColumnInfoMaps] = useState({});
     const loadColumnInfo = async colInf => {
         const hasFks = colInf.filter(c => c.foreignKey).filter(c => c.foreignKey.table);
-        await Promise.map(hasFks, async fk => {
+        await bluebird.Promise.map(hasFks, async fk => {
             const tbl = fk.foreignKey.table;
             const helper = await createAndLoadHelper(tbl);
             await helper.loadModel();
@@ -139,26 +139,118 @@ const GenCrudAdd = (props) => {
         return '';
     }
     const dspClassName = `modal ${show ? ' modal-show ' : 'modal'}`;
+    const errDlgPrm = createDialogPrms();
+    const setErrorText = (txt:string) => {
+        errDlgPrm.setDialogInfo({
+            show: true,
+            body: txt,
+            title: 'error',
+        })
+    }
     return <div className={dspClassName} tabIndex={-1} role="dialog">
+        <Dialog dialogInfo={errDlgPrm}></Dialog>
         <div className="modal-dialog" role="document">
         <div className="modal-content">
             <div className="modal-header">
                     <h5 className="modal-title">{desc}</h5>
                 <button type="button" className="close" data-dismiss="modal" aria-label="Close">
-                    <span aria-hidden="true" onClick={onClose}>&times;</span>
+                        <span aria-hidden="true" onClick={internalCancel}>&times;</span>
                 </button>
             </div>
-            {
-                children
-            }
-            {
-                !children && <><div className="modal-body">
-                    <p>{body}</p>
-                </div>
+                {
+                    columnInfo.filter(c => c.foreignKey).filter(c => c.foreignKey.table && columnInfoMaps[c.foreignKey.table]).map((c, cind) => {
+                        const thisTbl = c.foreignKey.table;
+                        const processForeignKey = getForeignKeyProcessor(thisTbl);
+                        if (!processForeignKey) return;
+                        const { helper, columnInfo } = columnInfoMaps[thisTbl];
+                        const doAdd = (data, id) => {
+                            return helper.saveData(data, id).then(res => {
+                                return res;
+                            }).catch(err => {
+                                console.log(err);
+                                setErrorText(err.message);
+                            });
+                        }
+                        const addDone = async added => {
+                            if (!added) {
+                                setAddNewForField('');
+                                return setErrorText('Cancelled');
+                            }
+                            const optDataOrig = await columnInfoMaps[thisTbl].helper.loadData();
+                            const optData = optDataOrig.rows;
+                            setOptsData(prev => {
+                                return {
+                                    ...prev,
+                                    [thisTbl]: processForeignKey(c.foreignKey, optData)
+                                }
+                            });
+                            setData(prev => {
+                                return {
+                                    ...prev,
+                                    [c.field]: added.id,
+                                }
+                            })
+                            setAddNewForField('');
+                        }
+                        return <GenCrudAdd key={cind} columnInfo={columnInfo} doAdd={doAdd} onCancel={addDone} show={addNewForField === c.field}></GenCrudAdd>
+                    }).filter(x => x)
+                }
+                {
+                    columnInfo.map((c, cind) => {
+                        if (!editItem) {
+                            if (c.isId) return null;
+                        }
+                        if (c.dontShowOnEdit) return null;
+
+                        const createSelection = (optName, colField) => {
+                            const selOptions = optsData[optName];
+                            if (!selOptions) return null;
+                            const options = selOptions.concat({
+                                label: 'Add New',
+                                value: 'AddNew',
+                            })
+                            const curSelection = options.filter(o => o.value === get(data, colField))[0] || {};
+                            return <>
+                                
+                                <EditTextDropdown items={options}
+                                    onSelectionChanged={
+                                        (s: IEditTextDropdownItem) => {                                            
+                                            if (s.value === 'AddNew') {
+                                                setAddNewForField(colField);
+                                            } else
+                                                setData({ ...data, [colField]: s.value });    
+                                        }
+                                    }                                    
+                                ></EditTextDropdown>
+                            </>
+                        };
+                        let foreignSel = null;
+                        if (c.foreignKey) {
+                            const optKey = c.foreignKey.table;
+                            foreignSel = createSelection(optKey, c.field);
+                        }
+                        const custFieldType = customFields[c.field];
+                        if (custFieldType === 'custom_select') {
+                            foreignSel = createSelection(c.field, c.field);
+                        }
+                        const fieldFormatter = c.dspFunc || (x => x);
+                        return <div className='row' key={cind}>
+                            <div>{c.desc}</div>
+                            <div className={checkErrorInd(c)}>
+                                {
+                                    foreignSel || <input type="text" className="form-control bg-light border-0 small" placeholder={c.field}                
+                                        value={fieldFormatter(data[c.field])} name={c.field} onChange={handleChange} />
+                                }
+                            </div>
+                            <div className={checkErrorInd(c)}>{checkErrorInd(c) && '*'}</div>
+                        </div>
+                    })
+                }
+            {                
                     <div className="modal-footer">
-                        <button type="button" className="btn btn-secondary" data-dismiss="modal" onClick={onClose}>Close</button>
-                    </div>
-                </>
+                        <button type="button" className="btn btn-primary" data-dismiss="modal" onClick={handleSubmit}>{addUpdateLabel}</button>
+                        <button type="button" className="btn btn-secondary" data-dismiss="modal" onClick={internalCancel}>Cancel</button>
+                    </div>             
             }
         </div>
         </div>

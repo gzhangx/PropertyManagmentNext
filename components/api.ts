@@ -2,7 +2,6 @@
 const baseUrl = 'http://localhost:8081/pmapi'
 export const emailRegx = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/;
 
-import { useRootPageContext } from './states/RootState'
 async function doPost(path: string, data: object, method?:string): Promise<any> {    
     const pdata = {
         method: method || 'POST',
@@ -34,26 +33,18 @@ export async function loginUserSetToken(username: string, password: string): Pro
     }).then((r: ILoginResponse) => {
         console.log(r);
         if (r.error) return r;
-        localStorage.setItem('login.token', r.token);
-
-        const rState = useRootPageContext();        
-        if (!r.name) r.name = username;
-        rState.setUserInfo({
-            name: r.name,
-            token: r.token,
-        })
+        localStorage.setItem('login.token', r.token);        
         localStorage.setItem('login.info', JSON.stringify(r));        
         return r;
     });    
 }
 
 export function getLoginToken() {
-    const rState = useRootPageContext();
-    if (rState.userInfo.token) return rState.userInfo.token;
-    //const token = localStorage.getItem('login.token');
-    //if (!token) return null;
-    //return token;
-    return null;
+    //const rState = useRootPageContext();
+    //if (rState.userInfo.token) return rState.userInfo.token;
+    const token = localStorage.getItem('login.token');
+    if (!token) return null;
+    return token;
 }
 
 interface ILoginInfo {

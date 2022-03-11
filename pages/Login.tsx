@@ -2,6 +2,7 @@ import react, {useState} from 'react';
 import { useRouter } from 'next/router'
 import * as api from '../components/api';
 import { Dialog, IDialogInfo, createDialogPrms } from '../components/dialog';
+import { useRootPageContext } from "../components/states/RootState"
 import Link from 'next/link';
 
 export default function Login(props) {
@@ -23,10 +24,11 @@ export default function Login(props) {
     }
 
     const dlgPrm = createDialogPrms();
+    const rState = useRootPageContext();
     const doLogin = () => {
         console.log('doLogin')
         console.log(state)
-        api.loginUserSetToken(state.username, state.password).then(res => {
+        return api.loginUserSetToken(state.username, state.password).then(res => {
             if (!res.error) {
                 router.push('/dashboard');
             } else {
@@ -36,7 +38,18 @@ export default function Login(props) {
                     body: res.error
                 })
             }
-            console.log(res);
+            console.log(res);            
+            if (!res.name) res.name = state.username;
+            rState.setUserInfo({
+                name: res.name,
+                token: res.token,
+            })
+        }).catch(err => {
+            dlgPrm.setDialogInfo({
+                show: true,
+                title: 'Login Error',
+                body: err.error || err.message,
+            })
         })
     };
 

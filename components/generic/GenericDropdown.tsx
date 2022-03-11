@@ -2,10 +2,10 @@ import { useState , useEffect, useRef, SetStateAction, Dispatch} from "react";
 
 
 export interface IGenericDropdownProps {
-    children: any;
+    children?: any;
     items: any[];
     onSelectionChanged: (any) => void;
-    opts: IGenericDropdownPropsOptional;
+    opts?: IGenericDropdownPropsOptional;
 }
 
 export interface IGenericDropdownPropsOptional {    
