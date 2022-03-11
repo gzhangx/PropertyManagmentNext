@@ -1,8 +1,8 @@
 import { createContext, SetStateAction, useContext, useState, Dispatch } from 'react';
 
 export interface IUserInfo {
-    userName: string;
-    authenticated: boolean;
+    name: string;
+    token: string;
 }
 export interface IRootPageState {
     pageStates: { [key: string]: boolean };
@@ -16,7 +16,7 @@ const PageNavContext = createContext<IRootPageState>(null);
 
 export function RootPageStateWrapper({ children }) {
     const [pageStates, setPageStates] = useState({});
-    const [userInfo, setUserInfo] = useState<IUserInfo>({ userName:'', authenticated: false});
+    const [userInfo, setUserInfo] = useState<IUserInfo>({ name:'', token:''});
     const defVal: IRootPageState = {
         pageStates,
         setPageStates,
