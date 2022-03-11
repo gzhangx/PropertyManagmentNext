@@ -79,23 +79,23 @@ export async function resetPassword({ username }) {
 
 
 //copied from sql.ts
-interface ISqlRequestFieldDef {
+export interface ISqlRequestFieldDef {
     field: string;
     op: string;
     name: string;
 }
-interface ISqlOrderDef {
+export interface ISqlOrderDef {
     name: string;
     op: 'asc' | 'desc';
 }
 
-interface ISqlRequestWhereItem {
+export interface ISqlRequestWhereItem {
     field: string;
     op: string;
     val: string | number | (string | number)[];
 }
 
-interface ISqlRequest {
+export interface ISqlRequest {
     table: string;
     fields: (ISqlRequestFieldDef | string)[];
     joins: any;
