@@ -1,10 +1,31 @@
 import React,{useState,useEffect} from 'react';
-import { GenCrud, getPageSorts, getPageFilters } from './GenCrud';
-import { createHelper } from './datahelpers';
+import { GenCrud, getPageSorts, getPageFilters, IPageState } from './GenCrud';
+import { IColumnInfo, ItemType, FieldValueType } from './GenCrudAdd';
+import { IFKDefs } from './GenCrudTableFkTrans'
+import { createHelper, LoadMapperType } from './datahelpers';
 import { getFKDefs } from './GenCrudTableFkTrans';
 
+interface IGenListProps { //copied from gencrud, need combine and refactor later
+    table: string;
+    columnInfo: IColumnInfo[];    
+    displayFields: ({ field: string; desc: string; } | string)[];
+    pageState: IPageState;
+    loadMapper: LoadMapperType;
+    fkDefs?: IFKDefs;
+    initialPageSize?: number;    
+    treatData?: { [key: string]: (a:any, b:any)=>any; }
+    paggingInfo: {
+        total: number;
+        PageSize: number;
+        lastPage: number;
+        pos: number;
+    };
+    setPaggingInfo: any;
+    title?: string;
+    doAdd: (data: ItemType, id: FieldValueType) => Promise<{ id: string; }>;
+}
 //props: table and displayFields [fieldNames]
-export function GenList(props) {
+export function GenList(props: IGenListProps) {
     const {table, columnInfo, loadMapper, pageState , fkDefs, initialPageSize, treatData = {}} = props;
     const [paggingInfo, setPaggingInfo] = useState({
         PageSize: initialPageSize|| 10,        
@@ -19,7 +40,7 @@ export function GenList(props) {
     const [mainDataRows,setMainData]=useState([]);
     const [loading,setLoading]=useState(true);
     const [columnInf,setColumnInf]=useState(columnInfo || []);
-    const reload = () => {
+    const reload = async () => {
         const whereArray = getPageFilters(pageState, table);
         const order = getPageSorts(pageState, table);
         helper.loadData(loadMapper, {
@@ -57,7 +78,7 @@ export function GenList(props) {
         ld();        
     },[columnInfo, pageState.pageProps.reloadCount, paggingInfo.pos, paggingInfo.total]);
 
-    const doAdd=(data,id) => {        
+    const doAdd = (data: ItemType, id: FieldValueType) => {        
         return helper.saveData(data,id).then(res => {
             setLoading(true);            
             reload();

@@ -49,7 +49,7 @@ export interface IGenGrudProps {
         pos: number;
     };
     setPaggingInfo: any;
-    doAdd: (data: ItemType, id: FieldValueType) => { id: string; };
+    doAdd: (data: ItemType, id: FieldValueType) => Promise<{ id: string; }>;
     //onOK?: (data?: ItemType) => void;
     //onCancel: (data?: ItemType) => void;
     //onError?: (err: { message: string; missed: any; }) => void;
@@ -61,7 +61,8 @@ export interface IGenGrudProps {
     //desc?: string;
     fkDefs?: IFKDefs;
     doDelete: (id: string, data:any) => void;
-    idCol: { field: string;}
+    idCol?: { field: string; }
+    reload?: () => Promise<void>;
 }
 
 export const GenCrud = (props: IGenGrudProps) => {

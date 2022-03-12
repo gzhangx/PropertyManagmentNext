@@ -9,7 +9,7 @@ const mod = {
 }
 
 type IFieldType = (ISqlRequestFieldDef | string)[];
-type LoadMapperType = (what: string, fields: string[]) => IFieldType;
+export type LoadMapperType = (what: string, fields: string[]) => IFieldType;
 interface IOpts {
     whereArray: ISqlRequestWhereItem[];
     order: ISqlOrderDef[];

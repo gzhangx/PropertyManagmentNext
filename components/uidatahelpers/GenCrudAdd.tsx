@@ -23,7 +23,7 @@ export type ItemType = { [key: string]: FieldValueType; };
 export interface IGenGrudAddProps {
     columnInfo: IColumnInfo[];
     editItem?: ItemType;
-    doAdd: (data: ItemType, id: FieldValueType) => { id: string;};
+    doAdd: (data: ItemType, id: FieldValueType) => Promise<{ id: string;}>;
     onOK?: (data?:ItemType) => void;
     onCancel: (data?:ItemType) => void;
     onError?: (err: { message: string; missed: any; }) => void;
