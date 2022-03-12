@@ -8,9 +8,13 @@ export default function NavTab(props) {
     } = props;
     
     return <li className="nav-item">
-        <a className={
+        <div className={
             expanded ? "nav-link" : "nav-link collapsed"
         } href="#" 
+            style={{
+                cursor: "pointer",                
+                userSelect:"none",
+            }}
             data-toggle="collapse"
             onClick={e => {
                 e.preventDefault();
@@ -20,7 +24,7 @@ export default function NavTab(props) {
             {
                 header
             }
-        </a>
+        </div>
         <div className={expanded ? "collapse show" : "collapse"} >
             <div className="bg-white py-2 collapse-inner rounded">
                 {
