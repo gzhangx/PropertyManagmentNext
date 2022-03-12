@@ -44,7 +44,7 @@ export function GenericDropdown(props: IGenericDropdownProps) {
     }, [show])
     const showClass = `dropdown-list ${className || 'dropdown-menu dropdown-menu-right shadow animated--grow-in'} ${show && 'show'}`;
 
-    const filterItems = opts.filterItems || (itm=>(itm.displayName || '').toLocaleLowerCase().includes(curDisplayValue.toLocaleLowerCase()))
+    const filterItems = opts.filterItems || (itm=>(itm.label || '').toLocaleLowerCase().includes(curDisplayValue.toLocaleLowerCase()))
     return <li className="nav-item dropdown no-arrow mx-1 navbar-nav" ref={topNode} onClick={e => {
         //nav-link dropdown-toggle
         e.preventDefault();
@@ -58,7 +58,7 @@ export function GenericDropdown(props: IGenericDropdownProps) {
                 <div className="input-group">
                         <input type="text" className="form-control bg-light border-0 small" placeholder={opts.placeHolder || '' }
                             aria-label="Search" aria-describedby="basic-addon2"
-                            value={curDisplayValue || (opts.selected ? opts.selected.displayName || opts.selected.value : '')}
+                            value={curDisplayValue || (opts.selected ? opts.selected.label || opts.selected.value : '')}
                             onChange={e => {
                                 setCurDisplayValue(e.target.value);
                             }}
@@ -106,7 +106,7 @@ export function GenericDropdown(props: IGenericDropdownProps) {
                         }
                         <div>
                             {data.subject && <div className="small text-gray-500">{data.subject}</div>}
-                            {data.displayName || data.value}
+                            {data.label || data.value}
                         </div>
                     </a>
                 })

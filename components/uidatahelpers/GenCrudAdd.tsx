@@ -1,11 +1,40 @@
 import React, { useState, useEffect } from 'react';
 import { createAndLoadHelper } from './datahelpers';
 import { get } from 'lodash';
-import { EditTextDropdown, IEditTextDropdownItem } from '../generic/EditTextDropdown';
+import { EditTextDropdown, IEditTextDropdownItem, } from '../generic/EditTextDropdown';
 import * as bluebird from 'bluebird';
 import {Dialog, createDialogPrms} from '../dialog'
 
-const GenCrudAdd = (props) => {
+interface IColumnInfo {
+    field: string;
+    isId?: boolean;
+    required?: boolean;
+    foreignKey?: {
+        table: string;
+    };
+    dontShowOnEdit?: boolean;
+    desc?: string;
+    dspFunc: (x: string) => string;
+}
+
+type FieldValueType = string | number | null;
+type ItemType = { [key: string]: FieldValueType; };
+interface IGenGrudAddProps {
+    columnInfo: IColumnInfo[];
+    editItem?: ItemType;
+    doAdd: (data: ItemType, id: FieldValueType) => { id: string;};
+    onOK?: (data?:ItemType) => void;
+    onCancel: (data?:ItemType) => void;
+    onError?: (err: { message: string; missed: any; }) => void;
+    
+    customSelData?: { [key: string]: [IEditTextDropdownItem]};
+    customFields?: ItemType;
+    show: boolean;
+    table?: string;
+    desc?: string;
+    fkDefs?: string;
+}
+const GenCrudAdd = (props: IGenGrudAddProps) => {
 
     const { columnInfo, doAdd, onCancel,
         editItem, //only available during edit
@@ -19,7 +48,7 @@ const GenCrudAdd = (props) => {
     }
         = props;
     const getForeignKeyProcessor = fk => get(fkDefs, [fk, 'processForeignKey']);
-    let id = '';
+    let id:string|number = '';
     let idName = '';
     const addUpdateLabel = editItem ? 'Update' : 'Add';
     const onOK = props.onOK || onCancel;
@@ -202,7 +231,7 @@ const GenCrudAdd = (props) => {
                         }
                         if (c.dontShowOnEdit) return null;
 
-                        const createSelection = (optName, colField) => {
+                        const createSelection = (optName:string, colField:string) => {
                             const selOptions = optsData[optName];
                             if (!selOptions) return null;
                             const options = selOptions.concat({

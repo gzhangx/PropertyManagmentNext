@@ -2,7 +2,7 @@ import { useState, Dispatch, SetStateAction } from 'react';
 import { GenericDropdown, IGenericDropdownProps } from './GenericDropdown'
 
 export interface IEditTextDropdownItem {
-    displayName: string;
+    label: string;
     value?: string;
 }
 
