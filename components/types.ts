@@ -4,3 +4,18 @@ export interface ISqlOrderDef {
     op: SortOps;
     shortDesc: string;
 }
+
+export interface IPageFilter {
+    id: string;
+    table: string;
+    field: string;
+    op: string;
+    val: string;
+};
+
+export interface IPagePropsByTable {
+    [tableName: string]: {
+        sorts: ISqlOrderDef[];
+        filters: IPageFilter[];
+    };
+};

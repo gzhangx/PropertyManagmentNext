@@ -6,7 +6,7 @@ import {MainSideBar} from '../components/page/sidebar'
 import { TopBar } from '../components/page/topbar'
 import { Footer } from '../components/page/pageFooter'
 import BoardItemHalfSmall from '../components/page/boardItemHaflSmall'
-import DemoRow from '../components/page/demorow.js'
+import DemoRow from '../components/page/demorow'
 import DemoGraphicsRow from '../components/page/demoGraphicsRow'
 
 export default withRouter(function MainDashboard(props) {

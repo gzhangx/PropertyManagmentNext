@@ -1,6 +1,9 @@
 import react, { useState, useEffect } from "react";
+import { OwnerList } from './reports/ownerList'
+import { IPagePropsByTable } from '../types'
 
- export default function DemoRow() {
+export default function DemoRow() {
+    const [pageProps, setPageProps] = useState<IPagePropsByTable>({});
     return <div className="row">
 
         <div className="col-lg-6 mb-4">
@@ -13,32 +16,32 @@ import react, { useState, useEffect } from "react";
                     <h4 className="small font-weight-bold">Server Migration <span
                         className="float-right">20%</span></h4>
                     <div className="progress mb-4">
-                        <div className="progress-bar bg-danger" role="progressbar" style={{ width: '20%' }}
-                            aria-valuenow="20" aria-valuemin="0" aria-valuemax="100"></div>
+                        <div className="progress-bar bg-danger"  style={{ width: '20%' }}
+                            aria-valuenow={20} aria-valuemin={0} aria-valuemax={100}></div>
                     </div>
                     <h4 className="small font-weight-bold">Sales Tracking <span
                         className="float-right">40%</span></h4>
                     <div className="progress mb-4">
-                        <div className="progress-bar bg-warning" role="progressbar" style={{ width: '40%' }}
-                            aria-valuenow="40" aria-valuemin="0" aria-valuemax="100"></div>
+                        <div className="progress-bar bg-warning"  style={{ width: '40%' }}
+                            aria-valuenow={40} aria-valuemin={0} aria-valuemax={100}></div>
                     </div>
                     <h4 className="small font-weight-bold">Customer Database <span
                         className="float-right">60%</span></h4>
                     <div className="progress mb-4">
-                        <div className="progress-bar" role="progressbar" style={{ width: '60%' }}
-                            aria-valuenow="60" aria-valuemin="0" aria-valuemax="100"></div>
+                        <div className="progress-bar" style={{ width: '60%' }}
+                            aria-valuenow={60} aria-valuemin={0} aria-valuemax={100}></div>
                     </div>
                     <h4 className="small font-weight-bold">Payout Details <span
                         className="float-right">80%</span></h4>
                     <div className="progress mb-4">
                         <div className="progress-bar bg-info" role="progressbar" style={{ width: '80%' }}
-                            aria-valuenow="80" aria-valuemin="0" aria-valuemax="100"></div>
+                            aria-valuenow={80} aria-valuemin={0} aria-valuemax={100}></div>
                     </div>
                     <h4 className="small font-weight-bold">Account Setup <span
                         className="float-right">Complete!</span></h4>
                     <div className="progress">
                         <div className="progress-bar bg-success" role="progressbar" style={{ width: '100%' }}
-                            aria-valuenow="100" aria-valuemin="0" aria-valuemax="100"></div>
+                            aria-valuenow={100} aria-valuemin={0} aria-valuemax={100}></div>
                     </div>
                 </div>
             </div>
@@ -145,6 +148,9 @@ import react, { useState, useEffect } from "react";
                 </div>
             </div>
 
+        </div>
+        <div>
+            <OwnerList pageProps={pageProps} pageState={ {pageProps} }/>
         </div>
     </div>
 }

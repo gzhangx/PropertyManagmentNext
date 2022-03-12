@@ -10,8 +10,11 @@ async function doPost(path: string, data: object, method?:string): Promise<any> 
         headers: {
             'Content-Type': 'application/json',            
         },
-        body: JSON.stringify(data),
-    };
+        //body: JSON.stringify(data),
+    } as any;
+    if(pdata.method === 'POST' && data) {
+        pdata.body = JSON.stringify(data);
+    }
     const auth = getLoginToken();
     if (auth) {
         pdata.headers['Authorization'] = `Bearer ${auth}`;

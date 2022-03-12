@@ -8,12 +8,13 @@ import { getFKDefs } from './GenCrudTableFkTrans';
 interface IGenListProps { //copied from gencrud, need combine and refactor later
     table: string;
     columnInfo: IColumnInfo[];    
-    displayFields: ({ field: string; desc: string; } | string)[];
+    displayFields?: ({ field: string; desc: string; } | string)[];
     pageState: IPageState;
-    loadMapper: LoadMapperType;
+    loadMapper?: LoadMapperType;
     fkDefs?: IFKDefs;
     initialPageSize?: number;    
-    treatData?: { [key: string]: (a:any, b:any)=>any; }
+    treatData?: { [key: string]: (a: any, b: any) => any; }
+    /*
     paggingInfo: {
         total: number;
         PageSize: number;
@@ -21,6 +22,7 @@ interface IGenListProps { //copied from gencrud, need combine and refactor later
         pos: number;
     };
     setPaggingInfo: any;
+    */
     title?: string;
     doAdd: (data: ItemType, id: FieldValueType) => Promise<{ id: string; }>;
 }
@@ -31,6 +33,7 @@ export function GenList(props: IGenListProps) {
         PageSize: initialPageSize|| 10,        
         pos: 0,
         total: 0,
+        lastPage:0,// added since missing
     });
     const helper=createHelper(table);
     // [
