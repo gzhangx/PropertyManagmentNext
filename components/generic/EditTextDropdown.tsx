@@ -8,9 +8,8 @@ export interface IEditTextDropdownItem {
 
 interface IEditTextDropdownProps extends IGenericDropdownProps {    
     items: IEditTextDropdownItem[];
-    onSelectionChanged: (IEditTextDropdownItem) => void;
+    onSelectionChanged: (itm:IEditTextDropdownItem) => void;
     selected?: IEditTextDropdownItem;
-    setSelected?: Dispatch<SetStateAction<IEditTextDropdownItem>>;
     formatDisplay?: (IEditTextDropdownItem) => string;    
 }
 
@@ -21,10 +20,19 @@ export function EditTextDropdown(props: IEditTextDropdownProps) {
         opts.selected = oselected;
         opts.setSelected = osetSelected;
     }
+
+    let setTo = null;
     if (!opts.selected) {
         if (props.items.length) {
-            opts.setSelected(props.items[0])
+            setTo = (props.items[0])
         }
+    }
+    if (props.selected) {
+        setTo = props.selected;        
+    }
+    if (setTo) {
+        opts.setSelected(setTo);
+        props.onSelectionChanged(setTo);
     }
     /*    
     const dropDownControl = (show: boolean) => {

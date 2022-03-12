@@ -5,7 +5,7 @@ import { EditTextDropdown, IEditTextDropdownItem, } from '../generic/EditTextDro
 import * as bluebird from 'bluebird';
 import {Dialog, createDialogPrms} from '../dialog'
 
-interface IColumnInfo {
+export interface IColumnInfo {
     field: string;
     isId?: boolean;
     required?: boolean;
@@ -17,9 +17,9 @@ interface IColumnInfo {
     dspFunc: (x: string) => string;
 }
 
-type FieldValueType = string | number | null;
-type ItemType = { [key: string]: FieldValueType; };
-interface IGenGrudAddProps {
+export type FieldValueType = string | number | null;
+export type ItemType = { [key: string]: FieldValueType; };
+export interface IGenGrudAddProps {
     columnInfo: IColumnInfo[];
     editItem?: ItemType;
     doAdd: (data: ItemType, id: FieldValueType) => { id: string;};
@@ -34,7 +34,7 @@ interface IGenGrudAddProps {
     desc?: string;
     fkDefs?: string;
 }
-const GenCrudAdd = (props: IGenGrudAddProps) => {
+export const GenCrudAdd = (props: IGenGrudAddProps) => {
 
     const { columnInfo, doAdd, onCancel,
         editItem, //only available during edit
@@ -404,5 +404,3 @@ const GenCrudAdd = (props: IGenGrudAddProps) => {
     )
     */
 }
-
-export default GenCrudAdd;

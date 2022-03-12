@@ -24,7 +24,8 @@ export function GenericDropdown(props: IGenericDropdownProps) {
     const opts = props.opts;
     const { defaultShow, className } = opts;
     const [show, setShow] = useState(defaultShow || false);
-    const [curDisplayValue, setCurDisplayValue] = useState('');
+    const getSelectedText = () => (opts.selected ? opts.selected.label || opts.selected.value : '');
+    const [curDisplayValue, setCurDisplayValue] = useState(getSelectedText());
     const topNode = useRef<HTMLLIElement>();
     useEffect(() => {
         const clickOutside = (e: MouseEvent) => {
@@ -58,7 +59,7 @@ export function GenericDropdown(props: IGenericDropdownProps) {
                 <div className="input-group">
                         <input type="text" className="form-control bg-light border-0 small" placeholder={opts.placeHolder || '' }
                             aria-label="Search" aria-describedby="basic-addon2"
-                            value={curDisplayValue || (opts.selected ? opts.selected.label || opts.selected.value : '')}
+                            value={curDisplayValue || getSelectedText()}
                             onChange={e => {
                                 setCurDisplayValue(e.target.value);
                             }}
