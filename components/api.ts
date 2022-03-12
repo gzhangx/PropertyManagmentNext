@@ -2,6 +2,8 @@
 const baseUrl = 'http://localhost:8081/pmapi'
 export const emailRegx = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/;
 
+import {ISqlOrderDef} from './types'
+
 async function doPost(path: string, data: object, method?:string): Promise<any> {    
     const pdata = {
         method: method || 'POST',
@@ -75,10 +77,7 @@ export interface ISqlRequestFieldDef {
     op: string;
     name: string;
 }
-export interface ISqlOrderDef {
-    name: string;
-    op: 'asc' | 'desc';
-}
+
 
 export interface ISqlRequestWhereItem {
     field: string;

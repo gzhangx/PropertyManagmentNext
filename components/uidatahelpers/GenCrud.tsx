@@ -3,7 +3,7 @@ import { set, get } from 'lodash';
 import { v1 } from 'uuid';
 import { EditTextDropdown, IEditTextDropdownItem, } from '../generic/EditTextDropdown';
 import { GenCrudAdd, IColumnInfo, ItemType, FieldValueType } from './GenCrudAdd';
-
+import { ISqlOrderDef, SortOps } from '../types'
 interface IPageFilter {
     id: string;
     table: string;
@@ -12,23 +12,18 @@ interface IPageFilter {
     val: string;
 };
 
-type SortOps = '' | 'asc' | 'desc';
-interface IPageSort {
-    name: string;
-    op: SortOps;
-    shortDesc: string;
-}
+
 export interface IPageState {
     pageProps: {
         [tableName: string]: {
-            sorts: IPageSort[];
+            sorts: ISqlOrderDef[];
             filters: IPageFilter[];
         };
     };
     setPageProps: any;
 }
 
-export function getPageSorts(pageState: IPageState, table: string): IPageSort[] {
+export function getPageSorts(pageState: IPageState, table: string): ISqlOrderDef[] {
     const { pageProps,
         //setPageProps
     } = pageState;
@@ -166,7 +161,7 @@ export const GenCrud = (props: IGenGrudProps) => {
         //const fieldFilter = get(pageProps, [table, field, 'filter']) || {};
         const fieldSorts = getPageSorts(pageState, table); //get(pageProps, [table, 'sorts'], []);
         const fieldSortFound = fieldSorts.filter(s => s.name === field)[0];
-        const fieldSort = fieldSortFound || ({} as IPageSort);
+        const fieldSort = fieldSortFound || ({} as ISqlOrderDef);
         const getShortDesc = (op:string) => opToDesc[op] || 'NS';
         const shortDesc = getShortDesc(fieldSort.op);
         const onSortClick = e => {
@@ -174,7 +169,7 @@ export const GenCrud = (props: IGenGrudProps) => {
             const sort = fieldSortFound || ({
                 name: field,
                 shortDesc,
-            }) as IPageSort;
+            }) as ISqlOrderDef;
 
             sort.op = opToNext[fieldSort.op || ''] as SortOps;
             sort.shortDesc = getShortDesc(sort.op);

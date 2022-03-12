@@ -1,7 +1,8 @@
 import {
     getModel, sqlGet, sqlAdd, sqlDelete, ISqlRequestFieldDef,
-    ISqlOrderDef, ISqlRequestWhereItem
+    ISqlRequestWhereItem
 } from '../api';
+import { ISqlOrderDef } from '../types'
 import { get } from 'lodash';
 const mod = {
     models: {} as {[key:string]:string}
@@ -42,6 +43,7 @@ export function createHelper(table: string) {
                 rowCount, offset,
                 groupByArray:null,
             })) as {
+                total: number;
                 rows: any[];
             };
         },
