@@ -1,13 +1,20 @@
 
-
+import { IEditTextDropdownItem, } from '../generic/EditTextDropdown';
 interface IFK {
     field: string;
+    table: string;
 }
 
 interface IData {
     [key: string]: string;
 }
-export function getFKDefs() {
+
+export interface IFKDefs {
+    [tbl: string]: {
+        processForeignKey: (fk: IFK, datas: IData[]) => IEditTextDropdownItem[];
+    };
+}
+export function getFKDefs(): IFKDefs {
     return {
         ownerInfo: {
             processForeignKey: (fk: IFK, datas: IData[]) => {

@@ -4,13 +4,14 @@ import { get } from 'lodash';
 import { EditTextDropdown, IEditTextDropdownItem, } from '../generic/EditTextDropdown';
 import * as bluebird from 'bluebird';
 import {Dialog, createDialogPrms} from '../dialog'
-
+import { IFKDefs } from './GenCrudTableFkTrans'
 export interface IColumnInfo {
     field: string;
     isId?: boolean;
     required?: boolean;
     foreignKey?: {
         table: string;
+        field: string;
     };
     dontShowOnEdit?: boolean;
     desc?: string;
@@ -27,12 +28,12 @@ export interface IGenGrudAddProps {
     onCancel: (data?:ItemType) => void;
     onError?: (err: { message: string; missed: any; }) => void;
     
-    customSelData?: { [key: string]: [IEditTextDropdownItem]};
+    customSelData?: { [key: string]: IEditTextDropdownItem[]};
     customFields?: ItemType;
     show: boolean;
     table?: string;
     desc?: string;
-    fkDefs?: string;
+    fkDefs?: IFKDefs;
 }
 export const GenCrudAdd = (props: IGenGrudAddProps) => {
 

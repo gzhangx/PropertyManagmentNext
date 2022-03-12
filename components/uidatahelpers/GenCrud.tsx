@@ -4,6 +4,7 @@ import { v1 } from 'uuid';
 import { EditTextDropdown, IEditTextDropdownItem, } from '../generic/EditTextDropdown';
 import { GenCrudAdd, IColumnInfo, ItemType, FieldValueType } from './GenCrudAdd';
 import { ISqlOrderDef, SortOps } from '../types'
+import { IFKDefs} from './GenCrudTableFkTrans'
 interface IPageFilter {
     id: string;
     table: string;
@@ -58,7 +59,7 @@ export interface IGenGrudProps {
     //show: boolean;
     table: string;
     //desc?: string;
-    //fkDefs?: string;    
+    fkDefs?: IFKDefs;
     doDelete: (id: string, data:any) => void;
     idCol: { field: string;}
 }
