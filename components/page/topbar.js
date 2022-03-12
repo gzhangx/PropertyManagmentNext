@@ -23,7 +23,7 @@ export function TopBar(props) {
         </form>
         <div>
             <EditTextDropdown items={[{ label: 'test1', value: 'tt1' }, { label: 'test2', value: 'tt2' }]}
-                onSelectionChanged={itm => console.log(itm)}
+                onSelectionChanged={itm => { }}
                 
                 
         />

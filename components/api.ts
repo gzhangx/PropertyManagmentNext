@@ -36,7 +36,6 @@ export async function loginUserSetToken(username: string, password: string): Pro
         username,
         password,
     }).then((r: ILoginResponse) => {
-        console.log(r);
         if (r.error) return r;
         localStorage.setItem('login.token', r.token);
         localStorage.setItem('login.info', JSON.stringify(r));

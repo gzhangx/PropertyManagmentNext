@@ -27,7 +27,6 @@ export default function Login(props) {
     const rState = useRootPageContext();
     const doLogin = () => {
         console.log('doLogin')
-        console.log(state)
         return api.loginUserSetToken(state.username, state.password).then(res => {
             if (!res.error) {
                 router.push('/dashboard');
@@ -38,7 +37,6 @@ export default function Login(props) {
                     body: res.error
                 })
             }
-            console.log(res);            
             if (!res.name) res.name = state.username;
             rState.setUserInfo({
                 name: res.name,

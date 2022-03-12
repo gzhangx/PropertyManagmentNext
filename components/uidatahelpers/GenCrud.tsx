@@ -332,7 +332,6 @@ export const GenCrud = (props: IGenGrudProps) => {
             }
 
             <GenCrudAdd {...props} show={dspState === 'addNew'} onCancel={r => {
-                console.log(r);
                 setDspState('dsp')
             }}></GenCrudAdd>
             <GenCrudAdd {...props} show={dspState === 'edit'} editItem={editItem}  onCancel={() => setDspState('dsp')}></GenCrudAdd>
