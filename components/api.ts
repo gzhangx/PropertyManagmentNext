@@ -2,17 +2,17 @@
 const baseUrl = 'http://localhost:8081/pmapi'
 export const emailRegx = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/;
 
-import {ISqlOrderDef} from './types'
+import { ISqlOrderDef } from './types'
 
-async function doPost(path: string, data: object, method?:string): Promise<any> {    
+async function doPost(path: string, data: object, method?: string): Promise<any> {
     const pdata = {
         method: method || 'POST',
         headers: {
-            'Content-Type': 'application/json',            
+            'Content-Type': 'application/json',
         },
         //body: JSON.stringify(data),
     } as any;
-    if(pdata.method === 'POST' && data) {
+    if (pdata.method === 'POST' && data) {
         pdata.body = JSON.stringify(data);
     }
     const auth = getLoginToken();
@@ -31,17 +31,17 @@ export interface ILoginResponse {
 }
 export async function loginUserSetToken(username: string, password: string): Promise<ILoginResponse> {
     console.log('in login')
-    
+
     return doPost(`auth/login`, {
         username,
         password,
     }).then((r: ILoginResponse) => {
         console.log(r);
         if (r.error) return r;
-        localStorage.setItem('login.token', r.token);        
-        localStorage.setItem('login.info', JSON.stringify(r));        
+        localStorage.setItem('login.token', r.token);
+        localStorage.setItem('login.info', JSON.stringify(r));
         return r;
-    });    
+    });
 }
 
 export function getLoginToken() {
@@ -56,21 +56,21 @@ interface ILoginInfo {
     username: string;
     name: string;
 }
-export function getLoginInfo(): ILoginInfo{
+export function getLoginInfo(): ILoginInfo {
     const infoStr = localStorage.getItem('login.info');
     return JSON.parse(infoStr) as ILoginInfo;
 }
 
 export async function registerUser({ username, firstName, lastName }) {
     console.log('in register')
-    
+
 }
 
 
 
 export async function resetPassword({ username }) {
     console.log('in reset')
-    
+
 }
 
 
@@ -102,8 +102,8 @@ export interface ISqlRequest {
 }
 
 
-export async function sqlGet(input: ISqlRequest) : Promise<any> {
-    return doPost(`auth/login`, input);
+export async function sqlGet(input: ISqlRequest): Promise<any> {
+    return doPost(`sql/get`, input);
 }
 
 export async function sqlAdd(table, fields, create) {
