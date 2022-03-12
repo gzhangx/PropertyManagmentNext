@@ -11,23 +11,35 @@ interface IPageFilter {
     op: string;
     val: string;
 };
+
+type SortOps = '' | 'asc' | 'desc';
+interface IPageSort {
+    name: string;
+    op: SortOps;
+    shortDesc: string;
+}
 export interface IPageState {
     pageProps: {
         [tableName: string]: {
-            sorts: any[];
+            sorts: IPageSort[];
             filters: IPageFilter[];
         };
     };
     setPageProps: any;
 }
 
-export function getPageSorts(pageState: IPageState, table:string) {
+export function getPageSorts(pageState: IPageState, table: string): IPageSort[] {
     const { pageProps,
         //setPageProps
     } = pageState;
     return get(pageProps, [table, 'sorts'], []);
 }
-
+export function getPageFilters(pageState: IPageState, table: string): IPageFilter[] {
+    const { pageProps,
+        //setPageProps
+    } = pageState;
+    return get(pageProps, [table, 'filters'], []);
+}
 
 export interface IGenGrudProps {
     columnInfo: IColumnInfo[];
@@ -56,7 +68,7 @@ export interface IGenGrudProps {
     idCol: { field: string;}
 }
 
-const GenCrud = (props: IGenGrudProps) => {
+export const GenCrud = (props: IGenGrudProps) => {
     const {
         columnInfo,
         displayFields,
@@ -141,7 +153,7 @@ const GenCrud = (props: IGenGrudProps) => {
         setDspState('addNew');
     }
 
-    const getFieldSort = field => {
+    const getFieldSort = (field:string) => {
         const opToDesc = {
             'asc': 'AS',
             'desc': 'DS',
@@ -154,17 +166,17 @@ const GenCrud = (props: IGenGrudProps) => {
         //const fieldFilter = get(pageProps, [table, field, 'filter']) || {};
         const fieldSorts = getPageSorts(pageState, table); //get(pageProps, [table, 'sorts'], []);
         const fieldSortFound = fieldSorts.filter(s => s.name === field)[0];
-        const fieldSort = fieldSortFound || {};
-        const getShortDesc = op => opToDesc[op] || 'NS';
+        const fieldSort = fieldSortFound || ({} as IPageSort);
+        const getShortDesc = (op:string) => opToDesc[op] || 'NS';
         const shortDesc = getShortDesc(fieldSort.op);
         const onSortClick = e => {
             e.preventDefault();
-            const sort = fieldSortFound || {
+            const sort = fieldSortFound || ({
                 name: field,
                 shortDesc,
-            };
+            }) as IPageSort;
 
-            sort.op = opToNext[fieldSort.op || ''];
+            sort.op = opToNext[fieldSort.op || ''] as SortOps;
             sort.shortDesc = getShortDesc(sort.op);
             if (!fieldSortFound) {
                 fieldSorts.push(sort);
@@ -342,5 +354,3 @@ const GenCrud = (props: IGenGrudProps) => {
         </div>
     )
 }
-
-export default GenCrud;
