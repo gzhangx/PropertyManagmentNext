@@ -1,8 +1,8 @@
 
 import NavTab from "../nav/navTab";
-import { useRootPageContext, IRootPageState } from "../states/RootState"
+import { useRootPageContext, IRootPageState, getSideBarKey } from "../states/RootState"
 
-const getSideBarKey = name => `sideBar${name}Expanded`;
+
 const toggleSideBar = (rstate: IRootPageState, name) => {    
     const key = getSideBarKey(name);
     const val = rstate.pageStates[key];

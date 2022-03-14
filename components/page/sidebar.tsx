@@ -1,6 +1,23 @@
 import Link from 'next/link'
 import { PageNavTab } from './navTab';
-export function MainSideBar(props) {    
+import { useRootPageContext, IRootPageState, getSideBarItemKey, getSideBarCurrentActiveItemKey } from "../states/RootState"
+
+export function MainSideBar() {    
+    const rs = useRootPageContext();
+    const getItemLink = (name: string) => {
+        const itemName = getSideBarItemKey(name);
+        const active = rs.pageStates[getSideBarCurrentActiveItemKey()] === itemName;
+        return <a className="collapse-item" href="#" onClick={() => {
+            const curActiveName = rs.pageStates[getSideBarCurrentActiveItemKey()] as string;
+            if (curActiveName) {
+                rs.pageStates[rs.pageStates[getSideBarCurrentActiveItemKey()] as string] = false;
+            }
+            
+            rs.pageStates[getSideBarCurrentActiveItemKey()] = itemName;
+            rs.pageStates[itemName] = true;
+            rs.setPageStates({ ...rs.pageStates });
+        }}>{name} {active ?'_A':''}</a>;
+    }
     return <ul className="navbar-nav bg-gradient-primary sidebar sidebar-dark accordion" id="accordionSidebar">
 
         <a className="sidebar-brand d-flex align-items-center justify-content-center" href="index.html">
@@ -36,6 +53,9 @@ export function MainSideBar(props) {
                     <h6 className="collapse-header">Custom Components:</h6>
                     <a className="collapse-item" href="#">Developers</a>
                     <a className="collapse-item" href="#">Admins</a>
+                    {
+                        ['Developers', 'Admins'].map(getItemLink)
+                    }
                 </>
             }
         ></PageNavTab>

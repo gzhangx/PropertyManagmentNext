@@ -5,7 +5,7 @@ export interface IUserInfo {
     token: string;
 }
 export interface IRootPageState {
-    pageStates: { [key: string]: boolean };
+    pageStates: { [key: string]: boolean | string };
     setPageStates: Dispatch<SetStateAction<{}>>;
     userInfo: IUserInfo;
     setUserInfo: Dispatch<SetStateAction<IUserInfo>>;
@@ -13,6 +13,10 @@ export interface IRootPageState {
 
 
 const PageNavContext = createContext<IRootPageState>(null);
+
+export const getSideBarKey = name => `sideBar.section.expanded.${name}`; //sidebar expend in page states
+export const getSideBarItemKey = name => `sideBar.item.selected.${name}`; //sidebar expend in page states
+export const getSideBarCurrentActiveItemKey = () => `sideBar.item.currentSelected`; //sidebar expend in page states
 
 export function RootPageStateWrapper({ children }) {
     const [pageStates, setPageStates] = useState({});
