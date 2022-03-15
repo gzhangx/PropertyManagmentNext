@@ -19,3 +19,8 @@ export interface IPagePropsByTable {
         filters: IPageFilter[];
     };
 };
+
+export interface IPageState {
+    pageProps: IPagePropsByTable;
+    setPageProps: any;
+}

@@ -1,15 +1,15 @@
 import React,{useState,useEffect} from 'react';
-import { GenCrud, getPageSorts, getPageFilters, IPageState } from './GenCrud';
+import { GenCrud, getPageSorts, getPageFilters } from './GenCrud';
 import { IColumnInfo, ItemType, FieldValueType } from './GenCrudAdd';
 import { IFKDefs } from './GenCrudTableFkTrans'
 import { createHelper, LoadMapperType } from './datahelpers';
 import { getFKDefs } from './GenCrudTableFkTrans';
+import { useRootPageContext } from '../states/RootState'
 
 interface IGenListProps { //copied from gencrud, need combine and refactor later
     table: string;
     columnInfo: IColumnInfo[];    
     displayFields?: ({ field: string; desc: string; } | string)[];
-    pageState: IPageState;
     loadMapper?: LoadMapperType;
     fkDefs?: IFKDefs;
     initialPageSize?: number;    
@@ -28,7 +28,7 @@ interface IGenListProps { //copied from gencrud, need combine and refactor later
 }
 //props: table and displayFields [fieldNames]
 export function GenList(props: IGenListProps) {
-    const {table, columnInfo, loadMapper, pageState , fkDefs, initialPageSize, treatData = {}} = props;
+    const {table, columnInfo, loadMapper , fkDefs, initialPageSize, treatData = {}} = props;
     const [paggingInfo, setPaggingInfo] = useState({
         PageSize: initialPageSize|| 10,        
         pos: 0,
@@ -36,6 +36,8 @@ export function GenList(props: IGenListProps) {
         lastPage:0,// added since missing
     });
     const helper=createHelper(table);
+    const rootState = useRootPageContext();
+    const pageState = rootState.pageState;
     // [
     //     { field: 'tenantID', desc: 'Id', type: 'uuid', required: true, isId: true },
     //     { field: 'dadPhone', desc: 'Dad Phone', },
@@ -108,6 +110,7 @@ export function GenList(props: IGenListProps) {
                         fkDefs={fkDefs || getFKDefs()}
                     paggingInfo={paggingInfo} setPaggingInfo={setPaggingInfo}
                     reload = {reload}
+                    pageState = {pageState}
                         {...props}
                         displayFields={displayFields}
                         columnInfo={

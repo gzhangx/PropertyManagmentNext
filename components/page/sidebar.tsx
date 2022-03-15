@@ -4,19 +4,25 @@ import { useRootPageContext, IRootPageState, getSideBarItemKey, getSideBarCurren
 
 export function MainSideBar() {    
     const rs = useRootPageContext();
-    const getItemLink = (name: string) => {
+
+    const getLinkOnClick = (name:string)=>{
         const itemName = getSideBarItemKey(name);
-        const active = rs.pageStates[getSideBarCurrentActiveItemKey()] === itemName;
-        return <a className="collapse-item" href="#" onClick={() => {
-            const curActiveName = rs.pageStates[getSideBarCurrentActiveItemKey()] as string;
+        return (e:MouseEvent)=>{
+            e.preventDefault();
+            const curActiveName = rs.sideBarStates[getSideBarCurrentActiveItemKey()] as string;
             if (curActiveName) {
-                rs.pageStates[rs.pageStates[getSideBarCurrentActiveItemKey()] as string] = false;
+                rs.sideBarStates[rs.sideBarStates[getSideBarCurrentActiveItemKey()] as string] = false;
             }
             
-            rs.pageStates[getSideBarCurrentActiveItemKey()] = itemName;
-            rs.pageStates[itemName] = true;
-            rs.setPageStates({ ...rs.pageStates });
-        }}>{name} {active ?'_A':''}</a>;
+            rs.sideBarStates[getSideBarCurrentActiveItemKey()] = itemName;
+            rs.sideBarStates[itemName] = true;
+            rs.setSideBarStates({ ...rs.sideBarStates });
+        }
+    }
+    const getItemLink = (name: string) => {
+        const itemName = getSideBarItemKey(name);
+        const active = rs.sideBarStates[getSideBarCurrentActiveItemKey()] === itemName;
+        return <a className="collapse-item" href="#" onClick={getLinkOnClick(name) as any}>{name} {active && <i className="fas fa-anchor"></i>    }</a>;
     }
     return <ul className="navbar-nav bg-gradient-primary sidebar sidebar-dark accordion" id="accordionSidebar">
 
@@ -32,7 +38,8 @@ export function MainSideBar() {
         <li className="nav-item active">
             <a className="nav-link" href="#" onClick={e => e.preventDefault()}>
                 <i className="fas fa-fw fa-tachometer-alt"></i>
-                <span>Dashboard</span></a>
+                <span onClick={getLinkOnClick('Dashboard') as any}>Dashboard</span>
+            </a>
         </li>
 
         <hr className="sidebar-divider" />
@@ -50,12 +57,11 @@ export function MainSideBar() {
             }
             body={
                 <>
-                    <h6 className="collapse-header">Custom Components:</h6>
-                    <a className="collapse-item" href="#">Developers</a>
-                    <a className="collapse-item" href="#">Admins</a>
+                    <h6 className="collapse-header">Custom Components:</h6>                    
                     {
                         ['Developers', 'Admins'].map(getItemLink)
                     }
+                    <a className="collapse-item" href="#">NA</a>
                 </>
             }
         ></PageNavTab>
@@ -72,20 +78,9 @@ export function MainSideBar() {
             body={
                 <>
                     <h6 className="collapse-header">Demo Reports:</h6>
-                    {/*
-                        (state.mainReports || []).map(r => {
-                            return <a className="collapse-item" href="#"
-                                onClick={e => {
-                                    e.preventDefault();
-                                    setState(prev => ({
-                                        ...prev,
-                                        currentSelectedGfReport: r,
-                                    }));
-                                }}
-                            >{r.title.length > 24 ? r.title.substr(0, 19) + '...' : r.title} ({ r.entries})</a>
-                        })
-                    */
-                    }                    
+                    {
+                        ['Owner Info', 'Transactions'].map(getItemLink)
+                    }                
                 </>
             }
         ></PageNavTab>

@@ -1,5 +1,4 @@
 import react, { useState, useEffect } from "react";
-import { OwnerList } from './reports/ownerList'
 import { IPagePropsByTable } from '../types'
 
 export default function DemoRow() {
@@ -148,9 +147,6 @@ export default function DemoRow() {
                 </div>
             </div>
 
-        </div>
-        <div>
-            <OwnerList pageProps={pageProps} pageState={ {pageProps} }/>
         </div>
     </div>
 }

@@ -3,14 +3,11 @@ import { set, get } from 'lodash';
 import { v1 } from 'uuid';
 import { EditTextDropdown, IEditTextDropdownItem, } from '../generic/EditTextDropdown';
 import { GenCrudAdd, IColumnInfo, ItemType, FieldValueType } from './GenCrudAdd';
-import { ISqlOrderDef, SortOps, IPageFilter, IPagePropsByTable } from '../types'
+import { ISqlOrderDef, SortOps, IPageFilter, IPagePropsByTable,IPageState } from '../types'
 import { IFKDefs} from './GenCrudTableFkTrans'
 
 
-export interface IPageState {
-    pageProps: IPagePropsByTable;
-    setPageProps: any;
-}
+
 
 export function getPageSorts(pageState: IPageState, table: string): ISqlOrderDef[] {
     const { pageProps,

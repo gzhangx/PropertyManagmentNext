@@ -5,15 +5,15 @@ import { useRootPageContext, IRootPageState, getSideBarKey } from "../states/Roo
 
 const toggleSideBar = (rstate: IRootPageState, name) => {    
     const key = getSideBarKey(name);
-    const val = rstate.pageStates[key];
-    rstate.setPageStates({
-        ...rstate.pageStates,
+    const val = rstate.sideBarStates[key];
+    rstate.setSideBarStates({
+        ...rstate.sideBarStates,
         [key]: !val,
     })
 };
 const getSideBarState = (props: IRootPageState, name) => {
     const key = getSideBarKey(name);        
-    return props.pageStates[key];
+    return props.sideBarStates[key];
 }
 
 //

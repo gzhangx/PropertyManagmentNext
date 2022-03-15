@@ -5,7 +5,7 @@ import { useRootPageContext, IRootPageState } from "../components/states/RootSta
 import {MainSideBar} from '../components/page/sidebar'
 import { TopBar } from '../components/page/topbar'
 import { Footer } from '../components/page/pageFooter'
-import {OriginalDashboard} from './origDashboard'
+import {DashboardContent} from './dashboardContent'
 
 export default withRouter(function MainDashboard(props) {
   //const { state, setMainState } = props;  
@@ -20,7 +20,7 @@ export default withRouter(function MainDashboard(props) {
         <div id="content-wrapper" className="d-flex flex-column">
           <div id="content">
             <TopBar/>            
-            <OriginalDashboard/>
+            <DashboardContent/>
           </div>
           <Footer />
         </div>
