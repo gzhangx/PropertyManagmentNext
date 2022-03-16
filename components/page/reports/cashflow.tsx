@@ -108,8 +108,8 @@ export function CashFlowReport(props) {
             <tr>
                 <td className='tdColumnHeader'>
                     <table><tr>
-                        <td><input type="button" className="btn btn-secondary" onClick={() => saveCsvGS(true)}>CSV</input></td>
-                        <td><input type="button" className="btn btn-secondary" onClick={() => saveCsvGS(false)}>Sheet</input></td>
+                        <td><button type="button" className="btn btn-secondary" onClick={() => saveCsvGS(true)}>CSV</button></td>
+                        <td><button type="button" className="btn btn-secondary" onClick={() => saveCsvGS(false)}>Sheet</button></td>
                     </tr></table>
                 </td>
                 <td className='tdColumnHeader'>Total</td>
