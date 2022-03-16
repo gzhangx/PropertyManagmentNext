@@ -5,7 +5,6 @@ import { useRootPageContext, IRootPageState,getSideBarItemKey, getSideBarCurrent
 import {MainSideBar} from '../components/page/sidebar'
 import { TopBar } from '../components/page/topbar'
 import { Footer } from '../components/page/pageFooter'
-import {DashboardContent} from './dashboardContent'
 
 import { contents } from './rootContents'
 import { OriginalDashboard } from './origDashboard'
