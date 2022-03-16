@@ -103,7 +103,7 @@ export function CashFlowReport(props) {
             selectedMonths: ctx.selectedMonths, setSelectedMonths: ctx.setSelectedMonths,
             selectedHouses: ctx.selectedHouses, setSelectedHouses: ctx.setSelectedHouses,
         }}></MonthRange>
-        <table className='tableReport'>
+        <table className='table'>
             <thead>
                 <tr>
                     <td className='tdColumnHeader'>

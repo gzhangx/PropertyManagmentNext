@@ -1,30 +1,35 @@
 
 import { useEffect, useState } from 'react';
 import { withRouter } from 'next/router'
-import { useRootPageContext, IRootPageState } from "../components/states/RootState"
+import { useRootPageContext, IRootPageState,getSideBarItemKey, getSideBarCurrentSelectedItemName } from "../components/states/RootState"
 import {MainSideBar} from '../components/page/sidebar'
 import { TopBar } from '../components/page/topbar'
 import { Footer } from '../components/page/pageFooter'
 import {DashboardContent} from './dashboardContent'
 
-import {contents} from './rootContents'
+import { contents } from './rootContents'
+import { OriginalDashboard } from './origDashboard'
+
 export default withRouter(function MainDashboard(props) {
   //const { state, setMainState } = props;  
   const rstate = useRootPageContext();
   //const [pageState, setPageState] = pstate;
-  
+  const currentActivePage = getSideBarCurrentSelectedItemName(rstate);
+    console.log(`debugremove currentact=${currentActivePage}`)
   return (
     
-    <div id="page-top">
+    <div>
       <div id="wrapper">
         <MainSideBar reportPages={Object.keys(contents)}></MainSideBar>
-        <div id="content-wrapper" className="d-flex flex-column">
-          <div id="content">
-            <TopBar/>            
-            <DashboardContent/>
+        {
+          contents[currentActivePage] || <div id="content-wrapper" className="d-flex flex-column">
+            <div id="content">
+              <TopBar />
+              <OriginalDashboard />
+            </div>
+            <Footer />
           </div>
-          <Footer />
-        </div>
+        }
       </div>                    
     </div>
   )
