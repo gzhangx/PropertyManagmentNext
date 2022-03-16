@@ -105,19 +105,23 @@ export function CashFlowReport(props) {
         }}></MonthRange>
         <table className='tableReport'>
             <thead>
-            <tr>
-                <td className='tdColumnHeader'>
-                    <table><tr>
-                        <td><button type="button" className="btn btn-secondary" onClick={() => saveCsvGS(true)}>CSV</button></td>
-                        <td><button type="button" className="btn btn-secondary" onClick={() => saveCsvGS(false)}>Sheet</button></td>
-                    </tr></table>
-                </td>
-                <td className='tdColumnHeader'>Total</td>
-                {
-                    monthes.map((mon, key) => {
-                        return <th className='tdColumnHeader' key={key}>{mon}</th>
-                    })
-                }
+                <tr>
+                    <td className='tdColumnHeader'>
+                        <table>
+                            <tbody>
+                                <tr>
+                                    <td><button type="button" className="btn btn-secondary" onClick={() => saveCsvGS(true)}>CSV</button></td>
+                                    <td><button type="button" className="btn btn-secondary" onClick={() => saveCsvGS(false)}>Sheet</button></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </td>
+                    <td className='tdColumnHeader'>Total</td>
+                    {
+                        monthes.map((mon, key) => {
+                            return <th className='tdColumnHeader' key={key}>{mon}</th>
+                        })
+                    }
                 </tr>
             </thead>
             <tbody><tr>
