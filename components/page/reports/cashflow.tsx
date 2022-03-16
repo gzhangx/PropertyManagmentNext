@@ -82,7 +82,7 @@ export function CashFlowReport(props) {
         }
     }
     
-    return <>
+    return <div>
         <CloseableDialog show={!!showDetail} setShow={() => setShowDetail(null)}>
             {(showDetail || []).map(d => {
                 return <div>{d.amount.toFixed(2)} {d.date} {d.address} {d.notes} {d.debugText}</div>
@@ -96,159 +96,165 @@ export function CashFlowReport(props) {
                 return <div>{d.debugText}</div>
             })}
         </CloseableDialog>
-        <MonthRange jjctx={{
-            allMonthes: ctx.allMonthes,
-            allHouses: ctx.allHouses,
-            setCurMonthSelection: ctx.setCurMonthSelection, //type IEditTextDropdownItem
-            selectedMonths: ctx.selectedMonths, setSelectedMonths: ctx.setSelectedMonths,
-            selectedHouses: ctx.selectedHouses, setSelectedHouses: ctx.setSelectedHouses,
-        }}></MonthRange>
-        <table className='table'>
-            <thead>
-                <tr>
-                    <td className='tdColumnHeader'>
-                        <table>
-                            <tbody>
-                                <tr>
-                                    <td><button type="button" className="btn btn-secondary" onClick={() => saveCsvGS(true)}>CSV</button></td>
-                                    <td><button type="button" className="btn btn-secondary" onClick={() => saveCsvGS(false)}>Sheet</button></td>
+        <div className=".modal-body">
+            <div className='row'>
+                <MonthRange jjctx={{
+                    allMonthes: ctx.allMonthes,
+                    allHouses: ctx.allHouses,
+                    setCurMonthSelection: ctx.setCurMonthSelection, //type IEditTextDropdownItem
+                    selectedMonths: ctx.selectedMonths, setSelectedMonths: ctx.setSelectedMonths,
+                    selectedHouses: ctx.selectedHouses, setSelectedHouses: ctx.setSelectedHouses,
+                }}></MonthRange>
+            </div>
+            <div className='row'>
+                <table className='table'>
+                    <thead>
+                        <tr>
+                            <td className='tdColumnHeader'>
+                                <table>
+                                    <tbody>
+                                        <tr>
+                                            <td><button type="button" className="btn btn-secondary" onClick={() => saveCsvGS(true)}>CSV</button></td>
+                                            <td><button type="button" className="btn btn-secondary" onClick={() => saveCsvGS(false)}>Sheet</button></td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </td>
+                            <td className='tdColumnHeader'>Total</td>
+                            {
+                                monthes.map((mon, key) => {
+                                    return <th className='tdColumnHeader' key={key}>{mon}</th>
+                                })
+                            }
+                        </tr>
+                    </thead>
+                    <tbody><tr>
+                        <td className='tdLeftSubHeader' colSpan={monthes.length + 2}>Income</td></tr>
+                        {
+                            monAddr.houseAry.filter(h => (selectedHouses[h.addressId])).map((house, key) => {
+                                return <tr key={key}>
+                                    <td className='tdLeftSubCategoryHeader'>{house.address}</td>
+                                    <td className='tdCenter  tdTotalItalic'>{fMoneyformat(house.total)}</td>
+                                    {
+                                        monthes.map((mon, key) => {
+                                            const curHouseMon = (house.monthes[mon] || {} as IAmountAndPmtRecords);
+                                            return < td key={key} className='tdCenter' onClick={() => setShowDetail(curHouseMon.records)}> {
+                                                fMoneyformat(curHouseMon.amount)
+
+                                            }</td>
+                                        })
+                                    }
                                 </tr>
-                            </tbody>
-                        </table>
-                    </td>
-                    <td className='tdColumnHeader'>Total</td>
-                    {
-                        monthes.map((mon, key) => {
-                            return <th className='tdColumnHeader' key={key}>{mon}</th>
-                        })
-                    }
-                </tr>
-            </thead>
-            <tbody><tr>
-                <td className='tdLeftSubHeader' colSpan={monthes.length + 2}>Income</td></tr>
-                {
-                    monAddr.houseAry.filter(h => (selectedHouses[h.addressId])).map((house, key) => {
-                        return <tr key={key}>
-                            <td className='tdLeftSubCategoryHeader'>{house.address}</td>
-                            <td className='tdCenter  tdTotalItalic'>{fMoneyformat(house.total)}</td>
+                            })
+                        }
+                        <tr><td>Non Rent</td></tr>
+                        {
+                            monAddr.nonRentAry.map((nonRent, key) => {
+                                return <tr key={key}>
+                                    <td className='tdLeftSubCategoryHeader'>{nonRent.displayName}</td>
+                                    <td className='tdCenter  tdTotalItalic' onClick={() => setShowDetail(nonRent.records)}>{fMoneyformat(nonRent.total)}</td>
+                                    {
+                                        monthes.map((mon, key) => {
+                                            const curMon = (nonRent.monthes[mon] || {} as IAmountAndPmtRecords);
+                                            return < td key={key} className='tdCenter' onClick={() => setShowDetail(curMon.records)}> {
+                                                fMoneyformat(curMon.amount)
+
+                                            }</td>
+                                        })
+                                    }
+                                </tr>
+                            })
+                        }
+                        <tr>
+
+                            <td className='tdLeftSubCategoryHeader'>Sub Total:
+                            </td><td className='tdCenter  tdTotalItalic'>{fMoneyformat(monAddr.total)}</td>
                             {
-                                monthes.map((mon, key) => {
-                                    const curHouseMon = (house.monthes[mon] || {} as IAmountAndPmtRecords);
-                                    return < td key={key} className='tdCenter' onClick={() => setShowDetail(curHouseMon.records)}> {
-                                        fMoneyformat(curHouseMon.amount)
-
-                                    }</td>
+                                monthes.map((name, key) => {
+                                    //const monDbg = paymentsByMonth[name];
+                                    const mon = monAddr.monthTotal[name];
+                                    // dbg={ monDbg?.total}
+                                    if (!mon && mon !== 0) return <td className='tdCenter  tdTotalItalic' key={key}></td>;
+                                    return <td className='tdCenter  tdTotalItalic' key={key}>{fMoneyformat(mon)}</td>
                                 })
-                            }
-                        </tr>
-                    })
-                }
-                <tr><td>Non Rent</td></tr>
-                {
-                    monAddr.nonRentAry.map((nonRent, key) => {
-                        return <tr key={key}>
-                            <td className='tdLeftSubCategoryHeader'>{nonRent.displayName}</td>
-                            <td className='tdCenter  tdTotalItalic' onClick={() => setShowDetail(nonRent.records)}>{fMoneyformat(nonRent.total)}</td>
-                            {
-                                monthes.map((mon, key) => {
-                                    const curMon = (nonRent.monthes[mon] || {} as IAmountAndPmtRecords);
-                                    return < td key={key} className='tdCenter' onClick={() => setShowDetail(curMon.records)}> {
-                                        fMoneyformat(curMon.amount)
-
-                                    }</td>
-                                })
-                            }
-                        </tr>
-                    })
-                }
-                <tr>
-
-                    <td className='tdLeftSubCategoryHeader'>Sub Total:
-                    </td><td className='tdCenter  tdTotalItalic'>{fMoneyformat(monAddr.total)}</td>
-                    {
-                        monthes.map((name, key) => {
-                            //const monDbg = paymentsByMonth[name];
-                            const mon = monAddr.monthTotal[name];
-                            // dbg={ monDbg?.total}
-                            if (!mon && mon !== 0) return <td className='tdCenter  tdTotalItalic' key={key}></td>;
-                            return <td className='tdCenter  tdTotalItalic' key={key}>{fMoneyformat(mon)}</td>
-                        })
-                    }</tr>
+                            }</tr>
                 
-                <tr><td className='tdLeftSubHeader' colSpan={monthes.length + 2}>Expenses</td></tr>
+                        <tr><td className='tdLeftSubHeader' colSpan={monthes.length + 2}>Expenses</td></tr>
             
                 
-                {
-                    [...calculatedMaintData.categoryNames].map((cat, key) => {
-                        return <tr key={key}>
-                            <td className='tdLeftSubCategoryHeader'>{cat}</td><td className="tdCenter  tdTotalItalic">{fMoneyformat(calculatedMaintData.categoryTotals[cat])}</td>
+                        {
+                            [...calculatedMaintData.categoryNames].map((cat, key) => {
+                                return <tr key={key}>
+                                    <td className='tdLeftSubCategoryHeader'>{cat}</td><td className="tdCenter  tdTotalItalic">{fMoneyformat(calculatedMaintData.categoryTotals[cat])}</td>
+                                    {
+                                        monthes.map((mon, key) => {
+                                            const catMon = calculatedMaintData.getCatMonth(cat, mon);
+                                            return <td key={key} className="tdCenter" onClick={() => {
+                                                if (catMon.amountCalcParts) {
+                                                    console.log('catMon')
+                                                    console.log(catMon)
+                                                    const msgs = catMon.amountCalcParts.reduce((acc, r) => {
+                                                        console.log(r)
+                                                        if (r.calcInfo) {
+                                                            r.calcInfo.forEach(i => acc.push({
+                                                                debugText: i.info
+                                                            }));
+                                                        }
+                                                        return acc;
+                                                    }, [
+                                                        {
+                                                            debugText: `For Total expense of ${catMon.amount.toFixed(2)}`
+                                                        },
+                                                        ...catMon.records.reduce((acc, r) => {
+                                                            acc.push({
+                                                                debugText: `=> ${r.amount} is from`
+                                                            });
+                                                            r.records.forEach(r => {
+                                                                acc.push({
+                                                                    debugText: `===> ${moment(r.date).format('YYYY-MM-DD')} ${r.amount} ${r.comment} ${r.description}`
+                                                                });
+                                                            })
+                                                            return acc;
+                                                        }, []),
+                                                        {
+                                                            debugText: '====== breakdowns '
+                                                        }
+                                                    ]);
+                                                    setShowExpenseDetail(msgs)
+                                                }
+                                            }}>{fMoneyformat(catMon.amount)}</td>
+                                        })
+                                    }
+                                </tr>
+                            })
+                        }
+                        <tr><td className='tdLeftSubCategoryHeader'>Sub Total</td><td className="tdCenter  tdTotalItalic">{
+                            fMoneyformat(calculatedMaintData.total)
+                        }</td>
                             {
                                 monthes.map((mon, key) => {
-                                    const catMon = calculatedMaintData.getCatMonth(cat, mon);
-                                    return <td key={key} className="tdCenter" onClick={() => {
-                                        if (catMon.amountCalcParts) {
-                                            console.log('catMon')
-                                            console.log(catMon)
-                                            const msgs = catMon.amountCalcParts.reduce((acc, r) => {
-                                                console.log(r)
-                                                if (r.calcInfo) {
-                                                    r.calcInfo.forEach(i => acc.push({
-                                                        debugText: i.info
-                                                    }));
-                                                }
-                                                return acc;
-                                            }, [
-                                                {
-                                                    debugText: `For Total expense of ${catMon.amount.toFixed(2)}`
-                                                },
-                                                ...catMon.records.reduce((acc, r) => {
-                                                    acc.push({
-                                                        debugText: `=> ${r.amount} is from`
-                                                    });
-                                                    r.records.forEach(r => {
-                                                        acc.push({
-                                                            debugText: `===> ${moment(r.date).format('YYYY-MM-DD')} ${r.amount} ${r.comment} ${r.description}`
-                                                        });
-                                                    })
-                                                    return acc;
-                                                }, []),
-                                                {
-                                                    debugText: '====== breakdowns '
-                                                }
-                                            ]);
-                                            setShowExpenseDetail(msgs)
-                                        }
-                                    }}>{fMoneyformat(catMon.amount)}</td>
+                                    return <td key={key} className="tdCenter tdTotalItalic">{fMoneyformat((calculatedMaintData.monthlyTotal[mon] || 0))}</td>
                                 })
                             }
                         </tr>
-                    })
-                }
-                <tr><td className='tdLeftSubCategoryHeader'>Sub Total</td><td className="tdCenter  tdTotalItalic">{
-                    fMoneyformat(calculatedMaintData.total)
-                }</td>
-                    {
-                        monthes.map((mon, key) => {
-                            return <td key={key} className="tdCenter tdTotalItalic">{fMoneyformat((calculatedMaintData.monthlyTotal[mon] || 0))}</td>
-                        })
-                    }
-                </tr>
-                <tr>
-                    <td colSpan={monthes.length + 2}></td>
-                </tr>
-                <tr>
-                    <td className="tdLeftSubHeader tdButtomTotalCell">Net Income</td>
-                    <td className="tdCenter tdTotalBold">{fMoneyformat((monAddr.total - calculatedMaintData.total))}</td>
-                    {
-                        monthes.map((mon, key) => {
-                            const incTotal = monAddr.monthTotal[mon] || 0; //paymentsByMonth[mon] || {};
-                            //const incTotal = inc.total || 0;
-                            const cost = calculatedMaintData.monthlyTotal[mon] || 0;
-                            return <td key={key} className='tdButtomTotalCell tdTotalBold tdCenter t'>{fMoneyformat((incTotal - cost))}</td>
-                        })
-                    }
-                </tr>
-            </tbody>
-        </table>
-    </>
+                        <tr>
+                            <td colSpan={monthes.length + 2}></td>
+                        </tr>
+                        <tr>
+                            <td className="tdLeftSubHeader tdButtomTotalCell">Net Income</td>
+                            <td className="tdCenter tdTotalBold">{fMoneyformat((monAddr.total - calculatedMaintData.total))}</td>
+                            {
+                                monthes.map((mon, key) => {
+                                    const incTotal = monAddr.monthTotal[mon] || 0; //paymentsByMonth[mon] || {};
+                                    //const incTotal = inc.total || 0;
+                                    const cost = calculatedMaintData.monthlyTotal[mon] || 0;
+                                    return <td key={key} className='tdButtomTotalCell tdTotalBold tdCenter t'>{fMoneyformat((incTotal - cost))}</td>
+                                })
+                            }
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
 }
