@@ -194,7 +194,7 @@ export function PaymentExpenseStateWrapper(props: {
         });
         
         beginReLoadPaymentData(selectedOwners);
-    }, [...selectedOwners]);
+    }, [selectedOwners]);
 
 
 
