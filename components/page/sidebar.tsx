@@ -2,7 +2,7 @@ import Link from 'next/link'
 import { PageNavTab } from './navTab';
 import { useRootPageContext, IRootPageState, getSideBarItemKey, getSideBarCurrentActiveItemKey } from "../states/RootState"
 
-export function MainSideBar() {    
+export function MainSideBar(props : {reportPages:string[]}) {    
     const rs = useRootPageContext();
 
     const getLinkOnClick = (name:string)=>{
@@ -19,10 +19,10 @@ export function MainSideBar() {
             rs.setSideBarStates({ ...rs.sideBarStates });
         }
     }
-    const getItemLink = (name: string) => {
+    const getItemLink = (name: string, ind:number) => {
         const itemName = getSideBarItemKey(name);
         const active = rs.sideBarStates[getSideBarCurrentActiveItemKey()] === itemName;
-        return <a className="collapse-item" href="#" onClick={getLinkOnClick(name) as any}>{name} {active && <i className="fas fa-anchor"></i>    }</a>;
+        return <a className="collapse-item" href="#" onClick={getLinkOnClick(name) as any} key={ind}>{name} {active && <i className="fas fa-anchor"></i>    }</a>;
     }
     return <ul className="navbar-nav bg-gradient-primary sidebar sidebar-dark accordion" id="accordionSidebar">
 
@@ -79,7 +79,7 @@ export function MainSideBar() {
                 <>
                     <h6 className="collapse-header">Demo Reports:</h6>
                     {
-                        ['Owner Info', 'Transactions'].map(getItemLink)
+                        props.reportPages.map(getItemLink)
                     }                
                 </>
             }

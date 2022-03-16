@@ -1,3 +1,5 @@
+import { IPagePropsByTable } from './types'
+import {IEditTextDropdownItem} from './generic/EditTextDropdown'
 export interface IPayment {
     address: string;
     addressId: string;
@@ -22,8 +24,7 @@ export interface IPayment {
     vdPosControl: string;
 }
 
-
-export interface IPageProps {
+/*export interface IPageProps {
     reloadCount: number;
     [tableName: string]: {        
         sorts: [
@@ -35,6 +36,7 @@ export interface IPageProps {
         ]
     } | number;
 };
+*/
 
 export interface IOwnerInfo {
     ownerID: number;
@@ -48,10 +50,6 @@ export interface IHouseInfo {
     address: string;
 }
 
-export interface IDropdownOption {
-    value: string;
-    label: string;
-}
 
 export interface IExpenseData {
     address: string;
@@ -111,11 +109,11 @@ export interface IMaintenanceRawData {
 export type IStringBoolMap = { [id: string]: boolean };
 
 export interface IIncomeExpensesContextValue {
-    pageProps: IPageProps;
-    setPageProps: (a: IPageProps) => void;
-    ownerInfo: IOwnerInfo;
-    setOwnerInfo: (a: IOwnerInfo) => void;
-    owners: IOwnerInfo[];
+    pageProps: IPagePropsByTable;
+    setPageProps: (a: IPagePropsByTable) => void;
+    selectedOwners: IOwnerInfo[];
+    setSelectedOwners: (a: IOwnerInfo[]) => void;
+    allOwners: IOwnerInfo[];
     rawExpenseData: IExpenseData[];
     payments: IPayment[];
     allMonthes: string[];
@@ -124,11 +122,11 @@ export interface IIncomeExpensesContextValue {
     monthes: string[];
     setMonthes: (a: string[]) => void;
     curMonthSelection: any;
-    setCurMonthSelection: (a: any) => void;
+    setCurMonthSelection: (a: IEditTextDropdownItem) => void;
     selectedMonths: { [mon: string]: boolean };
     setSelectedMonths: (a: { [mon: string]: boolean }) => void;
     selectedHouses: {[id:string]:boolean};
     setSelectedHouses: (a: any) => void;
-    beginReLoadPaymentData: (o: IOwnerInfo) => Promise<void>;
+    beginReLoadPaymentData: (o: IOwnerInfo[]) => Promise<void>;
     paymentCalcOpts: IPaymentCalcOpts;
 }

@@ -200,3 +200,14 @@ export async function getPaymnents(ownerInfos: IOwnerInfo[]) : Promise<IPayment[
     })
     
 }
+
+
+
+// Used by cashflow
+export async function getOwners() : Promise<IOwnerInfo[]> {
+    return sqlGet({
+        table:'ownerInfo',        
+    } as ISqlRequest).then((r: {rows:IOwnerInfo[]})=>{
+        return r.rows;
+    });    
+}

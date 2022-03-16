@@ -7,6 +7,7 @@ import { TopBar } from '../components/page/topbar'
 import { Footer } from '../components/page/pageFooter'
 import {DashboardContent} from './dashboardContent'
 
+import {contents} from './rootContents'
 export default withRouter(function MainDashboard(props) {
   //const { state, setMainState } = props;  
   const rstate = useRootPageContext();
@@ -16,7 +17,7 @@ export default withRouter(function MainDashboard(props) {
     
     <div id="page-top">
       <div id="wrapper">
-        <MainSideBar></MainSideBar>
+        <MainSideBar reportPages={Object.keys(contents)}></MainSideBar>
         <div id="content-wrapper" className="d-flex flex-column">
           <div id="content">
             <TopBar/>            
