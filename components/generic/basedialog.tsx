@@ -30,17 +30,21 @@ export function CloseableDialog(props: IClosableDialogProps) {
     const test = <button type="button" className="btn btn-secondary" data-dismiss="modal" onClick={onClose}>Close</button>
     return <BaseDialog {...props}>
         <>
-            {
-                props.title && <div className="modal-header">
-                    <h5 className="modal-title">{props.title}</h5>
-                    <button type="button" className="close" data-dismiss="modal" aria-label="Close">
-                        <span aria-hidden="true" onClick={onClose}>&times;</span>
-                    </button>
+            <div className="modal-dialog">
+                <div className="modal-content">
+                    {
+                        props.title && <div className="modal-header">
+                            <h5 className="modal-title">{props.title}</h5>
+                            <button type="button" className="close">
+                                <span aria-hidden="true" onClick={onClose}>&times;</span>
+                            </button>
+                        </div>
+                    }
+                    {
+                        props.children
+                    }
                 </div>
-            }
-            {
-                props.children
-            }
+            </div>
             {
                 props.footer ? props.footer : <div className="modal-footer">
                     <button type="button" className="btn btn-secondary" data-dismiss="modal" onClick={onClose}>Close</button>
