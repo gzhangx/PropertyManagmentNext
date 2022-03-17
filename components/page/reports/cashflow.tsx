@@ -96,7 +96,7 @@ export function CashFlowReport(props) {
                 return <div>{d.debugText}</div>
             })}
         </CloseableDialog>
-        <div className=".modal-body">
+        <div className="modal-body">
             <div className='row'>
                 <MonthRange jjctx={{
                     allMonthes: ctx.allMonthes,

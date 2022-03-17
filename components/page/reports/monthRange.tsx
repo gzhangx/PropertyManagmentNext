@@ -26,24 +26,27 @@ export function MonthRange(props) {
     useEffect(() => {
         setCurMonthSelection({
             value: 'All',
-            label:'All'
-       }) 
-    },[]);
-    return <>
-        <div>
+            label: 'All'
+        })
+    }, []);
+    return <div className='modal-body'>
+        <div className='row' style={{"verticalAlign":"bottom"}}>
         <EditTextDropdown
-        items={['All','LastMonth', 'Last3Month', 'Y2D', 'LastYear'].map(value => ({
-            value,
-                label:value,
-        }))}
-        onSelectionChanged={sel=>{
-            setCurMonthSelection(sel);
-        }}
-         ></EditTextDropdown>
-
-            <input type='checkbox' checked={showDetails} onChange={() => {
-                setShowDetails(!showDetails);
-            }}></input> Show Details
+                    items={['All', 'LastMonth', 'Last3Month', 'Y2D', 'LastYear'].map(value => ({
+                        value,
+                        label: value,
+                    }))}
+                    onSelectionChanged={sel => {
+                        setCurMonthSelection(sel);
+                    }}
+            ></EditTextDropdown>
+            
+            <div className='form-check' style={{paddingTop:"0.5em"}}>                
+                <input type='checkbox' className='form-check-input' checked={showDetails} onChange={() => {
+                    setShowDetails(!showDetails);
+                }}></input>
+                <label className='form-check-label'>Show Details</label>
+                </div>            
         </div>
         <div>
             {
@@ -58,7 +61,7 @@ export function MonthRange(props) {
                                     }}></input>{m}</div>
                                 })
                             }
-                            </div>
+                        </div>
                         <div className='col'>
                             {
                                 allHouses.map((m, key) => {
@@ -69,9 +72,9 @@ export function MonthRange(props) {
                                 })
                             }
                         </div>
-                        </div>
                     </div>
+                </div>
             }
         </div>
-    </>
+    </div>
 }
