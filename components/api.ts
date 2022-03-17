@@ -1,5 +1,7 @@
 
-const baseUrl = 'http://localhost:8081/pmapi'
+import axios, {Method} from 'axios';
+const baseUrlDev = 'http://localhost:8081/pmapi'
+const baseUrl = 'http://192.168.1.41/pmapi'
 export const emailRegx = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/;
 
 import { ISqlOrderDef } from './types'
@@ -10,7 +12,24 @@ import {
     IPayment,
 } from './reportTypes';
 
-async function doPost(path: string, data: object, method?: string): Promise<any> {
+async function doPost(path: string, data: object, method?: Method): Promise<any> {
+    const headers = {
+        "Content-Type": "application/json",
+        //"Authorization": `Bearer ${access_token}`,
+    };
+    const auth = getLoginToken();
+    if (auth) {
+        headers['Authorization'] = `Bearer ${auth}`;
+    }
+    return axios({
+        url: `${baseUrl}/${path}`,
+        headers,
+        method:method || 'POST',
+        data,
+    }).then(r => {
+        return (r.data)
+    });       
+    /*
     const pdata = {
         method: method || 'POST',
         headers: {
@@ -28,6 +47,7 @@ async function doPost(path: string, data: object, method?: string): Promise<any>
     return fetch(`${baseUrl}/${path}`, pdata).then(r => {
         return r.json();
     })
+    */
 }
 
 export interface ILoginResponse {
