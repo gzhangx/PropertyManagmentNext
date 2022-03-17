@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useContext } from 'react';
 import moment from 'moment';
-import { sumBy, sortBy, pick, uniqBy, uniq } from 'lodash';
+import { orderBy, sortBy, pick, uniqBy, uniq } from 'lodash';
 import { getMaintenanceReport, getPaymnents, getHouseAnchorInfo, getOwners } from '../api';
 
 import { IPagePropsByTable } from '../types'
@@ -59,7 +59,10 @@ export function PaymentExpenseStateWrapper(props: {
     const [houseAnchorInfo, setHouseAnchorInfo] = useState<IHouseAnchorInfo[]>([]);
 
     //month selection states
-    const [monthes, setMonthes] = useState<string[]>([]);
+    const [monthes, setMonthesOrig] = useState<string[]>([]);
+    const setMonthes = (mon: string[]) => {        
+        setMonthesOrig(orderBy(mon, x=>x, 'desc'));  
+    };
     const [curMonthSelection, setCurMonthSelection] = useState<IEditTextDropdownItem>({ label: '', value: '' });    
     const [selectedMonths, setSelectedMonths] = useState<IStringBoolMap>({});
     const [selectedHouses, setSelectedHouses] = useState<IStringBoolMap>({});
