@@ -4,7 +4,7 @@ const baseUrlDev = 'http://localhost:8081/pmapi'
 const baseUrl = 'http://192.168.1.41/pmapi'
 export const emailRegx = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/;
 
-import { ISqlOrderDef } from './types'
+import { ISqlOrderDef, ILoginResponse } from './types'
 import {
     IHouseAnchorInfo, IOwnerInfo,
     IExpenseData,
@@ -50,11 +50,7 @@ async function doPost(path: string, data: object, method?: Method): Promise<any>
     */
 }
 
-export interface ILoginResponse {
-    error: string;
-    token: string;
-    name: string;
-}
+
 export async function loginUserSetToken(username: string, password: string): Promise<ILoginResponse> {
     console.log('in login')
 
@@ -77,13 +73,10 @@ export function getLoginToken() {
     return token;
 }
 
-interface ILoginInfo {
-    username: string;
-    name: string;
-}
-export function getLoginInfo(): ILoginInfo {
+
+export function getLoginInfo(): ILoginResponse {
     const infoStr = localStorage.getItem('login.info');
-    return JSON.parse(infoStr) as ILoginInfo;
+    return JSON.parse(infoStr) as ILoginResponse;
 }
 
 export async function registerUser({ username, firstName, lastName }) {

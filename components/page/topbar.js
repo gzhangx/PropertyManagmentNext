@@ -1,8 +1,19 @@
 import TinyIconNotify from './tinyIconNotify'
 import { EditTextDropdown } from '../generic/EditTextDropdown'
+import { useRootPageContext } from '../states/RootState'
+import { getLoginInfo } from '../api'
+import {uniqBy} from 'lodash'
 export function TopBar(props) {
 
-    const { state } = props;
+    const rootContext = useRootPageContext();
+    const loginInfo = getLoginInfo();
+    
+    const ownerSels = uniqBy(loginInfo.ownerCodes,'ownerID').map(r => {
+        return {
+            label: `${r.ownerID}-${r.ownerName}`,
+            value: r.ownerID,
+        }
+    })
     return <nav className="navbar navbar-expand navbar-light bg-white topbar mb-4 static-top shadow">
 
         <button id="sidebarToggleTop" className="btn btn-link d-md-none rounded-circle mr-3">
@@ -22,7 +33,7 @@ export function TopBar(props) {
             </div>
         </form>
         <div>
-            <EditTextDropdown items={[{ label: 'test1', value: 'tt1' }, { label: 'test2', value: 'tt2' }]}
+            <EditTextDropdown items={ ownerSels}
                 onSelectionChanged={itm => { }}
                 
                 
@@ -140,7 +151,7 @@ export function TopBar(props) {
             <li className="nav-item dropdown no-arrow">
                 <a className="nav-link dropdown-toggle" href="#" id="userDropdown" role="button"
                     data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                    <span className="mr-2 d-none d-lg-inline text-gray-600 small">{state?.userInfo?.username}</span>
+                    <span className="mr-2 d-none d-lg-inline text-gray-600 small">{rootContext.userInfo.name}</span>
                     <img className="img-profile rounded-circle"
                         src="img/undraw_profile.svg" />
                 </a>

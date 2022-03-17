@@ -24,3 +24,14 @@ export interface IPageState {
     pageProps: IPagePropsByTable;
     setPageProps: any;
 }
+
+export interface IOwnerCodes {
+    ownerID:  number;
+    ownerName: string;
+}
+export interface ILoginResponse {
+    error: string;
+    token: string;
+    name: string;
+    ownerCodes: IOwnerCodes[];
+}
