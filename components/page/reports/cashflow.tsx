@@ -129,7 +129,7 @@ export function CashFlowReport(props) {
                         </tr>
                     </thead>
                     <tbody><tr>
-                        <td className='tdLeftSubHeader' colSpan={monthes.length + 2}>Income</td></tr>
+                        <td className='h3' colSpan={monthes.length + 2}>Income</td></tr>
                         {
                             monAddr.houseAry.filter(h => (selectedHouses[h.addressId])).map((house, key) => {
                                 return <tr key={key}>
@@ -179,7 +179,7 @@ export function CashFlowReport(props) {
                                 })
                             }</tr>
                 
-                        <tr><td className='tdLeftSubHeader' colSpan={monthes.length + 2}>Expenses</td></tr>
+                        <tr><td className='h3' colSpan={monthes.length + 2}>Expenses</td></tr>
             
                 
                         {
