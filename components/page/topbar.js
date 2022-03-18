@@ -2,7 +2,9 @@ import TinyIconNotify from './tinyIconNotify'
 import { EditTextDropdown } from '../generic/EditTextDropdown'
 import { useRootPageContext } from '../states/RootState'
 import { getLoginInfo } from '../api'
-import {uniqBy} from 'lodash'
+import { uniqBy } from 'lodash'
+
+import { CheckBoxMultiSelect } from '../uidatahelpers/CheckBoxMultiSelect'
 export function TopBar(props) {
 
     const rootContext = useRootPageContext();
@@ -33,11 +35,7 @@ export function TopBar(props) {
             </div>
         </form>
         <div>
-            <EditTextDropdown items={ ownerSels}
-                onSelectionChanged={itm => { }}
-                
-                
-        />
+            <CheckBoxMultiSelect items={ ownerSels}  />
         </div>
 
         <ul className="navbar-nav ml-auto">
