@@ -10,7 +10,7 @@ export function TopBar(props) {
     const rootContext = useRootPageContext();
     const loginInfo = getLoginInfo();
     
-    const ownerSels = uniqBy(loginInfo.ownerCodes,'ownerID').map(r => {
+    const ownerSels = (!loginInfo || !loginInfo.ownerCodes)?[] : uniqBy(loginInfo.ownerCodes,'ownerID').map(r => {
         return {
             label: `${r.ownerID}-${r.ownerName}`,
             value: r.ownerID,

@@ -68,6 +68,10 @@ export async function loginUserSetToken(username: string, password: string): Pro
 export function getLoginToken() {
     //const rState = useRootPageContext();
     //if (rState.userInfo.token) return rState.userInfo.token;
+    if (typeof window == 'undefined') {
+        //runnng on server
+        return null;
+    }
     const token = localStorage.getItem('login.token');
     if (!token) return null;
     return token;
@@ -75,7 +79,12 @@ export function getLoginToken() {
 
 
 export function getLoginInfo(): ILoginResponse {
+    if (typeof window == 'undefined') {
+        //runnng on server
+        return null;
+    }
     const infoStr = localStorage.getItem('login.info');
+    if (!infoStr) return null;
     return JSON.parse(infoStr) as ILoginResponse;
 }
 
