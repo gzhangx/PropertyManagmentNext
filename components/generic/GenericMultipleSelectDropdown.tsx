@@ -1,4 +1,4 @@
-import { useState , useEffect, useRef, } from "react";
+import { useState , useEffect, useRef, Dispatch, SetStateAction} from "react";
 
 
 export interface IGenericMultiSelectDropdownProps {    
@@ -6,7 +6,7 @@ export interface IGenericMultiSelectDropdownProps {
     selected: any[];
     setSelected: (sel: any[]) => void;
     defaultShow?: boolean;
-    renderSelected: (sel: any[], show: boolean) => JSX.Element;
+    renderSelected: (sel: any[], show: boolean, setShow: Dispatch<SetStateAction<boolean>>) => JSX.Element;
     renderItem: (item: any, prop: IGenericMultiSelectDropdownProps, key:number) => JSX.Element;
 }
 
@@ -40,7 +40,7 @@ export function GenericMultiSelectDropdown(props: IGenericMultiSelectDropdownPro
     }} >
 
         {
-            props.renderSelected(props.selected, show)
+            props.renderSelected(props.selected, show, setShow)
         }
         <div className={showClass}>
             {
