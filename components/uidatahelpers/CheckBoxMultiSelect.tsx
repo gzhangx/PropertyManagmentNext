@@ -19,6 +19,7 @@ export function CheckBoxMultiSelect(props: IGenericMultiSelectDropdownProps) {
             const iconClass = `fas text-white ${isSelected?'far fa-check-square':'far fa-square'}`            
             return <a className="dropdown-item d-flex align-items-center" href="#" key={key} onClick={e => {
                 e.preventDefault();
+                e.stopPropagation();
                 if (isSelected) {
                     setSelected(selected.filter(s => s.value !== item.value));
                 } else {
