@@ -5,6 +5,7 @@ import { Dialog, IDialogInfo, createDialogPrms } from '../components/dialog';
 import { useRootPageContext } from "../components/states/RootState"
 import Link from 'next/link';
 
+import GoogleAuth from './google/googleAuth';
 export default function Login(props) {
     const router = useRouter();
 
@@ -116,11 +117,7 @@ export default function Login(props) {
                                                 Login
                                             </a>
                                             <hr />
-                                            <a href="index.html" className="btn btn-google btn-user btn-block"
-                                                onClick={commingSoon}
-                                            >
-                                                <i className="fab fa-google fa-fw"></i> Login with Google
-                                            </a>
+                                            <GoogleAuth/>
                                             <a href="#" className="btn btn-facebook btn-user btn-block"
                                                 onClick={commingSoon}
                                             >

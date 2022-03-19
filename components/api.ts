@@ -1,7 +1,30 @@
 
-import axios, {Method} from 'axios';
-const baseUrlDev = 'http://localhost:8081/pmapi'
-const baseUrl = 'http://192.168.1.41/pmapi'
+import axios, { Method } from 'axios';
+
+export interface ISiteConfig {
+    baseUrl: string;
+    googleClientId: string;
+    redirectUrl: string;
+}
+let sitConfig:ISiteConfig = null;
+export async function getConfig() : Promise<ISiteConfig> {
+    const site = "local";
+    if (sitConfig) return sitConfig;
+    sitConfig = {
+        baseUrl: 'http://192.168.1.41/pmapi',
+        redirectUrl: 'http://localhost:3000',
+        googleClientId: '',
+    };    
+    if (site == 'local') {
+        sitConfig.baseUrl = 'http://localhost:8081/pmapi';
+        sitConfig.redirectUrl = 'http://localhost:3000';
+    }
+    const cliInfo = await getGoogleClientId();
+    sitConfig.googleClientId = cliInfo.client_id;
+    return sitConfig;
+}
+//const baseUrlDev = 'http://localhost:8081/pmapi'
+//const baseUrl = 'http://192.168.1.41/pmapi'
 export const emailRegx = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/;
 
 import { ISqlOrderDef, ILoginResponse } from './types'
@@ -22,7 +45,7 @@ async function doPost(path: string, data: object, method?: Method): Promise<any>
         headers['Authorization'] = `Bearer ${auth}`;
     }
     return axios({
-        url: `${baseUrl}/${path}`,
+        url: `${(await getConfig()).baseUrl}/${path}`,
         headers,
         method:method || 'POST',
         data,
@@ -232,4 +255,28 @@ export async function getOwners() : Promise<IOwnerInfo[]> {
     } as ISqlRequest).then((r: {rows:IOwnerInfo[]})=>{
         return r.rows;
     });    
+}
+
+export interface IGoogleToken {
+    access_token: string;
+    expires_in: number;
+    refresh_token: string;
+    scope: string;
+    token_type: string;
+}
+export async function createGoogleAuth(code:string, redirectUrl:string) : Promise<IGoogleToken>{
+    return doPost(`google/token`, {
+        code, redirectUrl,
+    }).then((r: IGoogleToken) => {
+        console.log(r);
+        return r;
+    });
+}
+
+export async function getGoogleClientId() {
+    return doPost(`google/clientId`, null, 'GET').then(r => {
+        return r as {
+            client_id: string;
+        };
+    })
 }

@@ -103,10 +103,12 @@ export function PaymentExpenseStateWrapper(props: {
     }
     
     useEffect(()=>{
-        getOwners().then(owners=>{
-            setAllOwners(owners);
-            if (owners.length) {
-                setSelectedOwners([owners[0]]);
+        getOwners().then(owners => {
+            if (owners) {
+                setAllOwners(owners);
+                if (owners.length) {
+                    setSelectedOwners([owners[0]]);
+                }
             }
         })
     }, []);
