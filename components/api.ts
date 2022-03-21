@@ -8,14 +8,14 @@ export interface ISiteConfig {
 }
 let sitConfig:ISiteConfig = null;
 export async function getConfig() : Promise<ISiteConfig> {
-    const site = "local";
+    const site = "local1" || process.env.SITE;
     if (sitConfig) return sitConfig;
     sitConfig = {
         baseUrl: 'http://192.168.1.41/pmapi',
         redirectUrl: 'http://localhost:3000',
         googleClientId: '',
     };    
-    if (site == 'local') {
+    if (site === 'local') {
         sitConfig.baseUrl = 'http://localhost:8081/pmapi';
         sitConfig.redirectUrl = 'http://localhost:3000';
     }

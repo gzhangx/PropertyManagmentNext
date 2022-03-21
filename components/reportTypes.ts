@@ -42,7 +42,7 @@ export interface IOwnerInfo {
     ownerID: number;
     ownerName: string;
     shortName: string;
-    vdPosControl: string;
+    selected: boolean;
 }
 
 export interface IHouseInfo {

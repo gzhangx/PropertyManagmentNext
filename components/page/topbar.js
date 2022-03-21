@@ -1,13 +1,14 @@
 import TinyIconNotify from './tinyIconNotify'
-import { EditTextDropdown } from '../generic/EditTextDropdown'
 import { useRootPageContext } from '../states/RootState'
 import { getLoginInfo } from '../api'
 import { uniqBy } from 'lodash'
+import { useIncomeExpensesContext } from '../states/PaymentExpenseState'
 
 import { CheckBoxMultiSelect } from '../uidatahelpers/CheckBoxMultiSelect'
 export function TopBar(props) {
 
     const rootContext = useRootPageContext();
+    const paymentCtx = useIncomeExpensesContext();
     const loginInfo = getLoginInfo();
     
     const ownerSels = (!loginInfo || !loginInfo.ownerCodes)?[] : uniqBy(loginInfo.ownerCodes,'ownerID').map(r => {
@@ -35,7 +36,9 @@ export function TopBar(props) {
             </div>
         </form>
         <div>
-            <CheckBoxMultiSelect items={ ownerSels}  />
+            <CheckBoxMultiSelect items={ownerSels} setSelected={sel => {                
+                paymentCtx.setSelectedOwners(sel)
+            }}/>
         </div>
 
         <ul className="navbar-nav ml-auto">

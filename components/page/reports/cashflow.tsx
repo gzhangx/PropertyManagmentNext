@@ -1,5 +1,5 @@
 import React, {useState} from 'react';
-import { fMoneyformat, getIncomeExpensesContext } from '../../states/PaymentExpenseState';
+import { fMoneyformat, useIncomeExpensesContext } from '../../states/PaymentExpenseState';
 import { MonthRange } from './monthRange';
 import { getPaymentsByMonthAddress, getMaintenanceData, IAmountAndPmtRecords } from './reportUtil';
 import moment from 'moment';
@@ -7,7 +7,7 @@ import moment from 'moment';
 import { CloseableDialog} from '../../generic/basedialog'
 
 export function CashFlowReport(props) {
-    const ctx = getIncomeExpensesContext();
+    const ctx = useIncomeExpensesContext();
     const { payments, rawExpenseData, selectedHouses, monthes, paymentCalcOpts } = ctx;
     
     const monAddr = getPaymentsByMonthAddress(payments, paymentCalcOpts);

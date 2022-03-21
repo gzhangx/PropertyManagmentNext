@@ -4,7 +4,6 @@ import { useState , useEffect, useRef, Dispatch, SetStateAction} from "react";
 export interface IGenericMultiSelectDropdownProps {    
     items: any[];
     selected: any[];
-    setSelected: (sel: any[]) => void;
     defaultShow?: boolean;
     renderSelected: (sel: any[], show: boolean, setShow: Dispatch<SetStateAction<boolean>>) => JSX.Element;
     renderItem: (item: any, prop: IGenericMultiSelectDropdownProps, key:number) => JSX.Element;

@@ -3,13 +3,20 @@ import { useState,  } from 'react';
 import { GenericMultiSelectDropdown, IGenericMultiSelectDropdownProps } from '../generic/GenericMultipleSelectDropdown'
 import { IEditTextDropdownItem} from '../generic/EditTextDropdown'
 
+interface ICheckBoxMultiSelectProps extends IGenericMultiSelectDropdownProps {
+    setSelected: (sel:IMultiSelectItem[]) => void;
+}
 interface IMultiSelectItem extends IEditTextDropdownItem {
     selected: boolean;
 }
-export function CheckBoxMultiSelect(props: IGenericMultiSelectDropdownProps) {
+export function CheckBoxMultiSelect(props: ICheckBoxMultiSelectProps) {
     const items = props.items as IMultiSelectItem[];
-    const [selected, setSelected] = useState<IMultiSelectItem[]>([]);
+    const [selected, setSelectedInner] = useState<IMultiSelectItem[]>([]);
 
+    const setSelected = (itms: IMultiSelectItem[]) => {
+        setSelectedInner(itms);
+        props.setSelected(itms);
+    }
     const svgStyle = {
         display: "inline-block",
         fill: "currentColor",
@@ -18,7 +25,6 @@ export function CheckBoxMultiSelect(props: IGenericMultiSelectDropdownProps) {
         strokeWidth: 0,
     };
     return <GenericMultiSelectDropdown selected={selected}
-        setSelected={setSelected}
         items={items}
         renderItem={(item: IMultiSelectItem, prp: IGenericMultiSelectDropdownProps, key: number) => {
             const clrClass = `icon-circle bg-primary`;

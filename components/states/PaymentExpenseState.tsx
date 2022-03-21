@@ -42,7 +42,7 @@ const getInitExpenseTableData = () => ({
 
 export const IncomeExpensesContext = React.createContext({} as IIncomeExpensesContextValue);
 
-export function getIncomeExpensesContext() {
+export function useIncomeExpensesContext() {
     return useContext(IncomeExpensesContext);
 }
 export function PaymentExpenseStateWrapper(props: {
