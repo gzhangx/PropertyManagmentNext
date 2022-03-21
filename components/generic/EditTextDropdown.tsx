@@ -3,7 +3,7 @@ import { GenericDropdown, IGenericDropdownProps } from './GenericDropdown'
 
 export interface IEditTextDropdownItem {
     label: string;
-    value?: string;
+    value?: string | number;
 }
 
 interface IEditTextDropdownProps extends IGenericDropdownProps {    

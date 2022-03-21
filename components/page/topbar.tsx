@@ -36,8 +36,13 @@ export function TopBar(props) {
             </div>
         </form>
         <div>
-            <CheckBoxMultiSelect items={ownerSels} setSelected={sel => {                
-                paymentCtx.setSelectedOwners(sel)
+            <CheckBoxMultiSelect items={ownerSels} setSelected={sel => {
+                const selMap = sel.reduce((acc, s) => {
+                    acc[s.value] = true;
+                    return acc;
+                }, {                    
+                } as { [key: number]: boolean; });
+                paymentCtx.setSelectedOwners(paymentCtx.allOwners.filter(o=>selMap[o.ownerID]))
             }}/>
         </div>
 

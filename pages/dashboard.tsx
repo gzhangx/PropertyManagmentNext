@@ -19,16 +19,15 @@ export default withRouter(function MainDashboard(props) {
     
     <div>
       <div id="wrapper">
-        <MainSideBar reportPages={Object.keys(contents)}></MainSideBar>
-        {
-          contents[currentActivePage] || <div id="content-wrapper" className="d-flex flex-column">
+        <MainSideBar reportPages={Object.keys(contents)}></MainSideBar>        
+          <div id="content-wrapper" className="d-flex flex-column">
             <div id="content">
               <TopBar />
-              <OriginalDashboard />
+            {
+              contents[currentActivePage] || <OriginalDashboard />}
             </div>
             <Footer />
-          </div>
-        }
+          </div>        
       </div>                    
     </div>
   )

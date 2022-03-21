@@ -3,17 +3,16 @@ import { useState,  } from 'react';
 import { GenericMultiSelectDropdown, IGenericMultiSelectDropdownProps } from '../generic/GenericMultipleSelectDropdown'
 import { IEditTextDropdownItem} from '../generic/EditTextDropdown'
 
-interface ICheckBoxMultiSelectProps extends IGenericMultiSelectDropdownProps {
-    setSelected: (sel:IMultiSelectItem[]) => void;
+interface ICheckBoxMultiSelectProps  {
+    items: IEditTextDropdownItem[];
+    setSelected: (sel:IEditTextDropdownItem[]) => void;
 }
-interface IMultiSelectItem extends IEditTextDropdownItem {
-    selected: boolean;
-}
-export function CheckBoxMultiSelect(props: ICheckBoxMultiSelectProps) {
-    const items = props.items as IMultiSelectItem[];
-    const [selected, setSelectedInner] = useState<IMultiSelectItem[]>([]);
 
-    const setSelected = (itms: IMultiSelectItem[]) => {
+export function CheckBoxMultiSelect(props: ICheckBoxMultiSelectProps) {
+    const items = props.items as IEditTextDropdownItem[];
+    const [selected, setSelectedInner] = useState<IEditTextDropdownItem[]>([]);
+
+    const setSelected = (itms: IEditTextDropdownItem[]) => {
         setSelectedInner(itms);
         props.setSelected(itms);
     }
@@ -26,7 +25,7 @@ export function CheckBoxMultiSelect(props: ICheckBoxMultiSelectProps) {
     };
     return <GenericMultiSelectDropdown selected={selected}
         items={items}
-        renderItem={(item: IMultiSelectItem, prp: IGenericMultiSelectDropdownProps, key: number) => {
+        renderItem={(item: IEditTextDropdownItem, prp: IGenericMultiSelectDropdownProps, key: number) => {
             const clrClass = `icon-circle bg-primary`;
             const isSelected = selected.find(s => s.value === item.value);
             const iconClass = `fas text-white ${isSelected ? 'far fa-check-square' : 'far fa-square'}`
@@ -50,7 +49,7 @@ export function CheckBoxMultiSelect(props: ICheckBoxMultiSelectProps) {
             </a>
         }}
         renderSelected={
-            (items: IMultiSelectItem[], show: boolean, setShow) => {
+            (items: IEditTextDropdownItem[], show: boolean, setShow) => {
                 return <div style={
                     {
                         //outer most layer
