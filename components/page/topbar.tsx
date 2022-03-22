@@ -1,7 +1,7 @@
 import TinyIconNotify from './tinyIconNotify'
 import { useRootPageContext } from '../states/RootState'
 import { getLoginInfo } from '../api'
-import { uniqBy } from 'lodash'
+import { keyBy } from 'lodash'
 import { useIncomeExpensesContext } from '../states/PaymentExpenseState'
 
 import { CheckBoxMultiSelect } from '../uidatahelpers/CheckBoxMultiSelect'
@@ -11,10 +11,12 @@ export function TopBar(props) {
     const paymentCtx = useIncomeExpensesContext();
     const loginInfo = getLoginInfo();
     
-    const ownerSels = (!loginInfo || !loginInfo.ownerCodes)?[] : uniqBy(loginInfo.ownerCodes,'ownerID').map(r => {
+    const ownerByKey = keyBy(paymentCtx.allOwners, 'ownerID');
+    const ownerSels = (!loginInfo || !loginInfo.ownerPCodes) ? [] : (loginInfo.ownerPCodes).map(id => {
+        const r = ownerByKey[id] || {ownerID:id, ownerName:'Loading'};
         return {
             label: `${r.ownerID}-${r.ownerName}`,
-            value: r.ownerID,
+            value: id,
         }
     })
     return <nav className="navbar navbar-expand navbar-light bg-white topbar mb-4 static-top shadow">
