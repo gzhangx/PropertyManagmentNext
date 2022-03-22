@@ -16,18 +16,21 @@ export function DevelopPage() {
                             <div className="col mr-2">
                                 <div className="text-xs font-weight-bold text-uppercase mb-1 text-primary">Test Google</div>
                                 <div className="h5 mb-0 font-weight-bold text-gray-800">
-                                    <a href="#" className="d-none d-sm-inline-block btn btn-sm btn-primary shadow-sm"><i
-                                        className="fas fa-download fa-sm text-white-50"
-                                        onClick={e => {
+                                    <a href="#" className="d-none d-sm-inline-block btn btn-sm btn-primary shadow-sm"
+                                         onClick={e => {
                                             e.preventDefault();
-                                            console.log('shee tread')
-                                            googleSheetRead('', 'read', `'Tenants Info'!A1:B12`).then(r => {
+                                             console.log('shee tread')
+                                            //googleSheetRead('1UU9EYL7ZYpfHV6Jmd2CvVb6oBuQ6ekTR7AWXIlMvNCg', 'read', `'Tenants Info'!A1:B12`).then(r => {
+                                            googleSheetRead('1UU9EYL7ZYpfHV6Jmd2CvVb6oBuQ6ekTR7AWXIlMvNCg', 'read', `'Tenants Info'!A1:B12`).then(r => {
                                                 console.log(r);
+                                            }).catch(err => {
+                                                console.log(err);
                                             })
                                             console.log('done')
                                             e.stopPropagation();
                                         }}
-                                    ></i> Read Sheet
+                                    ><i
+                                        className="fas fa-download fa-sm text-white-50" ></i> Read Sheet
                                     </a>
                                 </div>
                             </div>
