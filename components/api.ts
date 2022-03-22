@@ -280,3 +280,9 @@ export async function getGoogleClientId() {
         };
     })
 }
+
+export async function googleSheetRead(id:string, op:string, range:string) {
+    return doPost(`/misc/rsheet/${op}/${id}/${range}`, null, 'GET').then(r => {
+        return r;
+    })
+}
