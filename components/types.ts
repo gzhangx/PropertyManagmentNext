@@ -1,3 +1,5 @@
+export type TYPEDBTables = 'ownerInfo' | 'rentPaymentInfo' | 'houseInfo';
+
 export type SortOps = '' | 'asc' | 'desc';
 export interface ISqlOrderDef {
     name: string;
