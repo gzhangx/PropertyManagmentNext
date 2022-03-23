@@ -2,10 +2,10 @@ import {
     getModel, sqlGet, sqlAdd, sqlDelete, ISqlRequestFieldDef,
     ISqlRequestWhereItem
 } from '../api';
-import { ISqlOrderDef } from '../types'
+import { ISqlOrderDef, IGetModelReturn, IDBFieldDef } from '../types'
 import { get } from 'lodash';
 const mod = {
-    models: {} as {[key:string]:string}
+    models: {} as {[key:string]:IGetModelReturn}
 }
 
 type IFieldType = (ISqlRequestFieldDef | string)[];
@@ -19,7 +19,7 @@ interface IOpts {
 export function createHelper(table: string) {
     if (!table) return null;
     const accModel = () => mod.models[table];
-    const accModelFields = () => get(accModel(), 'fields', []);
+    const accModelFields = () => get(accModel(), 'fields', [] as IDBFieldDef[]);
     return {
         getModelFields: accModelFields,
         loadModel: async () => {

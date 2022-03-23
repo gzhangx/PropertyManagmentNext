@@ -1,5 +1,6 @@
 
 import axios, { Method } from 'axios';
+import { IGetModelReturn } from './types'
 
 export interface ISiteConfig {
     baseUrl: string;
@@ -174,8 +175,8 @@ export function sqlDelete(table, id) {
     })
 }
 
-export async function getModel(name: string) {
-    return doPost(`getModel?name=${name}`, null, 'GET');
+export async function getModel(name: string) : Promise<IGetModelReturn> {
+    return doPost(`getModel?name=${name}`, null, 'GET') as Promise<IGetModelReturn>;
 }
 
 
