@@ -6,21 +6,22 @@ export function ImportPage() {
         pageName: string;
         range: string;
     }
-    const pages:IPageInfo[] = [
+    const pages: IPageInfo[] = [
         {
             pageName: 'Tenants Info',
             range: 'A1:G',
         },
         {
             pageName: 'Lease Info',
-            range:'A1:M',
+            range: 'A1:M',
         },
         {
             pageName: 'House Info',
-            range:'A1:I'
+            range: 'A1:I'
         }
     ];
     const [curOage, setCurrentPage] = useState<IPageInfo>();
+    const [pageDetails, setPageDetails] = useState<any[]>([]);
     const sheetId = '1UU9EYL7ZYpfHV6Jmd2CvVb6oBuQ6ekTR7AWXIlMvNCg';
     return <div className="container-fluid">
         <div className="d-sm-flex align-items-center justify-content-between mb-4">
@@ -31,7 +32,7 @@ export function ImportPage() {
                     return {
                         label: p.pageName,
                         value: p,
-                }
+                    }
                 })
                 }
                     onSelectionChanged={sel => {
@@ -60,6 +61,7 @@ export function ImportPage() {
                                             if (curOage) {
                                                 googleSheetRead(sheetId, 'read', `'${curOage.pageName}'!${curOage.range}`).then(r => {
                                                     console.log(r);
+                                                    setPageDetails(r.values);
                                                 }).catch(err => {
                                                     console.log(err);
                                                 })
@@ -82,7 +84,30 @@ export function ImportPage() {
         </div>
 
         <div className="row">
-        
+            <table className='table'>
+                <thead>
+                    <tr>
+                        {
+                            pageDetails && pageDetails[0] && pageDetails[0].map((d, key) => {
+                                return <td key={key}>{d}</td>
+                            })
+                        }
+                    </tr>
+                </thead>
+                <tbody>
+                {
+                    pageDetails && pageDetails.map((p, ind) => {
+                        if (!ind) return null;
+                        return <tr key={ind}>{
+                            p.map((cell,ck) => {
+                                return <td key={ck}>{ cell}</td>
+                            })
+                        }</tr>
+                    })
+                } 
+                </tbody>
+            </table>
+            
         </div>
     </div>
 }
