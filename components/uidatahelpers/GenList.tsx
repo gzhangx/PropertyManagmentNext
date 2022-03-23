@@ -6,9 +6,11 @@ import { createHelper, LoadMapperType } from './datahelpers';
 import { getFKDefs } from './GenCrudTableFkTrans';
 import { useRootPageContext } from '../states/RootState'
 
+import { TYPEDBTables } from '../types'
+
 type IDisplayFieldType = ({ field: string; desc: string; } | string)[];
 interface IGenListProps { //copied from gencrud, need combine and refactor later
-    table: string;
+    table: TYPEDBTables;
     columnInfo: IColumnInfo[];    
     displayFields?: IDisplayFieldType;
     loadMapper?: LoadMapperType;
