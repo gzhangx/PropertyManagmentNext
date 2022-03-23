@@ -282,7 +282,7 @@ export async function getGoogleClientId() {
 }
 
 export async function googleSheetRead(id:string, op:string, range:string) {
-    return doPost(`/misc/rsheet/${op}/${id}/${range}`, null, 'GET').then(r => {
+    return doPost(`misc/sheet/${op}/${id}/${range}`, {}).then(r => {
         return r;
     })
 }
