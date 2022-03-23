@@ -1,13 +1,46 @@
-import React from 'react';
-import { googleSheetRead } from '../../components/api'
-import { ImportPage} from '../../components/page/imports/import'
-export function DevelopPage() {
-
+import React, { useState } from 'react';
+import { googleSheetRead } from '../../api'
+import { EditTextDropdown} from '../../generic/EditTextDropdown'
+export function ImportPage() {
+    interface IPageInfo {
+        pageName: string;
+        range: string;
+    }
+    const pages:IPageInfo[] = [
+        {
+            pageName: 'Tenants Info',
+            range: 'A1:G',
+        },
+        {
+            pageName: 'Lease Info',
+            range:'A1:M',
+        },
+        {
+            pageName: 'House Info',
+            range:'A1:I'
+        }
+    ];
+    const [curOage, setCurrentPage] = useState<IPageInfo>();
     const sheetId = '1UU9EYL7ZYpfHV6Jmd2CvVb6oBuQ6ekTR7AWXIlMvNCg';
     return <div className="container-fluid">
-        <ImportPage/>
         <div className="d-sm-flex align-items-center justify-content-between mb-4">
+            
             <h1 className="h3 mb-0 text-gray-800">Develop</h1>
+            <div className='row'>
+                <EditTextDropdown items={pages.map(p => {
+                    return {
+                        label: p.pageName,
+                        value: p,
+                }
+                })
+                }
+                    onSelectionChanged={sel => {
+                        if (sel) {
+                            setCurrentPage(sel.value);
+                        }
+                    }}
+                ></EditTextDropdown>
+            </div>
             <a href='' onClick={e => {
                 e.preventDefault();
                 console.log('test clicked')
@@ -20,16 +53,18 @@ export function DevelopPage() {
                                 <div className="text-xs font-weight-bold text-uppercase mb-1 text-primary">Test Google</div>
                                 <div className="h5 mb-0 font-weight-bold text-gray-800">
                                     <a href="#" className="d-none d-sm-inline-block btn btn-sm btn-primary shadow-sm"
-                                         onClick={e => {
+                                        onClick={e => {
                                             e.preventDefault();
-                                             console.log('shee tread')
+                                            console.log('shee tread')
                                             //googleSheetRead('1UU9EYL7ZYpfHV6Jmd2CvVb6oBuQ6ekTR7AWXIlMvNCg', 'read', `'Tenants Info'!A1:B12`).then(r => {
-                                            googleSheetRead(sheetId, 'read', `'Tenants Info'!A1:B`).then(r => {
-                                                console.log(r);
-                                            }).catch(err => {
-                                                console.log(err);
-                                            })
-                                            console.log('done')
+                                            if (curOage) {
+                                                googleSheetRead(sheetId, 'read', `'${curOage.pageName}'!${curOage.range}`).then(r => {
+                                                    console.log(r);
+                                                }).catch(err => {
+                                                    console.log(err);
+                                                })
+                                                console.log('done')
+                                            }
                                             e.stopPropagation();
                                         }}
                                     ><i
