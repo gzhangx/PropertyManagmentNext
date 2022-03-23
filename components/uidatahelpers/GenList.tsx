@@ -6,10 +6,11 @@ import { createHelper, LoadMapperType } from './datahelpers';
 import { getFKDefs } from './GenCrudTableFkTrans';
 import { useRootPageContext } from '../states/RootState'
 
+type IDisplayFieldType = ({ field: string; desc: string; } | string)[];
 interface IGenListProps { //copied from gencrud, need combine and refactor later
     table: string;
     columnInfo: IColumnInfo[];    
-    displayFields?: ({ field: string; desc: string; } | string)[];
+    displayFields?: IDisplayFieldType;
     loadMapper?: LoadMapperType;
     fkDefs?: IFKDefs;
     initialPageSize?: number;    
@@ -73,7 +74,7 @@ export function GenList(props: IGenListProps) {
     useEffect(() => {
         const ld=async () => {                        
             await helper.loadModel();
-            setColumnInf(helper.getModelFields());
+            setColumnInf(helper.getModelFields() as IColumnInfo[]);
             //if(columnInfo) {
             //    setColumnInf(columnInfo);
             //}
@@ -100,7 +101,7 @@ export function GenList(props: IGenListProps) {
             reload();
         })
     }
-    const displayFields=props.displayFields||helper.getModelFields().map(f => f.isId? null:f).filter(x => x);
+    const displayFields=props.displayFields||helper.getModelFields().map(f => f.isId? null:f).filter(x => x) as IDisplayFieldType;
     return <div>
         <p className='subHeader'>{props.title}</p>
         {

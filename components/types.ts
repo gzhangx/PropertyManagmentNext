@@ -37,7 +37,7 @@ export type PossibleDbTypes = (string | number | null | Date);
 export interface IDBFieldDef {
     field: string; //actual field
     name?: string; //name
-    desc: string;
+    desc?: string;
     type?: '' | undefined | 'int' | 'string' | 'date' | 'datetime'| 'decimal' | 'uuid';
     size?: string;
     required?: boolean;

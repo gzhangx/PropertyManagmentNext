@@ -5,16 +5,17 @@ import { EditTextDropdown, IEditTextDropdownItem, } from '../generic/EditTextDro
 import * as bluebird from 'bluebird';
 import {Dialog, createDialogPrms} from '../dialog'
 import { IFKDefs } from './GenCrudTableFkTrans'
-export interface IColumnInfo {
-    field: string;
-    isId?: boolean;
-    required?: boolean;
-    foreignKey?: {
-        table: string;
-        field: string;
-    };
+import { IDBFieldDef } from '../types';
+export interface IColumnInfo extends IDBFieldDef {
+    //field: string;
+    //isId?: boolean;
+    //required?: boolean;
+    //foreignKey?: {
+    //    table: string;
+    //    field: string;
+    //};
     dontShowOnEdit?: boolean;
-    desc?: string;
+    //desc?: string;
     dspFunc: (x: string) => string;
 }
 
