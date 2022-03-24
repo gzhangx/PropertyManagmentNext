@@ -6,6 +6,7 @@ export function ImportPage() {
         pageName: string;
         range: string;
         fieldMap?: string[];
+        idField?: string;
     }
     interface IDataDetails {
         columns: string[];
@@ -32,7 +33,8 @@ export function ImportPage() {
                 '', //rooms
                 '', //sqrt
                 '=OwnerIDCreateByOwnerName'
-            ]
+            ],
+            idField:'address',
         }
     ];
     const [curPage, setCurrentPage] = useState<IPageInfo>();
@@ -94,10 +96,14 @@ export function ImportPage() {
                                                             return curPage.fieldMap.reduce((acc, f, ind) => {
                                                                 if (f) {
                                                                     acc[f] = rr[ind];
+                                                                    if (f === '=OwnerIDCreateByOwnerName') {
+                                                                        acc[f] = '=' + rr[ind]
+                                                                    }
+                                                                    //console.log(`setting accf ${f} to ${acc[f]}`)
                                                                 }
                                                                 return acc;
                                                             }, {} as { [key: string]: string; });
-                                                        });
+                                                        }).filter(x=>x[curPage.idField]);
                                                         setPageDetails({
                                                             columns,
                                                             rows,
@@ -158,7 +164,6 @@ export function ImportPage() {
                             }
                             return <tr key={ind}>{
                                 keys.map((key, ck) => {
-                                    console.log(`value for ${key} is ${p[key]}`)
                                     return <td key={ck}>{p[key]}</td>
                                 })
                             }</tr>
