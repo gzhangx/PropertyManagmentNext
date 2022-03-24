@@ -5,6 +5,13 @@ export function ImportPage() {
     interface IPageInfo {
         pageName: string;
         range: string;
+        fieldMap?: string[];
+    }
+    interface IDataDetails {
+        columns: string[];
+        rows: {
+            [key: string]: string;
+        }[];
     }
     const pages: IPageInfo[] = [
         {
@@ -17,11 +24,19 @@ export function ImportPage() {
         },
         {
             pageName: 'House Info',
-            range: 'A1:I'
+            range: 'A1:I',
+            fieldMap: [
+                '', 'address', 'city', 'zip',
+                '', //type
+                '', //beds
+                '', //rooms
+                '', //sqrt
+                '=OwnerIDCreateByOwnerName'
+            ]
         }
     ];
-    const [curOage, setCurrentPage] = useState<IPageInfo>();
-    const [pageDetails, setPageDetails] = useState<any[]>([]);
+    const [curPage, setCurrentPage] = useState<IPageInfo>();
+    const [pageDetails, setPageDetails] = useState<IDataDetails>();
     const sheetId = '1UU9EYL7ZYpfHV6Jmd2CvVb6oBuQ6ekTR7AWXIlMvNCg';
     return <div className="container-fluid">
         <div className="d-sm-flex align-items-center justify-content-between mb-4">
@@ -58,10 +73,48 @@ export function ImportPage() {
                                             e.preventDefault();
                                             console.log('shee tread')
                                             //googleSheetRead('1UU9EYL7ZYpfHV6Jmd2CvVb6oBuQ6ekTR7AWXIlMvNCg', 'read', `'Tenants Info'!A1:B12`).then(r => {
-                                            if (curOage) {
-                                                googleSheetRead(sheetId, 'read', `'${curOage.pageName}'!${curOage.range}`).then(r => {
+                                            if (curPage) {
+                                                googleSheetRead(sheetId, 'read', `'${curPage.pageName}'!${curPage.range}`).then((r: {
+                                                    values: string[][];
+                                                }) => {
+                                                    console.log('googlesheet results');
                                                     console.log(r);
-                                                    setPageDetails(r.values);
+                                                    if (!r || !r.values.length) {
+                                                        console.log(`no data for ${curPage.pageName}`);
+                                                        return;
+                                                    }
+                                                    if (curPage.fieldMap) {
+                                                        const columns = curPage.fieldMap.reduce((acc, f, ind) => {
+                                                            if (f) {
+                                                                acc.push(r.values[0][ind]);
+                                                            }
+                                                            return acc;
+                                                        }, [] as string[]);
+                                                        const rows = r.values.slice(1).map(rr => {
+                                                            return curPage.fieldMap.reduce((acc, f, ind) => {
+                                                                if (f) {
+                                                                    acc[f] = rr[ind];
+                                                                }
+                                                                return acc;
+                                                            }, {} as { [key: string]: string; });
+                                                        });
+                                                        setPageDetails({
+                                                            columns,
+                                                            rows,
+                                                        })
+                                                    } else {
+                                                        const columns = r.values[0];
+                                                        const rows = r.values.slice(1).map(r => {
+                                                            return r.reduce((acc, rr, ind) => {
+                                                                acc[ind.toString()] = rr;
+                                                                return acc;
+                                                            }, {} as { [key: string]: string; });
+                                                        })
+                                                        setPageDetails({
+                                                            columns,
+                                                            rows,
+                                                        });
+                                                    }
                                                 }).catch(err => {
                                                     console.log(err);
                                                 })
@@ -88,23 +141,29 @@ export function ImportPage() {
                 <thead>
                     <tr>
                         {
-                            pageDetails && pageDetails[0] && pageDetails[0].map((d, key) => {
+                            pageDetails && pageDetails.columns && pageDetails.columns.map((d, key) => {
                                 return <td key={key}>{d}</td>
                             })
                         }
                     </tr>
                 </thead>
                 <tbody>
-                {
-                    pageDetails && pageDetails.map((p, ind) => {
-                        if (!ind) return null;
-                        return <tr key={ind}>{
-                            p.map((cell,ck) => {
-                                return <td key={ck}>{ cell}</td>
-                            })
-                        }</tr>
-                    })
-                } 
+                    {
+                        pageDetails && pageDetails.rows.map((p, ind) => {
+                            let keys = curPage.fieldMap;
+                            if (!keys) {
+                                keys = pageDetails.columns.map((d, ind)=>ind.toString());
+                            } else {
+                                keys = keys.filter(x => x);
+                            }
+                            return <tr key={ind}>{
+                                keys.map((key, ck) => {
+                                    console.log(`value for ${key} is ${p[key]}`)
+                                    return <td key={ck}>{p[key]}</td>
+                                })
+                            }</tr>
+                        })
+                    }
                 </tbody>
             </table>
             
