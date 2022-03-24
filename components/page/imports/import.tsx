@@ -1,17 +1,26 @@
-import React, { useState } from 'react';
-import { googleSheetRead } from '../../api'
-import { EditTextDropdown} from '../../generic/EditTextDropdown'
+import React, { useState, useEffect } from 'react';
+import { googleSheetRead, getOwners } from '../../api'
+import { EditTextDropdown } from '../../generic/EditTextDropdown'
+import { IOwnerInfo } from '../../reportTypes';
+import { keyBy, omit} from 'lodash'
+
+type ALLFieldNames = ''|'address'|'city'|'zip'| 'OwnerIDCreateByOwnerName';
 export function ImportPage() {
     interface IPageInfo {
         pageName: string;
         range: string;
-        fieldMap?: string[];
-        idField?: string;
+        fieldMap?: ALLFieldNames[];
+        idField?: ALLFieldNames;
     }
+
+    interface IDataDetailsData {
+        action: 'label' | 'OwnerIDCreateByOwnerName';
+        value: string;
+    };
     interface IDataDetails {
         columns: string[];
         rows: {
-            [key: string]: string;
+            [key: string]:IDataDetailsData;
         }[];
     }
     const pages: IPageInfo[] = [
@@ -32,13 +41,29 @@ export function ImportPage() {
                 '', //beds
                 '', //rooms
                 '', //sqrt
-                '=OwnerIDCreateByOwnerName'
+                'OwnerIDCreateByOwnerName'
             ],
             idField:'address',
         }
     ];
     const [curPage, setCurrentPage] = useState<IPageInfo>();
     const [pageDetails, setPageDetails] = useState<IDataDetails>();
+    const [existingOwnersByName, setExistingOwnersByName] = useState<{ [addr: string]: IOwnerInfo }>();
+    const [missingOwnersByName, setMissingOwnersByName] = useState<{ [addr:string]:IOwnerInfo }>();
+
+    useEffect(() => {
+        getOwners().then(own => {
+            setExistingOwnersByName(keyBy(own, 'ownerName'));
+        });
+    }, []);
+
+    useEffect(() => {
+        if (!curPage || !curPage.fieldMap) return;
+        const ownerField = curPage.fieldMap.find(f => f === 'OwnerIDCreateByOwnerName');
+        if (ownerField) {
+            //pageDetails.rows.filter
+        }
+    },[curPage, existingOwnersByName])
     const sheetId = '1UU9EYL7ZYpfHV6Jmd2CvVb6oBuQ6ekTR7AWXIlMvNCg';
     return <div className="container-fluid">
         <div className="d-sm-flex align-items-center justify-content-between mb-4">
@@ -95,15 +120,19 @@ export function ImportPage() {
                                                         const rows = r.values.slice(1).map(rr => {
                                                             return curPage.fieldMap.reduce((acc, f, ind) => {
                                                                 if (f) {
-                                                                    acc[f] = rr[ind];
-                                                                    if (f === '=OwnerIDCreateByOwnerName') {
-                                                                        acc[f] = '=' + rr[ind]
+                                                                    const data: IDataDetailsData = {
+                                                                        action: 'label',
+                                                                        value: rr[ind],
+                                                                    }
+                                                                    acc[f] = data;
+                                                                    if (f === 'OwnerIDCreateByOwnerName') {
+                                                                        data.value = '=' + rr[ind]
                                                                     }
                                                                     //console.log(`setting accf ${f} to ${acc[f]}`)
                                                                 }
                                                                 return acc;
-                                                            }, {} as { [key: string]: string; });
-                                                        }).filter(x=>x[curPage.idField]);
+                                                            }, {} as { [key: string]: IDataDetailsData; });
+                                                        }).filter(x=>x[curPage.idField].value);
                                                         setPageDetails({
                                                             columns,
                                                             rows,
@@ -111,10 +140,13 @@ export function ImportPage() {
                                                     } else {
                                                         const columns = r.values[0];
                                                         const rows = r.values.slice(1).map(r => {
-                                                            return r.reduce((acc, rr, ind) => {
-                                                                acc[ind.toString()] = rr;
+                                                            return r.reduce((acc, celVal, ind) => {
+                                                                acc[ind.toString()] = {
+                                                                    action: 'label',
+                                                                    value: celVal,
+                                                                };
                                                                 return acc;
-                                                            }, {} as { [key: string]: string; });
+                                                            }, {} as { [key: string]: IDataDetailsData; });
                                                         })
                                                         setPageDetails({
                                                             columns,
@@ -156,7 +188,7 @@ export function ImportPage() {
                 <tbody>
                     {
                         pageDetails && pageDetails.rows.map((p, ind) => {
-                            let keys = curPage.fieldMap;
+                            let keys = curPage.fieldMap as string[];
                             if (!keys) {
                                 keys = pageDetails.columns.map((d, ind)=>ind.toString());
                             } else {
@@ -164,7 +196,7 @@ export function ImportPage() {
                             }
                             return <tr key={ind}>{
                                 keys.map((key, ck) => {
-                                    return <td key={ck}>{p[key]}</td>
+                                    return <td key={ck}>{p[key].value}</td>
                                 })
                             }</tr>
                         })
