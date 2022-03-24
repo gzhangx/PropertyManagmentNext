@@ -4,8 +4,10 @@ import { EditTextDropdown } from '../../generic/EditTextDropdown'
 import { IOwnerInfo } from '../../reportTypes';
 import { keyBy, omit} from 'lodash'
 
+import { CloseableDialog} from '../../generic/basedialog'
 type ALLFieldNames = ''|'address'|'city'|'zip'| 'OwnerIDCreateByOwnerName';
 export function ImportPage() {
+    const [dlgContent, setDlgContent] = useState<JSX.Element>(null);
     interface IPageInfo {
         pageName: string;
         range: string;
@@ -20,7 +22,7 @@ export function ImportPage() {
     interface IDataDetails {
         columns: string[];
         rows: {
-            [key: string]:IDataDetailsData;
+            [key: string]:IDataDetailsData; //key is of ALLFieldNames
         }[];
     }
     const pages: IPageInfo[] = [
@@ -48,8 +50,8 @@ export function ImportPage() {
     ];
     const [curPage, setCurrentPage] = useState<IPageInfo>();
     const [pageDetails, setPageDetails] = useState<IDataDetails>();
-    const [existingOwnersByName, setExistingOwnersByName] = useState<{ [addr: string]: IOwnerInfo }>();
-    const [missingOwnersByName, setMissingOwnersByName] = useState<{ [addr:string]:IOwnerInfo }>();
+    const [existingOwnersByName, setExistingOwnersByName] = useState<{ [ownerName: string]: IOwnerInfo }>();
+    const [missingOwnersByName, setMissingOwnersByName] = useState<{ [ownerName: string]: boolean }>({});
 
     useEffect(() => {
         getOwners().then(own => {
@@ -60,12 +62,21 @@ export function ImportPage() {
     useEffect(() => {
         if (!curPage || !curPage.fieldMap) return;
         const ownerField = curPage.fieldMap.find(f => f === 'OwnerIDCreateByOwnerName');
-        if (ownerField) {
-            //pageDetails.rows.filter
+        if (ownerField && pageDetails) {
+            const missing = pageDetails.rows.reduce((acc, r) => {
+                if (!existingOwnersByName[r['OwnerIDCreateByOwnerName'].value]) {
+                    acc[r['OwnerIDCreateByOwnerName'].value] = true;
+                }
+                return acc;
+            }, {} as { [ownerName: string]: boolean; });
+            setMissingOwnersByName(missing);
         }
-    },[curPage, existingOwnersByName])
+    },[curPage, existingOwnersByName, pageDetails])
     const sheetId = '1UU9EYL7ZYpfHV6Jmd2CvVb6oBuQ6ekTR7AWXIlMvNCg';
     return <div className="container-fluid">
+        <CloseableDialog children={dlgContent} show={dlgContent != null} setShow={() => {
+            setDlgContent(null);
+        } }/>
         <div className="d-sm-flex align-items-center justify-content-between mb-4">
             
             <h1 className="h3 mb-0 text-gray-800">Develop</h1>
@@ -124,10 +135,10 @@ export function ImportPage() {
                                                                         action: 'label',
                                                                         value: rr[ind],
                                                                     }
-                                                                    acc[f] = data;
                                                                     if (f === 'OwnerIDCreateByOwnerName') {
-                                                                        data.value = '=' + rr[ind]
+                                                                        data.action = 'OwnerIDCreateByOwnerName';
                                                                     }
+                                                                    acc[f] = data;                                                                    
                                                                     //console.log(`setting accf ${f} to ${acc[f]}`)
                                                                 }
                                                                 return acc;
@@ -194,9 +205,26 @@ export function ImportPage() {
                             } else {
                                 keys = keys.filter(x => x);
                             }
+                            const dspAction = (dta: IDataDetailsData) => {
+                                if (dta.action === 'label') return dta.value;
+                                if (dta.action === 'OwnerIDCreateByOwnerName') {
+                                    if ( missingOwnersByName[dta.value])
+                                        return <button onClick={() => {
+                                            setDlgContent(<div>
+                                                {dta.value}
+                                            </div>)
+                                        }}>{ dta.value}</button>
+                                    else {
+                                        return dta.value+" ok";
+                                    }
+                                }
+                                return dta.value;
+                            }
                             return <tr key={ind}>{
                                 keys.map((key, ck) => {
-                                    return <td key={ck}>{p[key].value}</td>
+                                    return <td key={ck}>{
+                                        dspAction(p[key])
+                                    }</td>
                                 })
                             }</tr>
                         })
