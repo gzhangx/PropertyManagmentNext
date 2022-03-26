@@ -157,7 +157,7 @@ export async function sqlGet(input: ISqlRequest): Promise<any> {
     return doPost(`sql/get`, input);
 }
 
-export async function sqlAdd(table, fields, create) {
+export async function sqlAdd(table: string, fields: { [key: string]: string | number; }, create:boolean) {
     //     "table":"tenantInfo",
     //     "fields":{"tenantID":"289a8120-01fd-11eb-8993-ab1bf8206feb", "firstName":"gang", "lastName":"testlong"},
     //    "create":true

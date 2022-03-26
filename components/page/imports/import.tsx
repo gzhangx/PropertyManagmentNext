@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { googleSheetRead, getOwners } from '../../api'
+import { googleSheetRead, getOwners, sqlAdd } from '../../api'
 import { EditTextDropdown } from '../../generic/EditTextDropdown'
 import { IOwnerInfo } from '../../reportTypes';
 import { keyBy, omit} from 'lodash'
 
-import { CloseableDialog} from '../../generic/basedialog'
+import { BaseDialog} from '../../generic/basedialog'
 type ALLFieldNames = ''|'address'|'city'|'zip'| 'OwnerIDCreateByOwnerName';
 export function ImportPage() {
     const [dlgContent, setDlgContent] = useState<JSX.Element>(null);
@@ -53,10 +53,13 @@ export function ImportPage() {
     const [existingOwnersByName, setExistingOwnersByName] = useState<{ [ownerName: string]: IOwnerInfo }>();
     const [missingOwnersByName, setMissingOwnersByName] = useState<{ [ownerName: string]: boolean }>({});
 
-    useEffect(() => {
-        getOwners().then(own => {
+    const refresOwners = () => {
+        return getOwners().then(own => {
             setExistingOwnersByName(keyBy(own, 'ownerName'));
         });
+    }
+    useEffect(() => {
+        refresOwners();
     }, []);
 
     useEffect(() => {
@@ -64,8 +67,11 @@ export function ImportPage() {
         const ownerField = curPage.fieldMap.find(f => f === 'OwnerIDCreateByOwnerName');
         if (ownerField && pageDetails) {
             const missing = pageDetails.rows.reduce((acc, r) => {
-                if (!existingOwnersByName[r['OwnerIDCreateByOwnerName'].value]) {
-                    acc[r['OwnerIDCreateByOwnerName'].value] = true;
+                const ownerIdField = r['OwnerIDCreateByOwnerName'];
+                if (ownerField) {
+                    if (!existingOwnersByName[ownerIdField.value]) {
+                        acc[ownerIdField.value] = true;
+                    }
                 }
                 return acc;
             }, {} as { [ownerName: string]: boolean; });
@@ -73,10 +79,85 @@ export function ImportPage() {
         }
     },[curPage, existingOwnersByName, pageDetails])
     const sheetId = '1UU9EYL7ZYpfHV6Jmd2CvVb6oBuQ6ekTR7AWXIlMvNCg';
+
+
+    const createOwnerFunc = (ownerName: string, password:string) => {
+        return <div className="col-lg-12 mb-4">
+            <div className="card shadow mb-4 lg-6">
+                <div className="card-header py-3">
+                    <h6 className="m-0 font-weight-bold text-primary">Projects</h6>
+                </div>
+                <div className="card-body">
+                    <h4 className="small font-weight-bold">Server Migration <span
+                        className="float-right">20%</span></h4>
+                    <div className="progress mb-4">
+                        <div className="progress-bar bg-danger" style={{ width: '20%' }}
+                            aria-valuenow={20} aria-valuemin={0} aria-valuemax={100}></div>
+                    </div>
+                    <h4 className="small font-weight-bold">Sales Tracking <span
+                        className="float-right">40%</span></h4>
+                    <div className="progress mb-4">
+                        <div className="progress-bar bg-warning" style={{ width: '40%' }}
+                            aria-valuenow={40} aria-valuemin={0} aria-valuemax={100}></div>
+                    </div>
+                    <h4 className="small font-weight-bold">Customer Database <span
+                        className="float-right">60%</span></h4>
+                    <div className="progress mb-4">
+                        <div className="progress-bar" style={{ width: '60%' }}
+                            aria-valuenow={60} aria-valuemin={0} aria-valuemax={100}></div>
+                    </div>
+                    <h4 className="small font-weight-bold">Payout Details <span
+                        className="float-right">80%</span></h4>
+                    <div className="progress mb-4">
+                        <div className="progress-bar bg-info" role="progressbar" style={{ width: '80%' }}
+                            aria-valuenow={80} aria-valuemin={0} aria-valuemax={100}></div>
+                    </div>
+                    <h4 className="small font-weight-bold">Account Setup <span
+                        className="float-right">Complete!</span></h4>
+                    <div className="progress">
+                        <div className="progress-bar bg-success" role="progressbar" style={{ width: '100%' }}
+                            aria-valuenow={100} aria-valuemin={0} aria-valuemax={100}></div>
+                    </div>
+                </div>
+            </div>
+
+            <div className="row">
+                <div className="col-lg-12 mb-4">
+                    <div className="card bg-light text-black shadow">
+                        <div className="card-body" style={{ display: 'flex', justifyContent:'flex-end'}}>
+                            <button className='btn btn-primary mx-1' onClick={() => {
+                                sqlAdd('ownerInfo', 
+                                    {      
+                                        ownerName,
+                                        username: ownerName,
+                                        password,
+                                        shortName: ownerName,
+                                    }, true                                
+                                ).then(res => {
+                                    console.log('sql add owner');
+                                    console.log(res)
+                                    return refresOwners().then(() => {
+                                        setDlgContent(null);  
+                                    })                                    
+                                }).catch(err => {
+                                    console.log('sql add owner err');
+                                    console.log(err)
+                                })
+                            }}>Create</button>
+
+                            <button className='btn btn-success' onClick={() => {
+                                setDlgContent(null);
+                            }}>Close</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    };
+
     return <div className="container-fluid">
-        <CloseableDialog children={dlgContent} show={dlgContent != null} setShow={() => {
-            setDlgContent(null);
-        } }/>
+        <BaseDialog children={dlgContent} show={dlgContent != null} />
         <div className="d-sm-flex align-items-center justify-content-between mb-4">
             
             <h1 className="h3 mb-0 text-gray-800">Develop</h1>
@@ -205,15 +286,14 @@ export function ImportPage() {
                             } else {
                                 keys = keys.filter(x => x);
                             }
-                            const dspAction = (dta: IDataDetailsData) => {
+                            const dspAction = (dta: IDataDetailsData) => {                                
+                                if (!dta) return '';
                                 if (dta.action === 'label') return dta.value;
                                 if (dta.action === 'OwnerIDCreateByOwnerName') {
                                     if ( missingOwnersByName[dta.value])
                                         return <button onClick={() => {
-                                            setDlgContent(<div>
-                                                {dta.value}
-                                            </div>)
-                                        }}>{ dta.value}</button>
+                                            setDlgContent(createOwnerFunc(dta.value))
+                                        }}> Click to create { dta.value}</button>
                                     else {
                                         return dta.value+" ok";
                                     }

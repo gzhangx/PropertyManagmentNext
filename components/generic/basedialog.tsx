@@ -3,11 +3,12 @@ import react, { Dispatch, SetStateAction, useState } from "react";
 interface IGenericDialogProps {
     children:any;
     show: boolean;
+    raw?: boolean;
 }
 export function BaseDialog(props: IGenericDialogProps) {
-    const { children, show, } = props;
+    const { children, show, raw} = props;
     const dspClassName = `modal ${show ? ' modal-show ' : 'modal'}`;
-    return <div className={dspClassName} tabIndex={-1} role="dialog">
+    return raw?children:<div className={dspClassName} tabIndex={-1} role="dialog">
         <div className="modal-dialog" role="document">
             <div className="modal-content">
                 {children}
