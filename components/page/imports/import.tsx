@@ -1,18 +1,25 @@
 import React, { useState, useEffect } from 'react';
-import { googleSheetRead, getOwners, sqlAdd } from '../../api'
+import { googleSheetRead, getOwners, sqlAdd, getHouseInfo } from '../../api'
 import { EditTextDropdown } from '../../generic/EditTextDropdown'
-import { IOwnerInfo } from '../../reportTypes';
+import { IOwnerInfo, IHouseInfo } from '../../reportTypes';
 import { keyBy, omit} from 'lodash'
 
 import { BaseDialog} from '../../generic/basedialog'
 type ALLFieldNames = ''|'address'|'city'|'zip'| 'OwnerIDCreateByOwnerName';
 export function ImportPage() {
     const [dlgContent, setDlgContent] = useState<JSX.Element>(null);
+    const [houseInfos, setHouseInfos] = useState<{
+        houses: IHouseInfo[];
+        houseByName: {
+            [address: string]: IHouseInfo;
+        }
+    }>(null);
     interface IPageInfo {
         pageName: string;
         range: string;
         fieldMap?: ALLFieldNames[];
         idField?: ALLFieldNames;
+        pageLoader?: () => Promise<void>;
     }
 
     interface IDataDetailsData {
@@ -45,7 +52,32 @@ export function ImportPage() {
                 '', //sqrt
                 'OwnerIDCreateByOwnerName'
             ],
-            idField:'address',
+            idField: 'address',
+            pageLoader: async () => {
+                if (!houseInfos) {
+                    const hi = await getHouseInfo();
+                    setHouseInfos({
+                        houses: hi,
+                        houseByName: hi.reduce((acc, h) => {
+                            acc[h.address] = h;
+                            return acc;
+                        }, {} as { [addr: string]: IHouseInfo; }),
+                    });
+                }
+                const ownerField = curPage.fieldMap.find(f => f === 'OwnerIDCreateByOwnerName');
+                if (ownerField && pageDetails) {
+                    const missing = pageDetails.rows.reduce((acc, r) => {
+                        const ownerIdField = r['OwnerIDCreateByOwnerName'];
+                        if (ownerField) {
+                            if (!existingOwnersByName[ownerIdField.value]) {
+                                acc[ownerIdField.value] = true;
+                            }
+                        }
+                        return acc;
+                    }, {} as { [ownerName: string]: boolean; });
+                    setMissingOwnersByName(missing);
+                }
+            }
         }
     ];
     const [curPage, setCurrentPage] = useState<IPageInfo>();
@@ -63,25 +95,14 @@ export function ImportPage() {
     }, []);
 
     useEffect(() => {
-        if (!curPage || !curPage.fieldMap) return;
-        const ownerField = curPage.fieldMap.find(f => f === 'OwnerIDCreateByOwnerName');
-        if (ownerField && pageDetails) {
-            const missing = pageDetails.rows.reduce((acc, r) => {
-                const ownerIdField = r['OwnerIDCreateByOwnerName'];
-                if (ownerField) {
-                    if (!existingOwnersByName[ownerIdField.value]) {
-                        acc[ownerIdField.value] = true;
-                    }
-                }
-                return acc;
-            }, {} as { [ownerName: string]: boolean; });
-            setMissingOwnersByName(missing);
-        }
-    },[curPage, existingOwnersByName, pageDetails])
+        if (!curPage || !curPage.fieldMap || !curPage.pageLoader) return;
+        curPage.pageLoader();
+    }, [curPage, existingOwnersByName, pageDetails])
+        
     const sheetId = '1UU9EYL7ZYpfHV6Jmd2CvVb6oBuQ6ekTR7AWXIlMvNCg';
 
 
-    const createOwnerFunc = (ownerName: string, password:string) => {
+    const createOwnerFunc = (ownerName: string, password='1') => {
         return <div className="col-lg-12 mb-4">
             <div className="card shadow mb-4 lg-6">
                 <div className="card-header py-3">

@@ -144,7 +144,7 @@ export interface ISqlRequest {
     fields?: (ISqlRequestFieldDef | string)[];
     joins?: any;
     order?: ISqlOrderDef[];
-    whereArray: ISqlRequestWhereItem[];
+    whereArray?: ISqlRequestWhereItem[];
     groupByArray?: {
         field: string;
     }[];
@@ -222,6 +222,20 @@ export async function getHouseAnchorInfo(ownerInfos: IOwnerInfo[]): Promise<IHou
                 isAnchor: r.address.includes('1633'),
             } as IHouseAnchorInfo;
         }).filter(x=>x.address);
+    });    
+}
+
+export async function getHouseInfo(): Promise<IHouseInfo[]> {
+    return sqlGet({
+        fields: ['houseID','address','city','zip'],
+        table: 'houseInfo',
+        //whereArray: [{
+            //field: 'ownerID',
+            //op: 'in',
+            //val: ownerInfos.map(o=>o.ownerID),
+        //}],        
+    }).then((r: { rows: IHouseInfo[]}) => {
+        return r.rows.filter(x=>x.address);
     });    
 }
 
