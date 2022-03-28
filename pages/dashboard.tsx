@@ -14,7 +14,6 @@ export default withRouter(function MainDashboard(props) {
   const rstate = useRootPageContext();
   //const [pageState, setPageState] = pstate;
   const currentActivePage = getSideBarCurrentSelectedItemName(rstate);
-    console.log(`debugremove currentact=${currentActivePage}`)
   return (
     
     <div>

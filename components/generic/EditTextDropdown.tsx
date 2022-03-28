@@ -4,12 +4,12 @@ import { GenericDropdown, IGenericDropdownProps } from './GenericDropdown'
 export interface IEditTextDropdownItem {
     label: string;
     value?: any;
+    selected?: boolean;
 }
 
 interface IEditTextDropdownProps extends IGenericDropdownProps {    
     items: IEditTextDropdownItem[];
     onSelectionChanged: (itm:IEditTextDropdownItem) => void;
-    selected?: IEditTextDropdownItem;
     formatDisplay?: (IEditTextDropdownItem) => string;    
 }
 
@@ -20,16 +20,14 @@ export function EditTextDropdown(props: IEditTextDropdownProps) {
     opts.selected = selected;
     opts.setSelected = setSelected;
     useEffect(() => {
-        let setTo = props.selected;
-        if (!setTo) {
-            if (props.items.length) {
-                setTo = (props.items[0])
-            }
-        }    
+        let setTo: IEditTextDropdownItem = props.items.find(i=>i.selected);
+        if (!setTo && props.items.length) {
+            setTo = (props.items[0])
+        }
         if (setTo) {
             setSelected(setTo);
             props.onSelectionChanged(setTo);
-        }    
+        }
     },[])
     
    

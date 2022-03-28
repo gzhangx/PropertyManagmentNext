@@ -47,6 +47,7 @@ export interface IOwnerInfo {
 
 export interface IHouseInfo {
     houseID: string;
+    ownerID: number;
     address: string;
     city: string;
     state: string;

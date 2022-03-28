@@ -33,6 +33,14 @@ export function ImportPage() {
             [key: string]:IItemData; //key is of ALLFieldNames
         }[];
     }
+
+    const [curPage, setCurrentPage] = useState<IPageInfo>();
+    const [pageDetails, setPageDetails] = useState<IDataDetails>();
+    const [existingOwnersByName, setExistingOwnersByName] = useState<{ [ownerName: string]: IOwnerInfo }>();
+    const [existingOwnersById, setExistingOwnersById] = useState<{ [ownerId: number]: IOwnerInfo }>();
+    const [missingOwnersByName, setMissingOwnersByName] = useState<{ [ownerName: string]: boolean }>({});
+    const [existingHousesByAddress, setExsitingHouseByAddress] = useState<{ [address: string]: IHouseInfo }>({});
+
     const pages: IPageInfo[] = [
         {
             pageName: 'Tenants Info',
@@ -83,8 +91,17 @@ export function ImportPage() {
                             setDlgContent(createOwnerFunc(item.val))
                         }}> Click to create {item.val}</button>
                     else {
-                        item.obj = existingOwnersByName[item.val];
-                        return item.val + " ok";
+                        item.obj = existingOwnersByName && existingOwnersByName[item.val];
+                        const houseFromDb = existingHousesByAddress[all["address"].val];
+                        const matchedOwnerFromDb = houseFromDb && existingOwnersById[houseFromDb.ownerID];                        
+                        //console.log(houseFromDb);
+                        if (matchedOwnerFromDb) {
+                            console.log('existingHousesByAddress')
+                            console.log(existingHousesByAddress)
+                            return item.val + " ok " + matchedOwnerFromDb.ownerID;
+                        } else {
+                            return item.val + " ok but no owner db";
+                        }
                     }
                 } else if (field === 'address') {
                     if (existingHousesByAddress[item.val]) {
@@ -98,15 +115,12 @@ export function ImportPage() {
             }
         }
     ];
-    const [curPage, setCurrentPage] = useState<IPageInfo>();
-    const [pageDetails, setPageDetails] = useState<IDataDetails>();
-    const [existingOwnersByName, setExistingOwnersByName] = useState<{ [ownerName: string]: IOwnerInfo }>();
-    const [missingOwnersByName, setMissingOwnersByName] = useState<{ [ownerName: string]: boolean }>({});
-    const [existingHousesByAddress, setExsitingHouseByAddress] = useState<{ [address: string]: IHouseInfo }>({});
+    
 
     const refresOwners = () => {
         return getOwners().then(own => {
             setExistingOwnersByName(keyBy(own, 'ownerName'));
+            setExistingOwnersById(keyBy(own, 'ownerID'));
         });
     }
     const refresHouses = () => {
@@ -253,6 +267,7 @@ export function ImportPage() {
                     return {
                         label: p.pageName,
                         value: p,
+                        selected: p.pageName === 'House Info'
                     }
                 })
                 }
@@ -277,14 +292,11 @@ export function ImportPage() {
                                     <a href="#" className="d-none d-sm-inline-block btn btn-sm btn-primary shadow-sm"
                                         onClick={e => {
                                             e.preventDefault();
-                                            console.log('shee tread')
                                             //googleSheetRead('1UU9EYL7ZYpfHV6Jmd2CvVb6oBuQ6ekTR7AWXIlMvNCg', 'read', `'Tenants Info'!A1:B12`).then(r => {
                                             if (curPage) {
                                                 googleSheetRead(sheetId, 'read', `'${curPage.pageName}'!${curPage.range}`).then((r: {
                                                     values: string[][];
-                                                }) => {
-                                                    console.log('googlesheet results');
-                                                    console.log(r);
+                                                }) => {                                                    
                                                     if (!r || !r.values.length) {
                                                         console.log(`no data for ${curPage.pageName}`);
                                                         return;
@@ -330,7 +342,6 @@ export function ImportPage() {
                                                 }).catch(err => {
                                                     console.log(err);
                                                 })
-                                                console.log('done')
                                             }
                                             e.stopPropagation();
                                         }}

@@ -12,8 +12,13 @@ export interface IGenericMultiSelectDropdownProps {
 export function GenericMultiSelectDropdown(props: IGenericMultiSelectDropdownProps) {
     const { items, defaultShow} = props;
     
-    const [show, setShow] = useState(defaultShow || false);    
+    const [show, setShow] = useState(defaultShow || false);
+    const [mounted, setMounted] = useState(false);
     const topNode = useRef<HTMLLIElement>();
+
+    useEffect(() => {
+        setMounted(true);
+    },[])
     useEffect(() => {
         const clickOutside = (e: MouseEvent) => {
             if (!topNode.current) return;
@@ -32,6 +37,7 @@ export function GenericMultiSelectDropdown(props: IGenericMultiSelectDropdownPro
     }, [show])
     const showClass = `dropdown-list dropdown-menu dropdown-menu-right shadow animated--grow-in ${show && 'show'}`;
 
+    if (!mounted) return <li></li>;
     return <li className="nav-item dropdown no-arrow mx-1 navbar-nav" ref={topNode} onClick={e => {
         //nav-link dropdown-toggle
         e.preventDefault();
