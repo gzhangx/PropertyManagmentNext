@@ -71,8 +71,8 @@ export function CheckBoxMultiSelect(props: ICheckBoxMultiSelectProps) {
                             display:"flex"
                         }}>
                             {
-                                items.map(item => {
-                                    return <div style={{
+                                items.map((item, key) => {
+                                    return <div key={key} style={{
                                         //item 
                                         backgroundColor:"hsl(0,0%,90%)",
                                         borderRadius: "2px",
