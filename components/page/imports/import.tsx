@@ -2,10 +2,10 @@ import React, { useState, useEffect } from 'react';
 import { googleSheetRead, getOwners, sqlAdd, getHouseInfo } from '../../api'
 import { EditTextDropdown } from '../../generic/EditTextDropdown'
 import { IOwnerInfo, IHouseInfo } from '../../reportTypes';
-import { keyBy, omit} from 'lodash'
+import { keyBy, mapValues} from 'lodash'
 
 import { BaseDialog} from '../../generic/basedialog'
-type ALLFieldNames = ''|'address'|'city'|'zip'| 'ownerID';
+type ALLFieldNames = ''|'address'|'city'|'zip'| 'ownerName';
 export function ImportPage() {
     const [dlgContent, setDlgContent] = useState<JSX.Element>(null);
     const [houseInfos, setHouseInfos] = useState<{
@@ -20,13 +20,17 @@ export function ImportPage() {
         fieldMap?: ALLFieldNames[];
         idField?: ALLFieldNames;
         pageLoader?: () => Promise<void>;
-        displayItem?: (field: string, itm: string) => JSX.Element|string;
+        displayItem?: (field: string, itm: IItemData, all:{[key:string]:IItemData}) => JSX.Element|string;
     }
 
+    interface IItemData {
+        val: string;
+        obj: any;
+    }
     interface IDataDetails {
         columns: string[];
         rows: {
-            [key: string]:string; //key is of ALLFieldNames
+            [key: string]:IItemData; //key is of ALLFieldNames
         }[];
     }
     const pages: IPageInfo[] = [
@@ -47,7 +51,7 @@ export function ImportPage() {
                 '', //beds
                 '', //rooms
                 '', //sqrt
-                'ownerID'
+                'ownerName'
             ],
             idField: 'address',
             pageLoader: async () => {
@@ -64,24 +68,33 @@ export function ImportPage() {
                 if (pageDetails) {
                     const missing = pageDetails.rows.reduce((acc, r) => {
                         const ownerIdField = r['ownerID'];
-                        if (!existingOwnersByName[ownerIdField]) {
-                            acc[ownerIdField] = true;
+                        if (!existingOwnersByName[ownerIdField.val]) {
+                            acc[ownerIdField.val] = true;
                         }
                         return acc;
                     }, {} as { [ownerName: string]: boolean; });
                     setMissingOwnersByName(missing);
                 }
             },
-            displayItem: (field: string, val: string) => {
-                if (field === 'ownerID') {
-                    if (missingOwnersByName[val])
+            displayItem: (field: string, item: IItemData, all) => {
+                if (field === 'ownerName') {
+                    if (missingOwnersByName[item.val])
                         return <button onClick={() => {
-                            setDlgContent(createOwnerFunc(val))
-                        }}> Click to create {val}</button>
+                            setDlgContent(createOwnerFunc(item.val))
+                        }}> Click to create {item.val}</button>
                     else {
-                        return val + " ok";
+                        item.obj = existingOwnersByName[item.val];
+                        return item.val + " ok";
                     }
-                } else return val;
+                } else if (field === 'address') {
+                    if (existingHousesByAddress[item.val]) {
+                        return `OK ${item.val}`;
+                    }
+                    return <button onClick={() => {
+                        setDlgContent(createHouseFunc(all))
+                    }}> Click to create {item.val}</button>
+                } else
+                    return item.val;
             }
         }
     ];
@@ -89,14 +102,21 @@ export function ImportPage() {
     const [pageDetails, setPageDetails] = useState<IDataDetails>();
     const [existingOwnersByName, setExistingOwnersByName] = useState<{ [ownerName: string]: IOwnerInfo }>();
     const [missingOwnersByName, setMissingOwnersByName] = useState<{ [ownerName: string]: boolean }>({});
+    const [existingHousesByAddress, setExsitingHouseByAddress] = useState<{ [address: string]: IHouseInfo }>({});
 
     const refresOwners = () => {
         return getOwners().then(own => {
             setExistingOwnersByName(keyBy(own, 'ownerName'));
         });
     }
+    const refresHouses = () => {
+        return getHouseInfo().then(own => {
+            setExsitingHouseByAddress(keyBy(own, 'address'));
+        });
+    }
     useEffect(() => {
         refresOwners();
+        refresHouses();
     }, []);
 
     useEffect(() => {
@@ -182,6 +202,47 @@ export function ImportPage() {
         </div>
     };
 
+    const createHouseFunc = (data: { [key: string]: IItemData }) => {
+        const saveData = mapValues(data, itm => {
+            return itm.val
+        });
+        const own = existingOwnersByName[saveData.ownerName];
+        if (!own) {
+            console.log('no owner found');
+            return;
+        }
+        saveData.ownerID = own.ownerID.toString();
+        return <div className="col-lg-12 mb-4">            
+            <div className="row">
+                <div className="col-lg-12 mb-4">
+                    <div className="card bg-light text-black shadow">
+                        <div className="card-body" style={{ display: 'flex', justifyContent:'flex-end'}}>
+                            <button className='btn btn-primary mx-1' onClick={() => {
+                                sqlAdd('houseInfo', 
+                                saveData, true                                
+                                ).then(res => {
+                                    console.log('sql add owner');
+                                    console.log(res)
+                                    return refresHouses().then(() => {
+                                        setDlgContent(null);  
+                                    })                                    
+                                }).catch(err => {
+                                    console.log('sql add owner err');
+                                    console.log(err)
+                                })
+                            }}>Create</button>
+
+                            <button className='btn btn-success' onClick={() => {
+                                setDlgContent(null);
+                            }}>Close</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    };
+
     return <div className="container-fluid">
         <BaseDialog children={dlgContent} show={dlgContent != null} />
         <div className="d-sm-flex align-items-center justify-content-between mb-4">
@@ -238,11 +299,14 @@ export function ImportPage() {
                                                         const rows = r.values.slice(1).map(rr => {
                                                             return curPage.fieldMap.reduce((acc, f, ind) => {
                                                                 if (f) {
-                                                                    acc[f] = rr[ind];
+                                                                    acc[f] = {
+                                                                        val: rr[ind],
+                                                                        obj: null,
+                                                                    };
                                                                 }
                                                                 return acc;
-                                                            }, {} as { [key: string]: string; });
-                                                        }).filter(x=>x[curPage.idField]);
+                                                            }, {} as { [key: string]: IItemData; });
+                                                        }).filter(x=>x[curPage.idField].val);
                                                         setPageDetails({
                                                             columns,
                                                             rows,
@@ -251,9 +315,12 @@ export function ImportPage() {
                                                         const columns = r.values[0];
                                                         const rows = r.values.slice(1).map(r => {
                                                             return r.reduce((acc, celVal, ind) => {
-                                                                acc[ind] = celVal;                                                                
+                                                                acc[ind] = {
+                                                                    val: celVal,
+                                                                    obj: null,
+                                                                }                                                      
                                                                 return acc;
-                                                            }, {} as { [key: string]: string; });
+                                                            }, {} as { [key: string]: IItemData; });
                                                         })
                                                         setPageDetails({
                                                             columns,
@@ -304,7 +371,7 @@ export function ImportPage() {
                             return <tr key={ind}>{
                                 keys.map((key, ck) => {
                                     return <td key={ck}>{
-                                        curPage.displayItem ? curPage.displayItem(key, p[key]) : (p[key])
+                                        curPage.displayItem ? curPage.displayItem(key, p[key],p) : (p[key])
                                     }</td>
                                 })
                             }</tr>
