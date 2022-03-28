@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useReducer } from 'react';
 import { googleSheetRead, getOwners, sqlAdd, getHouseInfo } from '../../api'
 import { EditTextDropdown } from '../../generic/EditTextDropdown'
 import { IOwnerInfo, IHouseInfo } from '../../reportTypes';
@@ -8,19 +8,14 @@ import { BaseDialog} from '../../generic/basedialog'
 type ALLFieldNames = ''|'address'|'city'|'zip'| 'ownerName';
 export function ImportPage() {
     const [dlgContent, setDlgContent] = useState<JSX.Element>(null);
-    const [houseInfos, setHouseInfos] = useState<{
-        houses: IHouseInfo[];
-        houseByName: {
-            [address: string]: IHouseInfo;
-        }
-    }>(null);
+    
     interface IPageInfo {
         pageName: string;
         range: string;
         fieldMap?: ALLFieldNames[];
         idField?: ALLFieldNames;
         pageLoader?: () => Promise<void>;
-        displayItem?: (field: string, itm: IItemData, all:{[key:string]:IItemData}) => JSX.Element|string;
+        displayItem?: (state: IPageStates,field: string, itm: IItemData, all:{[key:string]:IItemData}) => JSX.Element|string;
     }
 
     interface IItemData {
@@ -34,12 +29,18 @@ export function ImportPage() {
         }[];
     }
 
-    const [curPage, setCurrentPage] = useState<IPageInfo>();
-    const [pageDetails, setPageDetails] = useState<IDataDetails>();
-    const [existingOwnersByName, setExistingOwnersByName] = useState<{ [ownerName: string]: IOwnerInfo }>();
-    const [existingOwnersById, setExistingOwnersById] = useState<{ [ownerId: number]: IOwnerInfo }>();
-    const [missingOwnersByName, setMissingOwnersByName] = useState<{ [ownerName: string]: boolean }>({});
-    const [existingHousesByAddress, setExsitingHouseByAddress] = useState<{ [address: string]: IHouseInfo }>({});
+    interface IPageStates {
+        curPage: IPageInfo;
+        pageDetails: IDataDetails;
+
+        existingOwnersByName: { [ownerName: string]: IOwnerInfo };
+        existingOwnersById: { [ownerId: number]: IOwnerInfo };
+        missingOwnersByName: { [ownerName: string]: boolean };
+        housesByAddress: { [ownerName: string]: IHouseInfo };
+        houses: IHouseInfo[];
+    }    
+
+    const [curPageState, dispatchCurPageState] = useReducer((state:IPageStates, act: (state:IPageStates)=>IPageStates) => act(state) as IPageStates, {} as IPageStates);
 
     const pages: IPageInfo[] = [
         {
@@ -63,52 +64,44 @@ export function ImportPage() {
             ],
             idField: 'address',
             pageLoader: async () => {
-                if (!houseInfos) {
+                if (!curPageState.houses) {
                     const hi = await getHouseInfo();
-                    setHouseInfos({
-                        houses: hi,
-                        houseByName: hi.reduce((acc, h) => {
-                            acc[h.address] = h;
-                            return acc;
-                        }, {} as { [addr: string]: IHouseInfo; }),
-                    });
-                }
-                if (pageDetails) {
-                    const missing = pageDetails.rows.reduce((acc, r) => {
-                        const ownerIdField = r['ownerID'];
-                        if (!existingOwnersByName[ownerIdField.val]) {
-                            acc[ownerIdField.val] = true;
+                    dispatchCurPageState(state => {
+                        return {
+                            ...state,
+                            houses: hi,
+                            housesByAddress: keyBy(hi, 'address'),
                         }
-                        return acc;
-                    }, {} as { [ownerName: string]: boolean; });
-                    setMissingOwnersByName(missing);
+                    });                    
                 }
             },
-            displayItem: (field: string, item: IItemData, all) => {
+            displayItem: (state:IPageStates, field: string, item: IItemData, all) => {
                 if (field === 'ownerName') {
-                    if (missingOwnersByName[item.val])
+                    if (!state.existingOwnersByName) return item.val;
+                    if (!state.existingOwnersByName[item.val])
+                    //if (missingOwnersByName[item.val])
                         return <button onClick={() => {
                             setDlgContent(createOwnerFunc(item.val))
                         }}> Click to create {item.val}</button>
                     else {
-                        item.obj = existingOwnersByName && existingOwnersByName[item.val];
-                        const houseFromDb = existingHousesByAddress[all["address"].val];
-                        const matchedOwnerFromDb = houseFromDb && existingOwnersById[houseFromDb.ownerID];                        
+                        item.obj = state.existingOwnersByName[item.val];
+                        const houseFromDb = state.housesByAddress[all["address"].val];
+                        const matchedOwnerFromDb = houseFromDb && state.existingOwnersById[houseFromDb.ownerID];                        
                         //console.log(houseFromDb);
-                        if (matchedOwnerFromDb) {
-                            console.log('existingHousesByAddress')
-                            console.log(existingHousesByAddress)
+                        if (matchedOwnerFromDb) {                            
                             return item.val + " ok " + matchedOwnerFromDb.ownerID;
                         } else {
                             return item.val + " ok but no owner db";
                         }
                     }
                 } else if (field === 'address') {
-                    if (existingHousesByAddress[item.val]) {
+                    console.log(`debugremove item.val is ${item.val}, existingHousesByAddress in addr`);
+                    console.log('insdeide of map, address = ' + Object.keys(state.housesByAddress).length)
+                    if (state.housesByAddress[item.val]) {
                         return `OK ${item.val}`;
                     }
                     return <button onClick={() => {
-                        setDlgContent(createHouseFunc(all))
+                        setDlgContent(createHouseFunc(state, all))
                     }}> Click to create {item.val}</button>
                 } else
                     return item.val;
@@ -119,24 +112,24 @@ export function ImportPage() {
 
     const refresOwners = () => {
         return getOwners().then(own => {
-            setExistingOwnersByName(keyBy(own, 'ownerName'));
-            setExistingOwnersById(keyBy(own, 'ownerID'));
+            dispatchCurPageState(state => {
+                return {
+                    ...state,
+                    existingOwnersById: keyBy(own, 'ownerID'),
+                    existingOwnersByName: keyBy(own,'ownerName'),
+                };                
+            });
         });
     }
-    const refresHouses = () => {
-        return getHouseInfo().then(own => {
-            setExsitingHouseByAddress(keyBy(own, 'address'));
-        });
-    }
+
     useEffect(() => {
         refresOwners();
-        refresHouses();
     }, []);
 
     useEffect(() => {
-        if (!curPage || !curPage.fieldMap || !curPage.pageLoader) return;
-        curPage.pageLoader();
-    }, [curPage, existingOwnersByName, pageDetails])
+        if (!curPageState.curPage || !curPageState.curPage.fieldMap || !curPageState.curPage.pageLoader) return;
+        curPageState.curPage.pageLoader();
+    }, [curPageState.curPage, curPageState.existingOwnersByName, curPageState.pageDetails])
         
     const sheetId = '1UU9EYL7ZYpfHV6Jmd2CvVb6oBuQ6ekTR7AWXIlMvNCg';
 
@@ -216,11 +209,11 @@ export function ImportPage() {
         </div>
     };
 
-    const createHouseFunc = (data: { [key: string]: IItemData }) => {
+    const createHouseFunc = (state: IPageStates, data: { [key: string]: IItemData }) => {
         const saveData = mapValues(data, itm => {
             return itm.val
         });
-        const own = existingOwnersByName[saveData.ownerName];
+        const own = state.existingOwnersByName[saveData.ownerName];
         if (!own) {
             console.log('no owner found');
             return;
@@ -237,7 +230,8 @@ export function ImportPage() {
                                 ).then(res => {
                                     console.log('sql add owner');
                                     console.log(res)
-                                    return refresHouses().then(() => {
+                                    
+                                    return state.curPage.pageLoader && state.curPage.pageLoader().then(() => {
                                         setDlgContent(null);  
                                     })                                    
                                 }).catch(err => {
@@ -256,7 +250,7 @@ export function ImportPage() {
 
         </div>
     };
-
+    
     return <div className="container-fluid">
         <BaseDialog children={dlgContent} show={dlgContent != null} />
         <div className="d-sm-flex align-items-center justify-content-between mb-4">
@@ -273,7 +267,12 @@ export function ImportPage() {
                 }
                     onSelectionChanged={sel => {
                         if (sel) {
-                            setCurrentPage(sel.value);
+                            dispatchCurPageState(state => {
+                                return {
+                                    ...state,
+                                    curPage: sel.value,
+                                }
+                            })
                         }
                     }}
                 ></EditTextDropdown>
@@ -292,6 +291,15 @@ export function ImportPage() {
                                     <a href="#" className="d-none d-sm-inline-block btn btn-sm btn-primary shadow-sm"
                                         onClick={e => {
                                             e.preventDefault();
+                                            const curPage = curPageState.curPage;
+                                            const setPageDetails = (newd: IDataDetails) => {
+                                                dispatchCurPageState(state => {
+                                                    return {
+                                                        ...state,
+                                                        pageDetails: newd,
+                                                    }
+                                                })
+                                            }
                                             //googleSheetRead('1UU9EYL7ZYpfHV6Jmd2CvVb6oBuQ6ekTR7AWXIlMvNCg', 'read', `'Tenants Info'!A1:B12`).then(r => {
                                             if (curPage) {
                                                 googleSheetRead(sheetId, 'read', `'${curPage.pageName}'!${curPage.range}`).then((r: {
@@ -364,7 +372,7 @@ export function ImportPage() {
                 <thead>
                     <tr>
                         {
-                            pageDetails && pageDetails.columns && pageDetails.columns.map((d, key) => {
+                            curPageState.pageDetails && curPageState.pageDetails.columns && curPageState.pageDetails.columns.map((d, key) => {
                                 return <td key={key}>{d}</td>
                             })
                         }
@@ -372,17 +380,17 @@ export function ImportPage() {
                 </thead>
                 <tbody>
                     {
-                        pageDetails && pageDetails.rows.map((p, ind) => {
-                            let keys = curPage.fieldMap as string[];
+                        curPageState.pageDetails && curPageState.pageDetails.rows.map((p, ind) => {
+                            let keys = curPageState.curPage.fieldMap as string[];
                             if (!keys) {
-                                keys = pageDetails.columns.map((d, ind) => ind.toString());
+                                keys = curPageState.pageDetails.columns.map((d, ind) => ind.toString());
                             } else {
                                 keys = keys.filter(x => x);
                             }
                             return <tr key={ind}>{
                                 keys.map((key, ck) => {
                                     return <td key={ck}>{
-                                        curPage.displayItem ? curPage.displayItem(key, p[key],p) : (p[key])
+                                        curPageState.curPage.displayItem ? curPageState.curPage.displayItem(curPageState, key, p[key],p) : (p[key])
                                     }</td>
                                 })
                             }</tr>
