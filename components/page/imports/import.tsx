@@ -5,7 +5,7 @@ import { IOwnerInfo, IHouseInfo } from '../../reportTypes';
 import { keyBy, omit} from 'lodash'
 
 import { BaseDialog} from '../../generic/basedialog'
-type ALLFieldNames = ''|'address'|'city'|'zip'| 'OwnerIDCreateByOwnerName';
+type ALLFieldNames = ''|'address'|'city'|'zip'| 'ownerID';
 export function ImportPage() {
     const [dlgContent, setDlgContent] = useState<JSX.Element>(null);
     const [houseInfos, setHouseInfos] = useState<{
@@ -20,16 +20,13 @@ export function ImportPage() {
         fieldMap?: ALLFieldNames[];
         idField?: ALLFieldNames;
         pageLoader?: () => Promise<void>;
+        displayItem?: (field: string, itm: string) => JSX.Element|string;
     }
 
-    interface IDataDetailsData {
-        action: 'label' | 'OwnerIDCreateByOwnerName';
-        value: string;
-    };
     interface IDataDetails {
         columns: string[];
         rows: {
-            [key: string]:IDataDetailsData; //key is of ALLFieldNames
+            [key: string]:string; //key is of ALLFieldNames
         }[];
     }
     const pages: IPageInfo[] = [
@@ -50,7 +47,7 @@ export function ImportPage() {
                 '', //beds
                 '', //rooms
                 '', //sqrt
-                'OwnerIDCreateByOwnerName'
+                'ownerID'
             ],
             idField: 'address',
             pageLoader: async () => {
@@ -64,19 +61,27 @@ export function ImportPage() {
                         }, {} as { [addr: string]: IHouseInfo; }),
                     });
                 }
-                const ownerField = curPage.fieldMap.find(f => f === 'OwnerIDCreateByOwnerName');
-                if (ownerField && pageDetails) {
+                if (pageDetails) {
                     const missing = pageDetails.rows.reduce((acc, r) => {
-                        const ownerIdField = r['OwnerIDCreateByOwnerName'];
-                        if (ownerField) {
-                            if (!existingOwnersByName[ownerIdField.value]) {
-                                acc[ownerIdField.value] = true;
-                            }
+                        const ownerIdField = r['ownerID'];
+                        if (!existingOwnersByName[ownerIdField]) {
+                            acc[ownerIdField] = true;
                         }
                         return acc;
                     }, {} as { [ownerName: string]: boolean; });
                     setMissingOwnersByName(missing);
                 }
+            },
+            displayItem: (field: string, val: string) => {
+                if (field === 'ownerID') {
+                    if (missingOwnersByName[val])
+                        return <button onClick={() => {
+                            setDlgContent(createOwnerFunc(val))
+                        }}> Click to create {val}</button>
+                    else {
+                        return val + " ok";
+                    }
+                } else return val;
             }
         }
     ];
@@ -233,19 +238,11 @@ export function ImportPage() {
                                                         const rows = r.values.slice(1).map(rr => {
                                                             return curPage.fieldMap.reduce((acc, f, ind) => {
                                                                 if (f) {
-                                                                    const data: IDataDetailsData = {
-                                                                        action: 'label',
-                                                                        value: rr[ind],
-                                                                    }
-                                                                    if (f === 'OwnerIDCreateByOwnerName') {
-                                                                        data.action = 'OwnerIDCreateByOwnerName';
-                                                                    }
-                                                                    acc[f] = data;                                                                    
-                                                                    //console.log(`setting accf ${f} to ${acc[f]}`)
+                                                                    acc[f] = rr[ind];
                                                                 }
                                                                 return acc;
-                                                            }, {} as { [key: string]: IDataDetailsData; });
-                                                        }).filter(x=>x[curPage.idField].value);
+                                                            }, {} as { [key: string]: string; });
+                                                        }).filter(x=>x[curPage.idField]);
                                                         setPageDetails({
                                                             columns,
                                                             rows,
@@ -254,12 +251,9 @@ export function ImportPage() {
                                                         const columns = r.values[0];
                                                         const rows = r.values.slice(1).map(r => {
                                                             return r.reduce((acc, celVal, ind) => {
-                                                                acc[ind.toString()] = {
-                                                                    action: 'label',
-                                                                    value: celVal,
-                                                                };
+                                                                acc[ind] = celVal;                                                                
                                                                 return acc;
-                                                            }, {} as { [key: string]: IDataDetailsData; });
+                                                            }, {} as { [key: string]: string; });
                                                         })
                                                         setPageDetails({
                                                             columns,
@@ -303,28 +297,14 @@ export function ImportPage() {
                         pageDetails && pageDetails.rows.map((p, ind) => {
                             let keys = curPage.fieldMap as string[];
                             if (!keys) {
-                                keys = pageDetails.columns.map((d, ind)=>ind.toString());
+                                keys = pageDetails.columns.map((d, ind) => ind.toString());
                             } else {
                                 keys = keys.filter(x => x);
-                            }
-                            const dspAction = (dta: IDataDetailsData) => {                                
-                                if (!dta) return '';
-                                if (dta.action === 'label') return dta.value;
-                                if (dta.action === 'OwnerIDCreateByOwnerName') {
-                                    if ( missingOwnersByName[dta.value])
-                                        return <button onClick={() => {
-                                            setDlgContent(createOwnerFunc(dta.value))
-                                        }}> Click to create { dta.value}</button>
-                                    else {
-                                        return dta.value+" ok";
-                                    }
-                                }
-                                return dta.value;
                             }
                             return <tr key={ind}>{
                                 keys.map((key, ck) => {
                                     return <td key={ck}>{
-                                        dspAction(p[key])
+                                        curPage.displayItem ? curPage.displayItem(key, p[key]) : (p[key])
                                     }</td>
                                 })
                             }</tr>
