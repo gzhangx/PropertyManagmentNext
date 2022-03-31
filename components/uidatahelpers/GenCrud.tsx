@@ -174,8 +174,9 @@ export const GenCrud = (props: IGenGrudProps) => {
         setShowFilter(!showFilter);
     }
 
-    const filterOptions = ['=', '!=', '<', '<=', '>', '>='].map(value => ({ value, label: value }));
+    const filterOptions = ['=', '!=', '<', '<=', '>', '>='].map(value => ({ value, label: value, selected: false }));
     const defaultFilter = filterOptions.filter(x => x.value === '=')[0];
+    if (defaultFilter) defaultFilter.selected = true;
     const makePageButtons = (inds, desc?:string) => inds.map((ind, keyId) => <button className="btn btn-primary" type="button" key={keyId} onClick={e => {
         e.preventDefault();
         setPaggingInfo({ ...paggingInfo, pos: ind })
@@ -207,16 +208,14 @@ export const GenCrud = (props: IGenGrudProps) => {
                                                 if (typeof d === 'string') return {
                                                     value: d,
                                                     label: d,
+                                                    selected: fv.field === d,
                                                 }
                                                 return {
                                                     value: d.field,
                                                     label: d.desc,
+                                                    selected: fv.field === d.field,
                                                 }
-                                            })}
-                                                selected={{
-                                                    label: fv.field,
-                                                    value: fv.field,
-                                                }}
+                                            })}                                                
                                                 
                                                 onSelectionChanged={val => {
                                                     fv.field = val.value;
@@ -224,7 +223,6 @@ export const GenCrud = (props: IGenGrudProps) => {
                                                 }
                                                 }></EditTextDropdown></td>
                                             <td><EditTextDropdown items={filterOptions}
-                                                selected={defaultFilter}
                                                 onSelectionChanged={val => {
                                                     fv.op = val.value;
                                                     setFilterVals(filterVals);
