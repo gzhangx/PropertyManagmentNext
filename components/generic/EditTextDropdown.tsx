@@ -15,20 +15,20 @@ interface IEditTextDropdownProps extends IGenericDropdownProps {
 
 export function EditTextDropdown(props: IEditTextDropdownProps) {
     const opts = props.opts || {};
-    const [selected, setSelected] = useState<IEditTextDropdownItem>(null);    
+
+    let setTo: IEditTextDropdownItem = props.items.find(i=>i.selected);
+    if (!setTo && props.items.length) {
+        setTo = (props.items[0])
+    }
     
+    const [selected, setSelected] = useState<IEditTextDropdownItem>(setTo);    
+
+    useEffect(() => {
+        setSelected(setTo);
+    }, [setTo]);
     opts.selected = selected;
     opts.setSelected = setSelected;
-    useEffect(() => {
-        let setTo: IEditTextDropdownItem = props.items.find(i=>i.selected);
-        if (!setTo && props.items.length) {
-            setTo = (props.items[0])
-        }
-        if (setTo) {
-            setSelected(setTo);
-            props.onSelectionChanged(setTo);
-        }
-    },[])
+    
     
    
     return <GenericDropdown {...props}        

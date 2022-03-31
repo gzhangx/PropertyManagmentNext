@@ -236,11 +236,16 @@ export const GenCrudAdd = (props: IGenGrudAddProps) => {
                         const createSelection = (optName:string, colField:string) => {
                             const selOptions = optsData[optName];
                             if (!selOptions) return null;
-                            const options = selOptions.concat({
+                            const options = selOptions.map(s=>({...s, selected: false,})).concat({
                                 label: 'Add New',
                                 value: 'AddNew',
+                                selected: false,
                             })
-                            const curSelection = options.filter(o => o.value === get(data, colField))[0] || {};
+                            const curSelection = options.filter(o => o.value === get(data, colField))[0];
+                            if (curSelection) {
+                                curSelection.selected = true;
+                            }
+                            
                             return <>
                                 
                                 <EditTextDropdown items={options}
