@@ -1,11 +1,13 @@
 import Link from 'next/link'
 import { PageNavTab } from './navTab';
-import { useRootPageContext, IRootPageState, getSideBarItemKey, getSideBarCurrentActiveItemKey } from "../states/RootState"
+import { useEffect } from 'react'
+import { useRootPageContext, getSideBarItemKey, getSideBarCurrentActiveItemKey } from "../states/RootState"
 
 
 export interface IMainSideBarItem {
     name: string;
     displayName: string;
+    selected?: boolean;
 }
 export interface IMainSideBarSection {
     name: string;
@@ -20,6 +22,18 @@ interface IMainSideBarProps {
 export function MainSideBar(props : IMainSideBarProps) {    
     const rs = useRootPageContext();
 
+    useEffect(() => {
+        props.sections.forEach(section => {
+            section.pages.forEach(page => {
+                if (page.selected) {
+                    const itemName = getSideBarItemKey(page.name);            
+                    rs.sideBarStates[getSideBarCurrentActiveItemKey()] = itemName;
+                    rs.sideBarStates[itemName] = true;
+                    rs.setSideBarStates({ ...rs.sideBarStates });
+                }
+            })
+        })
+    },[]);
     const getLinkOnClick = (name:string)=>{
         const itemName = getSideBarItemKey(name);
         return (e:MouseEvent)=>{

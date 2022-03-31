@@ -13,7 +13,8 @@ const allSections = [
             },
             {
                 name: 'Develop',
-                page: <DevelopPage/>,
+                page: <DevelopPage />,
+                selected: true,
             }
         ]
     },
@@ -34,7 +35,7 @@ const { sections, sideBarContentLookup } = allSections.reduce((acc, sec) => {
     const section = {
         name,
         displayName: name,
-        pages: sec.pages.map(p => ({ name: `${name}:${p.name}`, displayName: p.name })),
+        pages: sec.pages.map(p => ({ name: `${name}:${p.name}`, displayName: p.name, selected: p.selected })),
     }
     acc.sectionsByName[name] = section;
     acc.sections.push(section);
