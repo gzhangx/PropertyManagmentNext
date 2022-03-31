@@ -2,7 +2,22 @@ import Link from 'next/link'
 import { PageNavTab } from './navTab';
 import { useRootPageContext, IRootPageState, getSideBarItemKey, getSideBarCurrentActiveItemKey } from "../states/RootState"
 
-export function MainSideBar(props : {reportPages:string[]}) {    
+
+export interface IMainSideBarItem {
+    name: string;
+    displayName: string;
+}
+export interface IMainSideBarSection {
+    name: string;
+    displayName: string;
+    pages?: IMainSideBarItem[];
+    headerJSX?: JSX.Element;
+    bodyJSX?: JSX.Element;
+}
+interface IMainSideBarProps {
+    sections: IMainSideBarSection[];
+}
+export function MainSideBar(props : IMainSideBarProps) {    
     const rs = useRootPageContext();
 
     const getLinkOnClick = (name:string)=>{
@@ -19,7 +34,12 @@ export function MainSideBar(props : {reportPages:string[]}) {
             rs.setSideBarStates({ ...rs.sideBarStates });
         }
     }
-    const getItemLink = (name: string, ind:number) => {
+    const getItemLink = (itm: IMainSideBarItem, ind:number) => {
+        const itemName = getSideBarItemKey(name);
+        const active = rs.sideBarStates[getSideBarCurrentActiveItemKey()] === itemName;
+        return <a className="collapse-item" href="#" onClick={getLinkOnClick(itm.name) as any} key={ind}>{itm.displayName} {active && <i className="fas fa-anchor"></i>    }</a>;
+    }
+    const getItemLinkSimple = (name: string, ind:number) => {
         const itemName = getSideBarItemKey(name);
         const active = rs.sideBarStates[getSideBarCurrentActiveItemKey()] === itemName;
         return <a className="collapse-item" href="#" onClick={getLinkOnClick(name) as any} key={ind}>{name} {active && <i className="fas fa-anchor"></i>    }</a>;
@@ -59,31 +79,55 @@ export function MainSideBar(props : {reportPages:string[]}) {
                 <>
                     <h6 className="collapse-header">Custom Components:</h6>                    
                     {
-                        ['Developers', 'Admins'].map(getItemLink)
+                        ['Developers', 'Admins'].map(getItemLinkSimple)
                     }
                     <a className="collapse-item" href="#">NA</a>
                 </>
             }
         ></PageNavTab>
 
-        <PageNavTab name="PM Reports"
-            header={
-                <>
-                    <a>
-                        <i className="fas fa-fw fa-wrench"></i>
-                        <span>PM Reports</span>
-                    </a>
-                </>
-            }
-            body={
-                <>
-                    <h6 className="collapse-header">Demo Reports:</h6>
-                    {
-                        props.reportPages.map(getItemLink)
-                    }                
-                </>
-            }
-        ></PageNavTab>
+        {
+            props.sections.map(section => {
+                return <PageNavTab name={section.name}
+                    header={
+                        section.headerJSX?section.headerJSX:
+                        <>
+                            <a>
+                                <i className="fas fa-fw fa-wrench"></i>
+                                <span>{section.displayName}</span>
+                            </a>
+                        </>
+                    }
+                    body={
+                        section.bodyJSX?section.bodyJSX:
+                        <>
+                            <h6 className="collapse-header">PMRPT</h6>
+                            {
+                                section.pages.map(getItemLink)
+                            }
+                        </>
+                    }
+                ></PageNavTab>
+            })
+            // <PageNavTab name="PM Reports"
+            //     header={
+            //         <>
+            //             <a>
+            //                 <i className="fas fa-fw fa-wrench"></i>
+            //                 <span>PM Reports</span>
+            //             </a>
+            //         </>
+            //     }
+            //     body={
+            //         <>
+            //             <h6 className="collapse-header">Demo Reports:</h6>
+            //             {
+            //                 props.reportPages.map(getItemLink)
+            //             }
+            //         </>
+            //     }
+            // ></PageNavTab>
+        }
 
         <hr className="sidebar-divider" />
 

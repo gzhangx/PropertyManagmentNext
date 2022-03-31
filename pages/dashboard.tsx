@@ -1,12 +1,12 @@
 
 import { useEffect, useState } from 'react';
 import { withRouter } from 'next/router'
-import { useRootPageContext, IRootPageState,getSideBarItemKey, getSideBarCurrentSelectedItemName } from "../components/states/RootState"
+import { useRootPageContext,  getSideBarCurrentSelectedItemName } from "../components/states/RootState"
 import {MainSideBar} from '../components/page/sidebar'
 import { TopBar } from '../components/page/topbar'
 import { Footer } from '../components/page/pageFooter'
 
-import { contents } from './rootContents'
+import { sections, sideBarContentLookup } from './rootContents'
 import { OriginalDashboard } from './origDashboard'
 
 export default withRouter(function MainDashboard(props) {
@@ -18,12 +18,12 @@ export default withRouter(function MainDashboard(props) {
     
     <div>
       <div id="wrapper">
-        <MainSideBar reportPages={Object.keys(contents)}></MainSideBar>        
+        <MainSideBar sections={sections}></MainSideBar>        
           <div id="content-wrapper" className="d-flex flex-column">
             <div id="content">
               <TopBar />
             {
-              contents[currentActivePage] || <OriginalDashboard />}
+              sideBarContentLookup[currentActivePage] || <OriginalDashboard />}
             </div>
             <Footer />
           </div>        
