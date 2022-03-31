@@ -49,7 +49,7 @@ export function MainSideBar(props : IMainSideBarProps) {
         }
     }
     const getItemLink = (itm: IMainSideBarItem, ind:number) => {
-        const itemName = getSideBarItemKey(name);
+        const itemName = getSideBarItemKey(itm.name);
         const active = rs.sideBarStates[getSideBarCurrentActiveItemKey()] === itemName;
         return <a className="collapse-item" href="#" onClick={getLinkOnClick(itm.name) as any} key={ind}>{itm.displayName} {active && <i className="fas fa-anchor"></i>    }</a>;
     }

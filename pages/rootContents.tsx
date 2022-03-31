@@ -1,7 +1,8 @@
+import { IMainSideBarSection } from '../components/page/sidebar'
 import { OwnerList } from '../components/page/reports/ownerList'
+import { HouseList } from '../components/page/reports/houseList'
 import { CashFlowReport } from '../components/page/reports/cashflow'
 import { DevelopPage } from './util/dev'
-import { IMainSideBarSection } from '../components/page/sidebar'
 
 const allSections = [
     {
@@ -24,6 +25,10 @@ const allSections = [
             {
                 name: 'Owner Info',
                 page: <OwnerList />,
+            },
+            {
+                name: 'House Info',
+                page: <HouseList />,
             }
         ]
     },
