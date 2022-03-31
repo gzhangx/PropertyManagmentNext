@@ -227,7 +227,7 @@ export async function getHouseAnchorInfo(ownerInfos: IOwnerInfo[]): Promise<IHou
 
 export async function getHouseInfo(): Promise<IHouseInfo[]> {
     return sqlGet({
-        fields: ['houseID','address','city','zip'],
+        fields: ['houseID','address','city','zip', 'ownerID'],
         table: 'houseInfo',
         //whereArray: [{
             //field: 'ownerID',
