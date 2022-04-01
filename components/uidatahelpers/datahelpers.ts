@@ -28,6 +28,9 @@ export function createHelper(table: TYPEDBTables) {
             }
             return accModel();
         },
+        getOwnerSecFields: () => {
+            return accModelFields().filter(f => f.isOwnerSecurityField);
+        },
         loadData: async (loadMapper: LoadMapperType, opts = {} as IOpts) => {
             if (!loadMapper) loadMapper = (x, y) => y;
             //fields: array of field names

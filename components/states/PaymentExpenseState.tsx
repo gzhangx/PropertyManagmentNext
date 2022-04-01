@@ -187,14 +187,14 @@ export function PaymentExpenseStateWrapper(props: {
             setPayments(r);
             //addMonths(pm.monthNames);
             addMonths(uniq(r.map(r=>r.month)))
-            addHouses(r);
+            addHouses(r as any); //same sig
         });        
     }
 
     useEffect(() => {
         getMaintenanceReport(selectedOwners).then(d => {
             addMonths(uniq(d.map(r => r.month)));
-            addHouses(d);            
+            addHouses(d as any); //same sig
             setRawExpenseData(d);
         });
         

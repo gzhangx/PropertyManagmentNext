@@ -6,7 +6,9 @@ import { createHelper, LoadMapperType } from './datahelpers';
 import { getFKDefs } from './GenCrudTableFkTrans';
 import { useRootPageContext } from '../states/RootState'
 
-import { TYPEDBTables } from '../types'
+import { IPageFilter, TYPEDBTables } from '../types'
+import { useIncomeExpensesContext } from '../states/PaymentExpenseState'
+import { IOwnerInfo } from '../reportTypes';
 
 type IDisplayFieldType = ({ field: string; desc: string; } | string)[];
 interface IGenListProps { //copied from gencrud, need combine and refactor later
@@ -31,7 +33,8 @@ interface IGenListProps { //copied from gencrud, need combine and refactor later
 }
 //props: table and displayFields [fieldNames]
 export function GenList(props: IGenListProps) {
-    const {table, columnInfo, loadMapper , fkDefs, initialPageSize, treatData = {}} = props;
+    const { table, columnInfo, loadMapper, fkDefs, initialPageSize, treatData = {} } = props;
+    const secCtx = useIncomeExpensesContext();
     const [paggingInfo, setPaggingInfo] = useState({
         PageSize: initialPageSize|| 10,        
         pos: 0,
@@ -48,9 +51,25 @@ export function GenList(props: IGenListProps) {
     const [mainDataRows,setMainData]=useState([]);
     const [loading,setLoading]=useState(true);
     const [columnInf,setColumnInf]=useState(columnInfo || []);
-    const reload = async () => {
-        const whereArray = getPageFilters(pageState, table);
+    const reload = async (selectedOwners: IOwnerInfo[]) => {
+        let whereArray = getPageFilters(pageState, table);
         const order = getPageSorts(pageState, table);
+
+        if (selectedOwners && selectedOwners.length) {
+            const extraFilters = helper.getOwnerSecFields().reduce((acc, f) => {
+                return selectedOwners.reduce((acc, own) => {
+                    const val = {
+                        field: f.field,
+                        op: 'eq',
+                        val: own.ownerID.toString(),
+                    } as IPageFilter
+                    acc.push(val);
+                    return acc;
+                }, acc);
+            }, [] as IPageFilter[]);
+            if (!whereArray) whereArray = extraFilters;
+            else whereArray = whereArray.concat(extraFilters);
+        }
         helper.loadData(loadMapper, {
             whereArray,
             order,
@@ -80,16 +99,16 @@ export function GenList(props: IGenListProps) {
             //if(columnInfo) {
             //    setColumnInf(columnInfo);
             //}
-            reload();
+            reload(secCtx.selectedOwners);
         }
         
         ld();        
-    },[columnInfo, pageState.pageProps.reloadCount, paggingInfo.pos, paggingInfo.total]);
+    },[columnInfo, pageState.pageProps.reloadCount, paggingInfo.pos, paggingInfo.total, secCtx.selectedOwners]);
 
     const doAdd = (data: ItemType, id: FieldValueType) => {        
         return helper.saveData(data,id).then(res => {
             setLoading(true);            
-            reload();
+            reload(null);
             return res;
         }).catch(err => {
             setLoading(false);
@@ -100,7 +119,7 @@ export function GenList(props: IGenListProps) {
     const doDelete=( field, id ) => {
         setLoading(true);
         helper.deleteData(id).then(() => {
-            reload();
+            reload(null);
         })
     }
     const displayFields=props.displayFields||helper.getModelFields().map(f => f.isId? null:f).filter(x => x) as IDisplayFieldType;
