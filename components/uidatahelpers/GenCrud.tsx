@@ -6,6 +6,7 @@ import { GenCrudAdd, IColumnInfo, ItemType, FieldValueType } from './GenCrudAdd'
 import { ISqlOrderDef, SortOps, IPageFilter, IPagePropsByTable,IPageState } from '../types'
 import { IFKDefs} from './GenCrudTableFkTrans'
 import { IOwnerInfo } from '../reportTypes';
+import { SQLOPS } from '../api';
 
 
 
@@ -243,7 +244,7 @@ export const GenCrud = (props: IGenGrudProps) => {
                                     e => {
                                         e.preventDefault();
                                         setFilterVals([...filterVals,
-                                        { id: v1(), table, op: defaultFilter.value, val: '', field:'' }
+                                        { id: v1(), table, op: defaultFilter.value as SQLOPS, val: '', field:'' }
                                         ])
                                     }
                                 } >Add</a></td>

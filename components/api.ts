@@ -124,7 +124,7 @@ export async function resetPassword({ username }) {
 
 }
 
-
+export type SQLOPS = '>' | '>=' | '=' | '<' | '<=' | '!=' | '<>' | 'in';
 //copied from sql.ts
 export interface ISqlRequestFieldDef {
     field: string;
@@ -132,10 +132,9 @@ export interface ISqlRequestFieldDef {
     name: string;
 }
 
-
 export interface ISqlRequestWhereItem {
     field: string;
-    op: string;
+    op: SQLOPS;
     val: string | number | (string | number)[];
 }
 

@@ -7,6 +7,7 @@ import { getFKDefs } from './GenCrudTableFkTrans';
 import { useRootPageContext } from '../states/RootState'
 
 import { IPageFilter, TYPEDBTables } from '../types'
+import { ISqlRequestWhereItem} from '../api'
 import { useIncomeExpensesContext } from '../states/PaymentExpenseState'
 import { IOwnerInfo } from '../reportTypes';
 
@@ -52,21 +53,21 @@ export function GenList(props: IGenListProps) {
     const [loading,setLoading]=useState(true);
     const [columnInf,setColumnInf]=useState(columnInfo || []);
     const reload = async (selectedOwners: IOwnerInfo[]) => {
-        let whereArray = getPageFilters(pageState, table);
+        let whereArray = (getPageFilters(pageState, table) as any) as ISqlRequestWhereItem[];
         const order = getPageSorts(pageState, table);
 
         if (selectedOwners && selectedOwners.length) {
             const extraFilters = helper.getOwnerSecFields().reduce((acc, f) => {
-                return selectedOwners.reduce((acc, own) => {
+                
                     const val = {
                         field: f.field,
-                        op: 'eq',
-                        val: own.ownerID.toString(),
-                    } as IPageFilter
+                        op: 'in',
+                        val: selectedOwners.map(o=>o.ownerID.toString()),
+                    } as ISqlRequestWhereItem
                     acc.push(val);
                     return acc;
-                }, acc);
-            }, [] as IPageFilter[]);
+                
+            }, [] as ISqlRequestWhereItem[]);
             if (!whereArray) whereArray = extraFilters;
             else whereArray = whereArray.concat(extraFilters);
         }

@@ -11,7 +11,7 @@ export interface IPageFilter {
     id: string;
     table: string;
     field: string;
-    op: string;
+    op: '>' | '>=' | '=' | '<' | '<=' | '!=' | '<>' | 'in';
     val: string;
 };
 
