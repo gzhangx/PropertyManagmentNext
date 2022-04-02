@@ -1,6 +1,7 @@
 import { IMainSideBarSection } from '../components/page/sidebar'
 import { OwnerList } from '../components/page/reports/ownerList'
 import { HouseList } from '../components/page/reports/houseList'
+import { RentpaymentInfo } from '../components/page/reports/rentpaymentInfo'
 import { CashFlowReport } from '../components/page/reports/cashflow'
 import { DevelopPage } from './util/dev'
 
@@ -29,7 +30,11 @@ const allSections = [
             {
                 name: 'House Info',
                 page: <HouseList />,
-            }
+            },
+            {
+                name: 'Payments',
+                page: <RentpaymentInfo/>,
+            },
         ]
     },
 ]
