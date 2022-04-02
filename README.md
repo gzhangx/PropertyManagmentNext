@@ -17,3 +17,18 @@ https://docs.aws.amazon.com/AmazonS3/latest/userguide/HostingWebsiteOnS3Setup.ht
         }
     ]
 }
+
+
+
+ paymentID        | varchar(100)  | NO   | PRI | NULL                |       |
+| receivedDate     | datetime      | YES  |     | NULL                |       |
+| receivedAmount   | decimal(12,2) | YES  |     | NULL                |       |
+| paidBy           | varchar(100)  | YES  |     | NULL                |       |
+| notes            | varchar(1024) | YES  |     | NULL                |       |
+| created          | datetime      | YES  |     | current_timestamp() |       |
+| modified         | datetime      | YES  |     | current_timestamp() |       |
+| paymentTypeID    | varchar(100)  | YES  |     | NULL                |       |
+| month            | varchar(100)  | YES  |     | NULL                |       |
+| paymentProcessor | varchar(100)  | YES  |     | NULL                |       |
+| houseID          | varchar(100)  | YES  |     | NULL                |       |
+| ownerID          | int

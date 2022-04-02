@@ -22,8 +22,7 @@ export function DevelopPage() {
                                     <a href="#" className="d-none d-sm-inline-block btn btn-sm btn-primary shadow-sm"
                                          onClick={e => {
                                             e.preventDefault();
-                                            //googleSheetRead('1UU9EYL7ZYpfHV6Jmd2CvVb6oBuQ6ekTR7AWXIlMvNCg', 'read', `'Tenants Info'!A1:B12`).then(r => {
-                                            googleSheetRead(sheetId, 'read', `'Tenants Info'!A1:B`).then(r => {
+                                            googleSheetRead(sheetId, 'read', `'PaymentRecord'!A1:E`).then(r => {
                                                 console.log(r);
                                             }).catch(err => {
                                                 console.log(err);
