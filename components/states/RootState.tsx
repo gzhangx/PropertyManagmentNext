@@ -1,5 +1,5 @@
 import { createContext, SetStateAction, useContext, useState, Dispatch } from 'react';
-import {IPageState} from '../types'
+//import {IPageState} from '../types'
 export interface IUserInfo {
     name: string;
     token: string;
@@ -7,7 +7,7 @@ export interface IUserInfo {
 export interface IRootPageState {
     sideBarStates: { [key: string]: boolean | string };
     setSideBarStates: Dispatch<SetStateAction<{}>>;
-    pageState: IPageState;         
+    //pageState: IPageState;         
     userInfo: IUserInfo;
     setUserInfo: Dispatch<SetStateAction<IUserInfo>>;
 }
@@ -30,15 +30,15 @@ export const getSideBarCurrentSelectedItemName = (ctx:IRootPageState)=>{
 
 export function RootPageStateWrapper({ children }) {
     const [sideBarStates, setSideBarStates] = useState({});
-    const [pageProps, setPageProps] = useState({});
+    //const [pageProps, setPageProps] = useState({});
     const [userInfo, setUserInfo] = useState<IUserInfo>({ name:'', token:''});
     const defVal: IRootPageState = {
         sideBarStates,
         setSideBarStates,
-        pageState: {
-            pageProps,
-            setPageProps,
-        },
+        //pageState: {
+        //    pageProps,
+        //    setPageProps,
+        //},
         userInfo,
         setUserInfo,
     }

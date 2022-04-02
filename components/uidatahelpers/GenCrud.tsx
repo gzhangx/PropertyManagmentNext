@@ -15,7 +15,7 @@ export function getPageSorts(pageState: IPageState, table: string): ISqlOrderDef
     const { pageProps,
         //setPageProps
     } = pageState;
-    return get(pageProps, [table, 'sorts'], []);
+    return get(pageProps.pagePropsTableInfo, [table, 'sorts'], []);
 }
 export function getPageFilters(pageState: IPageState, table: string): IPageFilter[] {
     const { pageProps,
@@ -163,11 +163,11 @@ export const GenCrud = (props: IGenGrudProps) => {
             sort.op = opToNext[fieldSort.op || ''] as SortOps;
             sort.shortDesc = getShortDesc(sort.op);
             if (!fieldSortFound) {
-                fieldSorts.push(sort);
-                set(pageProps, [table, 'sorts'], fieldSorts.filter(s => s.op));
+                fieldSorts.push(sort);                
+                set(pageProps.pagePropsTableInfo, [table, 'sorts'], fieldSorts.filter(s => s.op));
             }
-            setPageProps({ ...pageProps });
-            //setPageProps(Object.assign({}, pageProps, { reloadCount: (pageProps.reloadCount || 0) + 1 }));
+            //setPageProps({ ...pageProps });
+            setPageProps(Object.assign({}, pageProps, { reloadCount: (pageProps.reloadCount || 0) + 1 }));
         }
         return <a href='' onClick={onSortClick}>{shortDesc}</a>;
     };

@@ -43,8 +43,7 @@ export function GenList(props: IGenListProps) {
         lastPage:0,// added since missing
     });
     const helper=createHelper(table);
-    const rootState = useRootPageContext();
-    const pageState = rootState.pageState;
+    const pageState = secCtx.pageState;
     // [
     //     { field: 'tenantID', desc: 'Id', type: 'uuid', required: true, isId: true },
     //     { field: 'dadPhone', desc: 'Dad Phone', },

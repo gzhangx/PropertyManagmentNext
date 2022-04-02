@@ -49,7 +49,10 @@ export function PaymentExpenseStateWrapper(props: {
     children: any}) {
     const [selectedOwners, setSelectedOwners] = useState<IOwnerInfo[]>([]);
     const [allOwners, setAllOwners] = useState<IOwnerInfo[]>([]);
-    const [pageProps, setPageProps] = useState<IPagePropsByTable>({} as IPagePropsByTable);    
+    const [pageProps, setPageProps] = useState<IPagePropsByTable>({
+        pagePropsTableInfo: {},
+        reloadCount: 0,
+    } as IPagePropsByTable);    
     const [rawExpenseData, setRawExpenseData] = useState([] as IExpenseData[]);
     const [payments, setPayments] = useState<IPayment[]>([]);
     
@@ -204,7 +207,11 @@ export function PaymentExpenseStateWrapper(props: {
 
 
     const incomExpCtx: IIncomeExpensesContextValue = {
-        pageProps, setPageProps,
+        //pageProps, setPageProps,
+        pageState: {
+            pageProps,
+            setPageProps,
+        },
         selectedOwners, setSelectedOwners,
         rawExpenseData,
         payments,

@@ -1,4 +1,4 @@
-import { IPagePropsByTable } from './types'
+import { IPagePropsByTable, IPageState } from './types'
 import {IEditTextDropdownItem} from './generic/EditTextDropdown'
 export interface IPayment {
     address: string;
@@ -113,8 +113,9 @@ export interface IMaintenanceRawData {
 export type IStringBoolMap = { [id: string]: boolean };
 
 export interface IIncomeExpensesContextValue {
-    pageProps: IPagePropsByTable;
-    setPageProps: (a: IPagePropsByTable) => void;
+    pageState: IPageState;
+    //pageProps: IPagePropsByTable;
+    //setPageProps: (a: IPagePropsByTable) => void;
     selectedOwners: IOwnerInfo[];
     setSelectedOwners: (a: IOwnerInfo[]) => void;
     allOwners: IOwnerInfo[];

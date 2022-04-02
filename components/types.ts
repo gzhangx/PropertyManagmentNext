@@ -1,3 +1,5 @@
+import React from "react";
+
 export type TYPEDBTables = 'ownerInfo' | 'rentPaymentInfo' | 'houseInfo';
 
 export type SortOps = '' | 'asc' | 'desc';
@@ -16,15 +18,18 @@ export interface IPageFilter {
 };
 
 export interface IPagePropsByTable {
-    [tableName: string]: {
-        sorts: ISqlOrderDef[];
-        filters: IPageFilter[];
+    pagePropsTableInfo: {
+        [tableName: string]: {
+            sorts: ISqlOrderDef[];
+            filters: IPageFilter[];
+        };
     };
+    reloadCount: number;
 };
 
 export interface IPageState {
     pageProps: IPagePropsByTable;
-    setPageProps: any;
+    setPageProps: React.Dispatch<React.SetStateAction<IPagePropsByTable>>;
 }
 
 export interface ILoginResponse {
