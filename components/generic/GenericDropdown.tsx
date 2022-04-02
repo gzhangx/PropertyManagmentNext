@@ -33,7 +33,7 @@ export function GenericDropdown(props: IGenericDropdownProps) {
             if (topNode.current.contains(e.target as Node)) {
                 return;
             }
-            setShow(false)            
+            setShow(false);
             setCurDisplayValue(getSelectedText());
         }
 
