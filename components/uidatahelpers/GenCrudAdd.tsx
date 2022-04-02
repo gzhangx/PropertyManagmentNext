@@ -226,6 +226,7 @@ export const GenCrudAdd = (props: IGenGrudAddProps) => {
                         return <GenCrudAdd key={cind} columnInfo={columnInfo} doAdd={doAdd} onCancel={addDone} show={addNewForField === c.field}></GenCrudAdd>
                     }).filter(x => x)
                 }
+                <div className='container-fluid'>
                 {
                     columnInfo.map((c, cind) => {
                         if (!editItem) {
@@ -282,6 +283,7 @@ export const GenCrudAdd = (props: IGenGrudAddProps) => {
                         </div>
                     })
                 }
+                </div>
             {                
                     <div className="modal-footer">
                         <button type="button" className="btn btn-primary" data-dismiss="modal" onClick={handleSubmit}>{addUpdateLabel}</button>
