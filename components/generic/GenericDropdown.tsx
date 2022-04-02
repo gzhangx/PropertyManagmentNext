@@ -25,7 +25,7 @@ export function GenericDropdown(props: IGenericDropdownProps) {
     const { defaultShow, className } = opts;
     const [show, setShow] = useState(defaultShow || false);
     const getSelectedText = () => (opts.selected ? opts.selected.label || opts.selected.value : '');
-    const [curDisplayValue, setCurDisplayValue] = useState(getSelectedText());
+    const [curDisplayValue, setCurDisplayValue] = useState('');
     const topNode = useRef<HTMLLIElement>();
     useEffect(() => {
         const clickOutside = (e: MouseEvent) => {
