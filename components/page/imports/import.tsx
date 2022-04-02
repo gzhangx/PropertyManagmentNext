@@ -390,7 +390,7 @@ export function ImportPage() {
                             return <tr key={ind}>{
                                 keys.map((key, ck) => {
                                     return <td key={ck}>{
-                                        curPageState.curPage.displayItem ? curPageState.curPage.displayItem(curPageState, key, p[key],p) : (p[key])
+                                        curPageState.curPage.displayItem ? curPageState.curPage.displayItem(curPageState, key, p[key],p) : (p[key] && p[key].val)
                                     }</td>
                                 })
                             }</tr>
