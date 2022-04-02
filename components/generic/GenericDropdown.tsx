@@ -66,7 +66,13 @@ export function GenericDropdown(props: IGenericDropdownProps) {
                             }}
                         />
                     <div className="input-group-append">
-                        <button className="btn btn-primary" type="button">
+                            <button className="btn btn-primary" type="button" onClick={e => {
+                                //nav-link dropdown-toggle
+                                e.stopPropagation();
+                                e.preventDefault();
+                                setShow(!show);
+                                setCurDisplayValue('');
+                            }}>
                                 <i className={show ?'far fa-arrow-alt-circle-down':"fas far fa-arrow-alt-circle-right"}></i>
                         </button>
                     </div>
