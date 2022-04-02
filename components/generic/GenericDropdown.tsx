@@ -25,7 +25,7 @@ export function GenericDropdown(props: IGenericDropdownProps) {
     const { defaultShow, className } = opts;
     const [show, setShow] = useState(defaultShow || false);
     const getSelectedText = () => (opts.selected ? opts.selected.label || opts.selected.value : '');
-    const [curDisplayValue, setCurDisplayValue] = useState('');
+    const [curDisplayValue, setCurDisplayValue] = useState(null);
     const topNode = useRef<HTMLLIElement>();
     useEffect(() => {
         const clickOutside = (e: MouseEvent) => {
@@ -33,7 +33,8 @@ export function GenericDropdown(props: IGenericDropdownProps) {
             if (topNode.current.contains(e.target as Node)) {
                 return;
             }
-            setShow(false)
+            setShow(false)            
+            setCurDisplayValue(getSelectedText());
         }
 
         document.addEventListener('mousedown', clickOutside);
@@ -42,10 +43,10 @@ export function GenericDropdown(props: IGenericDropdownProps) {
         return () => {
             document.removeEventListener('mousedown', clickOutside);
         }
-    }, [show])
+    }, [show, opts.selected])
     const showClass = `dropdown-list ${className || 'dropdown-menu dropdown-menu-right shadow animated--grow-in'} ${show && 'show'}`;
 
-    const filterItems = opts.filterItems || (itm=>(itm.label || '').toLocaleLowerCase().includes(curDisplayValue.toLocaleLowerCase()))
+    const filterItems = opts.filterItems || (itm=>(itm.label || '').toLocaleLowerCase().includes((curDisplayValue || '' ).toLocaleLowerCase()))
     return <li className="nav-item dropdown no-arrow mx-1 navbar-nav" ref={topNode} onClick={e => {
         //nav-link dropdown-toggle
         e.preventDefault();
@@ -59,7 +60,7 @@ export function GenericDropdown(props: IGenericDropdownProps) {
                 <div className="input-group">
                         <input type="text" className="form-control bg-light border-0 small" placeholder={opts.placeHolder || '' }
                             aria-label="Search" aria-describedby="basic-addon2"
-                            value={curDisplayValue || getSelectedText()}
+                            value={curDisplayValue === null ? getSelectedText(): curDisplayValue}
                             onChange={e => {
                                 setCurDisplayValue(e.target.value);
                             }}
@@ -94,7 +95,7 @@ export function GenericDropdown(props: IGenericDropdownProps) {
                         onClick={() => {   
                             props.onSelectionChanged(data);
                             opts.setSelected(data);
-                            setCurDisplayValue('');
+                            setCurDisplayValue(data.label);
                             setShow(false);
                         }}
                     >
