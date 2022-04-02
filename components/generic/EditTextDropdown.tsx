@@ -21,14 +21,14 @@ export function EditTextDropdown(props: IEditTextDropdownProps) {
         setTo = (props.items[0])
     }
     
-    const [selected, setSelected] = useState<IEditTextDropdownItem>(setTo);    
-
-    console.log(setTo);
+    const [selected, setSelected] = useState<IEditTextDropdownItem>(setTo);
+    if (!opts.setSelected) {
+        opts.selected = selected;
+        opts.setSelected = setSelected;
+    }
     useEffect(() => {          
-        setSelected(setTo);
-    }, [setTo && (setTo.value || setTo.label)]);
-    opts.selected = selected;
-    opts.setSelected = setSelected;
+        opts.setSelected(setTo);
+    }, []);    
     
     
    
