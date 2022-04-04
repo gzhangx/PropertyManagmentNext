@@ -1,11 +1,11 @@
 import React, { useState, useEffect, useReducer } from 'react';
-import { googleSheetRead, getOwners, sqlAdd, getHouseInfo } from '../../api'
+import { googleSheetRead, getOwners, sqlAdd, getHouseInfo, getPaymentRecords } from '../../api'
 import { EditTextDropdown } from '../../generic/EditTextDropdown'
-import { IOwnerInfo, IHouseInfo } from '../../reportTypes';
+import { IOwnerInfo, IHouseInfo, IPayment } from '../../reportTypes';
 import { keyBy, mapValues} from 'lodash'
 
 import { BaseDialog} from '../../generic/basedialog'
-type ALLFieldNames = ''|'address'|'city'|'zip'| 'ownerName';
+type ALLFieldNames = ''|'address'|'city'|'zip'| 'ownerName'|'receivedDate' | 'receivedAmount' | 'houseID' |'paymentTypeID'| 'paymentProcessor' | 'notes';
 export function ImportPage() {
     const [dlgContent, setDlgContent] = useState<JSX.Element>(null);
     
@@ -38,6 +38,7 @@ export function ImportPage() {
         missingOwnersByName: { [ownerName: string]: boolean };
         housesByAddress: { [ownerName: string]: IHouseInfo };
         houses: IHouseInfo[];
+        payments: IPayment[];
     }    
 
     const [curPageState, dispatchCurPageState] = useReducer((state:IPageStates, act: (state:IPageStates)=>IPageStates) => act(state) as IPageStates, {} as IPageStates);
@@ -54,6 +55,31 @@ export function ImportPage() {
         {
             pageName: 'PaymentRecord',
             range: 'A1:F',
+            fieldMap:[
+                'receivedDate',
+                'receivedAmount',
+                'houseID',
+                'paymentTypeID',
+                'paymentProcessor',                
+                //'paidBy',
+                'notes',
+                //'created',
+                //'modified',                
+                //'month',                
+                //'ownerID',
+            ],
+            idField: 'receivedDate',
+            pageLoader: async () => {
+                if (!curPageState.payments) {
+                    const hi = await getPaymentRecords();
+                    dispatchCurPageState(state => {
+                        return {
+                            ...state,
+                            payments: hi,                            
+                        }
+                    });                    
+                }
+            },
         },
         {
             pageName: 'House Info',

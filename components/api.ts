@@ -238,6 +238,28 @@ export async function getHouseInfo(): Promise<IHouseInfo[]> {
     });    
 }
 
+export async function getPaymentRecords(): Promise<IPayment[]> {
+    return sqlGet({
+        fields: [ 'receivedDate',
+        'receivedAmount',
+        'houseID',
+        'paymentTypeID',
+        'paymentProcessor',                
+        //'paidBy',
+        'notes',
+            'ownerID'
+        ],
+        table: 'rentPaymentInfo',
+        //whereArray: [{
+            //field: 'ownerID',
+            //op: 'in',
+            //val: ownerInfos.map(o=>o.ownerID),
+        //}],        
+    }).then((r: { rows: IPayment[]}) => {
+        return r.rows.filter(x=>x.houseID);
+    });    
+}
+
 // Used by cashflow
 export async function getPaymnents(ownerInfos: IOwnerInfo[]) : Promise<IPayment[]> {
     if (!ownerInfos || !ownerInfos.length) return [];
