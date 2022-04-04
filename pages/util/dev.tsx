@@ -49,3 +49,6 @@ export function DevelopPage() {
         </div>
     </div>
 }
+
+
+export default DevelopPage;

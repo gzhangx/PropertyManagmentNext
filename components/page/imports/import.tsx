@@ -52,6 +52,10 @@ export function ImportPage() {
             range: 'A1:M',
         },
         {
+            pageName: 'PaymentRecord',
+            range: 'A1:F',
+        },
+        {
             pageName: 'House Info',
             range: 'A1:I',
             fieldMap: [
