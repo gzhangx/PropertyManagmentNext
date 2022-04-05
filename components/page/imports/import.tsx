@@ -2,7 +2,8 @@ import React, { useState, useEffect, useReducer } from 'react';
 import { googleSheetRead, getOwners, sqlAdd, getHouseInfo, getPaymentRecords } from '../../api'
 import { EditTextDropdown } from '../../generic/EditTextDropdown'
 import { IOwnerInfo, IHouseInfo, IPayment } from '../../reportTypes';
-import { keyBy, mapValues} from 'lodash'
+import { keyBy, mapValues } from 'lodash'
+import { InforDialog } from '../../generic/basedialog';
 
 import { BaseDialog} from '../../generic/basedialog'
 type ALLFieldNames = '' | 'address' | 'city' | 'zip' | 'ownerName' | 'receivedDate' | 'receivedAmount' | 'houseID' | 'paymentTypeID' | 'paymentProcessor' | 'notes';
@@ -284,7 +285,7 @@ export function ImportPage() {
         const own = state.existingOwnersByName[saveData.ownerName];
         if (!own) {
             console.log('no owner found');
-            return;
+            return <InforDialog message='No Owner Found' hide={() => setDlgContent(null)}></InforDialog>;            
         }
         saveData.ownerID = own.ownerID.toString();
         return <div className="col-lg-12 mb-4">            
