@@ -16,7 +16,7 @@ export function ImportPage() {
     const [dlgContent, setDlgContent] = useState<JSX.Element>(null);
     
     interface IPageInfo {
-        pageName: string;
+        pageName: 'Tenants Info' | 'Lease Info' | 'PaymentRecord' | 'House Info';
         range: string;
         fieldMap?: ALLFieldNames[];
         idField?: ALLFieldNames;
@@ -45,10 +45,20 @@ export function ImportPage() {
         housesByAddress: { [ownerName: string]: IHouseInfo };
         houses: IHouseInfo[];
         payments: IPaymentWithArg[];
+        stateReloaded: number;
     }    
 
-    const [curPageState, dispatchCurPageState] = useReducer((state:IPageStates, act: (state:IPageStates)=>IPageStates) => act(state) as IPageStates, {} as IPageStates);
+    const [curPageState, dispatchCurPageState] = useReducer((state: IPageStates, act: (state: IPageStates) => IPageStates) => act(state) as IPageStates, {
+        stateReloaded: 0,
+    } as IPageStates);
 
+    async function getHouseState() {
+        const hi = await getHouseInfo();        
+        return {        
+            houses: hi,
+            housesByAddress: keyBy(hi, 'address'),        
+        }        
+    }
     const pages: IPageInfo[] = [
         {
             pageName: 'Tenants Info',
@@ -78,14 +88,31 @@ export function ImportPage() {
             pageLoader: async () => {
                 if (!curPageState.payments) {
                     const hi = await getPaymentRecords();
+                    let hinfo = {};
+                    if (!curPageState.houses) {
+                        hinfo = await getHouseState();
+                    }
                     dispatchCurPageState(state => {
                         return {
                             ...state,
-                            payments: hi.map(h=>({...h, processed: false})),
+                            payments: hi.map(h => ({ ...h, processed: false })),
+                            ...hinfo,
+                            //stateReloaded: state.stateReloaded+1,
                         }
                     });                    
-                }
+                }                
             },
+            displayItem: (state:IPageStates, field: string, item: IItemData, all) => {
+                if (field === 'houseID') {                    
+                    if (state.housesByAddress[item.val]) {
+                        return `OK ${item.val}`;
+                    }
+                    return <button onClick={() => {
+                        setDlgContent(createHouseFunc(state, all))
+                    }}> Click to create {item.val}</button>
+                } else
+                    return item.val;
+            }
         },
         {
             pageName: 'House Info',
@@ -101,17 +128,20 @@ export function ImportPage() {
             idField: 'address',
             pageLoader: async () => {
                 if (!curPageState.houses) {
-                    const hi = await getHouseInfo();
+                    //const hi = await getHouseInfo();
+                    const hi = await getHouseState();
                     dispatchCurPageState(state => {
                         return {
                             ...state,
-                            houses: hi,
-                            housesByAddress: keyBy(hi, 'address'),
+                            //houses: hi,
+                            //housesByAddress: keyBy(hi, 'address'),
+                            ...hi,
                         }
                     });                    
                 }
             },
-            displayItem: (state:IPageStates, field: string, item: IItemData, all) => {
+            displayItem: (state: IPageStates, field: string, item: IItemData, all) => {
+                if (!item) return 'houseinfonull';            
                 if (field === 'ownerName') {
                     if (!state.existingOwnersByName) return item.val;
                     if (!state.existingOwnersByName[item.val])
@@ -131,6 +161,7 @@ export function ImportPage() {
                         }
                     }
                 } else if (field === 'address') {
+                    if (!item) return 'null';                     
                     console.log(`debugremove item.val is ${item.val}, existingHousesByAddress in addr`);
                     console.log('insdeide of map, address = ' + Object.keys(state.housesByAddress).length)
                     if (state.housesByAddress[item.val]) {
@@ -165,8 +196,9 @@ export function ImportPage() {
     useEffect(() => {
         if (!curPageState.curPage || !curPageState.curPage.fieldMap || !curPageState.curPage.pageLoader) return;
         curPageState.curPage.pageLoader();
-    }, [curPageState.curPage, curPageState.existingOwnersByName, curPageState.pageDetails])
+    }, [curPageState.stateReloaded, curPageState.curPage, curPageState.existingOwnersByName, curPageState.pageDetails])
         
+    console.log(`curPageState.stateReloaded=${curPageState.stateReloaded}`);
     const sheetId = '1UU9EYL7ZYpfHV6Jmd2CvVb6oBuQ6ekTR7AWXIlMvNCg';
 
 
