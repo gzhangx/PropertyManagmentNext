@@ -262,7 +262,7 @@ export function ImportPage() {
         }
     }
     useEffect(() => {
-        if (!curPageState.curPage || !curPageState.curPage.fieldMap) return;
+        if (!curPageState.curPage) return;
         loadPageSheetData(curPageState.curPage).then(() => {
             if (curPageState.curPage.pageLoader) curPageState.curPage.pageLoader();  
         })        
