@@ -47,7 +47,7 @@ export function ImportPage() {
         housesByAddress: { [ownerName: string]: IHouseInfo };
         houses: IHouseInfo[];
         payments: IPaymentWithArg[];
-        paymentsByDateEct: { [key: string]: IPaymentWithArg[] };
+        //paymentsByDateEct: { [key: string]: IPaymentWithArg[] };
         stateReloaded: number;
         getHouseByAddress: (state:IPageStates, addr: string) => IHouseInfo;
     }    
@@ -55,7 +55,7 @@ export function ImportPage() {
     const [curPageState, dispatchCurPageState] = useReducer((state: IPageStates, act: (state: IPageStates) => IPageStates) => act(state) as IPageStates, {
         stateReloaded: 0,
         housesByAddress: {},
-        paymentsByDateEct: {},
+        //paymentsByDateEct: {},
         getHouseByAddress: (state,addr) => {            
             return state.housesByAddress[addr.toLowerCase()]
         },
@@ -161,7 +161,7 @@ export function ImportPage() {
                         return {
                             ...state,
                             payments,
-                            paymentsByDateEct,
+                            //paymentsByDateEct,
                             pageDetails,
                             ...hinfo,
                             //stateReloaded: state.stateReloaded+1,
