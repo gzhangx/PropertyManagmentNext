@@ -22,7 +22,7 @@ export function ImportPage() {
         range: string;
         fieldMap?: ALLFieldNames[];
         idField?: ALLFieldNames;
-        pageLoader?: (pageDetails:IDataDetails) => Promise<void>;
+        pageLoader?: (page:IPageInfo, pageDetails:IDataDetails) => Promise<void>;
         displayItem?: (state: IPageStates,field: string, itm: IItemData, all:{[key:string]:IItemData}) => JSX.Element|string;
     }
 
@@ -100,7 +100,7 @@ export function ImportPage() {
                 //'ownerID',
             ],
             idField: 'receivedDate',
-            pageLoader: async (pageDetails:IDataDetails) => {
+            pageLoader: async (page, pageDetails:IDataDetails) => {
                 if (!curPageState.payments) {
                     const hi = await getPaymentRecords();
                     let hinfo = {};
@@ -114,7 +114,21 @@ export function ImportPage() {
                         }
                         acc[getPaymentKey(pmt)].push(pmt);
                         return acc;
-                    }, {} as {[key:string]:IPaymentWithArg[]});
+                    }, {} as { [key: string]: IPaymentWithArg[] });
+                    pageDetails.rows.forEach(r => {
+                        const pmt = page.fieldMap.reduce((acc, f) => { 
+                            acc[f] = r[f].val;
+                            return acc;
+                        }, {} as IPaymentWithArg);
+                        const key = getPaymentKey(pmt);
+                        const foundAry = paymentsByDateEct[key];
+                        if (!foundAry) {
+                            
+                        }
+                        for (let i = 0; i < foundAry.length; i++) {
+
+                        }
+                    })
                     dispatchCurPageState(state => {
                         return {
                             ...state,
@@ -154,7 +168,7 @@ export function ImportPage() {
                 'ownerName'
             ],
             idField: 'address',
-            pageLoader: async (pageDetails:IDataDetails) => {
+            pageLoader: async (page,pageDetails:IDataDetails) => {
                 if (!curPageState.houses) {
                     //const hi = await getHouseInfo();
                     const hi = await getHouseState();
@@ -279,7 +293,7 @@ export function ImportPage() {
         if (!curPageState.curPage) return;
         loadPageSheetDataRaw(curPageState.curPage).then((pageDetails) => {
             if (curPageState.curPage.pageLoader) {
-                curPageState.curPage.pageLoader(pageDetails);
+                curPageState.curPage.pageLoader(curPageState.curPage, pageDetails);
             } else {                
                 dispatchCurPageState(state => {
                     return {
