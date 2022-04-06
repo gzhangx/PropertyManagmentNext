@@ -159,7 +159,7 @@ export function ImportPage() {
                         }}> Click to create {item.val}</button>
                     else {
                         item.obj = state.existingOwnersByName[item.val];
-                        const houseFromDb = state.getHouseByAddress(state. all["address"].val);
+                        const houseFromDb = state.getHouseByAddress(state, all["address"].val);
                         const matchedOwnerFromDb = houseFromDb && state.existingOwnersById[houseFromDb.ownerID];                        
                         //console.log(houseFromDb);
                         if (matchedOwnerFromDb) {                            
