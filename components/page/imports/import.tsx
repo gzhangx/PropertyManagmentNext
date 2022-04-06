@@ -22,7 +22,7 @@ export function ImportPage() {
         range: string;
         fieldMap?: ALLFieldNames[];
         idField?: ALLFieldNames;
-        pageLoader?: (page:IPageInfo, pageDetails:IDataDetails) => Promise<void>;
+        pageLoader?: (pageState: IPageStates) => Promise<void>;
         displayItem?: (state: IPageStates,field: string, itm: IItemData, all:{[key:string]:IItemData}) => JSX.Element|string;
     }
 
@@ -61,10 +61,10 @@ export function ImportPage() {
         },
     } as IPageStates);
 
-    function getPaymentKey(pmt: IPayment) {
-        const date = moment(pmt.receivedDate).format('YYYY-MM-DD')
+    function getPaymentKey(pmt: IPayment) {        
+        const date = moment(pmt.receivedDate).format('YYYY-MM-DD')        
         const amt = pmt.receivedAmount.toFixed(2);
-        return `${date}-${amt}-${pmt.address.toLowerCase()}-${pmt.paymentID || ''}-${pmt.paymentTypeID || ''}-${pmt.notes || ''}`;
+        return `${date}-${amt}-${(pmt.address || '').toLowerCase()}-${pmt.paymentID || ''}-${pmt.paymentTypeID || ''}-${pmt.notes || ''}`;
     }
 
     async function getHouseState() {
@@ -100,14 +100,19 @@ export function ImportPage() {
                 //'ownerID',
             ],
             idField: 'receivedDate',
-            pageLoader: async (page, pageDetails:IDataDetails) => {
+            pageLoader: async (pageState: IPageStates) => {
+                const page = pageState.curPage;
+                const pageDetails = pageState.pageDetails;
+                let hinfo = {};
+                let payments = pageState.payments;
                 if (!curPageState.payments) {
                     const hi = await getPaymentRecords();
-                    let hinfo = {};
+                    payments = hi.map(h => ({ ...h, processed: false }));
+                }                    
                     if (!curPageState.houses) {
                         hinfo = await getHouseState();
-                    }
-                    const payments = hi.map(h => ({ ...h, processed: false }));
+                }                   
+                
                     const paymentsByDateEct = payments.reduce((acc, pmt) => {
                         if (!acc[getPaymentKey(pmt)]) {
                             acc[getPaymentKey(pmt)] = [];
@@ -115,19 +120,42 @@ export function ImportPage() {
                         acc[getPaymentKey(pmt)].push(pmt);
                         return acc;
                     }, {} as { [key: string]: IPaymentWithArg[] });
-                    pageDetails.rows.forEach(r => {
-                        const pmt = page.fieldMap.reduce((acc, f) => { 
+                    pageDetails.rows.forEach(r => {                        
+                        const pmt = page.fieldMap.reduce((acc, f) => {
                             acc[f] = r[f].val;
+                            if (f === 'receivedAmount') {
+                                const amtFlt = (acc[f] as any as string).replace(/[\$, ]/g, '');
+                                const amt = parseFloat(amtFlt);
+                                acc[f] = amt;
+                                r[f].val = amtFlt;
+                            } else if (f === 'receivedDate') {
+                                const dateStr = moment(acc[f]).format('YYYY-MM-DD');
+                                acc[f] = dateStr;
+                                r[f].val = dateStr;
+                            }
                             return acc;
                         }, {} as IPaymentWithArg);
                         const key = getPaymentKey(pmt);
                         const foundAry = paymentsByDateEct[key];
                         if (!foundAry) {
-                            
+                            r['NOTFOUND'] = {
+                                val: 'true',
+                                obj: "not",
+                            };
+                            return;
                         }
                         for (let i = 0; i < foundAry.length; i++) {
-
+                            if (foundAry[i].processed) continue;
+                            r['FOUND'] = {
+                                val: '',
+                                obj: foundAry[i],
+                            }
+                            return;
                         }
+                        r['NOTFOUND'] = {
+                            val: 'true',
+                            obj: "not",
+                        };
                     })
                     dispatchCurPageState(state => {
                         return {
@@ -138,11 +166,14 @@ export function ImportPage() {
                             ...hinfo,
                             //stateReloaded: state.stateReloaded+1,
                         }
-                    });                    
-                }                
+                    });
+                            
             },
             displayItem: (state: IPageStates, field: string, item: IItemData, all) => {
                 if (!item) return 'NOITEM';
+                if (field === 'receivedAmount') {
+                    return '$'+item.val;
+                }
                 if (field === 'houseID') {
                     if (state.getHouseByAddress(state, item.val)) {
                         return `OK ${item.val}`;
@@ -168,20 +199,23 @@ export function ImportPage() {
                 'ownerName'
             ],
             idField: 'address',
-            pageLoader: async (page,pageDetails:IDataDetails) => {
+            pageLoader: async (pageState: IPageStates) => {
+                const page = pageState.curPage;
+                const pageDetails: IDataDetails = pageState.pageDetails;
+                let hi = {};
                 if (!curPageState.houses) {
                     //const hi = await getHouseInfo();
-                    const hi = await getHouseState();
-                    dispatchCurPageState(state => {
-                        return {
-                            ...state,
-                            pageDetails,
-                            //houses: hi,
-                            //housesByAddress: keyBy(hi, 'address'),
-                            ...hi,
-                        }
-                    });                    
+                    hi = await getHouseState();
                 }
+                dispatchCurPageState(state => {
+                    return {
+                        ...state,
+                        pageDetails,
+                        //houses: hi,
+                        //housesByAddress: keyBy(hi, 'address'),
+                        ...hi,
+                    }
+                });
             },
             displayItem: (state: IPageStates, field: string, item: IItemData, all) => {
                 if (!item) return 'houseinfonull';            
@@ -293,7 +327,10 @@ export function ImportPage() {
         if (!curPageState.curPage) return;
         loadPageSheetDataRaw(curPageState.curPage).then((pageDetails) => {
             if (curPageState.curPage.pageLoader) {
-                curPageState.curPage.pageLoader(curPageState.curPage, pageDetails);
+                curPageState.curPage.pageLoader({
+                    ...curPageState,
+                    pageDetails,
+                });
             } else {                
                 dispatchCurPageState(state => {
                     return {
@@ -406,7 +443,7 @@ export function ImportPage() {
                                     console.log('sql add owner');
                                     console.log(res)
                                     
-                                    return state.curPage.pageLoader && state.curPage.pageLoader().then(() => {
+                                    return state.curPage.pageLoader && state.curPage.pageLoader(curPageState).then(() => {
                                         setDlgContent(null);  
                                     })                                    
                                 }).catch(err => {
