@@ -47,17 +47,22 @@ export function ImportPage() {
         houses: IHouseInfo[];
         payments: IPaymentWithArg[];
         stateReloaded: number;
+        getHouseByAddress: (state:IPageStates, addr: string) => IHouseInfo;
     }    
 
     const [curPageState, dispatchCurPageState] = useReducer((state: IPageStates, act: (state: IPageStates) => IPageStates) => act(state) as IPageStates, {
         stateReloaded: 0,
+        housesByAddress: {},
+        getHouseByAddress: (state,addr) => {            
+            return state.housesByAddress[addr.toLowerCase()]
+        },
     } as IPageStates);
 
     async function getHouseState() {
         const hi = await getHouseInfo();        
         return {        
             houses: hi,
-            housesByAddress: keyBy(hi, 'address'),        
+            housesByAddress: keyBy(hi, h=>h.address.toLowerCase()),
         }        
     }
     const pages: IPageInfo[] = [
@@ -104,10 +109,12 @@ export function ImportPage() {
                 }                
             },
             displayItem: (state:IPageStates, field: string, item: IItemData, all) => {
-                if (field === 'houseID') {                    
-                    if (state.housesByAddress[item.val]) {
+                if (field === 'houseID') {
+                    if (state.getHouseByAddress(state, item.val)) {
                         return `OK ${item.val}`;
                     }
+                    //state.existingOwnersByName[]
+                    //all[ownerName]
                     return <button onClick={() => {
                         setDlgContent(createHouseFunc(state, all))
                     }}> Click to create {item.val}</button>
@@ -152,7 +159,7 @@ export function ImportPage() {
                         }}> Click to create {item.val}</button>
                     else {
                         item.obj = state.existingOwnersByName[item.val];
-                        const houseFromDb = state.housesByAddress[all["address"].val];
+                        const houseFromDb = state.getHouseByAddress(state. all["address"].val);
                         const matchedOwnerFromDb = houseFromDb && state.existingOwnersById[houseFromDb.ownerID];                        
                         //console.log(houseFromDb);
                         if (matchedOwnerFromDb) {                            
@@ -162,10 +169,8 @@ export function ImportPage() {
                         }
                     }
                 } else if (field === 'address') {
-                    if (!item) return 'null';                     
-                    console.log(`debugremove item.val is ${item.val}, existingHousesByAddress in addr`);
-                    console.log('insdeide of map, address = ' + Object.keys(state.housesByAddress).length)
-                    if (state.housesByAddress[item.val]) {
+                    if (!item) return 'null';                    
+                    if (state.getHouseByAddress(state, item.val)) {
                         return `OK ${item.val}`;
                     }
                     return <button onClick={() => {
