@@ -17,6 +17,7 @@ interface IPaymentWithArg extends IPayment
 export function ImportPage() {
     const [dlgContent, setDlgContent] = useState<JSX.Element>(null);
     
+    const [errorStr, setErrorStr] = useState('');
     interface IPageInfo {
         pageName: 'Tenants Info' | 'Lease Info' | 'PaymentRecord' | 'House Info';
         range: string;
@@ -172,6 +173,12 @@ export function ImportPage() {
             displayItem: (state: IPageStates, field: string, item: IItemData, all) => {
                 if (!item) return 'NOITEM';
                 if (field === 'receivedAmount') {
+                    if (all['NOTFOUND']) {
+                        //return `${item.val}=>Need import`
+                        return <button onClick={() => {
+                            setDlgContent(createPaymentFunc(state, all))
+                        }}> Click to create ${item.val}</button>
+                    }
                     return '$'+item.val;
                 }
                 if (field === 'houseID') {
@@ -421,6 +428,50 @@ export function ImportPage() {
         </div>
     };
 
+    const createPaymentFunc = (state: IPageStates, data: { [key: string]: IItemData }) => {
+        const saveData = mapValues(data, itm => {
+            return itm.val
+        }) as {[key:string]:string|number};
+        const houseInfo = state.getHouseByAddress(state, saveData.address as string);        
+        if (!houseInfo) {
+            console.log('no house found');
+            return <InforDialog message='No House Found' hide={() => setDlgContent(null)}></InforDialog>;            
+        }
+        saveData.ownerID = houseInfo.ownerID;
+        return <div className="col-lg-12 mb-4">            
+            <div className="row">
+                <div className="col-lg-12 mb-4">
+                    <div className="card bg-light text-black shadow">
+                        <div className="card-body" style={{ display: 'flex', justifyContent:'flex-end'}}>
+                            <button className='btn btn-primary mx-1' onClick={() => {
+                                sqlAdd('rentPaymentInfo', 
+                                saveData, true                                
+                                ).then(res => {
+                                    console.log('sql add owner');
+                                    console.log(res)
+                                    
+                                    return state.curPage.pageLoader && state.curPage.pageLoader(curPageState).then(() => {
+                                        setDlgContent(null);  
+                                    })                                    
+                                }).catch(err => {
+                                    console.log('sql add owner err');
+                                    console.log(err)
+                                    setErrorStr(`sql add rentpayment error ${err.message}`);
+                                    
+                                })
+                            }}>Create</button>
+
+                            <button className='btn btn-success' onClick={() => {
+                                setDlgContent(null);
+                            }}>Close</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    };
+
     const createHouseFunc = (state: IPageStates, data: { [key: string]: IItemData }) => {
         const saveData = mapValues(data, itm => {
             return itm.val
@@ -465,6 +516,9 @@ export function ImportPage() {
     
     return <div className="container-fluid">
         <BaseDialog children={dlgContent} show={dlgContent != null} />
+        {
+            errorStr && <InforDialog message={errorStr} hide={() => setErrorStr('')}></InforDialog>
+        }
         <div className="d-sm-flex align-items-center justify-content-between mb-4">
             
             <h1 className="h3 mb-0 text-gray-800">Develop</h1>

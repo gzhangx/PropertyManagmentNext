@@ -139,7 +139,7 @@ export interface ISqlRequestWhereItem {
 }
 
 export interface ISqlRequest {
-    table: string;
+    table: 'rentPaymentInfo' | 'houseInfo' | 'maintenanceRecords' | 'ownerInfo';
     fields?: (ISqlRequestFieldDef | string)[];
     joins?: any;
     order?: ISqlOrderDef[];
