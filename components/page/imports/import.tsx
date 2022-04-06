@@ -108,7 +108,8 @@ export function ImportPage() {
                     });                    
                 }                
             },
-            displayItem: (state:IPageStates, field: string, item: IItemData, all) => {
+            displayItem: (state: IPageStates, field: string, item: IItemData, all) => {
+                if (!item) return 'NOITEM';
                 if (field === 'houseID') {
                     if (state.getHouseByAddress(state, item.val)) {
                         return `OK ${item.val}`;
@@ -199,10 +200,73 @@ export function ImportPage() {
         refresOwners();
     }, []);
 
+
+    async function loadPageSheetData(curPage: IPageInfo) {
+        const setPageDetails = (newd: IDataDetails) => {
+            dispatchCurPageState(state => {
+                return {
+                    ...state,
+                    pageDetails: newd,
+                }
+            })
+        }
+        if (curPage) {
+            return googleSheetRead(sheetId, 'read', `'${curPage.pageName}'!${curPage.range}`).then((r: {
+                values: string[][];
+            }) => {                                                    
+                if (!r || !r.values.length) {
+                    console.log(`no data for ${curPage.pageName}`);
+                    return;
+                }
+                if (curPage.fieldMap) {
+                    const columns = curPage.fieldMap.reduce((acc, f, ind) => {
+                        if (f) {
+                            acc.push(r.values[0][ind]);
+                        }
+                        return acc;
+                    }, [] as string[]);
+                    const rows = r.values.slice(1).map(rr => {
+                        return curPage.fieldMap.reduce((acc, f, ind) => {
+                            if (f) {
+                                acc[f] = {
+                                    val: rr[ind],
+                                    obj: null,
+                                };
+                            }
+                            return acc;
+                        }, {} as { [key: string]: IItemData; });
+                    }).filter(x=>x[curPage.idField].val);
+                    setPageDetails({
+                        columns,
+                        rows,
+                    })
+                } else {
+                    const columns = r.values[0];
+                    const rows = r.values.slice(1).map(r => {
+                        return r.reduce((acc, celVal, ind) => {
+                            acc[ind] = {
+                                val: celVal,
+                                obj: null,
+                            }                                                      
+                            return acc;
+                        }, {} as { [key: string]: IItemData; });
+                    })
+                    setPageDetails({
+                        columns,
+                        rows,
+                    });
+                }
+            }).catch(err => {
+                console.log(err);
+            })
+        }
+    }
     useEffect(() => {
-        if (!curPageState.curPage || !curPageState.curPage.fieldMap || !curPageState.curPage.pageLoader) return;
-        curPageState.curPage.pageLoader();
-    }, [curPageState.stateReloaded, curPageState.curPage, curPageState.existingOwnersByName, curPageState.pageDetails])
+        if (!curPageState.curPage || !curPageState.curPage.fieldMap) return;
+        loadPageSheetData(curPageState.curPage).then(() => {
+            if (curPageState.curPage.pageLoader) curPageState.curPage.pageLoader();  
+        })        
+    }, [curPageState.stateReloaded, curPageState.curPage, curPageState.existingOwnersByName])
         
     console.log(`curPageState.stateReloaded=${curPageState.stateReloaded}`);
     const sheetId = '1UU9EYL7ZYpfHV6Jmd2CvVb6oBuQ6ekTR7AWXIlMvNCg';
@@ -366,65 +430,9 @@ export function ImportPage() {
                                         onClick={e => {
                                             e.preventDefault();
                                             const curPage = curPageState.curPage;
-                                            const setPageDetails = (newd: IDataDetails) => {
-                                                dispatchCurPageState(state => {
-                                                    return {
-                                                        ...state,
-                                                        pageDetails: newd,
-                                                    }
-                                                })
-                                            }
+                                            
                                             //googleSheetRead('1UU9EYL7ZYpfHV6Jmd2CvVb6oBuQ6ekTR7AWXIlMvNCg', 'read', `'Tenants Info'!A1:B12`).then(r => {
-                                            if (curPage) {
-                                                googleSheetRead(sheetId, 'read', `'${curPage.pageName}'!${curPage.range}`).then((r: {
-                                                    values: string[][];
-                                                }) => {                                                    
-                                                    if (!r || !r.values.length) {
-                                                        console.log(`no data for ${curPage.pageName}`);
-                                                        return;
-                                                    }
-                                                    if (curPage.fieldMap) {
-                                                        const columns = curPage.fieldMap.reduce((acc, f, ind) => {
-                                                            if (f) {
-                                                                acc.push(r.values[0][ind]);
-                                                            }
-                                                            return acc;
-                                                        }, [] as string[]);
-                                                        const rows = r.values.slice(1).map(rr => {
-                                                            return curPage.fieldMap.reduce((acc, f, ind) => {
-                                                                if (f) {
-                                                                    acc[f] = {
-                                                                        val: rr[ind],
-                                                                        obj: null,
-                                                                    };
-                                                                }
-                                                                return acc;
-                                                            }, {} as { [key: string]: IItemData; });
-                                                        }).filter(x=>x[curPage.idField].val);
-                                                        setPageDetails({
-                                                            columns,
-                                                            rows,
-                                                        })
-                                                    } else {
-                                                        const columns = r.values[0];
-                                                        const rows = r.values.slice(1).map(r => {
-                                                            return r.reduce((acc, celVal, ind) => {
-                                                                acc[ind] = {
-                                                                    val: celVal,
-                                                                    obj: null,
-                                                                }                                                      
-                                                                return acc;
-                                                            }, {} as { [key: string]: IItemData; });
-                                                        })
-                                                        setPageDetails({
-                                                            columns,
-                                                            rows,
-                                                        });
-                                                    }
-                                                }).catch(err => {
-                                                    console.log(err);
-                                                })
-                                            }
+                                            
                                             e.stopPropagation();
                                         }}
                                     ><i
