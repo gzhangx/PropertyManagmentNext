@@ -4,6 +4,7 @@ import { EditTextDropdown } from '../../generic/EditTextDropdown'
 import { IOwnerInfo, IHouseInfo, IPayment } from '../../reportTypes';
 import { keyBy, mapValues } from 'lodash'
 import { InforDialog } from '../../generic/basedialog';
+import moment from 'moment';
 
 import { BaseDialog} from '../../generic/basedialog'
 type ALLFieldNames = '' | 'address' | 'city' | 'zip' | 'ownerName' | 'receivedDate' | 'receivedAmount' | 'houseID' | 'paymentTypeID' | 'paymentProcessor' | 'notes';
@@ -21,7 +22,7 @@ export function ImportPage() {
         range: string;
         fieldMap?: ALLFieldNames[];
         idField?: ALLFieldNames;
-        pageLoader?: () => Promise<void>;
+        pageLoader?: (pageDetails:IDataDetails) => Promise<void>;
         displayItem?: (state: IPageStates,field: string, itm: IItemData, all:{[key:string]:IItemData}) => JSX.Element|string;
     }
 
@@ -46,6 +47,7 @@ export function ImportPage() {
         housesByAddress: { [ownerName: string]: IHouseInfo };
         houses: IHouseInfo[];
         payments: IPaymentWithArg[];
+        paymentsByDateEct: { [key: string]: IPaymentWithArg[] };
         stateReloaded: number;
         getHouseByAddress: (state:IPageStates, addr: string) => IHouseInfo;
     }    
@@ -53,10 +55,17 @@ export function ImportPage() {
     const [curPageState, dispatchCurPageState] = useReducer((state: IPageStates, act: (state: IPageStates) => IPageStates) => act(state) as IPageStates, {
         stateReloaded: 0,
         housesByAddress: {},
+        paymentsByDateEct: {},
         getHouseByAddress: (state,addr) => {            
             return state.housesByAddress[addr.toLowerCase()]
         },
     } as IPageStates);
+
+    function getPaymentKey(pmt: IPayment) {
+        const date = moment(pmt.receivedDate).format('YYYY-MM-DD')
+        const amt = pmt.receivedAmount.toFixed(2);
+        return `${date}-${amt}-${pmt.address.toLowerCase()}-${pmt.paymentID || ''}-${pmt.paymentTypeID || ''}-${pmt.notes || ''}`;
+    }
 
     async function getHouseState() {
         const hi = await getHouseInfo();        
@@ -91,17 +100,27 @@ export function ImportPage() {
                 //'ownerID',
             ],
             idField: 'receivedDate',
-            pageLoader: async () => {
+            pageLoader: async (pageDetails:IDataDetails) => {
                 if (!curPageState.payments) {
                     const hi = await getPaymentRecords();
                     let hinfo = {};
                     if (!curPageState.houses) {
                         hinfo = await getHouseState();
                     }
+                    const payments = hi.map(h => ({ ...h, processed: false }));
+                    const paymentsByDateEct = payments.reduce((acc, pmt) => {
+                        if (!acc[getPaymentKey(pmt)]) {
+                            acc[getPaymentKey(pmt)] = [];
+                        }
+                        acc[getPaymentKey(pmt)].push(pmt);
+                        return acc;
+                    }, {} as {[key:string]:IPaymentWithArg[]});
                     dispatchCurPageState(state => {
                         return {
                             ...state,
-                            payments: hi.map(h => ({ ...h, processed: false })),
+                            payments,
+                            paymentsByDateEct,
+                            pageDetails,
                             ...hinfo,
                             //stateReloaded: state.stateReloaded+1,
                         }
@@ -135,13 +154,14 @@ export function ImportPage() {
                 'ownerName'
             ],
             idField: 'address',
-            pageLoader: async () => {
+            pageLoader: async (pageDetails:IDataDetails) => {
                 if (!curPageState.houses) {
                     //const hi = await getHouseInfo();
                     const hi = await getHouseState();
                     dispatchCurPageState(state => {
                         return {
                             ...state,
+                            pageDetails,
                             //houses: hi,
                             //housesByAddress: keyBy(hi, 'address'),
                             ...hi,
@@ -201,70 +221,73 @@ export function ImportPage() {
     }, []);
 
 
-    async function loadPageSheetData(curPage: IPageInfo) {
-        const setPageDetails = (newd: IDataDetails) => {
-            dispatchCurPageState(state => {
-                return {
-                    ...state,
-                    pageDetails: newd,
-                }
-            })
-        }
-        if (curPage) {
-            return googleSheetRead(sheetId, 'read', `'${curPage.pageName}'!${curPage.range}`).then((r: {
-                values: string[][];
-            }) => {                                                    
-                if (!r || !r.values.length) {
-                    console.log(`no data for ${curPage.pageName}`);
-                    return;
-                }
-                if (curPage.fieldMap) {
-                    const columns = curPage.fieldMap.reduce((acc, f, ind) => {
+    async function loadPageSheetDataRaw(curPage: IPageInfo): Promise<IDataDetails> {
+        if (!curPage) return;
+        
+        return googleSheetRead(sheetId, 'read', `'${curPage.pageName}'!${curPage.range}`).then((r: {
+            values: string[][];
+        }) => {
+            if (!r || !r.values.length) {
+                console.log(`no data for ${curPage.pageName}`);
+                return null;
+            }
+            if (curPage.fieldMap) {
+                const columns = curPage.fieldMap.reduce((acc, f, ind) => {
+                    if (f) {
+                        acc.push(r.values[0][ind]);
+                    }
+                    return acc;
+                }, [] as string[]);
+                const rows = r.values.slice(1).map(rr => {
+                    return curPage.fieldMap.reduce((acc, f, ind) => {
                         if (f) {
-                            acc.push(r.values[0][ind]);
+                            acc[f] = {
+                                val: rr[ind],
+                                obj: null,
+                            };
                         }
                         return acc;
-                    }, [] as string[]);
-                    const rows = r.values.slice(1).map(rr => {
-                        return curPage.fieldMap.reduce((acc, f, ind) => {
-                            if (f) {
-                                acc[f] = {
-                                    val: rr[ind],
-                                    obj: null,
-                                };
-                            }
-                            return acc;
-                        }, {} as { [key: string]: IItemData; });
-                    }).filter(x=>x[curPage.idField].val);
-                    setPageDetails({
-                        columns,
-                        rows,
-                    })
-                } else {
-                    const columns = r.values[0];
-                    const rows = r.values.slice(1).map(r => {
-                        return r.reduce((acc, celVal, ind) => {
-                            acc[ind] = {
-                                val: celVal,
-                                obj: null,
-                            }                                                      
-                            return acc;
-                        }, {} as { [key: string]: IItemData; });
-                    })
-                    setPageDetails({
-                        columns,
-                        rows,
-                    });
-                }
-            }).catch(err => {
-                console.log(err);
-            })
-        }
+                    }, {} as { [key: string]: IItemData; });
+                }).filter(x => x[curPage.idField].val);
+                return ({
+                    columns,
+                    rows,
+                })
+            } else {
+                const columns = r.values[0];
+                const rows = r.values.slice(1).map(r => {
+                    return r.reduce((acc, celVal, ind) => {
+                        acc[ind] = {
+                            val: celVal,
+                            obj: null,
+                        }
+                        return acc;
+                    }, {} as { [key: string]: IItemData; });
+                })
+                return ({
+                    columns,
+                    rows,
+                });
+            }
+        }).catch(err => {
+            console.log(err);
+            return null;
+        });
     }
+
     useEffect(() => {
         if (!curPageState.curPage) return;
-        loadPageSheetData(curPageState.curPage).then(() => {
-            if (curPageState.curPage.pageLoader) curPageState.curPage.pageLoader();  
+        loadPageSheetDataRaw(curPageState.curPage).then((pageDetails) => {
+            if (curPageState.curPage.pageLoader) {
+                curPageState.curPage.pageLoader(pageDetails);
+            } else {                
+                dispatchCurPageState(state => {
+                    return {
+                        ...state,
+                        pageDetails,
+                    }
+                })                
+            }
         })        
     }, [curPageState.stateReloaded, curPageState.curPage, curPageState.existingOwnersByName])
         
