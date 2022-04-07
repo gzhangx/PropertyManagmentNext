@@ -41,4 +41,18 @@ export interface IPageStates {
     //paymentsByDateEct: { [key: string]: IPaymentWithArg[] };
     stateReloaded: number;
     getHouseByAddress: (state: IPageStates, addr: string) => IHouseInfo;
+
+    reloadPayments: boolean;
 }    
+
+
+export interface IBasicImportParams {
+    pageState: IPageStates;
+    dispatchCurPageState: React.Dispatch<React.SetStateAction<IPageStates>>;
+    showProgress: (str: string) => void; //progressDlg.setDialogText('processing');    
+    
+    setErrorStr: (str: string) => void;
+
+    //setDlgContent: React.Dispatch<React.SetStateAction<JSX.Element>>;
+    //refreshOwners: () => Promise<void>;
+}

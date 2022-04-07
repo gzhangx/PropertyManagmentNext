@@ -68,10 +68,11 @@ export function ImportPage() {
                 })
             }
         })
-    }, [curPageState.stateReloaded, curPageState.curPage, curPageState.existingOwnersByName])
+    }, [curPageState.stateReloaded, curPageState.curPage, curPageState.existingOwnersByName, curPageState.payments])
         
 
     const pages = getPageDefs({
+        pageState: curPageState,
         dispatchCurPageState,
         refreshOwners,
         setDlgContent,

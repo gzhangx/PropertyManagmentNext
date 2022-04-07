@@ -1,7 +1,7 @@
 
-import { IPageInfo, IDataDetails,IItemData } from './types'
+import { IPageInfo, IDataDetails,IItemData,IBasicImportParams } from './types'
 import { googleSheetRead, getOwners, sqlAdd, getHouseInfo, getPaymentRecords } from '../../api'
-
+import { IPageStates } from './types'
 const sheetId = '1UU9EYL7ZYpfHV6Jmd2CvVb6oBuQ6ekTR7AWXIlMvNCg';
 
 export async function loadPageSheetDataRaw(curPage: IPageInfo): Promise<IDataDetails> {
@@ -56,4 +56,33 @@ export async function loadPageSheetDataRaw(curPage: IPageInfo): Promise<IDataDet
         console.log(err);
         return null;
     });
+}
+
+
+export async function createPayment(importState: IBasicImportParams, rowInd: number, reloadPayments: boolean) {    
+    const state = importState.pageState;
+    const dispatchCurPageState = importState.dispatchCurPageState;
+    const changeRow = state.pageDetails.rows[rowInd];
+    const saveData = changeRow['PAYMENTOBJ'].obj;
+    changeRow['DISABLED'] = { val: 'true', obj: null };
+    sqlAdd('rentPaymentInfo',
+        saveData, true
+    ).then(res => {
+        console.log('sql add owner');
+        console.log(res)
+    }).catch(err => {
+        console.log('sql add owner err');
+        console.log(err)
+        importState.setErrorStr(`sql add rentpayment error ${err.message}`);
+    })
+    dispatchCurPageState(state => {
+        return {
+            ...state,
+            stateReloaded: state.stateReloaded++,
+            reloadPayments,
+            pageDetails: {
+                ...state.pageDetails,
+            }
+        }
+    })
 }

@@ -1,11 +1,12 @@
 
 import { IOwnerInfo, IHouseInfo, IPayment } from '../../reportTypes';
-import { ALLFieldNames, IPaymentWithArg, IPageInfo, IItemData, IDataDetails, IPageStates } from './types'
+import { IBasicImportParams, IPaymentWithArg, IPageInfo, IItemData, IDataDetails, IPageStates } from './types'
 import { googleSheetRead, getOwners, sqlAdd, getHouseInfo, getPaymentRecords } from '../../api'
 import { InforDialog, GetInfoDialogHelper } from '../../generic/basedialog';
 import moment from 'moment'
 import {keyBy, omit, mapValues} from 'lodash'
 import React from 'react';
+import { createPayment } from './helpers'
 
 
 function getPaymentKey(pmt: IPayment) {        
@@ -14,15 +15,15 @@ function getPaymentKey(pmt: IPayment) {
     return `${date}-${amt}-${pmt.houseID}-${pmt.paymentID || ''}-${pmt.paymentTypeID || ''}-${pmt.notes || ''}`;
 }    
 
-interface IPageDefPrms {
-    dispatchCurPageState: React.Dispatch<React.SetStateAction<IPageStates>>;
-    showProgress: (str: string) => void; //progressDlg.setDialogText('processing');
+interface IPageDefPrms extends IBasicImportParams {
+    //dispatchCurPageState: React.Dispatch<React.SetStateAction<IPageStates>>;
+    //showProgress: (str: string) => void; //progressDlg.setDialogText('processing');
     //createHouse: (state: IPageStates, data: { [key: string]: IItemData }) => void;  //setDlgContent(createHouseFunc(state, all))
     //createOwner: () => void; //setDlgContent(createOwnerFunc(item.val))
     //hideDlg: () => void; //setDlgContent(null);
     refreshOwners: () => Promise<void>;
     setDlgContent: React.Dispatch<React.SetStateAction<JSX.Element>>;
-    setErrorStr: (str: string) => void;
+    //setErrorStr: (str: string) => void;
 }
 export function getPageDefs(params: IPageDefPrms) {
     const { dispatchCurPageState } = params;
@@ -63,81 +64,87 @@ export function getPageDefs(params: IPageDefPrms) {
             pageLoader: async (pageState: IPageStates) => {
                 const page = pageState.curPage;
                 const pageDetails = pageState.pageDetails;
-                let hinfo = {};
-                let payments = pageState.payments;
-                if (!pageState.payments) {
+                let hinfo = {} as {
+                    [key: string]: any;
+                };
+                let payments = pageState.payments;                
+                if (!pageState.payments || pageState.reloadPayments) {
                     const hi = await getPaymentRecords();
                     payments = hi.map(h => ({ ...h, processed: false }));
-                }                    
-                    if (!pageState.houses) {
-                        hinfo = await getHouseState();
-                }                   
+                    hinfo = {
+                        payments,
+                    }
+                }
+                if (!pageState.houses) {                    
+                    hinfo = await getHouseState();
+                }
                 
-                    const paymentsByDateEct = payments.reduce((acc, pmt) => {
-                        if (!acc[getPaymentKey(pmt)]) {
-                            acc[getPaymentKey(pmt)] = [];
+                const paymentsByDateEct = payments.reduce((acc, pmt) => {
+                    if (!acc[getPaymentKey(pmt)]) {
+                        acc[getPaymentKey(pmt)] = [];
+                    }
+                    acc[getPaymentKey(pmt)].push(pmt);
+                    return acc;
+                }, {} as { [key: string]: IPaymentWithArg[] });
+                pageDetails.rows.forEach(r => {
+                    const pmt = page.fieldMap.reduce((acc, f) => {
+                        acc[f] = r[f].val;
+                        if (f === 'receivedAmount') {
+                            const amtFlt = (acc[f] as any as string).replace(/[\$, ]/g, '');
+                            const amt = parseFloat(amtFlt);
+                            acc[f] = amt;
+                            r[f].val = amtFlt;
+                        } else if (f === 'receivedDate') {
+                            const dateStr = moment(acc[f]).format('YYYY-MM-DD');
+                            acc[f] = dateStr;
+                            r[f].val = dateStr;
+                        } else if (f === 'houseID') {
+                            const house = pageState.getHouseByAddress(pageState, acc[f]);
+                            if (house) {
+                                acc['address'] = acc[f];
+                                acc['houseID'] = house.houseID;
+                                acc['ownerID'] = house.ownerID;
+                            }
                         }
-                        acc[getPaymentKey(pmt)].push(pmt);
                         return acc;
-                    }, {} as { [key: string]: IPaymentWithArg[] });
-                    pageDetails.rows.forEach(r => {                        
-                        const pmt = page.fieldMap.reduce((acc, f) => {                            
-                            acc[f] = r[f].val;
-                            if (f === 'receivedAmount') {
-                                const amtFlt = (acc[f] as any as string).replace(/[\$, ]/g, '');
-                                const amt = parseFloat(amtFlt);
-                                acc[f] = amt;
-                                r[f].val = amtFlt;
-                            } else if (f === 'receivedDate') {
-                                const dateStr = moment(acc[f]).format('YYYY-MM-DD');
-                                acc[f] = dateStr;
-                                r[f].val = dateStr;
-                            } else if (f === 'houseID') {
-                                const house = pageState.getHouseByAddress(pageState, acc[f]);
-                                if (house) {
-                                    acc['address'] = acc[f];
-                                    acc['houseID'] = house.houseID;
-                                    acc['ownerID'] = house.ownerID;
-                                }
-                            }
-                            return acc;
-                        }, {} as IPaymentWithArg);
-                        r['PAYMENTOBJ'] = {
-                            val: '',
-                            obj: pmt,
-                        };
-                        const key = getPaymentKey(pmt);
-                        const foundAry = paymentsByDateEct[key];
-                        if (!foundAry) {
-                            r['NOTFOUND'] = {
-                                val: 'true',
-                                obj: "not",
-                            };
-                            return;
-                        }
-                        for (let i = 0; i < foundAry.length; i++) {
-                            if (foundAry[i].processed) continue;
-                            r['FOUND'] = {
-                                val: '',
-                                obj: foundAry[i],
-                            }
-                            return;
-                        }
+                    }, {} as IPaymentWithArg);
+                    r['PAYMENTOBJ'] = {
+                        val: '',
+                        obj: pmt,
+                    };
+                    const key = getPaymentKey(pmt);
+                    const foundAry = paymentsByDateEct[key];
+                    if (!foundAry) {
                         r['NOTFOUND'] = {
                             val: 'true',
                             obj: "not",
                         };
-                    })
-                    dispatchCurPageState(state => {
-                        return {
-                            ...state,
-                            payments,
-                            //paymentsByDateEct,
-                            pageDetails,
-                            ...hinfo,
-                            //stateReloaded: state.stateReloaded+1,
+                        return;
+                    }
+                    for (let i = 0; i < foundAry.length; i++) {
+                        if (foundAry[i].processed) continue;
+                        r['FOUND'] = {
+                            val: '',
+                            obj: foundAry[i],
                         }
-                    });
+                        return;
+                    }
+                    r['NOTFOUND'] = {
+                        val: 'true',
+                        obj: "not",
+                    };
+                })
+                dispatchCurPageState(state => {
+                    return {
+                        ...state,
+                        //payments,
+                        //paymentsByDateEct,
+                        pageDetails,
+                        ...hinfo,
+                        //stateReloaded: state.stateReloaded+1,
+                        reloadPayments: false,
+                    }
+                });
                             
             },
             displayItem: (state: IPageStates, field: string, item: IItemData, all, rowInd) => {
@@ -145,22 +152,19 @@ export function getPageDefs(params: IPageDefPrms) {
                 if (field === 'receivedAmount') {
                     if (all['NOTFOUND']) {
                         //return `${item.val}=>Need import`
-                        return <button onClick={() => {
+                        return <button disabled={!!all['DISABLED']} onClick={async () => {
                             //setProgressStr('processing')
-                           params.showProgress('processing');
-                            const rows = state.pageDetails.rows.map((r, rind) => {
-                                if (rind !== rowInd) return r;
-                                return omit(r,'NOTFOUND')
-                            });
-                            dispatchCurPageState(state => {
-                                return {
-                                    ...state,
-                                    pageDetails: {
-                                        ...state.pageDetails,
-                                        rows, //: state.pageDetails.rows,
-                                    }
-                                }
-                            })
+                            params.showProgress('processing');
+                            try {
+                                params.pageState = state;
+                                await createPayment(params, rowInd, true);
+                                
+                            } catch (err) {
+                                const errStr = `Error create payment ${err.message}`;
+                                console.log(errStr);
+                                console.log(err);
+                                params.setErrorStr(errStr);
+                            }
                             //setDlgContent(createPaymentFunc(state, all, rowInd))
 
                         }}> Click to create ${item.val}</button>
