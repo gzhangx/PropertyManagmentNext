@@ -158,11 +158,12 @@ export function getPageDefs(params: IPageDefPrms) {
                             try {
                                 params.pageState = state;
                                 await createPayment(params, rowInd, true);
-                                
+                                params.showProgress('');
                             } catch (err) {
                                 const errStr = `Error create payment ${err.message}`;
                                 console.log(errStr);
                                 console.log(err);
+                                params.showProgress('');
                                 params.setErrorStr(errStr);
                             }
                             //setDlgContent(createPaymentFunc(state, all, rowInd))
