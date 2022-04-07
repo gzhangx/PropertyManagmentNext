@@ -17,13 +17,13 @@ export function ImportPage() {
     
     const [errorStr, setErrorStr] = useState('');
     //const [progressStr, setProgressStr] = useState('');
-    const progressDlg = GetInfoDialogHelper();    
+    const progressDlg = GetInfoDialogHelper();
 
     const [curPageState, dispatchCurPageState] = useReducer((state: IPageStates, act: (state: IPageStates) => IPageStates) => act(state) as IPageStates, {
         stateReloaded: 0,
         housesByAddress: {},
         //paymentsByDateEct: {},
-        getHouseByAddress: (state,addr) => {            
+        getHouseByAddress: (state, addr) => {
             return state.housesByAddress[addr.toLowerCase()]
         },
     } as IPageStates);
@@ -38,8 +38,8 @@ export function ImportPage() {
                 return {
                     ...state,
                     existingOwnersById: keyBy(own, 'ownerID'),
-                    existingOwnersByName: keyBy(own,'ownerName'),
-                };                
+                    existingOwnersByName: keyBy(own, 'ownerName'),
+                };
             });
         });
     }
@@ -59,15 +59,15 @@ export function ImportPage() {
                     ...curPageState,
                     pageDetails,
                 });
-            } else {                
+            } else {
                 dispatchCurPageState(state => {
                     return {
                         ...state,
                         pageDetails,
                     }
-                })                
+                })
             }
-        })        
+        })
     }, [curPageState.stateReloaded, curPageState.curPage, curPageState.existingOwnersByName])
         
 
@@ -76,9 +76,9 @@ export function ImportPage() {
         refreshOwners,
         setDlgContent,
         setErrorStr,
-        showProgress: msg=> progressDlg.setDialogText(msg),
+        showProgress: msg => progressDlg.setDialogText(msg),
     })
-    console.log(`curPageState.stateReloaded=${curPageState.stateReloaded}`);    
+    console.log(`curPageState.stateReloaded=${curPageState.stateReloaded}`);
 
 
 
@@ -94,53 +94,33 @@ export function ImportPage() {
         {
             progressDlg.dialogText && progressDlg.Dialog
         }
-        <div className="d-sm-flex align-items-center justify-content-between mb-4">
-            
-            <h1 className="h3 mb-0 text-gray-800">Develop</h1>
-            <div className='row'>
-                <EditTextDropdown items={pages.map(p => {
-                    return {
-                        label: p.pageName,
-                        value: p,
-                        selected: p.pageName === 'House Info'
-                    }
-                })
-                }
-                    onSelectionChanged={sel => {
-                        if (sel) {
-                            dispatchCurPageState(state => {
-                                return {
-                                    ...state,
-                                    curPage: sel.value,
-                                }
-                            })
-                        }
-                    }}
-                ></EditTextDropdown>
-            </div>
-            <a href='' onClick={e => {
-                e.preventDefault();
-                console.log('test clicked')
-            }} >testtest </a>
+        <div className="d-sm-flex align-items-center justify-content-between mb-4">        
             <div className="col-xl-3 col-md-6 mb-4">
                 <div className="card shadow h-100 py-2 border-left-primary">
                     <div className="card-body">
                         <div className="row no-gutters align-items-center">
                             <div className="col mr-2">
-                                <div className="text-xs font-weight-bold text-uppercase mb-1 text-primary">Test Google</div>
+                                <div className="text-xs font-weight-bold text-uppercase mb-1 text-primary">Developer Options</div>
                                 <div className="h5 mb-0 font-weight-bold text-gray-800">
-                                    <a href="#" className="d-none d-sm-inline-block btn btn-sm btn-primary shadow-sm"
-                                        onClick={e => {
-                                            e.preventDefault();
-                                            const curPage = curPageState.curPage;
-                                            
-                                            //googleSheetRead('1UU9EYL7ZYpfHV6Jmd2CvVb6oBuQ6ekTR7AWXIlMvNCg', 'read', `'Tenants Info'!A1:B12`).then(r => {
-                                            
-                                            e.stopPropagation();
+                                    <EditTextDropdown items={pages.map(p => {
+                                        return {
+                                            label: p.pageName,
+                                            value: p,
+                                            selected: p.pageName === 'House Info'
+                                        }
+                                    })
+                                    }
+                                        onSelectionChanged={sel => {
+                                            if (sel) {
+                                                dispatchCurPageState(state => {
+                                                    return {
+                                                        ...state,
+                                                        curPage: sel.value,
+                                                    }
+                                                })
+                                            }
                                         }}
-                                    ><i
-                                        className="fas fa-download fa-sm text-white-50" ></i> Read Sheet
-                                    </a>
+                                    ></EditTextDropdown>
                                 </div>
                             </div>
                             <div className="col-auto">
@@ -149,7 +129,7 @@ export function ImportPage() {
                         </div>
                     </div>
                 </div>
-            </div>
+            </div>            
         </div>
 
         <div className="row">
@@ -175,7 +155,7 @@ export function ImportPage() {
                             return <tr key={ind}>{
                                 keys.map((key, ck) => {
                                     return <td key={ck}>{
-                                        curPageState.curPage.displayItem ? curPageState.curPage.displayItem(curPageState, key, p[key],p, ind) : (p[key] && p[key].val)
+                                        curPageState.curPage.displayItem ? curPageState.curPage.displayItem(curPageState, key, p[key], p, ind) : (p[key] && p[key].val)
                                     }</td>
                                 })
                             }</tr>
