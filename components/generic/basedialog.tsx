@@ -94,11 +94,14 @@ export interface IDialogInfoHelper {
     dialogText: string;
     Dialog: JSX.Element;
 }
-export function GetInfoDialogHelper() : IDialogInfoHelper {
+export function GetInfoDialogHelper(onClose= ()=> { }) : IDialogInfoHelper {
     const [dialogText, setDialogText] = useState('');
     return {
         setDialogText,
         dialogText,
-        Dialog: <InforDialog message={dialogText} hide={() => setDialogText('')}></InforDialog>,
+        Dialog: <InforDialog message={dialogText} hide={() => {
+            onClose();
+            setDialogText('')            
+        }}></InforDialog>,
     }    
 }

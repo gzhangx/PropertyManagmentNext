@@ -4,6 +4,7 @@ import { HouseList } from '../components/page/reports/houseList'
 import { RentpaymentInfo } from '../components/page/reports/rentpaymentInfo'
 import { CashFlowReport } from '../components/page/reports/cashflow'
 import { DevelopPage } from './util/dev'
+import GoogleAuth from '../pages/google/googleAuth'
 
 const allSections = [
     {
@@ -17,7 +18,11 @@ const allSections = [
                 name: 'Develop',
                 page: <DevelopPage />,
                 selected: true,
-            }
+            },
+            {
+                name: 'GoogleAuth',
+                page: <GoogleAuth></GoogleAuth>,
+            },
         ]
     },
     {
