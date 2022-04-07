@@ -1,5 +1,6 @@
 import { createContext, SetStateAction, useContext, useState, Dispatch } from 'react';
 //import {IPageState} from '../types'
+import { getLoginInfo} from '../api'
 export interface IUserInfo {
     id: number;
     name: string;
@@ -32,7 +33,7 @@ export const getSideBarCurrentSelectedItemName = (ctx:IRootPageState)=>{
 export function RootPageStateWrapper({ children }) {
     const [sideBarStates, setSideBarStates] = useState({});
     //const [pageProps, setPageProps] = useState({});
-    const [userInfo, setUserInfo] = useState<IUserInfo>({ id: 0, name:'', token:''});
+    const [userInfo, setUserInfo] = useState<IUserInfo>(getLoginInfo() || { id: 0, name:'', token:''});
     const defVal: IRootPageState = {
         sideBarStates,
         setSideBarStates,

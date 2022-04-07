@@ -42,6 +42,7 @@ export interface IOwnerInfo {
     ownerID: number;
     ownerName: string;
     shortName: string;
+    googleSheetId: string;
     selected: boolean;
 }
 

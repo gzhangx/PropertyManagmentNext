@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useReducer } from 'react';
 import { googleSheetRead, getOwners, sqlAdd, getHouseInfo, getPaymentRecords } from '../../api'
 import { EditTextDropdown } from '../../generic/EditTextDropdown'
-import { IOwnerInfo, IHouseInfo, IPayment } from '../../reportTypes';
+import { IOwnerInfo, IHouseInfo, IPayment, IIncomeExpensesContextValue } from '../../reportTypes';
 import { keyBy, mapValues, omit } from 'lodash'
 import { InforDialog, GetInfoDialogHelper } from '../../generic/basedialog';
 import moment from 'moment';
@@ -12,7 +12,16 @@ import { loadPageSheetDataRaw } from './helpers'
 import { getPageDefs } from './pageDefs'
 
 import { useIncomeExpensesContext } from '../../states/PaymentExpenseState'
-import { useRootPageContext } from '../../states/RootState'
+import { IRootPageState, useRootPageContext } from '../../states/RootState'
+
+function getSheetId(rootCtx: IRootPageState, mainCtx: IIncomeExpensesContextValue) {
+    const loginUserId = rootCtx.userInfo.id;
+    const owner = mainCtx.allOwners.find(o => o.ownerID === loginUserId);    
+    let sheetId = '';
+    if (owner) {        
+        sheetId = owner.googleSheetId;
+    }
+}
 export function ImportPage() {
     const [dlgContent, setDlgContent] = useState<JSX.Element>(null);
         
@@ -33,7 +42,8 @@ export function ImportPage() {
     } as IPageStates);
 
     const rootCtx = useRootPageContext();
-    const mainCtx = useIncomeExpensesContext();    
+    const mainCtx = useIncomeExpensesContext();
+    getSheetId(rootCtx, mainCtx);
 
     //rootCtx.userInfo.
     //let sheetId = mainCtx.allOwners
