@@ -18,13 +18,14 @@ export function ImportPage() {
     const [dlgContent, setDlgContent] = useState<JSX.Element>(null);
     
     const [errorStr, setErrorStr] = useState('');
+    const [progressStr, setProgressStr] = useState('');
     interface IPageInfo {
         pageName: 'Tenants Info' | 'Lease Info' | 'PaymentRecord' | 'House Info';
         range: string;
         fieldMap?: ALLFieldNames[];
         idField?: ALLFieldNames;
         pageLoader?: (pageState: IPageStates) => Promise<void>;
-        displayItem?: (state: IPageStates,field: string, itm: IItemData, all:{[key:string]:IItemData}) => JSX.Element|string;
+        displayItem?: (state: IPageStates,field: string, itm: IItemData, all:{[key:string]:IItemData}, rowInd: number) => JSX.Element|string;
     }
 
     interface IItemData {
@@ -181,13 +182,13 @@ export function ImportPage() {
                     });
                             
             },
-            displayItem: (state: IPageStates, field: string, item: IItemData, all) => {
+            displayItem: (state: IPageStates, field: string, item: IItemData, all, rowInd) => {
                 if (!item) return 'NOITEM';
                 if (field === 'receivedAmount') {
                     if (all['NOTFOUND']) {
                         //return `${item.val}=>Need import`
                         return <button onClick={() => {
-                            setDlgContent(createPaymentFunc(state, all))
+                            setDlgContent(createPaymentFunc(state, all, rowInd))
                         }}> Click to create ${item.val}</button>
                     }
                     return '$'+item.val;
@@ -439,7 +440,7 @@ export function ImportPage() {
         </div>
     };
 
-    const createPaymentFunc = (state: IPageStates, data: { [key: string]: IItemData }) => {        
+    const createPaymentFunc = (state: IPageStates, data: { [key: string]: IItemData }, rowInd: number) => {        
         const saveData = data['PAYMENTOBJ'].obj;
         console.log('save data is')
         console.log(saveData)        
@@ -605,7 +606,7 @@ export function ImportPage() {
                             return <tr key={ind}>{
                                 keys.map((key, ck) => {
                                     return <td key={ck}>{
-                                        curPageState.curPage.displayItem ? curPageState.curPage.displayItem(curPageState, key, p[key],p) : (p[key] && p[key].val)
+                                        curPageState.curPage.displayItem ? curPageState.curPage.displayItem(curPageState, key, p[key],p, ind) : (p[key] && p[key].val)
                                     }</td>
                                 })
                             }</tr>
