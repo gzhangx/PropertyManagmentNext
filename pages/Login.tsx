@@ -40,6 +40,7 @@ export default function Login(props) {
             }
             if (!res.name) res.name = state.username;
             rState.setUserInfo({
+                id: res.id,
                 name: res.name,
                 token: res.token,
             })

@@ -11,10 +11,14 @@ import { ALLFieldNames, IPaymentWithArg, IPageInfo, IItemData, IDataDetails, IPa
 import { loadPageSheetDataRaw } from './helpers'
 import { getPageDefs } from './pageDefs'
 
-
+import { useIncomeExpensesContext } from '../../states/PaymentExpenseState'
+import { useRootPageContext } from '../../states/RootState'
 export function ImportPage() {
     const [dlgContent, setDlgContent] = useState<JSX.Element>(null);
         
+    const [reloads, setReloads] = useState({
+        reloadUsers: 0,
+    })
     //const [progressStr, setProgressStr] = useState('');
     const errorDlg = GetInfoDialogHelper();
     const progressDlg = GetInfoDialogHelper();
@@ -28,10 +32,11 @@ export function ImportPage() {
         },
     } as IPageStates);
 
-    
+    const rootCtx = useRootPageContext();
+    const mainCtx = useIncomeExpensesContext();    
 
-    
-
+    //rootCtx.userInfo.
+    //let sheetId = mainCtx.allOwners
     const refreshOwners = () => {
         return getOwners().then(own => {
             dispatchCurPageState(state => {
@@ -46,7 +51,7 @@ export function ImportPage() {
 
     useEffect(() => {
         refreshOwners();
-    }, []);
+    }, [reloads.reloadUsers]);
 
 
     
@@ -93,11 +98,11 @@ export function ImportPage() {
             progressDlg.dialogText && progressDlg.Dialog
         }
         <div className="d-sm-flex align-items-center justify-content-between mb-4">        
-            <div className="col-xl-3 col-md-6 mb-4">
+            <div className="col-xl-6 col-md-6 mb-6">
                 <div className="card shadow h-100 py-2 border-left-primary">
                     <div className="card-body">
                         <div className="row no-gutters align-items-center">
-                            <div className="col mr-2">
+                            <div className="col">
                                 <div className="text-xs font-weight-bold text-uppercase mb-1 text-primary">Developer Options</div>
                                 <div className="h5 mb-0 font-weight-bold text-gray-800">
                                     <EditTextDropdown items={pages.map(p => {
@@ -120,6 +125,14 @@ export function ImportPage() {
                                         }}
                                     ></EditTextDropdown>
                                 </div>
+                            </div>
+                            <div className="col">
+                                <button className='btn btn-primary' onClick={() => {
+                                    setReloads({
+                                        ...reloads,
+                                        reloadUsers: ++reloads.reloadUsers,
+                                    });
+                                }}>Reload Users</button>
                             </div>
                             <div className="col-auto">
                                 <i className="fas fa-calendar fa-2x text-gray-300 fa - calendar"></i>

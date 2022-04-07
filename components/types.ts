@@ -36,6 +36,7 @@ export interface ILoginResponse {
     error: string;
     token: string;
     name: string;
+    id: number;
     ownerPCodes: number[];
 }
 
