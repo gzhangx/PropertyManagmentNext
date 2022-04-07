@@ -14,13 +14,18 @@ import { getPageDefs } from './pageDefs'
 import { useIncomeExpensesContext } from '../../states/PaymentExpenseState'
 import { IRootPageState, useRootPageContext } from '../../states/RootState'
 
-function getSheetId(rootCtx: IRootPageState, mainCtx: IIncomeExpensesContextValue) {
+function getSheetId(rootCtx: IRootPageState, mainCtx: IIncomeExpensesContextValue) : string {
     const loginUserId = rootCtx.userInfo.id;
     const owner = mainCtx.allOwners.find(o => o.ownerID === loginUserId);    
     let sheetId = '';
     if (owner) {        
         sheetId = owner.googleSheetId;
     }
+    const firstSelectedOwner = mainCtx.selectedOwners.find(o => o.googleSheetId)
+    if (firstSelectedOwner) {
+        sheetId = firstSelectedOwner.googleSheetId;
+    }
+    return sheetId;
 }
 export function ImportPage() {
     const [dlgContent, setDlgContent] = useState<JSX.Element>(null);
@@ -43,7 +48,7 @@ export function ImportPage() {
 
     const rootCtx = useRootPageContext();
     const mainCtx = useIncomeExpensesContext();
-    getSheetId(rootCtx, mainCtx);
+    const sheetId = getSheetId(rootCtx, mainCtx);
 
     //rootCtx.userInfo.
     //let sheetId = mainCtx.allOwners
@@ -68,7 +73,7 @@ export function ImportPage() {
 
     useEffect(() => {
         if (!curPageState.curPage) return;
-        loadPageSheetDataRaw(curPageState.curPage).then((pageDetails) => {
+        loadPageSheetDataRaw(sheetId, curPageState.curPage).then((pageDetails) => {
             if (curPageState.curPage.pageLoader) {
                 curPageState.curPage.pageLoader({
                     ...curPageState,
@@ -83,7 +88,7 @@ export function ImportPage() {
                 })
             }
         })
-    }, [curPageState.stateReloaded, curPageState.curPage, curPageState.existingOwnersByName, curPageState.payments])
+    }, [sheetId, curPageState.stateReloaded, curPageState.curPage, curPageState.existingOwnersByName, curPageState.payments])
         
 
     const pages = getPageDefs({

@@ -2,9 +2,9 @@
 import { IPageInfo, IDataDetails,IItemData,IBasicImportParams } from './types'
 import { googleSheetRead, getOwners, sqlAdd, getHouseInfo, getPaymentRecords } from '../../api'
 import { IPageStates } from './types'
-const sheetId = '1UU9EYL7ZYpfHV6Jmd2CvVb6oBuQ6ekTR7AWXIlMvNCg';
+//const sheetId = '1UU9EYL7ZYpfHV6Jmd2CvVb6oBuQ6ekTR7AWXIlMvNCg';
 
-export async function loadPageSheetDataRaw(curPage: IPageInfo): Promise<IDataDetails> {
+export async function loadPageSheetDataRaw(sheetId: string, curPage: IPageInfo): Promise<IDataDetails> {
     if (!curPage) return;
     
     return googleSheetRead(sheetId, 'read', `'${curPage.pageName}'!${curPage.range}`).then((r: {
