@@ -123,7 +123,7 @@ export function ImportPage() {
                         return acc;
                     }, {} as { [key: string]: IPaymentWithArg[] });
                     pageDetails.rows.forEach(r => {                        
-                        const pmt = page.fieldMap.reduce((acc, f) => {
+                        const pmt = page.fieldMap.reduce((acc, f) => {                            
                             acc[f] = r[f].val;
                             if (f === 'receivedAmount') {
                                 const amtFlt = (acc[f] as any as string).replace(/[\$, ]/g, '');
@@ -456,7 +456,7 @@ export function ImportPage() {
                                     console.log('sql add owner');
                                     console.log(res)
                                     
-                                    return state.curPage.pageLoader && state.curPage.pageLoader(curPageState).then(() => {
+                                    return state.curPage.pageLoader && state.curPage.pageLoader(state).then(() => {
                                         setDlgContent(null);  
                                     })                                    
                                 }).catch(err => {
