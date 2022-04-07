@@ -86,3 +86,13 @@ export function InforDialog(props: IInfoDialogProps) {
         </div>
     </div>;
 }
+
+
+export function GetInfoDialogHelper() {
+    const [dialogText, setDialogText] = useState('');
+    return {
+        setDialogText,
+        dialogText,
+        Dialog: <InforDialog message={dialogText} hide={() => setDialogText('')}></InforDialog>,
+    }    
+}

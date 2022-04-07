@@ -3,7 +3,7 @@ import { googleSheetRead, getOwners, sqlAdd, getHouseInfo, getPaymentRecords } f
 import { EditTextDropdown } from '../../generic/EditTextDropdown'
 import { IOwnerInfo, IHouseInfo, IPayment } from '../../reportTypes';
 import { keyBy, mapValues } from 'lodash'
-import { InforDialog } from '../../generic/basedialog';
+import { InforDialog, GetInfoDialogHelper } from '../../generic/basedialog';
 import moment from 'moment';
 
 import { BaseDialog} from '../../generic/basedialog'
@@ -14,11 +14,13 @@ interface IPaymentWithArg extends IPayment
     processed: boolean;
 }
 
+
 export function ImportPage() {
     const [dlgContent, setDlgContent] = useState<JSX.Element>(null);
     
     const [errorStr, setErrorStr] = useState('');
-    const [progressStr, setProgressStr] = useState('');
+    //const [progressStr, setProgressStr] = useState('');
+    const progressDlg = GetInfoDialogHelper();
     interface IPageInfo {
         pageName: 'Tenants Info' | 'Lease Info' | 'PaymentRecord' | 'House Info';
         range: string;
@@ -188,7 +190,9 @@ export function ImportPage() {
                     if (all['NOTFOUND']) {
                         //return `${item.val}=>Need import`
                         return <button onClick={() => {
-                            setDlgContent(createPaymentFunc(state, all, rowInd))
+                            //setProgressStr('processing')
+                            progressDlg.setDialogText('processing')
+                            //setDlgContent(createPaymentFunc(state, all, rowInd))
                         }}> Click to create ${item.val}</button>
                     }
                     return '$'+item.val;
@@ -524,6 +528,12 @@ export function ImportPage() {
         <BaseDialog children={dlgContent} show={dlgContent != null} />
         {
             errorStr && <InforDialog message={errorStr} hide={() => setErrorStr('')}></InforDialog>
+        }
+        {
+            //progressStr && <InforDialog message={progressStr} hide={() => setProgressStr('')}></InforDialog>
+        }
+        {
+            progressDlg.dialogText && progressDlg.Dialog
         }
         <div className="d-sm-flex align-items-center justify-content-between mb-4">
             
