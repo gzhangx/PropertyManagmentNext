@@ -14,9 +14,9 @@ import { getPageDefs } from './pageDefs'
 
 export function ImportPage() {
     const [dlgContent, setDlgContent] = useState<JSX.Element>(null);
-    
-    const [errorStr, setErrorStr] = useState('');
+        
     //const [progressStr, setProgressStr] = useState('');
+    const errorDlg = GetInfoDialogHelper();
     const progressDlg = GetInfoDialogHelper();
 
     const [curPageState, dispatchCurPageState] = useReducer((state: IPageStates, act: (state: IPageStates) => IPageStates) => act(state) as IPageStates, {
@@ -75,7 +75,7 @@ export function ImportPage() {
         dispatchCurPageState,
         refreshOwners,
         setDlgContent,
-        setErrorStr,
+        setErrorStr: errorDlg.setDialogText,
         showProgress: msg => progressDlg.setDialogText(msg),
     })
     console.log(`curPageState.stateReloaded=${curPageState.stateReloaded}`);
@@ -84,12 +84,9 @@ export function ImportPage() {
 
     
     return <div className="container-fluid">
-        <BaseDialog children={dlgContent} show={dlgContent != null} />
+        <BaseDialog children={dlgContent} show={dlgContent != null} />        
         {
-            errorStr && <InforDialog message={errorStr} hide={() => setErrorStr('')}></InforDialog>
-        }
-        {
-            //progressStr && <InforDialog message={progressStr} hide={() => setProgressStr('')}></InforDialog>
+            errorDlg.dialogText && errorDlg.Dialog
         }
         {
             progressDlg.dialogText && progressDlg.Dialog
