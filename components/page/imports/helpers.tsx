@@ -78,7 +78,7 @@ export async function createPayment(importState: IBasicImportParams, rowInd: num
     dispatchCurPageState(state => {
         return {
             ...state,
-            stateReloaded: state.stateReloaded++,
+            stateReloaded: ++state.stateReloaded,
             reloadPayments,
             pageDetails: {
                 ...state.pageDetails,
