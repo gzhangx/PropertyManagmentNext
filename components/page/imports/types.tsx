@@ -1,7 +1,8 @@
 
 import { IOwnerInfo, IHouseInfo, IPayment } from '../../reportTypes';
 
-export type ALLFieldNames = '' | 'address' | 'city' | 'zip' | 'ownerName' | 'receivedDate' | 'receivedAmount' | 'houseID' | 'paymentTypeID' | 'paymentProcessor' | 'notes';
+export type ALLFieldNames = '' | 'address' | 'city' | 'zip' | 'ownerName' | 'receivedDate' | 'receivedAmount' | 'houseID' | 'paymentTypeID' | 'paymentProcessor' | 'notes'
+    | 'startDate' | 'endDate' | 'monthlyRent' | 'deposit' | 'petDeposit' | 'otherDeposit' | 'comment' | 'tenant1'| 'tenant2'| 'tenant3'| 'tenant4';
 
 export interface IPaymentWithArg extends IPayment
 {

@@ -274,6 +274,25 @@ export function getPageDefs(params: IPageDefPrms) {
                 } else
                     return item.val;
             }
+        },
+        {
+            pageName: 'Lease Info',
+            range: 'A1:M',
+            fieldMap: [
+                '',
+                'houseID',
+                'startDate',
+                'endDate',
+                'monthlyRent',
+                'deposit',
+                'petDeposit',
+                'otherDeposit',
+                'comment',
+                'tenant1',
+                'tenant2',
+                'tenant3',
+                'tenant4',
+            ]
         }
     ];
     return pages;
