@@ -136,7 +136,9 @@ export function ImportPage() {
                     <tr>
                         {
                             curPageState.pageDetails && curPageState.pageDetails.columns && curPageState.pageDetails.columns.map((d, key) => {
-                                return <td key={key}>{d}</td>
+                                return <td key={key}>{
+                                    curPageState.curPage.displayHeader? curPageState.curPage.displayHeader(curPageState, d, key) : d
+                                }</td>
                             })
                         }
                     </tr>

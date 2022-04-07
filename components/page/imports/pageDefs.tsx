@@ -147,6 +147,32 @@ export function getPageDefs(params: IPageDefPrms) {
                 });
                             
             },
+            displayHeader: (state, field, key) => {
+                const fieldName = state.curPage.fieldMap[key];
+                if (fieldName === 'receivedAmount') {
+                    return <>Amount <button className='btn btn-primary' onClick={async () => {
+                        for (let i = 0; i < state.pageDetails.rows.length; i++) {
+                            const curRow = state.pageDetails.rows[i];
+                            params.showProgress(`processing ${i}/${state.pageDetails.rows.length}`);
+                            if (curRow['NOTFOUND']) {
+                                try {
+                                    params.pageState = state;
+                                    await createPayment(params, i, i === state.pageDetails.rows.length - 1);
+                                } catch (err) {
+                                    const errStr = `Error create payment ${err.message}`;
+                                    console.log(errStr);
+                                    console.log(err);
+                                    params.showProgress('');
+                                    params.setErrorStr(errStr);
+                                    break;
+                                }
+                            }
+                        }
+                        params.showProgress('');
+                    }}>Process All</button></>
+                }
+                return field;
+            },
             displayItem: (state: IPageStates, field: string, item: IItemData, all, rowInd) => {
                 if (!item) return 'NOITEM';
                 if (field === 'receivedAmount') {

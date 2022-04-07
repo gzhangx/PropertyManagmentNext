@@ -14,7 +14,8 @@ export interface IPageInfo {
     fieldMap?: ALLFieldNames[];
     idField?: ALLFieldNames;
     pageLoader?: (pageState: IPageStates) => Promise<void>;
-    displayItem?: (state: IPageStates,field: string, itm: IItemData, all:{[key:string]:IItemData}, rowInd: number) => JSX.Element|string;
+    displayItem?: (state: IPageStates, field: string, itm: IItemData, all: { [key: string]: IItemData }, rowInd: number) => JSX.Element | string;
+    displayHeader?: (state: IPageStates,field: string, key:number) => JSX.Element|string;
 }
 
 export interface IItemData {
