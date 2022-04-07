@@ -2,17 +2,13 @@ import React, { useState, useEffect, useReducer } from 'react';
 import { googleSheetRead, getOwners, sqlAdd, getHouseInfo, getPaymentRecords } from '../../api'
 import { EditTextDropdown } from '../../generic/EditTextDropdown'
 import { IOwnerInfo, IHouseInfo, IPayment } from '../../reportTypes';
-import { keyBy, mapValues } from 'lodash'
+import { keyBy, mapValues, omit } from 'lodash'
 import { InforDialog, GetInfoDialogHelper } from '../../generic/basedialog';
 import moment from 'moment';
 
-import { BaseDialog} from '../../generic/basedialog'
-type ALLFieldNames = '' | 'address' | 'city' | 'zip' | 'ownerName' | 'receivedDate' | 'receivedAmount' | 'houseID' | 'paymentTypeID' | 'paymentProcessor' | 'notes';
-
-interface IPaymentWithArg extends IPayment
-{
-    processed: boolean;
-}
+import { BaseDialog } from '../../generic/basedialog'
+import { ALLFieldNames, IPaymentWithArg, IPageInfo, IItemData, IDataDetails, IPageStates } from './types'
+import {loadPageSheetDataRaw} from './helpers'
 
 
 export function ImportPage() {
@@ -20,41 +16,7 @@ export function ImportPage() {
     
     const [errorStr, setErrorStr] = useState('');
     //const [progressStr, setProgressStr] = useState('');
-    const progressDlg = GetInfoDialogHelper();
-    interface IPageInfo {
-        pageName: 'Tenants Info' | 'Lease Info' | 'PaymentRecord' | 'House Info';
-        range: string;
-        fieldMap?: ALLFieldNames[];
-        idField?: ALLFieldNames;
-        pageLoader?: (pageState: IPageStates) => Promise<void>;
-        displayItem?: (state: IPageStates,field: string, itm: IItemData, all:{[key:string]:IItemData}, rowInd: number) => JSX.Element|string;
-    }
-
-    interface IItemData {
-        val: string;
-        obj: any;
-    }
-    interface IDataDetails {
-        columns: string[];
-        rows: {
-            [key: string]:IItemData; //key is of ALLFieldNames
-        }[];
-    }
-
-    interface IPageStates {
-        curPage: IPageInfo;
-        pageDetails: IDataDetails;
-
-        existingOwnersByName: { [ownerName: string]: IOwnerInfo };
-        existingOwnersById: { [ownerId: number]: IOwnerInfo };
-        missingOwnersByName: { [ownerName: string]: boolean };
-        housesByAddress: { [ownerName: string]: IHouseInfo };
-        houses: IHouseInfo[];
-        payments: IPaymentWithArg[];
-        //paymentsByDateEct: { [key: string]: IPaymentWithArg[] };
-        stateReloaded: number;
-        getHouseByAddress: (state:IPageStates, addr: string) => IHouseInfo;
-    }    
+    const progressDlg = GetInfoDialogHelper();    
 
     const [curPageState, dispatchCurPageState] = useReducer((state: IPageStates, act: (state: IPageStates) => IPageStates) => act(state) as IPageStates, {
         stateReloaded: 0,
@@ -191,8 +153,22 @@ export function ImportPage() {
                         //return `${item.val}=>Need import`
                         return <button onClick={() => {
                             //setProgressStr('processing')
-                            progressDlg.setDialogText('processing')
+                            progressDlg.setDialogText('processing');
+                            const rows = state.pageDetails.rows.map((r, rind) => {
+                                if (rind !== rowInd) return r;
+                                return omit(r,'NOTFOUND')
+                            });
+                            dispatchCurPageState(state => {
+                                return {
+                                    ...state,
+                                    pageDetails: {
+                                        ...state.pageDetails,
+                                        rows, //: state.pageDetails.rows,
+                                    }
+                                }
+                            })
                             //setDlgContent(createPaymentFunc(state, all, rowInd))
+
                         }}> Click to create ${item.val}</button>
                     }
                     return '$'+item.val;
@@ -292,59 +268,7 @@ export function ImportPage() {
     }, []);
 
 
-    async function loadPageSheetDataRaw(curPage: IPageInfo): Promise<IDataDetails> {
-        if (!curPage) return;
-        
-        return googleSheetRead(sheetId, 'read', `'${curPage.pageName}'!${curPage.range}`).then((r: {
-            values: string[][];
-        }) => {
-            if (!r || !r.values.length) {
-                console.log(`no data for ${curPage.pageName}`);
-                return null;
-            }
-            if (curPage.fieldMap) {
-                const columns = curPage.fieldMap.reduce((acc, f, ind) => {
-                    if (f) {
-                        acc.push(r.values[0][ind]);
-                    }
-                    return acc;
-                }, [] as string[]);
-                const rows = r.values.slice(1).map(rr => {
-                    return curPage.fieldMap.reduce((acc, f, ind) => {
-                        if (f) {
-                            acc[f] = {
-                                val: rr[ind],
-                                obj: null,
-                            };
-                        }
-                        return acc;
-                    }, {} as { [key: string]: IItemData; });
-                }).filter(x => x[curPage.idField].val);
-                return ({
-                    columns,
-                    rows,
-                })
-            } else {
-                const columns = r.values[0];
-                const rows = r.values.slice(1).map(r => {
-                    return r.reduce((acc, celVal, ind) => {
-                        acc[ind] = {
-                            val: celVal,
-                            obj: null,
-                        }
-                        return acc;
-                    }, {} as { [key: string]: IItemData; });
-                })
-                return ({
-                    columns,
-                    rows,
-                });
-            }
-        }).catch(err => {
-            console.log(err);
-            return null;
-        });
-    }
+    
 
     useEffect(() => {
         if (!curPageState.curPage) return;
@@ -365,8 +289,7 @@ export function ImportPage() {
         })        
     }, [curPageState.stateReloaded, curPageState.curPage, curPageState.existingOwnersByName])
         
-    console.log(`curPageState.stateReloaded=${curPageState.stateReloaded}`);
-    const sheetId = '1UU9EYL7ZYpfHV6Jmd2CvVb6oBuQ6ekTR7AWXIlMvNCg';
+    console.log(`curPageState.stateReloaded=${curPageState.stateReloaded}`);    
 
 
     const createOwnerFunc = (ownerName: string, password='1') => {
