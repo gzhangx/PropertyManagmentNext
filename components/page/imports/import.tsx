@@ -65,7 +65,7 @@ export function ImportPage() {
     function getPaymentKey(pmt: IPayment) {        
         const date = moment(pmt.receivedDate).format('YYYY-MM-DD')        
         const amt = pmt.receivedAmount.toFixed(2);
-        return `${date}-${amt}-${(pmt.address || '').toLowerCase()}-${pmt.paymentID || ''}-${pmt.paymentTypeID || ''}-${pmt.notes || ''}`;
+        return `${date}-${amt}-${pmt.houseID}-${pmt.paymentID || ''}-${pmt.paymentTypeID || ''}-${pmt.notes || ''}`;
     }
 
     async function getHouseState() {
