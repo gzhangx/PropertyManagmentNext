@@ -1,3 +1,4 @@
+import React from "react";
 import react, { Dispatch, SetStateAction, useState } from "react";
 
 interface IGenericDialogProps {
@@ -88,7 +89,12 @@ export function InforDialog(props: IInfoDialogProps) {
 }
 
 
-export function GetInfoDialogHelper() {
+export interface IDialogInfoHelper {
+    setDialogText: React.Dispatch<React.SetStateAction<string>>;
+    dialogText: string;
+    Dialog: JSX.Element;
+}
+export function GetInfoDialogHelper() : IDialogInfoHelper {
     const [dialogText, setDialogText] = useState('');
     return {
         setDialogText,
