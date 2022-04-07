@@ -168,7 +168,7 @@ export function getPageDefs(params: IPageDefPrms) {
                                 }
                             }
                         }
-                        params.showProgress('');
+                        params.showProgress('done');
                     }}>Process All</button></>
                 }
                 return field;
