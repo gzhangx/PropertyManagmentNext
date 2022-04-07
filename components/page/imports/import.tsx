@@ -133,9 +133,20 @@ export function ImportPage() {
                                 const dateStr = moment(acc[f]).format('YYYY-MM-DD');
                                 acc[f] = dateStr;
                                 r[f].val = dateStr;
+                            } else if (f === 'houseID') {
+                                const house = pageState.getHouseByAddress(pageState, acc[f]);
+                                if (house) {
+                                    acc['address'] = acc[f];
+                                    acc['houseID'] = house.houseID;
+                                    acc['ownerID'] = house.ownerID;
+                                }
                             }
                             return acc;
                         }, {} as IPaymentWithArg);
+                        r['PAYMENTOBJ'] = {
+                            val: '',
+                            obj: pmt,
+                        };
                         const key = getPaymentKey(pmt);
                         const foundAry = paymentsByDateEct[key];
                         if (!foundAry) {
@@ -428,16 +439,10 @@ export function ImportPage() {
         </div>
     };
 
-    const createPaymentFunc = (state: IPageStates, data: { [key: string]: IItemData }) => {
-        const saveData = mapValues(data, itm => {
-            return itm.val
-        }) as {[key:string]:string|number};
-        const houseInfo = state.getHouseByAddress(state, saveData.address as string);        
-        if (!houseInfo) {
-            console.log('no house found');
-            return <InforDialog message='No House Found' hide={() => setDlgContent(null)}></InforDialog>;            
-        }
-        saveData.ownerID = houseInfo.ownerID;
+    const createPaymentFunc = (state: IPageStates, data: { [key: string]: IItemData }) => {        
+        const saveData = data['PAYMENTOBJ'].obj;
+        console.log('save data is')
+        console.log(saveData)        
         return <div className="col-lg-12 mb-4">            
             <div className="row">
                 <div className="col-lg-12 mb-4">
