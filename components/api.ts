@@ -317,7 +317,9 @@ export async function getGoogleClientId() {
     })
 }
 
-export async function googleSheetRead(id:string, op:string, range:string) {
+export async function googleSheetRead(id:string, op:string, range:string) : Promise<{
+    values: string[][];
+}>{
     return doPost(`misc/sheet/${op}/${id}/${range}`, {}).then(r => {
         return r;
     })

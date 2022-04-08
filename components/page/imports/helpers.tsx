@@ -7,9 +7,7 @@ import { IPageStates } from './types'
 export async function loadPageSheetDataRaw(sheetId: string, curPage: IPageInfo): Promise<IDataDetails> {
     if (!curPage) return;
     
-    return googleSheetRead(sheetId, 'read', `'${curPage.pageName}'!${curPage.range}`).then((r: {
-        values: string[][];
-    }) => {
+    return googleSheetRead(sheetId, 'read', `'${curPage.pageName}'!${curPage.range}`).then((r) => {
         if (!r || !r.values.length) {
             console.log(`no data for ${curPage.pageName}`);
             return null;
