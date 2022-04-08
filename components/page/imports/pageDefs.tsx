@@ -8,6 +8,7 @@ import {keyBy, omit, mapValues} from 'lodash'
 import React from 'react';
 import { createPayment } from './helpers'
 
+import * as loaders from './loads/lease'
 
 function getPaymentKey(pmt: IPayment) {        
     const date = moment(pmt.receivedDate).format('YYYY-MM-DD')        
