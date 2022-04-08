@@ -287,43 +287,6 @@ const createOwnerFunc = (params:IPageDefPrms,ownerName: string, password='1') =>
     </div>
 };
 
-export const createPaymentFunc = (params:IPageDefPrms, state: IPageStates, data: { [key: string]: IItemData }, rowInd: number) => {        
-    const saveData = data['PAYMENTOBJ'].obj;
-    console.log('save data is')
-    console.log(saveData)        
-    return <div className="col-lg-12 mb-4">            
-        <div className="row">
-            <div className="col-lg-12 mb-4">
-                <div className="card bg-light text-black shadow">
-                    <div className="card-body" style={{ display: 'flex', justifyContent:'flex-end'}}>
-                        <button className='btn btn-primary mx-1' onClick={() => {
-                            sqlAdd('rentPaymentInfo', 
-                            saveData, true                                
-                            ).then(res => {
-                                console.log('sql add owner');
-                                console.log(res)
-                                
-                                return state.curPage.pageLoader && state.curPage.pageLoader(state).then(() => {
-                                    params.setDlgContent(null);  
-                                })                                    
-                            }).catch(err => {
-                                console.log('sql add owner err');
-                                console.log(err)
-                                params.setErrorStr(`sql add rentpayment error ${err.message}`);
-                                
-                            })
-                        }}>Create</button>
-
-                        <button className='btn btn-success' onClick={() => {
-                            params.setDlgContent(null);
-                        }}>Close</button>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-    </div>
-};
 
 export const createHouseFunc = (params:IPageDefPrms, state: IPageStates, data: { [key: string]: IItemData }) => {
     const saveData = mapValues(data, itm => {
