@@ -101,8 +101,8 @@ export function MainSideBar(props : IMainSideBarProps) {
         ></PageNavTab>
 
         {
-            props.sections.map(section => {
-                return <PageNavTab name={section.name}
+            props.sections.map((section, pkey) => {
+                return <PageNavTab key={pkey} name={section.name}
                     header={
                         section.headerJSX?section.headerJSX:
                         <>

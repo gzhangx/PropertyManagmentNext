@@ -292,7 +292,8 @@ export function getPageDefs(params: IPageDefPrms) {
                 'tenant2',
                 'tenant3',
                 'tenant4',
-            ]
+            ],
+            idField:'houseID',
         }
     ];
     return pages;
