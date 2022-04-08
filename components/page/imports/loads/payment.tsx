@@ -46,6 +46,7 @@ export async function payment_pageLoader(importPrms: IBasicImportParams, pageSta
         acc[getPaymentKey(pmt)].push(pmt);
         return acc;
     }, {} as { [key: string]: IPaymentWithArg[] });
+    //format sheet rows, fix receivedAmount to number, receivedDate to YYYY-MM-DD, houseID and added PAYMENTOBJ, with obj to IPaymentWithArg
     pageDetails.rows.forEach(r => {
         const pmt = page.fieldMap.reduce((acc, f) => {
             acc[f] = r[f].val;
