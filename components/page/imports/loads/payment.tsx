@@ -3,7 +3,7 @@
 import { IBasicImportParams, IPaymentWithArg, IPageInfo, IItemData, IDataDetails, IPageStates } from '../types'
 import { googleSheetRead, getOwners, sqlAdd, getHouseInfo, getPaymentRecords } from '../../../api'
 import { IOwnerInfo, IHouseInfo, IPayment } from '../../../reportTypes';
-import { keyBy } from 'lodash';
+import { keyBy, get } from 'lodash';
 import moment from 'moment';
 
 export async function getHouseState() {
@@ -77,11 +77,49 @@ export async function payment_pageLoader(importPrms: IBasicImportParams, pageSta
         return acc;
     }, {} as { [key: string]: IPaymentWithArg[] });
 
+    const paymentsByHouseDMetc = payments.reduce((acc, pmt) => {
+        let houseAll = acc[pmt.houseID];
+        if (!houseAll) {
+            houseAll = {};
+            acc[pmt.houseID] = houseAll;
+        }
+        let hdateAll = houseAll[pmt.receivedDate];
+        if (!hdateAll) {
+            hdateAll = {};
+            houseAll[pmt.receivedDate] = hdateAll;
+        }
+        if (!pmt.receivedAmount) {
+            console.log(pmt)
+        }
+        const amountStr = pmt.receivedAmount.toFixed(2);
+        let hAmtAll = houseAll[amountStr];
+        if (!hAmtAll) {
+            hAmtAll = {};
+            houseAll[amountStr] = hAmtAll;
+        }
+
+        function addPmt(dict: { [key: string]: IPaymentWithArg[] }, key:string, pmt: IPaymentWithArg) {
+            if (!dict[key]) {
+                dict[key] = [];
+            }
+            dict[key].push(pmt);
+        }
+        addPmt(hdateAll, amountStr, pmt);
+        addPmt(hAmtAll, pmt.receivedDate, pmt);
+        return acc;
+    }, {} as {
+        [houseID: string]: {
+            [dateOrAmt: string]: {
+                [dateOrAmt: string]: IPaymentWithArg[];
+            }
+        }
+    });
+
     function findPaymentByAll(pmt: IPaymentWithArg) {
         return paymentsByDateEct[getPaymentKey(pmt)];
     }
-    function matchPayment(finder: (pmt:IPaymentWithArg)=>IPaymentWithArg[]) {
-        pageDetails.rows.filter(r => !r.processed).forEach(r => {
+    function matchPayment(finder: (pmt:IPaymentWithArg)=>IPaymentWithArg[], matchStr: string) {
+        pageDetails.rows.filter(r => !r.FOUND).forEach(r => {
             const pmt = r['PAYMENTOBJ'].obj as IPaymentWithArg;
             //const key = getPaymentKey(pmt);
             //const foundAry = paymentsByDateEct[key];
@@ -99,6 +137,8 @@ export async function payment_pageLoader(importPrms: IBasicImportParams, pageSta
                     val: '',
                     obj: foundAry[i],
                 }
+                pmt.processed = true;
+                pmt.matchNotes = matchStr;
                 return;
             }
             r['NOTFOUND'] = {
@@ -107,7 +147,10 @@ export async function payment_pageLoader(importPrms: IBasicImportParams, pageSta
             };
         })
     }
-    matchPayment(findPaymentByAll);
+    matchPayment(findPaymentByAll, "All Match");
+    matchPayment(pmt => {
+        return get(paymentsByHouseDMetc, [pmt.houseID, pmt.receivedAmount.toFixed(2), pmt.receivedDate]);
+    }, "No Note Match");
 
     importPrms.dispatchCurPageState(state => {
         return {
