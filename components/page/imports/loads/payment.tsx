@@ -30,7 +30,11 @@ export async function payment_pageLoader(importPrms: IBasicImportParams, pageSta
     let payments = pageState.payments;                
     if (!pageState.payments || pageState.reloadPayments) {
         const hi = await getPaymentRecords();
-        payments = hi.map(h => ({ ...h, processed: false, matchNotes:'NO Match' }));
+        payments = hi.map(h => ({
+            ...h,
+            receivedDate: moment(h.receivedDate).format('YYYY-MM-DD'),
+            processed: false, matchNotes: 'NO Match'
+        }));
         hinfo = {
             payments,
         }
@@ -114,6 +118,8 @@ export async function payment_pageLoader(importPrms: IBasicImportParams, pageSta
             }
         }
     });
+
+    //console.log(paymentsByHouseDMetc)
 
     function findPaymentByAll(pmt: IPaymentWithArg) {
         return paymentsByDateEct[getPaymentKey(pmt)];
