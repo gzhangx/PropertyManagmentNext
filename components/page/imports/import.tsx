@@ -76,6 +76,7 @@ export function ImportPage() {
         loadPageSheetDataRaw(sheetId, curPageState.curPage).then((pageDetails) => {
             if (curPageState.curPage.pageLoader) {
                 curPageState.curPage.pageLoader({
+                    sheetId,
                     ...curPageState,
                     pageDetails,
                 });

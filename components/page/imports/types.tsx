@@ -36,6 +36,7 @@ export interface IDataDetails {
 export interface IPageStates {
     curPage: IPageInfo;
     pageDetails: IDataDetails;
+    sheetId: string; //not in state, passed around
 
     existingOwnersByName: { [ownerName: string]: IOwnerInfo };
     existingOwnersById: { [ownerId: number]: IOwnerInfo };
