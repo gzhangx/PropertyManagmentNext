@@ -13,7 +13,7 @@ import * as loaders from './loads/lease'
 function getPaymentKey(pmt: IPayment) {        
     const date = moment(pmt.receivedDate).format('YYYY-MM-DD')        
     const amt = pmt.receivedAmount.toFixed(2);
-    return `${date}-${amt}-${pmt.houseID}-${pmt.paymentID || ''}-${pmt.paymentTypeID || ''}-${pmt.notes || ''}`;
+    return `${date}-${amt}-${pmt.houseID}-${pmt.paymentID || ''}-${(pmt.paymentTypeID || '').trim()}-${(pmt.notes || '').trim()}`;
 }    
 
 interface IPageDefPrms extends IBasicImportParams {

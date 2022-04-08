@@ -42,7 +42,7 @@ export function ImportPage() {
         housesByAddress: {},
         //paymentsByDateEct: {},
         getHouseByAddress: (state, addr) => {
-            return state.housesByAddress[addr.toLowerCase()]
+            return state.housesByAddress[addr.toLowerCase().trim()]
         },
     } as IPageStates);
 
