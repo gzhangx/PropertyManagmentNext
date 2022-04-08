@@ -14,6 +14,9 @@ export async function getHouseState() {
     }        
 }
 
+export const INVALID_PAYMENT_ROW_TAG = 'INVALID_PAYMENT_ROW_TAG';
+export const PAYMENT_ROW_PAYMENTOBJ_TAG = 'PAYMENT_ROW_PAYMENTOBJ_TAG';
+
 function getPaymentKey(pmt: IPayment) {        
     const date = moment(pmt.receivedDate).format('YYYY-MM-DD')        
     const amt = pmt.receivedAmount.toFixed(2);
@@ -33,7 +36,9 @@ export async function payment_pageLoader(importPrms: IBasicImportParams, pageSta
         payments = hi.map(h => ({
             ...h,
             receivedDate: moment(h.receivedDate).format('YYYY-MM-DD'),
-            processed: false, matchNotes: 'NO Match'
+            processed: false, matchNotes: 'NO Match',
+            invalid: false,
+            invalidDesc: '',
         }));
         hinfo = {
             payments,
@@ -53,21 +58,41 @@ export async function payment_pageLoader(importPrms: IBasicImportParams, pageSta
                 acc[f] = amt;
                 r[f].val = amtFlt;
             } else if (f === 'receivedDate') {
-                const dateStr = moment(acc[f]).format('YYYY-MM-DD');
-                acc[f] = dateStr;
-                r[f].val = dateStr;
+                const mt = moment(acc[f]);
+                if (!mt.isValid()) {
+                    acc[f] = 'Invalid';
+                    r[f].val = 'Invalid: ' + acc[f];
+                    r[INVALID_PAYMENT_ROW_TAG] = {
+                        val: 'date',
+                        obj: null,
+                    };
+                    acc.invalid = true;
+                    acc.invalidDesc = 'date';
+                } else {
+                    const dateStr = moment(acc[f]).format('YYYY-MM-DD');
+                    acc[f] = dateStr;
+                    r[f].val = dateStr;
+                }
             } else if (f === 'houseID') {
                 const house = pageState.getHouseByAddress(pageState, acc[f]);
                 if (house) {
                     acc['address'] = acc[f];
                     acc['houseID'] = house.houseID;
                     acc['ownerID'] = house.ownerID;
+                } else {
+                    acc['houseID'] = null;
+                    r[INVALID_PAYMENT_ROW_TAG] = {
+                        val: 'house',
+                        obj: null,
+                    };
+                    acc.invalid = true;
+                    acc.invalidDesc = 'house';
                 }
             }
             return acc;
         }, {} as IPaymentWithArg);
         pmt.processed = false;
-        r['PAYMENTOBJ'] = {
+        r[PAYMENT_ROW_PAYMENTOBJ_TAG] = {
             val: '',
             obj: pmt,
         };
@@ -125,8 +150,8 @@ export async function payment_pageLoader(importPrms: IBasicImportParams, pageSta
         return paymentsByDateEct[getPaymentKey(pmt)];
     }
     function matchPayment(finder: (pmt:IPaymentWithArg)=>IPaymentWithArg[], matchStr: string) {
-        pageDetails.rows.filter(r => !r.FOUND).forEach(r => {
-            const pmt = r['PAYMENTOBJ'].obj as IPaymentWithArg;
+        pageDetails.rows.filter(r => !r.FOUND && !r.invalid).forEach(r => {
+            const pmt = r[PAYMENT_ROW_PAYMENTOBJ_TAG].obj as IPaymentWithArg;
             //const key = getPaymentKey(pmt);
             //const foundAry = paymentsByDateEct[key];
             const foundAry = finder(pmt);
@@ -135,6 +160,7 @@ export async function payment_pageLoader(importPrms: IBasicImportParams, pageSta
                     val: 'true',
                     obj: "not",
                 };
+                //console.log(`not found ${matchStr} for ${pmt.houseID} ${pmt.address} ${pmt.receivedDate} ${pmt.receivedAmount}`)
                 return;
             }
             for (let i = 0; i < foundAry.length; i++) {
@@ -145,8 +171,10 @@ export async function payment_pageLoader(importPrms: IBasicImportParams, pageSta
                 }
                 pmt.processed = true;
                 pmt.matchNotes = matchStr;
+                delete r['NOTFOUND']
                 return;
             }
+            //console.log(`mis match found ${matchStr} for ${pmt.houseID} ${pmt.address} ${pmt.receivedDate} ${pmt.receivedAmount}`)            
             r['NOTFOUND'] = {
                 val: 'true',
                 obj: "not",

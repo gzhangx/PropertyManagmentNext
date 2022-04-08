@@ -2,6 +2,7 @@
 import { IPageInfo, IDataDetails,IItemData,IBasicImportParams } from './types'
 import { googleSheetRead, getOwners, sqlAdd, getHouseInfo, getPaymentRecords } from '../../api'
 import { IPageStates } from './types'
+import {INVALID_PAYMENT_ROW_TAG} from './loads/payment'
 //const sheetId = '1UU9EYL7ZYpfHV6Jmd2CvVb6oBuQ6ekTR7AWXIlMvNCg';
 
 export async function loadPageSheetDataRaw(sheetId: string, curPage: IPageInfo): Promise<IDataDetails> {
@@ -61,8 +62,12 @@ export async function createPayment(importState: IBasicImportParams, rowInd: num
     const state = importState.pageState;
     const dispatchCurPageState = importState.dispatchCurPageState;
     const changeRow = state.pageDetails.rows[rowInd];
-    const saveData = changeRow['PAYMENTOBJ'].obj;
+    const saveData = changeRow[INVALID_PAYMENT_ROW_TAG].obj;
     changeRow['DISABLED'] = { val: 'true', obj: null };
+    if (changeRow['PAYMENT_IMPORT_INVALID']) {
+        console.log(`invalid payment, don't create ${changeRow['PAYMENT_IMPORT_INVALID'].val}`);
+        return;
+    }
     sqlAdd('rentPaymentInfo',
         saveData, true
     ).then(res => {

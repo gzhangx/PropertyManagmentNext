@@ -8,6 +8,8 @@ export interface IPaymentWithArg extends IPayment
 {
     processed: boolean;
     matchNotes: string;
+    invalid: boolean;
+    invalidDesc: string;
 }
 
 export interface IPageInfo {
