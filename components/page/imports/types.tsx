@@ -7,6 +7,7 @@ export type ALLFieldNames = '' | 'address' | 'city' | 'zip' | 'ownerName' | 'rec
 export interface IPaymentWithArg extends IPayment
 {
     processed: boolean;
+    matchNotes: string;
 }
 
 export interface IPageInfo {

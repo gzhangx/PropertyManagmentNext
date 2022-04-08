@@ -30,7 +30,7 @@ export async function payment_pageLoader(importPrms: IBasicImportParams, pageSta
     let payments = pageState.payments;                
     if (!pageState.payments || pageState.reloadPayments) {
         const hi = await getPaymentRecords();
-        payments = hi.map(h => ({ ...h, processed: false }));
+        payments = hi.map(h => ({ ...h, processed: false, matchNotes:'NO Match' }));
         hinfo = {
             payments,
         }
@@ -38,14 +38,7 @@ export async function payment_pageLoader(importPrms: IBasicImportParams, pageSta
     if (!pageState.houses) {                    
         hinfo = await getHouseState();
     }
-    
-    const paymentsByDateEct = payments.reduce((acc, pmt) => {
-        if (!acc[getPaymentKey(pmt)]) {
-            acc[getPaymentKey(pmt)] = [];
-        }
-        acc[getPaymentKey(pmt)].push(pmt);
-        return acc;
-    }, {} as { [key: string]: IPaymentWithArg[] });
+        
     //format sheet rows, fix receivedAmount to number, receivedDate to YYYY-MM-DD, houseID and added PAYMENTOBJ, with obj to IPaymentWithArg
     pageDetails.rows.forEach(r => {
         const pmt = page.fieldMap.reduce((acc, f) => {
@@ -69,32 +62,53 @@ export async function payment_pageLoader(importPrms: IBasicImportParams, pageSta
             }
             return acc;
         }, {} as IPaymentWithArg);
+        pmt.processed = false;
         r['PAYMENTOBJ'] = {
             val: '',
             obj: pmt,
         };
-        const key = getPaymentKey(pmt);
-        const foundAry = paymentsByDateEct[key];
-        if (!foundAry) {
+    })
+
+    const paymentsByDateEct = payments.reduce((acc, pmt) => {
+        if (!acc[getPaymentKey(pmt)]) {
+            acc[getPaymentKey(pmt)] = [];
+        }
+        acc[getPaymentKey(pmt)].push(pmt);
+        return acc;
+    }, {} as { [key: string]: IPaymentWithArg[] });
+
+    function findPaymentByAll(pmt: IPaymentWithArg) {
+        return paymentsByDateEct[getPaymentKey(pmt)];
+    }
+    function matchPayment(finder: (pmt:IPaymentWithArg)=>IPaymentWithArg[]) {
+        pageDetails.rows.filter(r => !r.processed).forEach(r => {
+            const pmt = r['PAYMENTOBJ'].obj as IPaymentWithArg;
+            //const key = getPaymentKey(pmt);
+            //const foundAry = paymentsByDateEct[key];
+            const foundAry = finder(pmt);
+            if (!foundAry) {
+                r['NOTFOUND'] = {
+                    val: 'true',
+                    obj: "not",
+                };
+                return;
+            }
+            for (let i = 0; i < foundAry.length; i++) {
+                if (foundAry[i].processed) continue;
+                r['FOUND'] = {
+                    val: '',
+                    obj: foundAry[i],
+                }
+                return;
+            }
             r['NOTFOUND'] = {
                 val: 'true',
                 obj: "not",
             };
-            return;
-        }
-        for (let i = 0; i < foundAry.length; i++) {
-            if (foundAry[i].processed) continue;
-            r['FOUND'] = {
-                val: '',
-                obj: foundAry[i],
-            }
-            return;
-        }
-        r['NOTFOUND'] = {
-            val: 'true',
-            obj: "not",
-        };
-    })
+        })
+    }
+    matchPayment(findPaymentByAll);
+
     importPrms.dispatchCurPageState(state => {
         return {
             ...state,
