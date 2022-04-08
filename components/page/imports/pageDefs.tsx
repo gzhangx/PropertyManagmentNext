@@ -9,7 +9,7 @@ import React from 'react';
 import { createPayment } from './helpers'
 
 import * as loaders from './loads/lease'
-import {getHouseState, payment_pageLoader} from './loads/payment'
+import {getHouseState, payment_pageLoader, INVALID_PAYMENT_ROW_TAG} from './loads/payment'
 
 function getPaymentKey(pmt: IPayment) {        
     const date = moment(pmt.receivedDate).format('YYYY-MM-DD')        
@@ -66,7 +66,7 @@ export function getPageDefs(params: IPageDefPrms) {
                         for (let i = 0; i < state.pageDetails.rows.length; i++) {
                             const curRow = state.pageDetails.rows[i];
                             params.showProgress(`processing ${i}/${state.pageDetails.rows.length}`);
-                            if (curRow['NOTFOUND']) {
+                            if (curRow['NOTFOUND'] && !curRow[INVALID_PAYMENT_ROW_TAG]) {
                                 try {
                                     params.pageState = state;
                                     await createPayment(params, i, i === state.pageDetails.rows.length - 1);
@@ -90,8 +90,9 @@ export function getPageDefs(params: IPageDefPrms) {
                 if (field === 'receivedAmount') {
                     if (all['NOTFOUND']) {
                         //return `${item.val}=>Need import`
-                        return <button disabled={!!all['DISABLED']} onClick={async () => {
+                        return <button disabled={!!all['DISABLED'] || !!all[INVALID_PAYMENT_ROW_TAG]} onClick={async () => {
                             //setProgressStr('processing')
+                            if (all[INVALID_PAYMENT_ROW_TAG]) return;
                             params.showProgress('processing');
                             try {
                                 params.pageState = state;
@@ -116,7 +117,8 @@ export function getPageDefs(params: IPageDefPrms) {
                     }
                     //state.existingOwnersByName[]
                     //all[ownerName]
-                    return <button onClick={() => {
+                    return <button  disabled={!!all['DISABLED'] || !!all[INVALID_PAYMENT_ROW_TAG]}  onClick={() => {
+                        if (all[INVALID_PAYMENT_ROW_TAG]) return;
                         //params.createHouse(state, all)
                         params.setDlgContent(createHouseFunc(params,state, all))
                     }}> Click to create {item.val}</button>
