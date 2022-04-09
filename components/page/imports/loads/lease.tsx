@@ -1,18 +1,14 @@
 
+import moment from 'moment'
 import { IBasicImportParams, IPaymentWithArg, IPageInfo, IItemData, IDataDetails, IPageStates } from '../types'
-import { googleSheetRead, getOwners, sqlAdd, getHouseInfo, getPaymentRecords } from '../../../api'
+import { googleSheetRead, getOwners, sqlAdd, getLeases, } from '../../../api'
+import { ITenantInfo, ILeaseInfo } from '../../../reportTypes'
 import { keyBy } from 'lodash'
 
-interface ITenantInfo {
-    'firstName': string;
-    'lastName': string;
-    'fullName': string;
-    'phone': string;
-    'email': string;
-}
+
 
 async function getTenants(pageState: IPageStates) {
-    const tenantsRaw = await googleSheetRead(pageState.sheetId, 'read', `'Tenants Info'!A1:M`);
+    const tenantsRaw = await googleSheetRead(pageState.sheetId, 'read', `'Tenants Info'!A1:F`);
     const tenantFieldMap = ['', 'firstName', 'lastName', 'fullName', 'phone', 'email'];
     const tenants = tenantsRaw.values.map(r => {
         return tenantFieldMap.reduce((acc, f, ind) => {
@@ -28,12 +24,24 @@ async function getTenants(pageState: IPageStates) {
 export const LEASEINFO_ROW_STATE_NAME = 'LEASEINFO_ROW_STATE_NAME';
 interface ILeaseInfoRowState {
     tenantFound: boolean;
-    tenantxFound: ITenantInfo[];    
+    tenantxFound: ITenantInfo[];
+
 }
 
-export async function lease_PageLoader(pageState: IPageStates) : Promise <void> {
-    const tenants = await getTenants(pageState);
+export async function lease_PageLoader(pagePrms: IBasicImportParams, pageState: IPageStates) : Promise <void> {
+    const tenants = (await getTenants(pageState)).filter(t=>t.fullName).slice(1);
     const tenantsByFullName = keyBy(tenants, t => t.fullName.toLowerCase());
+    const dbLeases = (await getLeases(pageState.selectedOwners)).map(l => {
+        return {
+            ...l,
+            startDate: moment(l.startDate).format('YYYY-MM-DD'),
+            endDate: moment(l.endDate).format('YYYY-MM-DD'),
+        }
+    });
+    function getLeaseKey(l: ILeaseInfo) {
+        return `${l.houseID}-${l.startDate}-${l.endDate}`;
+    }
+    const dbLeasesByKey = keyBy(dbLeases, getLeaseKey);
     pageState.pageDetails.rows.map(r => {        
         const rState = {
             tenantxFound: [],
@@ -43,14 +51,23 @@ export async function lease_PageLoader(pageState: IPageStates) : Promise <void> 
             obj: rState,
         };
         [1, 2, 3, 4].forEach(ti => {
-            const tn = tenantsByFullName[(r[`tenant${ti}`].val || '').toLowerCase()]
+            const tn = tenantsByFullName[(r[`tenant${ti}`].val || '').trim().toLowerCase()]
             rState.tenantxFound[ti] = tn;
         });
     });
+    pagePrms.dispatchCurPageState(state => {
+        return {
+            ...state,
+            pageState,
+        }
+    })
 }
 
-export function lease_DisplayItem(state: IPageStates, field: string, itm: IItemData, all: { [key: string]: IItemData }, rowInd: number): JSX.Element | string {
-    return '';
+export function lease_DisplayItem(state: IPageStates, field: string, itm: IItemData, all: { [key: string]: IItemData }, rowInd: number): JSX.Element | string {    
+    console.log(field)
+    console.log(all)
+    if (!itm) return 'null itm';
+    return itm.val;
 }
 export function lease_DisplayHeader(state: IPageStates, field: string, key: number): JSX.Element | string {
     return '';

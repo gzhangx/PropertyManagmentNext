@@ -49,6 +49,7 @@ export function ImportPage() {
     const rootCtx = useRootPageContext();
     const mainCtx = useIncomeExpensesContext();
     const sheetId = getSheetId(rootCtx, mainCtx);
+    const selectedOwners = mainCtx.selectedOwners;
 
     //rootCtx.userInfo.
     //let sheetId = mainCtx.allOwners
@@ -71,11 +72,20 @@ export function ImportPage() {
 
     
 
+    const pagePrms = {
+        pageState: curPageState,
+        dispatchCurPageState,
+        refreshOwners,
+        setDlgContent,
+        setErrorStr: errorDlg.setDialogText,
+        showProgress: msg => progressDlg.setDialogText(msg),
+    };
     useEffect(() => {
         if (!curPageState.curPage) return;
         loadPageSheetDataRaw(sheetId, curPageState.curPage).then((pageDetails) => {
             if (curPageState.curPage.pageLoader) {
-                curPageState.curPage.pageLoader({
+                curPageState.curPage.pageLoader(pagePrms, {
+                    selectedOwners,
                     sheetId,
                     ...curPageState,
                     pageDetails,
@@ -92,14 +102,7 @@ export function ImportPage() {
     }, [sheetId, curPageState.stateReloaded, curPageState.curPage, curPageState.existingOwnersByName, curPageState.payments])
         
 
-    const pages = getPageDefs({
-        pageState: curPageState,
-        dispatchCurPageState,
-        refreshOwners,
-        setDlgContent,
-        setErrorStr: errorDlg.setDialogText,
-        showProgress: msg => progressDlg.setDialogText(msg),
-    })
+    const pages = getPageDefs(pagePrms);
     console.log(`curPageState.stateReloaded=${curPageState.stateReloaded}`);
 
 

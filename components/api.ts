@@ -34,6 +34,7 @@ import {
     IExpenseData,
     IHouseInfo,
     IPayment,
+    ILeaseInfo,
 } from './reportTypes';
 
 async function doPost(path: string, data: object, method?: Method): Promise<any> {
@@ -139,7 +140,7 @@ export interface ISqlRequestWhereItem {
 }
 
 export interface ISqlRequest {
-    table: 'rentPaymentInfo' | 'houseInfo' | 'maintenanceRecords' | 'ownerInfo';
+    table: 'rentPaymentInfo' | 'houseInfo' | 'maintenanceRecords' | 'ownerInfo' | 'leaseInfo';
     fields?: (ISqlRequestFieldDef | string)[];
     joins?: any;
     order?: ISqlOrderDef[];
@@ -278,11 +279,22 @@ export async function getPaymnents(ownerInfos: IOwnerInfo[]) : Promise<IPayment[
                 amount: r.receivedAmount,
             }
         });
-    })
-    
+    })    
 }
 
-
+export async function getLeases(ownerInfos: IOwnerInfo[]) : Promise<ILeaseInfo[]> {
+    if (!ownerInfos || !ownerInfos.length) return [];
+    return sqlGet({
+        table:'leaseInfo',
+        whereArray:[{
+            field:'ownerID',
+            op: 'in',
+            val: ownerInfos.map(o=>o.ownerID),
+        }]
+    }).then((r: {rows:ILeaseInfo[]})=>{
+        return r.rows;
+    })    
+}
 
 // Used by cashflow
 export async function getOwners() : Promise<IOwnerInfo[]> {

@@ -91,6 +91,27 @@ export interface IHouseAnchorInfo {
     isAnchor: boolean;
 }
 
+export interface ILeaseInfo {
+    'leaseID': string;
+    'deposit': number;
+    'petDeposit': number;
+    'otherDeposit': number;
+    'endDate': string;
+    'startDate': string;
+    'houseID': string;
+    'ownerID': number;
+    'comment': string;
+    'monthlyRent': number;
+}
+
+export interface ITenantInfo {
+    'firstName': string;
+    'lastName': string;
+    'fullName': string;
+    'phone': string;
+    'email': string;
+}
+
 export interface IPaymentCalcOpts {
     isGoodMonth: (mon: string) => boolean;
     isGoodHouseId: (mon: string) => boolean;

@@ -17,7 +17,7 @@ export interface IPageInfo {
     range: string;
     fieldMap?: ALLFieldNames[];
     idField?: ALLFieldNames;
-    pageLoader?: (pageState: IPageStates) => Promise<void>;
+    pageLoader?: (params: IBasicImportParams, pageState: IPageStates) => Promise<void>;
     displayItem?: (state: IPageStates, field: string, itm: IItemData, all: { [key: string]: IItemData }, rowInd: number) => JSX.Element | string;
     displayHeader?: (state: IPageStates,field: string, key:number) => JSX.Element|string;
 }
@@ -37,6 +37,7 @@ export interface IPageStates {
     curPage: IPageInfo;
     pageDetails: IDataDetails;
     sheetId: string; //not in state, passed around
+    selectedOwners: IOwnerInfo[]; //not in state, passed around
 
     existingOwnersByName: { [ownerName: string]: IOwnerInfo };
     existingOwnersById: { [ownerId: number]: IOwnerInfo };

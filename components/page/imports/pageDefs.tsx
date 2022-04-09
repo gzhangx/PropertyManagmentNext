@@ -8,7 +8,7 @@ import {keyBy, omit, mapValues} from 'lodash'
 import React from 'react';
 import { createPayment } from './helpers'
 
-import * as loaders from './loads/lease'
+import * as lease from './loads/lease'
 import {getHouseState, payment_pageLoader, INVALID_PAYMENT_ROW_TAG} from './loads/payment'
 
 function getPaymentKey(pmt: IPayment) {        
@@ -56,9 +56,7 @@ export function getPageDefs(params: IPageDefPrms) {
                 //'ownerID',
             ],
             idField: 'receivedDate',
-            pageLoader: async (pageState: IPageStates) => {
-                return await payment_pageLoader(params, pageState);                            
-            },
+            pageLoader: payment_pageLoader,
             displayHeader: (state, field, key) => {
                 const fieldName = state.curPage.fieldMap[key];
                 if (fieldName === 'receivedAmount') {
@@ -138,7 +136,7 @@ export function getPageDefs(params: IPageDefPrms) {
                 'ownerName'
             ],
             idField: 'address',
-            pageLoader: async (pageState: IPageStates) => {
+            pageLoader: async (prms, pageState: IPageStates) => {
                 const page = pageState.curPage;
                 const pageDetails: IDataDetails = pageState.pageDetails;
                 let hi = {};
@@ -207,7 +205,9 @@ export function getPageDefs(params: IPageDefPrms) {
                 'tenant3',
                 'tenant4',
             ],
-            idField:'houseID',
+            idField: 'houseID',
+            pageLoader: lease.lease_PageLoader,
+            displayItem: lease.lease_DisplayItem,
         }
     ];
     return pages;
@@ -312,7 +312,7 @@ export const createHouseFunc = (params:IPageDefPrms, state: IPageStates, data: {
                                 console.log('sql add owner');
                                 console.log(res)
                                 
-                                return state.curPage.pageLoader && state.curPage.pageLoader(state).then(() => {
+                                return state.curPage.pageLoader && state.curPage.pageLoader(params, state).then(() => {
                                     params.setDlgContent(null);  
                                 })                                    
                             }).catch(err => {
