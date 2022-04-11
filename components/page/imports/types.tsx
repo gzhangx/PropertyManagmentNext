@@ -12,14 +12,25 @@ export interface IPaymentWithArg extends IPayment
     invalidDesc: string;
 }
 
+export interface IPageDefPrms extends IBasicImportParams {
+    //dispatchCurPageState: React.Dispatch<React.SetStateAction<IPageStates>>;
+    //showProgress: (str: string) => void; //progressDlg.setDialogText('processing');
+    //createHouse: (state: IPageStates, data: { [key: string]: IItemData }) => void;  //setDlgContent(createHouseFunc(state, all))
+    //createOwner: () => void; //setDlgContent(createOwnerFunc(item.val))
+    //hideDlg: () => void; //setDlgContent(null);
+    refreshOwners: () => Promise<void>;
+    setDlgContent: React.Dispatch<React.SetStateAction<JSX.Element>>;
+    //setErrorStr: (str: string) => void;
+}
+
 export interface IPageInfo {
     pageName: 'Tenants Info' | 'Lease Info' | 'PaymentRecord' | 'House Info';
     range: string;
     fieldMap?: ALLFieldNames[];
     idField?: ALLFieldNames;
     pageLoader?: (params: IBasicImportParams, pageState: IPageStates) => Promise<void>;
-    displayItem?: (state: IPageStates, field: string, itm: IItemData, all: { [key: string]: IItemData }, rowInd: number) => JSX.Element | string;
-    displayHeader?: (state: IPageStates,field: string, key:number) => JSX.Element|string;
+    displayItem?: (params: IPageDefPrms,state: IPageStates, field: string, itm: IItemData, all: { [key: string]: IItemData }, rowInd: number) => JSX.Element | string;
+    displayHeader?: (params: IPageDefPrms, state: IPageStates,field: string, key:number) => JSX.Element|string;
 }
 
 export interface IItemData {

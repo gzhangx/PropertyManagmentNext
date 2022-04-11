@@ -1,6 +1,6 @@
 
 import { IOwnerInfo, IHouseInfo, IPayment } from '../../reportTypes';
-import { IBasicImportParams, IPaymentWithArg, IPageInfo, IItemData, IDataDetails, IPageStates } from './types'
+import { IBasicImportParams, IPaymentWithArg, IPageInfo, IItemData, IDataDetails, IPageStates,IPageDefPrms } from './types'
 import { googleSheetRead, getOwners, sqlAdd, getHouseInfo, getPaymentRecords } from '../../api'
 import { InforDialog, GetInfoDialogHelper } from '../../generic/basedialog';
 import moment from 'moment'
@@ -17,18 +17,8 @@ function getPaymentKey(pmt: IPayment) {
     return `${date}-${amt}-${pmt.houseID}-${pmt.paymentID || ''}-${(pmt.paymentTypeID || '').trim()}-${(pmt.notes || '').trim()}`;
 }    
 
-interface IPageDefPrms extends IBasicImportParams {
-    //dispatchCurPageState: React.Dispatch<React.SetStateAction<IPageStates>>;
-    //showProgress: (str: string) => void; //progressDlg.setDialogText('processing');
-    //createHouse: (state: IPageStates, data: { [key: string]: IItemData }) => void;  //setDlgContent(createHouseFunc(state, all))
-    //createOwner: () => void; //setDlgContent(createOwnerFunc(item.val))
-    //hideDlg: () => void; //setDlgContent(null);
-    refreshOwners: () => Promise<void>;
-    setDlgContent: React.Dispatch<React.SetStateAction<JSX.Element>>;
-    //setErrorStr: (str: string) => void;
-}
-export function getPageDefs(params: IPageDefPrms) {
-    const { dispatchCurPageState } = params;
+
+export function getPageDefs() {
 
     const pages: IPageInfo[] = [
         {
@@ -57,7 +47,7 @@ export function getPageDefs(params: IPageDefPrms) {
             ],
             idField: 'receivedDate',
             pageLoader: payment_pageLoader,
-            displayHeader: (state, field, key) => {
+            displayHeader: (params: IPageDefPrms,state, field, key) => {
                 const fieldName = state.curPage.fieldMap[key];
                 if (fieldName === 'receivedAmount') {
                     return <>Amount <button className='btn btn-primary' onClick={async () => {
@@ -83,7 +73,7 @@ export function getPageDefs(params: IPageDefPrms) {
                 }
                 return field;
             },
-            displayItem: (state: IPageStates, field: string, item: IItemData, all, rowInd) => {
+            displayItem: (params: IPageDefPrms, state: IPageStates, field: string, item: IItemData, all, rowInd) => {
                 if (!item) return 'NOITEM';
                 if (field === 'receivedAmount') {
                     if (all['NOTFOUND']) {
@@ -144,7 +134,7 @@ export function getPageDefs(params: IPageDefPrms) {
                     //const hi = await getHouseInfo();
                     hi = await getHouseState();
                 }
-                dispatchCurPageState(state => {
+                prms.dispatchCurPageState(state => {
                     return {
                         ...state,
                         pageDetails,
@@ -154,7 +144,7 @@ export function getPageDefs(params: IPageDefPrms) {
                     }
                 });
             },
-            displayItem: (state: IPageStates, field: string, item: IItemData, all) => {
+            displayItem: (params: IPageDefPrms,state: IPageStates, field: string, item: IItemData, all) => {
                 if (!item) return 'houseinfonull';            
                 if (field === 'ownerName') {
                     if (!state.existingOwnersByName) return item.val;

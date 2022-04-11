@@ -1,6 +1,6 @@
 
 import moment from 'moment'
-import { IBasicImportParams, IPaymentWithArg, IPageInfo, IItemData, IDataDetails, IPageStates } from '../types'
+import { IBasicImportParams, IPaymentWithArg, IPageInfo, IItemData, IDataDetails, IPageStates, IPageDefPrms } from '../types'
 import { googleSheetRead, getOwners, sqlAdd, getLeases, } from '../../../api'
 import { ITenantInfo, ILeaseInfo } from '../../../reportTypes'
 import { keyBy } from 'lodash'
@@ -65,10 +65,10 @@ export async function lease_PageLoader(pagePrms: IBasicImportParams, pageState: 
     })
 }
 
-export function lease_DisplayItem(state: IPageStates, field: string, itm: IItemData, all: { [key: string]: IItemData }, rowInd: number): JSX.Element | string {    
+export function lease_DisplayItem(params: IPageDefPrms, state: IPageStates, field: string, itm: IItemData, all: { [key: string]: IItemData }, rowInd: number): JSX.Element | string {    
     if (!itm) return 'null itm';
     return itm.val;
 }
-export function lease_DisplayHeader(state: IPageStates, field: string, key: number): JSX.Element | string {
+export function lease_DisplayHeader(params: IPageDefPrms, state: IPageStates, field: string, key: number): JSX.Element | string {
     return '';
 }

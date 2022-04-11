@@ -102,7 +102,7 @@ export function ImportPage() {
     }, [sheetId, curPageState.stateReloaded, curPageState.curPage, curPageState.existingOwnersByName, curPageState.payments])
         
 
-    const pages = getPageDefs(pagePrms);
+    const pages = getPageDefs();
     console.log(`curPageState.stateReloaded=${curPageState.stateReloaded}`);
 
 
@@ -169,7 +169,7 @@ export function ImportPage() {
                         {
                             curPageState.pageDetails && curPageState.pageDetails.columns && curPageState.pageDetails.columns.map((d, key) => {
                                 return <td key={key}>{
-                                    curPageState.curPage.displayHeader? curPageState.curPage.displayHeader(curPageState, d, key) : d
+                                    curPageState.curPage.displayHeader? curPageState.curPage.displayHeader(pagePrms,curPageState, d, key) : d
                                 }</td>
                             })
                         }
@@ -187,7 +187,7 @@ export function ImportPage() {
                             return <tr key={ind}>{
                                 keys.map((key, ck) => {
                                     return <td key={ck}>{
-                                        curPageState.curPage.displayItem ? curPageState.curPage.displayItem(curPageState, key, p[key], p, ind) : (p[key] && p[key].val)
+                                        curPageState.curPage.displayItem ? curPageState.curPage.displayItem(pagePrms,curPageState, key, p[key], p, ind) : (p[key] && p[key].val)
                                     }</td>
                                 })
                             }</tr>
