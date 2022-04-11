@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useReducer } from 'react';
-import { googleSheetRead, getOwners, sqlAdd, getHouseInfo, getPaymentRecords } from '../../api'
+import { googleSheetRead, getOwners, sqlAdd, getHouseInfo, getPaymentRecords, getTenants } from '../../api'
 import { EditTextDropdown } from '../../generic/EditTextDropdown'
 import { IOwnerInfo, IHouseInfo, IPayment, IIncomeExpensesContextValue } from '../../reportTypes';
 import { keyBy, mapValues, omit } from 'lodash'
@@ -31,7 +31,7 @@ export function ImportPage() {
     const [dlgContent, setDlgContent] = useState<JSX.Element>(null);
         
     const [reloads, setReloads] = useState({
-        reloadUsers: 0,
+        reloadUsers: 0,        
     })
     //const [progressStr, setProgressStr] = useState('');
     const errorDlg = GetInfoDialogHelper();
@@ -60,13 +60,28 @@ export function ImportPage() {
                     ...state,
                     existingOwnersById: keyBy(own, 'ownerID'),
                     existingOwnersByName: keyBy(own, 'ownerName'),
+                    stateReloaded: state.stateReloaded + 1,
                 };
             });
         });
     }
 
+    const refreshTenants = () => {
+        return getTenants(selectedOwners).then(tenants => {
+            dispatchCurPageState(state => {
+                return {
+                    ...state, 
+                    tenants,
+                    tenantByName: keyBy(tenants,t=>t.fullName),
+                    stateReloaded: state.stateReloaded+1,
+                };
+            });            
+        });
+    }
+
     useEffect(() => {
         refreshOwners();
+        refreshTenants();
     }, [reloads.reloadUsers]);
 
 

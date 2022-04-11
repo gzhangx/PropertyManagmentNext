@@ -1,5 +1,5 @@
 
-import { IOwnerInfo, IHouseInfo, IPayment } from '../../reportTypes';
+import { IOwnerInfo, IHouseInfo, IPayment, ITenantInfo } from '../../reportTypes';
 
 export type ALLFieldNames = '' | 'address' | 'city' | 'zip' | 'ownerName' | 'receivedDate' | 'receivedAmount' | 'houseID' | 'paymentTypeID' | 'paymentProcessor' | 'notes'
     | 'startDate' | 'endDate' | 'monthlyRent' | 'deposit' | 'petDeposit' | 'otherDeposit' | 'comment' | 'tenant1'| 'tenant2'| 'tenant3'| 'tenant4';
@@ -56,6 +56,8 @@ export interface IPageStates {
     housesByAddress: { [ownerName: string]: IHouseInfo };
     houses: IHouseInfo[];
     payments: IPaymentWithArg[];
+    tenants: ITenantInfo[];
+    tenantByName: { [fname: string]: ITenantInfo };
     //paymentsByDateEct: { [key: string]: IPaymentWithArg[] };
     stateReloaded: number;
     getHouseByAddress: (state: IPageStates, addr: string) => IHouseInfo;

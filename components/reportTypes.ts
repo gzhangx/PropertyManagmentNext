@@ -105,11 +105,12 @@ export interface ILeaseInfo {
 }
 
 export interface ITenantInfo {
-    'firstName': string;
-    'lastName': string;
-    'fullName': string;
-    'phone': string;
-    'email': string;
+    tenantID: string;
+    firstName: string;
+    lastName: string;
+    fullName: string;
+    phone: string;
+    email: string;
 }
 
 export interface IPaymentCalcOpts {

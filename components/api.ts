@@ -35,6 +35,7 @@ import {
     IHouseInfo,
     IPayment,
     ILeaseInfo,
+    ITenantInfo,
 } from './reportTypes';
 
 async function doPost(path: string, data: object, method?: Method): Promise<any> {
@@ -140,7 +141,7 @@ export interface ISqlRequestWhereItem {
 }
 
 export interface ISqlRequest {
-    table: 'rentPaymentInfo' | 'houseInfo' | 'maintenanceRecords' | 'ownerInfo' | 'leaseInfo';
+    table: 'rentPaymentInfo' | 'houseInfo' | 'maintenanceRecords' | 'ownerInfo' | 'leaseInfo' | 'tenantInfo';
     fields?: (ISqlRequestFieldDef | string)[];
     joins?: any;
     order?: ISqlOrderDef[];
@@ -304,6 +305,21 @@ export async function getOwners() : Promise<IOwnerInfo[]> {
         return r.rows;
     });    
 }
+
+export async function getTenants(ownerInfos: IOwnerInfo[]): Promise<ITenantInfo[]> {
+    if (!ownerInfos || !ownerInfos.length) return [];
+    return sqlGet({
+        table: 'tenantInfo',
+        whereArray: [{
+            field: 'ownerID',
+            op: 'in',
+            val: ownerInfos.map(o => o.ownerID),
+        }]
+    } as ISqlRequest).then((r: { rows: ITenantInfo[] }) => {
+        return r.rows;
+    });
+}
+
 
 export interface IGoogleToken {
     access_token: string;
