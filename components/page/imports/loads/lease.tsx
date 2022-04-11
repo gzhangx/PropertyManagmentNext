@@ -58,14 +58,12 @@ export async function lease_PageLoader(pagePrms: IBasicImportParams, pageState: 
     pagePrms.dispatchCurPageState(state => {
         return {
             ...state,
-            pageState,
+            ...pageState,
         }
     })
 }
 
 export function lease_DisplayItem(state: IPageStates, field: string, itm: IItemData, all: { [key: string]: IItemData }, rowInd: number): JSX.Element | string {    
-    console.log(field)
-    console.log(all)
     if (!itm) return 'null itm';
     return itm.val;
 }
