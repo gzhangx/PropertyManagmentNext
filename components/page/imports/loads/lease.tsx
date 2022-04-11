@@ -58,7 +58,9 @@ export async function lease_PageLoader(pagePrms: IBasicImportParams, pageState: 
     pagePrms.dispatchCurPageState(state => {
         return {
             ...state,
-            ...pageState,
+            pageDetails: {
+                ...pageState.pageDetails
+            },
         }
     })
 }
