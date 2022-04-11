@@ -1,11 +1,11 @@
 
-import { IPageInfo, IDataDetails,IItemData,IBasicImportParams } from './types'
+import { IPageInfo, IPageInfoBasic, IDataDetails,IItemData,IBasicImportParams } from './types'
 import { googleSheetRead, getOwners, sqlAdd, getHouseInfo, getPaymentRecords } from '../../api'
 import { IPageStates } from './types'
 import {INVALID_PAYMENT_ROW_TAG} from './loads/payment'
 //const sheetId = '1UU9EYL7ZYpfHV6Jmd2CvVb6oBuQ6ekTR7AWXIlMvNCg';
 
-export async function loadPageSheetDataRaw(sheetId: string, curPage: IPageInfo): Promise<IDataDetails> {
+export async function loadPageSheetDataRaw(sheetId: string, curPage: IPageInfoBasic): Promise<IDataDetails> {
     if (!curPage) return;
     
     return googleSheetRead(sheetId, 'read', `'${curPage.pageName}'!${curPage.range}`).then((r) => {

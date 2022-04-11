@@ -2,7 +2,8 @@
 import { IOwnerInfo, IHouseInfo, IPayment, ITenantInfo } from '../../reportTypes';
 
 export type ALLFieldNames = '' | 'address' | 'city' | 'zip' | 'ownerName' | 'receivedDate' | 'receivedAmount' | 'houseID' | 'paymentTypeID' | 'paymentProcessor' | 'notes'
-    | 'startDate' | 'endDate' | 'monthlyRent' | 'deposit' | 'petDeposit' | 'otherDeposit' | 'comment' | 'tenant1'| 'tenant2'| 'tenant3'| 'tenant4';
+    | 'startDate' | 'endDate' | 'monthlyRent' | 'deposit' | 'petDeposit' | 'otherDeposit' | 'comment' | 'tenant1' | 'tenant2' | 'tenant3' | 'tenant4'
+    | 'firstName' | 'lastName' | 'fullName' | 'phone' | 'email';
 
 export interface IPaymentWithArg extends IPayment
 {
@@ -23,11 +24,13 @@ export interface IPageDefPrms extends IBasicImportParams {
     //setErrorStr: (str: string) => void;
 }
 
-export interface IPageInfo {
+export interface IPageInfoBasic {
     pageName: 'Tenants Info' | 'Lease Info' | 'PaymentRecord' | 'House Info';
     range: string;
     fieldMap?: ALLFieldNames[];
     idField?: ALLFieldNames;
+}
+export interface IPageInfo extends IPageInfoBasic {    
     pageLoader?: (params: IBasicImportParams, pageState: IPageStates) => Promise<void>;
     displayItem?: (params: IPageDefPrms,state: IPageStates, field: string, itm: IItemData, all: { [key: string]: IItemData }, rowInd: number) => JSX.Element | string;
     displayHeader?: (params: IPageDefPrms, state: IPageStates,field: string, key:number) => JSX.Element|string;

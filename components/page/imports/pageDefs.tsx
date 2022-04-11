@@ -9,8 +9,10 @@ import React from 'react';
 import { createPayment } from './helpers'
 
 import * as lease from './loads/lease'
-import {getHouseState, payment_pageLoader, INVALID_PAYMENT_ROW_TAG} from './loads/payment'
+import { getHouseState, payment_pageLoader, INVALID_PAYMENT_ROW_TAG } from './loads/payment'
+import * as tenantLoad from './loads/tenants'
 
+import { getBasicPageDefs } from './loads/basicPageInfo'
 function getPaymentKey(pmt: IPayment) {        
     const date = moment(pmt.receivedDate).format('YYYY-MM-DD')        
     const amt = pmt.receivedAmount.toFixed(2);
@@ -20,6 +22,7 @@ function getPaymentKey(pmt: IPayment) {
 
 export function getPageDefs() {
 
+    const basicDef = getBasicPageDefs();
     const pages: IPageInfo[] = [
         {
             pageName: 'Tenants Info',
@@ -178,26 +181,14 @@ export function getPageDefs() {
             }
         },
         {
-            pageName: 'Lease Info',
-            range: 'A1:M',
-            fieldMap: [
-                '',
-                'houseID',
-                'startDate',
-                'endDate',
-                'monthlyRent',
-                'deposit',
-                'petDeposit',
-                'otherDeposit',
-                'comment',
-                'tenant1',
-                'tenant2',
-                'tenant3',
-                'tenant4',
-            ],
-            idField: 'houseID',
+            ...basicDef.lease,
             pageLoader: lease.lease_PageLoader,
             displayItem: lease.lease_DisplayItem,
+        },
+        {
+            ...basicDef.tenant,
+            pageLoader: tenantLoad.tenant_PageLoader,
+            displayItem: tenantLoad.tenant_DisplayItem,
         }
     ];
     return pages;
