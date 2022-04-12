@@ -235,7 +235,16 @@ export async function getHouseInfo(): Promise<IHouseInfo[]> {
             //op: 'in',
             //val: ownerInfos.map(o=>o.ownerID),
         //}],        
-    }).then((r: { rows: IHouseInfo[]}) => {
+    }).then((r: { rows: IHouseInfo[]; error: string; }) => {
+        if (r.error === 'not authorized') {
+            throw {
+                error: r.error,
+            }
+        }
+        if (!r.rows) {
+            console.log(`bad getHouseInfo return`, r);
+            return [];
+        }        
         return r.rows.filter(x=>x.address);
     });    
 }

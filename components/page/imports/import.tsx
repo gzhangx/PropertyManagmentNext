@@ -5,6 +5,7 @@ import { IOwnerInfo, IHouseInfo, IPayment, IIncomeExpensesContextValue } from '.
 import { keyBy, mapValues, omit } from 'lodash'
 import { InforDialog, GetInfoDialogHelper } from '../../generic/basedialog';
 import moment from 'moment';
+import { useRouter } from 'next/router'
 
 import { BaseDialog } from '../../generic/basedialog'
 import { ALLFieldNames, IPaymentWithArg, IPageInfo, IItemData, IDataDetails, IPageStates } from './types'
@@ -29,7 +30,7 @@ function getSheetId(rootCtx: IRootPageState, mainCtx: IIncomeExpensesContextValu
 }
 export function ImportPage() {
     const [dlgContent, setDlgContent] = useState<JSX.Element>(null);
-        
+    const router = useRouter();
     const [reloads, setReloads] = useState({
         reloadUsers: 0,        
     })
@@ -63,6 +64,8 @@ export function ImportPage() {
                     stateReloaded: state.stateReloaded + 1,
                 };
             });
+        }).catch(err => {
+            errorDlg.setDialogText(err.error || err.message);            
         });
     }
 
@@ -99,7 +102,7 @@ export function ImportPage() {
         if (!curPageState.curPage) return;
         loadPageSheetDataRaw(sheetId, curPageState.curPage).then((pageDetails) => {
             if (curPageState.curPage.pageLoader) {
-                curPageState.curPage.pageLoader(pagePrms, {
+                return curPageState.curPage.pageLoader(pagePrms, {
                     selectedOwners,
                     sheetId,
                     ...curPageState,
@@ -113,6 +116,8 @@ export function ImportPage() {
                     }
                 })
             }
+        }).catch(err => {
+            errorDlg.setDialogText(err.error || err.message);            
         })
     }, [sheetId, curPageState.stateReloaded, curPageState.curPage, curPageState.existingOwnersByName, curPageState.payments])
         
@@ -120,16 +125,17 @@ export function ImportPage() {
     const pages = getPageDefs();
     console.log(`curPageState.stateReloaded=${curPageState.stateReloaded}`);
 
-
-
     
+    errorDlg.getDialog.bind(errorDlg);
+    progressDlg.getDialog.bind(progressDlg);
+    errorDlg.getDialog()
     return <div className="container-fluid">
         <BaseDialog children={dlgContent} show={dlgContent != null} />        
         {
-            errorDlg.dialogText && errorDlg.Dialog
+            errorDlg.getDialog()
         }
         {
-            progressDlg.dialogText && progressDlg.Dialog
+            progressDlg.getDialog()
         }
         <div className="d-sm-flex align-items-center justify-content-between mb-4">        
             <div className="col-xl-6 col-md-6 mb-6">

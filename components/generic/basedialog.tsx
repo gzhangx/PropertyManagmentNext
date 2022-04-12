@@ -88,20 +88,36 @@ export function InforDialog(props: IInfoDialogProps) {
     </div>;
 }
 
-
-export interface IDialogInfoHelper {
-    setDialogText: React.Dispatch<React.SetStateAction<string>>;
-    dialogText: string;
-    Dialog: JSX.Element;
+interface IDialogState {
+    text: string;
+    onClose?: ()=>void;
 }
-export function GetInfoDialogHelper(onClose= ()=> { }) : IDialogInfoHelper {
-    const [dialogText, setDialogText] = useState('');
-    return {
+export interface IDialogInfoHelper {
+    setDialogText: (text: string) => void;
+    setDialogAction: (text: string, onClose: () => void)=>void;
+    dialogState: IDialogState;
+    getDialog: () => JSX.Element;
+}
+
+export function GetInfoDialogHelper(): IDialogInfoHelper {
+    const [dialogState, setDialogState] = useState<IDialogState>({
+        text: '',
+    });
+    const setDialogText = (text: string) => setDialogState({ text });
+    const infoHelper = {
         setDialogText,
-        dialogText,
-        Dialog: <InforDialog message={dialogText} hide={() => {
-            onClose();
-            setDialogText('')            
-        }}></InforDialog>,
-    }    
+        setDialogAction: (text, onClose) => setDialogState({
+            text,
+            onClose,
+        }),
+        dialogState,
+        getDialog: function()  {
+            const me = this as IDialogInfoHelper;
+            return me.dialogState.text && <InforDialog message={me.dialogState.text} hide={() => {
+                if (me.dialogState.onClose) me.dialogState.onClose();
+                setDialogText('')
+            }}></InforDialog>
+        }
+    }
+    return infoHelper;
 }

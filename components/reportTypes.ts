@@ -111,6 +111,8 @@ export interface ITenantInfo {
     fullName: string;
     phone: string;
     email: string;
+    ownerID: number;
+    houseID: string;
 }
 
 export interface IPaymentCalcOpts {
