@@ -1,7 +1,7 @@
 
 import moment from 'moment'
 import { IBasicImportParams, IPaymentWithArg, IPageInfo, IItemData, IDataDetails, IPageStates, IPageDefPrms } from '../types'
-import { IHouseInfo, ITenantInfo } from '../../../reportTypes'
+import { IHouseInfo, ILeaseInfo, ITenantInfo } from '../../../reportTypes'
 import { mapValues, trimStart } from 'lodash'
 import { sqlAdd, googleSheetRead } from '../../../api'
 import { getBasicPageDefs } from './basicPageInfo'
@@ -13,18 +13,30 @@ export const TENANTINFO_ROW_STATE_NAME = 'TENANTINFO_ROW_STATE_NAME';
 interface ITenantMatchInfo {
     dbTenant: ITenantInfo;
     sheetTenant: ITenantInfo;
+    leaseHouseName: string; 
 }
 export async function tenant_PageLoader(pagePrms: IBasicImportParams, pageState: IPageStates): Promise<void> {
     if (!pageState.pageDetails) return;
 
     const lesePg = getBasicPageDefs().lease;
     const leaseDataDetails = await loadPageSheetDataRaw(pageState.sheetId, lesePg);
-    const leases = leaseDataDetails.rows.map(r=>mapValues(r, r => r.val));
+    const leases = leaseDataDetails.rows.map(r => mapValues(r, r => r.val)) as any as ILeaseInfo[];
+    const tenantToHouseNameFromLease = leases.reduce((acc, l) => {
+        [1, 2, 3, 4].forEach(who => {
+            const name = l[`tenant${who}`] as string;
+            if (!name) return;
+            const house = l.houseID;
+            if (house) acc[name] = house;            
+        })
+        
+        return acc;
+    }, {} as { [fname: string]: string });
     const tenantToHouse = leases.reduce((acc, l) => {
         [1, 2, 3, 4].forEach(who => {
-            const name = l[`tenant${who}`];
+            const name = l[`tenant${who}`] as string;
             if (!name) return;
-            const house = pageState.housesByAddress[name.toLowerCase()];
+            const house = pageState.housesByAddress[l.houseID.toLowerCase()];
+            console.log(`matching ${name} to`,house)
             let found =acc[name];
             if (!found) {
                 found = [];
@@ -35,18 +47,21 @@ export async function tenant_PageLoader(pagePrms: IBasicImportParams, pageState:
         
         return acc;
     }, {} as { [fname: string]: IHouseInfo[] });
-    console.log('tenantToHouse is')
-    console.log(tenantToHouse)
         
     pageState.pageDetails.rows.map(r => {                
+        const fullName = r['fullName'].val;
         const obj = {
-            dbTenant: pageState.tenantByName[r['fullName'].val], 
-            sheetTenant: mapValues(r, v=>v.val) as any as ITenantInfo,
+            dbTenant: pageState.tenantByName[fullName], 
+            sheetTenant: mapValues(r, v => v.val) as any as ITenantInfo,
+            leaseHouseName: tenantToHouseNameFromLease[fullName],
         } as ITenantMatchInfo;
         const matchHouses = tenantToHouse[obj.sheetTenant.fullName];
         if (matchHouses) {
-            obj.sheetTenant.houseID = matchHouses[0].houseID;
-            obj.sheetTenant.ownerID = matchHouses[0].ownerID;
+            const fh = matchHouses[0];
+            if (fh) {
+                obj.sheetTenant.houseID = fh.houseID;
+                obj.sheetTenant.ownerID = fh.ownerID;
+            }
         }
         r[TENANTINFO_ROW_STATE_NAME] = {
             val: matchHouses && matchHouses.length > 1 ?`${matchHouses.length}`:'',
@@ -77,13 +92,13 @@ export function  tenant_DisplayItem(params: IPageDefPrms, state: IPageStates, fi
         const ti = rs.obj as ITenantMatchInfo;
         if (!ti.dbTenant) {
             if (!ti.sheetTenant.houseID) {
-                return <div>{ itm.val} (house not found)</div>
+                return <div>{itm.val} (house not found { ti.leaseHouseName })</div>
             }
             if (rs.val) {
                 return <div>{itm.val} (Too many houses {rs.val} )</div>
             }
             return <button onClick={() => {                
-                createTenant(mapValues(all,a=>a.val));
+                createTenant(ti.sheetTenant);
             }}>need create {itm.val}</button>
         }
     }
