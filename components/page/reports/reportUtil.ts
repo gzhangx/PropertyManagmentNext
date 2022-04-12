@@ -257,7 +257,10 @@ export function getMaintenanceData(maintenanceRecordsRaw: IExpenseData[], opts: 
                         curTotal: ramount,
                         amount: ramount,
                         dspAmount: ramount.toFixed(2),
-                        house: r,
+                        house: {
+                            ...r,
+                            ownerID: 0, city: '', state: '', zip:''
+                        },
                         info: `${r.address} ==> ${(ramount).toFixed(2)} of ${r.category}`,
                     } as IHousePartsCalcInfo
                 ]
@@ -281,7 +284,7 @@ export function getMaintenanceData(maintenanceRecordsRaw: IExpenseData[], opts: 
                 const dspAmount = amount.toFixed(2);
                 acc.calcInfo.push({
                     curTotal,
-                    house: {houseID: h.id, address: h.address},
+                    house: { houseID: h.id, address: h.address, ownerID: 0, city: '', state: '', zip:'' },
                     amount,
                     dspAmount,
                     info: `${h.address} ${dspAmount} cumulated: ${(acc.amount/100).toFixed(2)} from total ${r.amount.toFixed(2)} of ${r.category}`,

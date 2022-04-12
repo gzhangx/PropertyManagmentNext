@@ -99,9 +99,10 @@ export interface ILeaseInfo {
     'endDate': string;
     'startDate': string;
     'houseID': string;
-    'ownerID': number;
-    'comment': string;
-    'monthlyRent': number;
+    ownerID: number;
+    tenantID: string;
+    comment: string;
+    monthlyRent: number;
 }
 
 export interface ITenantInfo {

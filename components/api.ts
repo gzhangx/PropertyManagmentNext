@@ -155,7 +155,7 @@ export interface ISqlRequest {
 
 
 export async function sqlGet(input: ISqlRequest): Promise<any> {
-    return doPost(`sql/get`, input);
+    return doPost(`sql/get?tableDbg=${input.table}`, input);
 }
 
 export async function sqlAdd(table: string, fields: { [key: string]: string | number; }, create:boolean) {

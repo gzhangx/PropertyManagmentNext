@@ -1,7 +1,7 @@
 
 import moment from 'moment'
 import { IBasicImportParams, IPaymentWithArg, IPageInfo, IItemData, IDataDetails, IPageStates, IPageDefPrms } from '../types'
-import { googleSheetRead, getOwners, sqlAdd, getLeases, } from '../../../api'
+import { googleSheetRead, getOwners, sqlAdd, getLeases, sqlGet } from '../../../api'
 import { ITenantInfo, ILeaseInfo } from '../../../reportTypes'
 import { keyBy } from 'lodash'
 
@@ -25,7 +25,9 @@ export const LEASEINFO_ROW_STATE_NAME = 'LEASEINFO_ROW_STATE_NAME';
 interface ILeaseInfoRowState {
     tenantFound: boolean;
     tenantxFound: ITenantInfo[];
-
+    dbLease: ILeaseInfo;
+    sheetLease: ILeaseInfo;
+    address: string;
 }
 
 export async function lease_PageLoader(pagePrms: IBasicImportParams, pageState: IPageStates) : Promise <void> {
@@ -39,7 +41,7 @@ export async function lease_PageLoader(pagePrms: IBasicImportParams, pageState: 
         }
     });
     function getLeaseKey(l: ILeaseInfo) {
-        return `${l.houseID}-${l.startDate}-${l.endDate}`;
+        return `${l.houseID}-${l.tenantID}-${l.startDate}-${l.endDate}`;
     }
     const dbLeasesByKey = keyBy(dbLeases, getLeaseKey);
     pageState.pageDetails.rows.map(r => {        
@@ -50,6 +52,40 @@ export async function lease_PageLoader(pagePrms: IBasicImportParams, pageState: 
             val: '',
             obj: rState,
         };
+        rState.address = r['houseID'].val;
+        const startDate = moment(r['startDate'].val).format('YYYY-MM-DD');
+        r['startDate'].val = startDate;
+        const endDate = moment(r['endDate'].val).format('YYYY-MM-DD');
+        r['endDate'].val = endDate;
+        const house = pageState.getHouseByAddress(pageState, rState.address);
+        let tenantID = '';
+        const tenant = pageState.tenantByName[r['tenant1'].val];
+        if (tenant) {
+            tenantID = tenant.tenantID;
+        }
+        const getAmt = amtStr => {
+            const clearedStr = amtStr.replace(/[$,]/g, '').trim();
+            if (!clearedStr) return 0;
+            return parseFloat(clearedStr)
+        }
+        rState.sheetLease = {
+            leaseID: '',
+            startDate,
+            endDate,
+            deposit: getAmt(r['deposit'].val),
+            petDeposit: getAmt(r['petDeposit'].val),
+            otherDeposit: getAmt(r['otherDeposit'].val),
+            ownerID: house?house.ownerID:0,
+            houseID: house ? house.houseID : '',
+            tenantID,
+            comment: r['comment'].val,
+            monthlyRent: getAmt(r['monthlyRent'].val),
+        };
+        const newKey = getLeaseKey(rState.sheetLease);
+        const db = dbLeasesByKey[newKey];
+        if (db) {
+            rState.sheetLease.leaseID = db.leaseID;
+        }
         [1, 2, 3, 4].forEach(ti => {
             const tn = tenantsByFullName[(r[`tenant${ti}`].val || '').trim().toLowerCase()]
             rState.tenantxFound[ti] = tn;
@@ -65,8 +101,74 @@ export async function lease_PageLoader(pagePrms: IBasicImportParams, pageState: 
     })
 }
 
+
+function createLease(lease: ILeaseInfo) {
+    return sqlGet({
+        table: 'leaseInfo',
+        whereArray: [
+            {
+                field: 'houseID',
+                op: '=',
+                val: lease.houseID,
+            },
+            {
+                field: 'ownerID',
+                op: '=',
+                val: lease.ownerID,
+            },            
+            {
+                field: 'tenantID',
+                op: '=',
+                val: lease.tenantID,
+            },            
+            {
+                field: 'startDate',
+                op: '=',
+                val: lease.startDate,
+            },            
+            {
+                field: 'endDate',
+                op: '=',
+                val: lease.endDate,
+            }
+        ]
+    }).then(res => {
+        if (res.rows.length > 0) {
+            console.log('has lease res', res.rows[0])
+            return res.rows[0];
+        }
+        console.log('creating');        
+        return sqlAdd('leaseInfo', lease as any, true).then(l => {
+            console.log(`created lease`, l);
+            return l;
+        });
+    });
+}
 export function lease_DisplayItem(params: IPageDefPrms, state: IPageStates, field: string, itm: IItemData, all: { [key: string]: IItemData }, rowInd: number): JSX.Element | string {    
     if (!itm) return 'null itm';
+    if (!all[LEASEINFO_ROW_STATE_NAME]) return 'noull'
+    const stored = all[LEASEINFO_ROW_STATE_NAME].obj as ILeaseInfoRowState;    
+    if (field === 'houseID') {
+        //console.log(`field=${field} val=${itm.val} `,stored.sheetLease)
+        const lobj = stored.sheetLease;
+        if (lobj.leaseID) {
+            return `${itm.val} good`
+        } else {
+            return <button onClick={() => {
+                console.log(lobj);
+                lobj.leaseID = 'fake';
+                params.dispatchCurPageState(state => {
+                    return { ...state };
+                })
+                createLease(lobj).then(r => {
+                    lobj.leaseID = r.id;
+                    params.dispatchCurPageState(state => {
+                        return { ...state };
+                    })
+                });
+            }}>create {itm.val}</button>
+        }
+    }
     return itm.val;
 }
 export function lease_DisplayHeader(params: IPageDefPrms, state: IPageStates, field: string, key: number): JSX.Element | string {

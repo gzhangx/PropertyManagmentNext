@@ -118,7 +118,9 @@ export function ImportPage() {
                 })
             }
         }).catch(err => {
-            errorDlg.setDialogText(err.error || err.message);            
+            errorDlg.setDialogAction(err.error || err.message, () => {
+                router.push('/Login')
+            })
         })
     }, [sheetId, curPageState.stateReloaded, curPageState.curPage, curPageState.existingOwnersByName, curPageState.payments])
         

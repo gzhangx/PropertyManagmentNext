@@ -6,6 +6,8 @@ import { CashFlowReport } from '../components/page/reports/cashflow'
 import { DevelopPage } from './util/dev'
 import GoogleAuth from '../pages/google/googleAuth'
 
+import { LeaseReport} from '../components/page/reports/lease'
+
 const allSections = [
     {
         name: 'PM Reports',
@@ -13,6 +15,10 @@ const allSections = [
             {
                 name: 'Cash Flow',
                 page: <CashFlowReport />,
+            },
+            {
+                name: 'Lease Report',
+                page: <LeaseReport/>,
             },
             {
                 name: 'Develop',
