@@ -20,6 +20,7 @@ export interface IPageDefPrms extends IBasicImportParams {
     //createOwner: () => void; //setDlgContent(createOwnerFunc(item.val))
     //hideDlg: () => void; //setDlgContent(null);
     refreshOwners: () => Promise<void>;
+    refreshTenants: () => Promise<void>;
     setDlgContent: React.Dispatch<React.SetStateAction<JSX.Element>>;
     //setErrorStr: (str: string) => void;
 }
