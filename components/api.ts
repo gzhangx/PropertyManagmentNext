@@ -155,7 +155,7 @@ export interface ISqlRequest {
 
 
 export async function sqlGet(input: ISqlRequest): Promise<any> {
-    return doPost(`sql/get`, input);
+    return doPost(`sql/get?tableDbg=${input.table}`, input);
 }
 
 export async function sqlAdd(table: string, fields: { [key: string]: string | number; }, create:boolean) {
@@ -245,7 +245,12 @@ export async function getHouseInfo(): Promise<IHouseInfo[]> {
             console.log(`bad getHouseInfo return`, r);
             return [];
         }        
-        return r.rows.filter(x=>x.address);
+        return r.rows.filter(x => x.address).map(r => {
+            return {
+                ...r,
+                address: r.address.trim(),
+            }
+        });
     });    
 }
 
