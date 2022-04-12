@@ -245,7 +245,12 @@ export async function getHouseInfo(): Promise<IHouseInfo[]> {
             console.log(`bad getHouseInfo return`, r);
             return [];
         }        
-        return r.rows.filter(x=>x.address);
+        return r.rows.filter(x => x.address).map(r => {
+            return {
+                ...r,
+                address: r.address.trim(),
+            }
+        });
     });    
 }
 
