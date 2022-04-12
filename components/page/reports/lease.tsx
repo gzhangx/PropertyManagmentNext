@@ -71,12 +71,15 @@ export function LeaseReport(props) {
                     </thead>
                     <tbody>
                         {
-                            leases.filter(h => (selectedHouses[h.houseID])).map((lease, key) => {
+                            leases.map((lease, key) => {
                                 return <tr key={key}>                                    
                                     {
                                         leaseFields.map((lf, key) => {
                                             if (lf.field === 'houseID') {
-                                                return <td>{ houseById[lease.houseID].address}</td>
+                                                const house = houseById[lease.houseID];
+                                                let h = lease.houseID;
+                                                if (house) h = house.address;
+                                                return <td>{ h}</td>
                                             }
                                             return < td key={key} className='tdCenter' > {
                                                 lease[lf.field]
