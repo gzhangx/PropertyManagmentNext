@@ -85,7 +85,7 @@ export function ImportPage() {
     useEffect(() => {
         refreshOwners();
         refreshTenants();
-    }, [reloads.reloadUsers]);
+    }, [reloads.reloadUsers,selectedOwners]);
 
 
     
@@ -94,6 +94,7 @@ export function ImportPage() {
         pageState: curPageState,
         dispatchCurPageState,
         refreshOwners,
+        refreshTenants,
         setDlgContent,
         setErrorStr: errorDlg.setDialogText,
         showProgress: msg => progressDlg.setDialogText(msg),

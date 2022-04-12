@@ -3,7 +3,7 @@ import moment from 'moment'
 import { IBasicImportParams, IPaymentWithArg, IPageInfo, IItemData, IDataDetails, IPageStates, IPageDefPrms } from '../types'
 import { IHouseInfo, ILeaseInfo, ITenantInfo } from '../../../reportTypes'
 import { mapValues, trimStart } from 'lodash'
-import { sqlAdd, googleSheetRead } from '../../../api'
+import { sqlAdd, googleSheetRead, sqlGet } from '../../../api'
 import { getBasicPageDefs } from './basicPageInfo'
 import { loadPageSheetDataRaw } from '../helpers'
 
@@ -36,7 +36,6 @@ export async function tenant_PageLoader(pagePrms: IBasicImportParams, pageState:
             const name = l[`tenant${who}`] as string;
             if (!name) return;
             const house = pageState.housesByAddress[l.houseID.toLowerCase()];
-            console.log(`matching ${name} to`,house)
             let found =acc[name];
             if (!found) {
                 found = [];
@@ -67,7 +66,7 @@ export async function tenant_PageLoader(pagePrms: IBasicImportParams, pageState:
             val: matchHouses && matchHouses.length > 1 ?`${matchHouses.length}`:'',
             obj,
         };
-    });
+    });    
     pagePrms.dispatchCurPageState(state => {
         return {
             ...state,
@@ -80,10 +79,30 @@ export async function tenant_PageLoader(pagePrms: IBasicImportParams, pageState:
 
 
 function createTenant(data: any) {
-    return sqlAdd('tenantInfo', data, true).then(r=> {
-        console.log('creation results');
-        console.log(r);
-    })
+    return sqlGet({
+        table: 'tenantInfo',
+        whereArray: [
+            {
+                field: 'fullName',
+                op: '=',
+                val: data.fullName,
+            },
+            {
+                field: 'ownerID',
+                op: '=',
+                val: data.ownerID,
+            }
+        ]
+    }).then(res => {
+        if (res.rows.length > 0) {
+            return;
+        }
+        return sqlAdd('tenantInfo', data, true).then(r=> {
+            console.log('creation results');
+            console.log(r);
+            return r;
+        })
+    })    
 }
 export function  tenant_DisplayItem(params: IPageDefPrms, state: IPageStates, field: string, itm: IItemData, all: { [key: string]: IItemData }, rowInd: number): JSX.Element | string {    
     if (!itm) return 'null itm';
@@ -98,7 +117,18 @@ export function  tenant_DisplayItem(params: IPageDefPrms, state: IPageStates, fi
                 return <div>{itm.val} (Too many houses {rs.val} )</div>
             }
             return <button onClick={() => {                
-                createTenant(ti.sheetTenant);
+                params.dispatchCurPageState(state => ({
+                    ...state,
+                }));
+                createTenant(ti.sheetTenant).then(r => {
+                    ti.dbTenant = {
+                        tenantID: 'fake',
+                    } as ITenantInfo;
+                    if (!r) {
+                        params.setErrorStr('Already exists');
+                    }                    
+                    params.refreshTenants();
+                });
             }}>need create {itm.val}</button>
         }
     }
