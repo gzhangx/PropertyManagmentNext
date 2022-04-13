@@ -3,15 +3,14 @@ import { useRouter } from 'next/router'
 import * as api from '../components/api';
 import { Dialog } from '../components/dialog';
 import Link from 'next/link';
+import { GetInfoDialogHelper } from '../components/generic/basedialog';
+
 export default function ForgetPassword() {
     const router = useRouter();
+    const infoDlg = GetInfoDialogHelper();
     const commingSoon = e => {
         e.preventDefault();
-        setDialogInfo({
-            show: true,
-            title: 'Not implemented',
-            body: 'Comming Soon'
-        })
+        infoDlg.setDialogText('Not implemented')        
     }
     const [state, setState] = useState({
         email: '',
@@ -22,7 +21,7 @@ export default function ForgetPassword() {
     const submit = e => {
         e.preventDefault();
         if (!api.emailRegx.test(state.email)) {
-            return showDialog('Invalid email format '+state.email);
+            return infoDlg.setDialogText('Invalid email format '+state.email);
         }
         api.resetPassword({ username: state.email }).then(() => {
             showDialog('You should receive email with your password shortly',
@@ -31,16 +30,13 @@ export default function ForgetPassword() {
             }); 
         });
     };
-    const showDialog = (msg, title='Info', onClose) => {
-        setDialogInfo({
-            show: true,
-            title,
-            body: msg,
-            onClose,
-        })
+    const showDialog = (msg, title='Info', onClose: ()=>void) => {
+        infoDlg.setDialogAction(msg, onClose)
     }
     return <div className="container">
-        <Dialog dialogInfo={dialogInfo} setDialogInfo={setDialogInfo} ></Dialog>
+        {
+            infoDlg.getDialog()
+        }
     <div className="row justify-content-center">
 
         <div className="col-xl-10 col-lg-12 col-md-9">

@@ -6,8 +6,8 @@ import {MainSideBar} from '../components/page/sidebar'
 import { TopBar } from '../components/page/topbar'
 import { Footer } from '../components/page/pageFooter'
 
-import { sections, sideBarContentLookup } from './rootContents'
-import { OriginalDashboard } from './origDashboard'
+import { sections, sideBarContentLookup } from '../components/rootContents'
+import { OriginalDashboard } from '../components/demo/origDashboard'
 
 export default withRouter(function MainDashboard(props) {
   //const { state, setMainState } = props;  

@@ -1,6 +1,6 @@
-import BoardItemHalfSmall from '../components/page/boardItemHaflSmall'
-import DemoRow from '../components/page/demorow'
-import DemoGraphicsRow from '../components/page/demoGraphicsRow'
+import BoardItemHalfSmall from './boardItemHaflSmall'
+import DemoRow from '../page/demorow'
+import DemoGraphicsRow from '../page/demoGraphicsRow'
 export function OriginalDashboard() {
     return <div className="container-fluid">
 

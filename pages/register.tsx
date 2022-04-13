@@ -1,14 +1,13 @@
 import react, {useState} from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/router'
-import { Dialog } from '../components/dialog';
+import { GetInfoDialogHelper } from '../components/generic/basedialog';
 import { registerUser } from '../components/api'
 const emailRegx = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/;
 export default function register() {
-    const router = useRouter();
-    const [dialogInfo, setDialogInfo] = useState({
-        show: false
-    });
+    const router = useRouter();    
+
+    const infoDlg = GetInfoDialogHelper();
     const [state, setMainState] = useState({
         username: '',        
         firstName: '',
@@ -25,44 +24,33 @@ export default function register() {
         return e => setVal(name, e);
     }
 
-    const showDialog = (msg, title='Info', onClose) => {
-        setDialogInfo({
-            show: true,
-            title,
-            body: msg,
-            onClose,
-        })
-    }
     const register = () => {
         if (!state.username) {
-            return showDialog('No username')
+            return infoDlg.setDialogText('No username')
         }
         if (!emailRegx.test(state.username)) {
-            return showDialog('username must be email address');
+            return infoDlg.setDialogText('username must be email address');
         }
-        registerUser(state).then(res => {
+        registerUser(state).then((res: any) => {
             if (res.error) {
-                return showDialog(res.error, 'Register error');
+                return infoDlg.setDialogText('Register error ' + res.error);
             }
 
-            showDialog('You should receive email with your password shortly',
-                'Registered', () => {
-                    router.push('/Login'); 
-            });            
+            infoDlg.setDialogAction('You should receive email with your password shortly', () => {
+                router.push('/Login');
+            })
         })
     }
 
     const commingSoon = e => {
         e.preventDefault();
-        setDialogInfo({
-            show: true,
-            title: 'Not implemented',
-            body: 'Comming Soon'
-        })
+        infoDlg.setDialogText('Not implemented')        
     }
 
     return <div className="container">
-        <Dialog dialogInfo={dialogInfo} setDialogInfo={setDialogInfo} ></Dialog>
+        {
+            infoDlg.getDialog()
+        }
         <div className="card o-hidden border-0 shadow-lg my-5">
             <div className="card-body p-0">
                 <div className="row">

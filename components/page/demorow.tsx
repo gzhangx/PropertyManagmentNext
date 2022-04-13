@@ -2,7 +2,6 @@ import react, { useState, useEffect } from "react";
 import { IPagePropsByTable } from '../types'
 
 export default function DemoRow() {
-    const [pageProps, setPageProps] = useState<IPagePropsByTable>({});
     return <div className="row">
 
         <div className="col-lg-6 mb-4">

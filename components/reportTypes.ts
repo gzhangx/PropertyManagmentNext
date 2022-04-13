@@ -74,10 +74,15 @@ export interface IExpenseCategory {
     displayOrder: string;
 }
 
-export interface IWorkerInfo {
+export interface IWorkerInfoShort {
     workerID: string;
     firstName: string;
     lastName: string;
+}
+export interface IWorkerInfo extends IWorkerInfoShort {
+    //workerID: string;
+    //firstName: string;
+    //lastName: string;
     email: string;
     phone: string;
     taxID: string;
@@ -133,7 +138,32 @@ export interface IMaintenanceRawData {
     hours: string;
     workerID: string;
     comment: string;
-    vdPosControl: string;
+}
+
+export interface IMaintenanceDataResponse extends IMaintenanceRawData {
+    address: string;
+    workerFirstName: string;
+    workerLastName: string;
+}
+
+export interface IWorkerComp {
+    id: string;
+    workerID: string;
+    dayOfMonth: string;
+    type: 'percent' | 'amount';
+    amount: number;
+    houseID: string;
+}
+
+export interface IWorkerCompResponse  {
+    workerID: string;
+    dayOfMonth: string;
+    type: 'percent' | 'amount';
+    amount: number;
+    houseID: string;
+    address: string;
+    firstName: string;
+    lastName: string;
 }
 
 export type IStringBoolMap = { [id: string]: boolean };

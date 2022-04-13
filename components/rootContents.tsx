@@ -1,12 +1,13 @@
-import { IMainSideBarSection } from '../components/page/sidebar'
+import { IMainSideBarSection } from './page/sidebar'
 import { OwnerList } from '../components/page/reports/ownerList'
 import { HouseList } from '../components/page/reports/houseList'
 import { RentpaymentInfo } from '../components/page/reports/rentpaymentInfo'
 import { CashFlowReport } from '../components/page/reports/cashflow'
-import { DevelopPage } from './util/dev'
+import { DevelopPage } from '../pages/util/dev'
 import GoogleAuth from '../pages/google/googleAuth'
 
-import { LeaseReport} from '../components/page/reports/lease'
+import { LeaseReport } from './page/reports/lease'
+import MonthlyComp from '../pages/reports/MonthlyComp'
 
 const allSections = [
     {
@@ -19,6 +20,10 @@ const allSections = [
             {
                 name: 'Lease Report',
                 page: <LeaseReport/>,
+            },
+            {
+                name: 'Comp Report',
+                page: <MonthlyComp/>,
             },
             {
                 name: 'Develop',

@@ -6,9 +6,7 @@ import { getConfig, ISiteConfig } from '../../components/api'
 import { GetInfoDialogHelper} from '../../components/generic/basedialog'
 export default function GoogleAuth() {
     const router = useRouter();
-    const infoDlg = GetInfoDialogHelper(() => {
-        router.push('/dashboard')
-    });
+    const infoDlg = GetInfoDialogHelper();
 
     const doneDlg = GetInfoDialogHelper();
     const [config, setConfig] = useState<ISiteConfig>({} as ISiteConfig);
@@ -40,10 +38,10 @@ export default function GoogleAuth() {
     return (
         <>
             {
-                infoDlg.dialogText && infoDlg.Dialog
+                infoDlg.getDialog()
             }
             {
-                doneDlg.dialogText && doneDlg.Dialog
+                doneDlg.getDialog()
             }
             <div className="row">
                 <div className="card shadow h-100 py-2 border-left-primary">

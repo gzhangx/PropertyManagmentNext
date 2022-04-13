@@ -29,7 +29,7 @@ export function EditTextDropdown(props: IEditTextDropdownProps) {
     useEffect(() => {          
         opts.setSelected(setTo);
         if (setTo) props.onSelectionChanged(setTo);
-    }, []);    
+    }, [setTo && props.formatDisplay && props.formatDisplay(setTo)]);    
     
     
    

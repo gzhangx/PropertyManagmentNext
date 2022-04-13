@@ -141,7 +141,7 @@ export interface ISqlRequestWhereItem {
 }
 
 export interface ISqlRequest {
-    table: 'rentPaymentInfo' | 'houseInfo' | 'maintenanceRecords' | 'ownerInfo' | 'leaseInfo' | 'tenantInfo';
+    table: 'rentPaymentInfo' | 'houseInfo' | 'maintenanceRecords' | 'ownerInfo' | 'leaseInfo' | 'tenantInfo' | 'workerComp';
     fields?: (ISqlRequestFieldDef | string)[];
     joins?: any;
     order?: ISqlOrderDef[];
