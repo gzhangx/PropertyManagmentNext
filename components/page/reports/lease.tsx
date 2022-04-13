@@ -145,7 +145,7 @@ export function LeaseReport(props) {
                                                 const house = houseById[lease.houseID];
                                                 let h = lease.houseID;
                                                 if (house) h = house.address;
-                                                return <td> <button onClick={() => {
+                                                return <td> <button className='btn btn-primary' onClick={() => {
                                                     setLeaseExpanded(state => {
                                                         return {
                                                             ...state,
