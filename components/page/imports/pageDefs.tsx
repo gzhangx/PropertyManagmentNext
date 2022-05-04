@@ -11,6 +11,7 @@ import { createPayment } from './helpers'
 import * as lease from './loads/lease'
 import { getHouseState, payment_pageLoader, INVALID_PAYMENT_ROW_TAG } from './loads/payment'
 import * as tenantLoad from './loads/tenants'
+import * as maintenceRecords from './loads/maintenanceRecords'
 
 import { getBasicPageDefs } from './loads/basicPageInfo'
 function getPaymentKey(pmt: IPayment) {        
@@ -189,6 +190,11 @@ export function getPageDefs() {
             ...basicDef.tenant,
             pageLoader: tenantLoad.tenant_PageLoader,
             displayItem: tenantLoad.tenant_DisplayItem,
+        },
+        {
+            ...basicDef.maintenceRecords,
+            pageLoader: maintenceRecords.maintenanceRecords_PageLoader,
+            displayItem: null,
         }
     ];
     return pages;

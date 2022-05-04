@@ -3,7 +3,7 @@ import { IOwnerInfo, IHouseInfo, IPayment, ITenantInfo } from '../../reportTypes
 
 export type ALLFieldNames = '' | 'address' | 'city' | 'zip' | 'ownerName' | 'receivedDate' | 'receivedAmount' | 'houseID' | 'paymentTypeID' | 'paymentProcessor' | 'notes'
     | 'startDate' | 'endDate' | 'monthlyRent' | 'deposit' | 'petDeposit' | 'otherDeposit' | 'comment' | 'tenant1' | 'tenant2' | 'tenant3' | 'tenant4'
-    | 'firstName' | 'lastName' | 'fullName' | 'phone' | 'email';
+    | 'firstName' | 'lastName' | 'fullName' | 'phone' | 'email' | 'date';
 
 export interface IPaymentWithArg extends IPayment
 {
@@ -26,7 +26,7 @@ export interface IPageDefPrms extends IBasicImportParams {
 }
 
 export interface IPageInfoBasic {
-    pageName: 'Tenants Info' | 'Lease Info' | 'PaymentRecord' | 'House Info';
+    pageName: 'Tenants Info' | 'Lease Info' | 'PaymentRecord' | 'House Info' | 'Maintenance Records';
     range: string;
     fieldMap?: ALLFieldNames[];
     idField?: ALLFieldNames;

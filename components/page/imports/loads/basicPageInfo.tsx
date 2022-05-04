@@ -35,6 +35,20 @@ export function getBasicPageDefs() {
                 'comment',
             ],
             idField: 'fullName',
-        } as IPageInfoBasic
+        } as IPageInfoBasic,
+        maintenceRecords: {
+            pageName: 'Maintenance Records',
+            range: 'A1:G',
+            fieldMap: [
+                'date',
+                'description',
+                'amount',
+                'houseID',
+                'expenseCategoryId',
+                'workerID',
+                'comment'
+            ],
+            idField:'date',
+        } as IPageInfoBasic,
     }
 }
