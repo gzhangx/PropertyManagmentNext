@@ -25,10 +25,19 @@ export interface IPageDefPrms extends IBasicImportParams {
     //setErrorStr: (str: string) => void;
 }
 
+export interface IColumnInfo {
+    colType: 'house' | 'tenant' | 'worker' | 'dateYYYY-MM-DD';
+}
+
+export interface IColumnInfoLookup {
+    [name: string]: IColumnInfo;
+}
+
 export interface IPageInfoBasic {
-    pageName: 'Tenants Info' | 'Lease Info' | 'PaymentRecord' | 'House Info' | 'Maintenance Records';
+    pageName: 'Tenants Info' | 'Lease Info' | 'PaymentRecord' | 'House Info' | 'MaintainessRecord';
     range: string;
     fieldMap?: ALLFieldNames[];
+    columnInfo?: IColumnInfoLookup;
     idField?: ALLFieldNames;
 }
 export interface IPageInfo extends IPageInfoBasic {    

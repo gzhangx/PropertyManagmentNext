@@ -4,6 +4,7 @@ import { HouseList } from '../components/page/reports/houseList'
 import { RentpaymentInfo } from '../components/page/reports/rentpaymentInfo'
 import { CashFlowReport } from '../components/page/reports/cashflow'
 import { DevelopPage } from '../pages/util/dev'
+import * as dev2 from '../pages/util/dev'
 import GoogleAuth from '../pages/google/googleAuth'
 
 import { LeaseReport } from './page/reports/lease'
@@ -28,6 +29,11 @@ const allSections = [
             {
                 name: 'Develop',
                 page: <DevelopPage />,
+                selected: true,
+            },
+            {
+                name: 'Develop 2',
+                page: <dev2.DevelopPage />,
                 selected: true,
             },
             {

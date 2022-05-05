@@ -37,7 +37,7 @@ export function getBasicPageDefs() {
             idField: 'fullName',
         } as IPageInfoBasic,
         maintenceRecords: {
-            pageName: 'Maintenance Records',
+            pageName: 'MaintainessRecord',
             range: 'A1:G',
             fieldMap: [
                 'date',

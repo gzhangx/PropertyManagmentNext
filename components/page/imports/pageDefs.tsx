@@ -193,7 +193,7 @@ export function getPageDefs() {
         },
         {
             ...basicDef.maintenceRecords,
-            pageLoader: maintenceRecords.maintenanceRecords_PageLoader,
+            pageLoader: null,
             displayItem: null,
         }
     ];
