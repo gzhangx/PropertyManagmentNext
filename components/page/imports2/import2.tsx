@@ -8,9 +8,9 @@ import moment from 'moment';
 import { useRouter } from 'next/router'
 
 import { BaseDialog } from '../../generic/basedialog'
-import { ALLFieldNames, IPaymentWithArg, IPageInfo, IItemData, IDataDetails, IPageStates } from './types'
-import { loadPageSheetDataRaw } from './helpers'
-import { getPageDefs } from './pageDefs'
+import { ALLFieldNames, IPaymentWithArg, IPageInfo, IItemData, IDataDetails, IPageStates } from '../imports/types'
+import { loadPageSheetDataRaw } from '../imports/helpers'
+import { getPageDefs } from '../imports/pageDefs'
 
 import { useIncomeExpensesContext } from '../../states/PaymentExpenseState'
 import { IRootPageState, useRootPageContext } from '../../states/RootState'

@@ -1,5 +1,5 @@
 import React from 'react';
-import { ImportPage} from '../../components/page/imports/import2'
+import { ImportPage} from '../../components/page/imports2/import2'
 export function DevelopPage() {
     return <div className="container-fluid">
         <ImportPage/>        
