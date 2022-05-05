@@ -42,6 +42,7 @@ export interface IItemData {
     obj: any;
 }
 export interface IDataDetails {
+    error?: string;
     columns: string[];
     rows: {
         [key: string]:IItemData; //key is of ALLFieldNames

@@ -54,7 +54,16 @@ async function doPost(path: string, data: object, method?: Method): Promise<any>
         data,
     }).then(r => {
         return (r.data)
-    });       
+    }).catch(err => {
+        if (!err.response || !err.response.data) {
+            console.log(`axios request with no err response`, path, err);
+            throw err;
+        }
+        const data = err.response.data;
+        throw {
+            error: `${data.message || ''} ${data.rspErr || ''} ${data.error || ''}`,
+        }
+    })
     /*
     const pdata = {
         method: method || 'POST',

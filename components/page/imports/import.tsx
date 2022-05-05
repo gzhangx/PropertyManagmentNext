@@ -118,8 +118,11 @@ export function ImportPage() {
                 })
             }
         }).catch(err => {
-            errorDlg.setDialogAction(err.error || err.message, () => {
-                router.push('/Login')
+            const errStr = err.error || err.message;
+            errorDlg.setDialogAction(errStr, () => {
+                if (errStr && errStr.indexOf('authorization') >= 0) {
+                    router.push('/Login')
+                }
             })
         })
     }, [sheetId, curPageState.stateReloaded, curPageState.curPage, curPageState.existingOwnersByName, curPageState.payments])
