@@ -1,11 +1,11 @@
 
-import { IPageInfo, IPageInfoBasic, IDataDetails,IItemData,IBasicImportParams } from './types'
+import { IPageInfo, IBasicImportParams, IStringDict, ICompRowData, IPageStates, IPageParms, IPageDataDetails, IDbSaveData } from './types'
 import { googleSheetRead, getOwners, sqlAdd, getHouseInfo, getPaymentRecords } from '../../api'
-import { IPageStates } from './types'
-import {PAYMENT_ROW_PAYMENTOBJ_TAG} from './loads/payment'
+import { PAYMENT_ROW_PAYMENTOBJ_TAG } from './loads/payment'
+import { keyBy } from 'lodash'
 //const sheetId = '1UU9EYL7ZYpfHV6Jmd2CvVb6oBuQ6ekTR7AWXIlMvNCg';
 
-export async function loadPageSheetDataRaw(sheetId: string, curPage: IPageInfoBasic): Promise<IDataDetails> {
+export async function loadPageSheetDataRaw(sheetId: string, curPage: IPageInfo): Promise<IPageDataDetails> {
     if (!curPage) return;
     
     return googleSheetRead(sheetId, 'read', `'${curPage.pageName}'!${curPage.range}`).then((r) => {
@@ -13,44 +13,29 @@ export async function loadPageSheetDataRaw(sheetId: string, curPage: IPageInfoBa
             console.log(`no data for ${curPage.pageName}`);
             return null;
         }
-        if (curPage.fieldMap) {
-            const columns = curPage.fieldMap.reduce((acc, f, ind) => {
+        
+        const colNames: IStringDict = curPage.fieldMap.reduce((acc, f, ind) => {
+            if (f) {
+                acc[f] = r.values[0][ind];
+            }
+            return acc;
+        }, {});
+        const dataRows: ICompRowData[] = r.values.slice(1).map(rr => {
+            const importSheetData = curPage.fieldMap.reduce((acc, f, ind) => {
                 if (f) {
-                    acc.push(r.values[0][ind]);
+                    acc[f] = rr[ind];
                 }
                 return acc;
-            }, [] as string[]);
-            const rows = r.values.slice(1).map(rr => {
-                return curPage.fieldMap.reduce((acc, f, ind) => {
-                    if (f) {
-                        acc[f] = {
-                            val: rr[ind],
-                            obj: null,
-                        };
-                    }
-                    return acc;
-                }, {} as { [key: string]: IItemData; });
-            }).filter(x => x[curPage.idField].val);
-            return ({
-                columns,
-                rows,
-            })
-        } else {
-            const columns = r.values[0];
-            const rows = r.values.slice(1).map(r => {
-                return r.reduce((acc, celVal, ind) => {
-                    acc[ind] = {
-                        val: celVal,
-                        obj: null,
-                    }
-                    return acc;
-                }, {} as { [key: string]: IItemData; });
-            })
-            return ({
-                columns,
-                rows,
-            });
-        }
+            }, {} as IStringDict);
+            return {
+                matchRes: 'NA',
+                importSheetData,
+            } as ICompRowData;
+        }).filter(x => x[curPage.idField]);
+        return {
+            colNames,
+            dataRows,
+        } as IPageDataDetails;   
     }).catch(err => {
         console.log(err);
         throw err;
@@ -61,11 +46,11 @@ export async function loadPageSheetDataRaw(sheetId: string, curPage: IPageInfoBa
 export async function createPayment(importState: IBasicImportParams, rowInd: number, reloadPayments: boolean) {    
     const state = importState.pageState;
     const dispatchCurPageState = importState.dispatchCurPageState;
-    const changeRow = state.pageDetails.rows[rowInd];
-    const saveData = changeRow[PAYMENT_ROW_PAYMENTOBJ_TAG].obj;
-    changeRow['DISABLED'] = { val: 'true', obj: null };
-    if (changeRow['PAYMENT_IMPORT_INVALID']) {
-        console.log(`invalid payment, don't create ${changeRow['PAYMENT_IMPORT_INVALID'].val}`);
+    const changeRow = state.pageDetails.dataRows[rowInd];
+    const saveData = changeRow.saveData;
+    changeRow.disabled = true;
+    if (changeRow.invalid) {
+        console.log(`invalid payment, don't create ${changeRow.invalid}`);
         return;
     }
     sqlAdd('rentPaymentInfo',
@@ -88,4 +73,37 @@ export async function createPayment(importState: IBasicImportParams, rowInd: num
             }
         }
     })
+}
+
+
+export async function getHouseState() {
+    const hi = await getHouseInfo();
+    return {
+        houses: hi,
+        housesByAddress: keyBy(hi, h => h.address.toLowerCase()),
+    }
+}
+
+async function pageLoader(prms: IPageParms, sheetId: string, pageState: IPageStates) {
+    const page = pageState.curPage;
+    const pageDetails = await loadPageSheetDataRaw(sheetId, page);
+    let hi = {};
+    if (!pageState.houses) {
+        //const hi = await getHouseInfo();
+        hi = await getHouseState();
+    }
+    let dbData: IDbSaveData[] = [];
+    if (page.dbLoader) {
+        dbData = await page.dbLoader(pageState.selectedOwners);
+    }
+    
+    prms.dispatchCurPageState(state => {
+        return {
+            ...state,
+            pageDetails,
+            //houses: hi,
+            //housesByAddress: keyBy(hi, 'address'),
+            ...hi,
+        }
+    });
 }

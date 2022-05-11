@@ -1,4 +1,5 @@
 
+import React from 'react';
 import { IOwnerInfo, IHouseInfo, IPayment, ITenantInfo } from '../../reportTypes';
 
 export type ALLFieldNames = '' | 'address' | 'city' | 'zip' | 'ownerName' | 'receivedDate' | 'receivedAmount' | 'houseID' | 'paymentTypeID' | 'paymentProcessor' | 'notes'

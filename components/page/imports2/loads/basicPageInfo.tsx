@@ -1,4 +1,4 @@
-import { IPageInfoBasic } from '../types'
+import { IPageInfo } from '../types'
 
 export function getBasicPageDefs() {
     return {
@@ -21,7 +21,38 @@ export function getBasicPageDefs() {
                 'tenant4',
             ],
             idField: 'houseID',
-        } as IPageInfoBasic,
+        } as IPageInfo,
+        paymentRecord: {
+            pageName: 'PaymentRecord',
+            range: 'A1:F',
+            fieldMap: [
+                'receivedDate',
+                'receivedAmount',
+                'houseID',
+                'paymentTypeID',
+                'paymentProcessor',
+                //'paidBy',
+                'notes',
+                //'created',
+                //'modified',                
+                //'month',                
+                //'ownerID',
+            ],
+            idField: 'receivedDate',
+        },
+        houseInfo: {
+            pageName: 'House Info',
+            range: 'A1:I',
+            fieldMap: [
+                '', 'address', 'city', 'zip',
+                '', //type
+                '', //beds
+                '', //rooms
+                '', //sqrt
+                'ownerName'
+            ],
+            idField: 'address',
+        },
         tenant: {
             pageName: 'Tenants Info',
             range: 'A1:G',
@@ -35,7 +66,7 @@ export function getBasicPageDefs() {
                 'comment',
             ],
             idField: 'fullName',
-        } as IPageInfoBasic,
+        } as IPageInfo,
         maintenceRecords: {
             pageName: 'MaintainessRecord',
             range: 'A1:G',
@@ -49,6 +80,6 @@ export function getBasicPageDefs() {
                 'comment'
             ],
             idField:'date',
-        } as IPageInfoBasic,
+        } as IPageInfo,
     }
 }

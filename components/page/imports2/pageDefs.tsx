@@ -1,6 +1,6 @@
 
 import { IOwnerInfo, IHouseInfo, IPayment } from '../../reportTypes';
-import { IBasicImportParams, IPaymentWithArg, IPageInfo, IItemData, IDataDetails, IPageStates,IPageDefPrms } from './types'
+import { IBasicImportParams, IPaymentWithArg, IPageInfo, IPageDataDetails, IPageStates,IPageDefPrms } from './types'
 import { googleSheetRead, getOwners, sqlAdd, getHouseInfo, getPaymentRecords } from '../../api'
 import { InforDialog, GetInfoDialogHelper } from '../../generic/basedialog';
 import moment from 'moment'
@@ -14,6 +14,7 @@ import * as tenantLoad from './loads/tenants'
 import * as maintenceRecords from './loads/maintenanceRecords'
 
 import { getBasicPageDefs } from './loads/basicPageInfo'
+import { ALLFieldNames } from '../imports/types';
 function getPaymentKey(pmt: IPayment) {        
     const date = moment(pmt.receivedDate).format('YYYY-MM-DD')        
     const amt = pmt.receivedAmount.toFixed(2);
@@ -23,34 +24,31 @@ function getPaymentKey(pmt: IPayment) {
 
 export function getPageDefs() {
 
-    const basicDef = getBasicPageDefs();
-    const pages: IPageInfo[] = [
-        {
-            pageName: 'Tenants Info',
-            range: 'A1:G',
-        },
-        {
-            pageName: 'Lease Info',
-            range: 'A1:M',
-        },
-        {
-            pageName: 'PaymentRecord',
-            range: 'A1:F',
-            fieldMap:[
+    const paymentFieldMap: ALLFieldNames[] = [
                 'receivedDate',
-                'receivedAmount',
-                'houseID',
-                'paymentTypeID',
-                'paymentProcessor',                
-                //'paidBy',
-                'notes',
+        'receivedAmount',
+        'houseID',
+        'paymentTypeID',
+        'paymentProcessor',
+        //'paidBy',
+        'notes',
                 //'created',
                 //'modified',                
                 //'month',                
                 //'ownerID',
-            ],
+            ];
+    const basicDef = getBasicPageDefs();
+    const pages: IPageInfo[] = [
+        {
+            pageName: 'PaymentRecord',
+            range: 'A1:F',
+            fieldMap: paymentFieldMap,
+            displayColumnInfo: paymentFieldMap.map(field => ({
+                field,
+              name:field,  
+            })),
             idField: 'receivedDate',
-            pageLoader: payment_pageLoader,
+            /*
             displayHeader: (params: IPageDefPrms,state, field, key) => {
                 const fieldName = state.curPage.fieldMap[key];
                 if (fieldName === 'receivedAmount') {
@@ -117,6 +115,7 @@ export function getPageDefs() {
                 } else
                     return item.val;
             }
+            */
         },
         {
             pageName: 'House Info',
@@ -129,72 +128,34 @@ export function getPageDefs() {
                 '', //sqrt
                 'ownerName'
             ],
-            idField: 'address',
-            pageLoader: async (prms, pageState: IPageStates) => {
-                const page = pageState.curPage;
-                const pageDetails: IDataDetails = pageState.pageDetails;
-                let hi = {};
-                if (!pageState.houses) {
-                    //const hi = await getHouseInfo();
-                    hi = await getHouseState();
-                }
-                prms.dispatchCurPageState(state => {
-                    return {
-                        ...state,
-                        pageDetails,
-                        //houses: hi,
-                        //housesByAddress: keyBy(hi, 'address'),
-                        ...hi,
-                    }
-                });
-            },
-            displayItem: (params: IPageDefPrms,state: IPageStates, field: string, item: IItemData, all) => {
-                if (!item) return 'houseinfonull';            
-                if (field === 'ownerName') {
-                    if (!state.existingOwnersByName) return item.val;
-                    if (!state.existingOwnersByName[item.val])
-                    //if (missingOwnersByName[item.val])
-                        return <button onClick={() => {
-                            params.setDlgContent(createOwnerFunc(params,item.val))
-                        }}> Click to create {item.val}</button>
-                    else {
-                        item.obj = state.existingOwnersByName[item.val];
-                        const houseFromDb = state.getHouseByAddress(state, all["address"].val);
-                        const matchedOwnerFromDb = houseFromDb && state.existingOwnersById[houseFromDb.ownerID];                        
-                        //console.log(houseFromDb);
-                        if (matchedOwnerFromDb) {                            
-                            return item.val + " ok " + matchedOwnerFromDb.ownerID;
-                        } else {
-                            return item.val + " ok but no owner db";
-                        }
-                    }
-                } else if (field === 'address') {
-                    if (!item) return 'null';                    
-                    if (state.getHouseByAddress(state, item.val)) {
-                        return `OK ${item.val}`;
-                    }
-                    return <button onClick={() => {
-                        //params.createHouse(state, all);
-                        params.setDlgContent(createHouseFunc(params,state, all))
-                    }}> Click to create {item.val}</button>
-                } else
-                    return item.val;
-            }
+            displayColumnInfo: [
+                {
+                    field: 'address',
+                    name:'Address'
+                },
+                {
+                    field: 'city',
+                    name: 'City'
+                },
+                {
+                    field: 'zip',
+                    name: 'Zip'
+                },
+                {
+                    field: 'ownerName',
+                    name: 'Owner'
+                },
+            ],
+            idField: 'address',                       
         },
         {
             ...basicDef.lease,
-            pageLoader: lease.lease_PageLoader,
-            displayItem: lease.lease_DisplayItem,
         },
         {
             ...basicDef.tenant,
-            pageLoader: tenantLoad.tenant_PageLoader,
-            displayItem: tenantLoad.tenant_DisplayItem,
         },
         {
             ...basicDef.maintenceRecords,
-            pageLoader: null,
-            displayItem: null,
         }
     ];
     return pages;
@@ -277,10 +238,8 @@ const createOwnerFunc = (params:IPageDefPrms,ownerName: string, password='1') =>
 };
 
 
-export const createHouseFunc = (params:IPageDefPrms, state: IPageStates, data: { [key: string]: IItemData }) => {
-    const saveData = mapValues(data, itm => {
-        return itm.val
-    });
+export const createHouseFunc = (params:IPageDefPrms, state: IPageStates, data: { [key: string]: string }) => {
+    const saveData = mapValues(data, itm => itm);
     const own = state.existingOwnersByName[saveData.ownerName];
     if (!own) {
         console.log('no owner found');
@@ -299,9 +258,9 @@ export const createHouseFunc = (params:IPageDefPrms, state: IPageStates, data: {
                                 console.log('sql add owner');
                                 console.log(res)
                                 
-                                return state.curPage.pageLoader && state.curPage.pageLoader(params, state).then(() => {
-                                    params.setDlgContent(null);  
-                                })                                    
+                                //return state.curPage.pageLoader && state.curPage.pageLoader(params, state).then(() => {
+                                //    params.setDlgContent(null);  
+                                //})                                    
                             }).catch(err => {
                                 console.log('sql add owner err');
                                 console.log(err)

@@ -26,41 +26,56 @@ export interface IPageDefPrms extends IBasicImportParams {
 }
 
 export interface IColumnInfo {
-    colType: 'house' | 'tenant' | 'worker' | 'dateYYYY-MM-DD';
+    colType: 'string' | 'number' | 'houseAddress' | 'tenantName' | 'workerName' | 'dateYYYY-MM-DD';
 }
 
 export interface IColumnInfoLookup {
     [name: string]: IColumnInfo;
 }
 
-export interface IPageInfoBasic {
-    pageName: 'Tenants Info' | 'Lease Info' | 'PaymentRecord' | 'House Info' | 'MaintainessRecord';
-    range: string;
-    fieldMap?: ALLFieldNames[];
-    columnInfo?: IColumnInfoLookup;
-    idField?: ALLFieldNames;
-}
-export interface IPageInfo extends IPageInfoBasic {    
-    pageLoader?: (params: IBasicImportParams, pageState: IPageStates) => Promise<void>;
-    displayItem?: (params: IPageDefPrms,state: IPageStates, field: string, itm: IItemData, all: { [key: string]: IItemData }, rowInd: number) => JSX.Element | string;
-    displayHeader?: (params: IPageDefPrms, state: IPageStates,field: string, key:number) => JSX.Element|string;
+export interface IDisplayColumnInfo {
+    field: ALLFieldNames;
+    name: string;
 }
 
-export interface IItemData {
-    val: string;
-    obj: any;
+export interface IDbSaveData {
+    [key: string]: string | number | null; //key is of ALLFieldNames
 }
-export interface IDataDetails {
-    error?: string;
-    columns: string[];
-    rows: {
-        [key: string]:IItemData; //key is of ALLFieldNames
-    }[];
+export interface IPageInfo {
+    pageName: 'Tenants Info' | 'Lease Info' | 'PaymentRecord' | 'House Info' | 'MaintainessRecord';
+    range: string;
+
+    fieldMap: ALLFieldNames[];
+    displayColumnInfo: IDisplayColumnInfo[];
+
+    dbLoader?: (selOwners:IOwnerInfo[]) => Promise<IDbSaveData[]>; 
+    idField?: ALLFieldNames;
+}
+
+
+export interface IStringDict {
+    [key: string]: string; //key is of ALLFieldNames
+}
+
+
+
+export interface ICompRowData {
+    importSheetData: IStringDict;
+    dbItemData?: IDbSaveData;
+    saveData: IDbSaveData;
+    disabled: boolean;
+    invalid: string;
+    matchRes: 'matched' | 'diff' | 'nomatch' | 'NA';
+}
+
+export interface IPageDataDetails {
+    dataRows: ICompRowData[];
+    colNames: IStringDict;    
 }
 
 export interface IPageStates {
     curPage: IPageInfo;
-    pageDetails: IDataDetails;
+    pageDetails: IPageDataDetails;
     sheetId: string; //not in state, passed around
     selectedOwners: IOwnerInfo[]; //not in state, passed around
 
@@ -74,7 +89,6 @@ export interface IPageStates {
     tenantByName: { [fname: string]: ITenantInfo };
     //paymentsByDateEct: { [key: string]: IPaymentWithArg[] };
     stateReloaded: number;
-    getHouseByAddress: (state: IPageStates, addr: string) => IHouseInfo;
 
     reloadPayments: boolean;
 }    
@@ -89,4 +103,24 @@ export interface IBasicImportParams {
 
     //setDlgContent: React.Dispatch<React.SetStateAction<JSX.Element>>;
     //refreshOwners: () => Promise<void>;
+}
+
+
+
+export function getHouseByAddress(state: IPageStates, addr:string) {
+    return state.housesByAddress[addr.toLowerCase().trim()]
+}
+
+export interface IPageParms {
+    dispatchCurPageState: React.Dispatch<(state: IPageStates) => IPageStates>;
+    refreshOwners: () => Promise<void>;
+    refreshTenants: () => Promise<void>;
+    setDlgContent: React.Dispatch<React.SetStateAction<JSX.Element>>;
+    setErrorStr: (text: string) => void;
+    showProgress: (msg: any) => void;
+}
+
+export interface IRowComparer {
+    init: (pageState: IPageStates, dbData: IDbSaveData[]) => IRowComparer;
+    compareRow: (importSheetData: IStringDict, dbItemData?: IDbSaveData) => boolean;
 }

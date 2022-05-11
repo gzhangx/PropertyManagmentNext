@@ -8,9 +8,9 @@ import moment from 'moment';
 import { useRouter } from 'next/router'
 
 import { BaseDialog } from '../../generic/basedialog'
-import { ALLFieldNames, IPaymentWithArg, IPageInfo, IItemData, IDataDetails, IPageStates } from '../imports/types'
-import { loadPageSheetDataRaw } from '../imports/helpers'
-import { getPageDefs } from '../imports/pageDefs'
+import { ALLFieldNames, IPaymentWithArg, IPageInfo, IDataDetails, IPageStates, IStringDict, IPageParms } from './types'
+import { loadPageSheetDataRaw } from './helpers'
+import { getPageDefs } from './pageDefs'
 
 import { useIncomeExpensesContext } from '../../states/PaymentExpenseState'
 import { IRootPageState, useRootPageContext } from '../../states/RootState'
@@ -30,16 +30,6 @@ function getSheetId(rootCtx: IRootPageState, mainCtx: IIncomeExpensesContextValu
 }
 
 
-interface IPageParms {
-    pageState: IPageStates;
-    dispatchCurPageState: React.Dispatch<(state: IPageStates) => IPageStates>;
-    refreshOwners: () => Promise<void>;
-    refreshTenants: () => Promise<void>;
-    setDlgContent: React.Dispatch<React.SetStateAction<JSX.Element>>;
-    setErrorStr: (text: string) => void;
-    showProgress: (msg: any) => void;
-}
-
 export function ImportPage() {
     const [dlgContent, setDlgContent] = useState<JSX.Element>(null);
     const router = useRouter();
@@ -54,9 +44,7 @@ export function ImportPage() {
         stateReloaded: 0,
         housesByAddress: {},
         //paymentsByDateEct: {},
-        getHouseByAddress: (state, addr) => {
-            return state.housesByAddress[addr.toLowerCase().trim()]
-        },
+        
     } as IPageStates);
 
     const rootCtx = useRootPageContext();

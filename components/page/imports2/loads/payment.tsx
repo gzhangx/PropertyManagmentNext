@@ -1,6 +1,6 @@
 
 
-import { IBasicImportParams, IPaymentWithArg, IPageInfo, IItemData, IDataDetails, IPageStates } from '../types'
+import { IBasicImportParams, IPaymentWithArg, IPageInfo, IDataDetails, IPageStates } from '../types'
 import { googleSheetRead, getOwners, sqlAdd, getHouseInfo, getPaymentRecords } from '../../../api'
 import { IOwnerInfo, IHouseInfo, IPayment } from '../../../reportTypes';
 import { keyBy, get } from 'lodash';

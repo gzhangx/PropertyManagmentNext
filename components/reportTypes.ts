@@ -27,6 +27,7 @@ export interface IPayment {
 /*export interface IPageProps {
     reloadCount: number;
     [tableName: string]: {        
+    
         sorts: [
             {
                 name: string,
