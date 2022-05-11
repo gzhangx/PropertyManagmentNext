@@ -112,6 +112,5 @@ export interface IPageParms {
 
 export interface IRowComparer {
     name: string;
-    compareRow: (importSheetData: IStringDict, dbItemData?: IDbSaveData) => boolean;
     getRowKey: (data: IDbSaveData) => string;
 }

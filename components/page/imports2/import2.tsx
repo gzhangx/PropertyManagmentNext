@@ -8,7 +8,7 @@ import moment from 'moment';
 import { useRouter } from 'next/router'
 
 import { BaseDialog } from '../../generic/basedialog'
-import { ALLFieldNames, IPaymentWithArg, IPageInfo, IPageStates, IStringDict, IPageParms } from './types'
+import { ALLFieldNames, IPaymentWithArg, IPageInfo, IPageStates, IStringDict, IPageParms, ISheetRowData } from './types'
 import { genericPageLoader, getDisplayHeaders } from './helpers'
 import { getPageDefs } from './pageDefs'
 
@@ -188,8 +188,21 @@ export function ImportPage() {
                             let dspCi = curPageState.curPage.displayColumnInfo;                            
                             return <tr key={ind}>{
                                 dspCi.map((dc, ck) => {
+                                    let prefix = '';
+                                    if (ck === 0) {
+                                        if (curPageState.curPage.dbLoader) {
+                                            if (p.dataType === 'Sheet') {
+                                                const sr = p as ISheetRowData;
+                                                if (sr.matched) {
+                                                    prefix = 'Matched';
+                                                } else {
+                                                    prefix = 'Need Create'
+                                                }
+                                            }
+                                        }
+                                    }
                                     return <td key={ck}>{
-                                        p.displayData[dc.field]
+                                        prefix+p.displayData[dc.field]
                                     }</td>
                                 })
                             }</tr>

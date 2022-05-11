@@ -1,6 +1,6 @@
 
 import { IOwnerInfo, IHouseInfo, IPayment } from '../../reportTypes';
-import { IPaymentWithArg, IPageInfo, IPageDataDetails, IPageStates, IPageParms } from './types'
+import { IPaymentWithArg, IPageInfo, IPageDataDetails, IPageStates, IPageParms, IDbSaveData } from './types'
 import { googleSheetRead, getOwners, sqlAdd, getHouseInfo, getPaymentRecords } from '../../api'
 import { InforDialog, GetInfoDialogHelper } from '../../generic/basedialog';
 import moment from 'moment'
@@ -11,6 +11,7 @@ import { createPayment } from './helpers'
 import * as lease from './loads/lease'
 //import * as tenantLoad from './loads/tenants'
 import * as maintenceRecords from './loads/maintenanceRecords'
+import * as houseLoader from './loads/house';
 
 import { getBasicPageDefs } from './loads/basicPageInfo'
 import { ALLFieldNames } from '../imports/types';
@@ -127,6 +128,8 @@ export function getPageDefs() {
                 '', //sqrt
                 'ownerName'
             ],
+            dbLoader: h => getHouseInfo().then(r => r as any as IDbSaveData[]),
+            rowComparers: houseLoader.HouseRowCompare,
             displayColumnInfo: [
                 {
                     field: 'address',
