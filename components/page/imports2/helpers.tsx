@@ -40,7 +40,7 @@ async function loadPageSheetDataRaw(sheetId: string, curPage: IPageInfo): Promis
                 matcherName: '',
                 displayData: {},
             } as ISheetRowData;
-        }).filter(x => x[curPage.idField]);
+        }).filter(x => x.importSheetData[curPage.idField]);
         return {
             colNames,
             dataRows,
