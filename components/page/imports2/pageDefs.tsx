@@ -1,6 +1,6 @@
 
 import { IOwnerInfo, IHouseInfo, IPayment } from '../../reportTypes';
-import { IBasicImportParams, IPaymentWithArg, IPageInfo, IPageDataDetails, IPageStates,IPageDefPrms } from './types'
+import { IPaymentWithArg, IPageInfo, IPageDataDetails, IPageStates, IPageParms } from './types'
 import { googleSheetRead, getOwners, sqlAdd, getHouseInfo, getPaymentRecords } from '../../api'
 import { InforDialog, GetInfoDialogHelper } from '../../generic/basedialog';
 import moment from 'moment'
@@ -9,8 +9,7 @@ import React from 'react';
 import { createPayment } from './helpers'
 
 import * as lease from './loads/lease'
-import { getHouseState, payment_pageLoader, INVALID_PAYMENT_ROW_TAG } from './loads/payment'
-import * as tenantLoad from './loads/tenants'
+//import * as tenantLoad from './loads/tenants'
 import * as maintenceRecords from './loads/maintenanceRecords'
 
 import { getBasicPageDefs } from './loads/basicPageInfo'
@@ -162,7 +161,7 @@ export function getPageDefs() {
 }
 
 
-const createOwnerFunc = (params:IPageDefPrms,ownerName: string, password='1') => {
+const createOwnerFunc = (params:IPageParms,ownerName: string, password='1') => {
     return <div className="col-lg-12 mb-4">
         <div className="card shadow mb-4 lg-6">
             <div className="card-header py-3">
@@ -238,7 +237,7 @@ const createOwnerFunc = (params:IPageDefPrms,ownerName: string, password='1') =>
 };
 
 
-export const createHouseFunc = (params:IPageDefPrms, state: IPageStates, data: { [key: string]: string }) => {
+export const createHouseFunc = (params:IPageParms, state: IPageStates, data: { [key: string]: string }) => {
     const saveData = mapValues(data, itm => itm);
     const own = state.existingOwnersByName[saveData.ownerName];
     if (!own) {

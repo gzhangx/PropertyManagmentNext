@@ -1,6 +1,6 @@
-
-
-import { IBasicImportParams, IPaymentWithArg, IPageInfo, IDataDetails, IPageStates } from '../types'
+export function test(){}
+/*
+import { IPaymentWithArg, IPageInfo, IPageStates, IPageParms } from '../types'
 import { googleSheetRead, getOwners, sqlAdd, getHouseInfo, getPaymentRecords } from '../../../api'
 import { IOwnerInfo, IHouseInfo, IPayment } from '../../../reportTypes';
 import { keyBy, get } from 'lodash';
@@ -24,7 +24,7 @@ function getPaymentKey(pmt: IPayment) {
 }    
 
 
-export async function payment_pageLoader(importPrms: IBasicImportParams, pageState: IPageStates) {
+export async function payment_pageLoader(importPrms: IPageParms, pageState: IPageStates) {
     const page = pageState.curPage;
     const pageDetails = pageState.pageDetails;
     let hinfo = {} as {
@@ -49,7 +49,7 @@ export async function payment_pageLoader(importPrms: IBasicImportParams, pageSta
     }
         
     //format sheet rows, fix receivedAmount to number, receivedDate to YYYY-MM-DD, houseID and added PAYMENTOBJ, with obj to IPaymentWithArg
-    pageDetails.rows.forEach(r => {
+    pageDetails.dataRows.forEach(r => {
         const pmt = page.fieldMap.reduce((acc, f) => {
             acc[f] = r[f].val;
             if (f === 'receivedAmount') {
@@ -73,22 +73,7 @@ export async function payment_pageLoader(importPrms: IBasicImportParams, pageSta
                     acc[f] = dateStr;
                     r[f].val = dateStr;
                 }
-            } else if (f === 'houseID') {
-                const house = pageState.getHouseByAddress(pageState, acc[f]);
-                if (house) {
-                    acc['address'] = acc[f];
-                    acc['houseID'] = house.houseID;
-                    acc['ownerID'] = house.ownerID;
-                } else {
-                    acc['houseID'] = null;
-                    r[INVALID_PAYMENT_ROW_TAG] = {
-                        val: 'house',
-                        obj: null,
-                    };
-                    acc.invalid = true;
-                    acc.invalidDesc = 'house';
-                }
-            }
+            } 
             return acc;
         }, {} as IPaymentWithArg);
         pmt.processed = false;
@@ -199,3 +184,4 @@ export async function payment_pageLoader(importPrms: IBasicImportParams, pageSta
     });
                 
 }
+*/

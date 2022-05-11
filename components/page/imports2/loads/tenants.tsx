@@ -1,4 +1,7 @@
-
+export function test() {
+    
+}
+/*
 import moment from 'moment'
 import { IBasicImportParams, IPaymentWithArg, IPageInfo, IItemData, IDataDetails, IPageStates, IPageDefPrms } from '../types'
 import { IHouseInfo, ILeaseInfo, ITenantInfo } from '../../../reportTypes'
@@ -137,3 +140,4 @@ export function  tenant_DisplayItem(params: IPageDefPrms, state: IPageStates, fi
 export function  tenant_DisplayHeader(params: IPageDefPrms, state: IPageStates, field: string, key: number): JSX.Element | string {
     return '';
 }
+*/

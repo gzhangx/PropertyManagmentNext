@@ -8,8 +8,8 @@ import moment from 'moment';
 import { useRouter } from 'next/router'
 
 import { BaseDialog } from '../../generic/basedialog'
-import { ALLFieldNames, IPaymentWithArg, IPageInfo, IDataDetails, IPageStates, IStringDict, IPageParms } from './types'
-import { loadPageSheetDataRaw } from './helpers'
+import { ALLFieldNames, IPaymentWithArg, IPageInfo, IPageStates, IStringDict, IPageParms } from './types'
+import { genericPageLoader, getDisplayHeaders } from './helpers'
 import { getPageDefs } from './pageDefs'
 
 import { useIncomeExpensesContext } from '../../states/PaymentExpenseState'
@@ -91,7 +91,6 @@ export function ImportPage() {
     
 
     const pagePrms: IPageParms = {
-        pageState: curPageState,
         dispatchCurPageState,
         refreshOwners,
         refreshTenants,
@@ -101,23 +100,7 @@ export function ImportPage() {
     };
     useEffect(() => {
         if (!curPageState.curPage) return;
-        loadPageSheetDataRaw(sheetId, curPageState.curPage).then((pageDetails) => {
-            if (curPageState.curPage.pageLoader) {
-                return curPageState.curPage.pageLoader(pagePrms, {
-                    selectedOwners,
-                    sheetId,
-                    ...curPageState,
-                    pageDetails,
-                });
-            } else {
-                dispatchCurPageState(state => {
-                    return {
-                        ...state,
-                        pageDetails,
-                    }
-                })
-            }
-        }).catch(err => {
+        genericPageLoader(pagePrms, sheetId, curPageState).catch(err => {
             const errStr = err.error || err.message;
             errorDlg.setDialogAction(errStr, () => {
                 if (errStr && errStr.indexOf('authorization') >= 0) {
@@ -194,27 +177,18 @@ export function ImportPage() {
                 <thead>
                     <tr>
                         {
-                            curPageState.pageDetails && curPageState.pageDetails.columns && curPageState.pageDetails.columns.map((d, key) => {
-                                return <td key={key}>{
-                                    curPageState.curPage.displayHeader? curPageState.curPage.displayHeader(pagePrms,curPageState, d, key) : d
-                                }</td>
-                            })
+                            getDisplayHeaders(pagePrms, curPageState)
                         }
                     </tr>
                 </thead>
                 <tbody>
                     {
-                        curPageState.pageDetails && curPageState.pageDetails.rows.map((p, ind) => {
-                            let keys = curPageState.curPage.fieldMap as string[];
-                            if (!keys) {
-                                keys = curPageState.pageDetails.columns.map((d, ind) => ind.toString());
-                            } else {
-                                keys = keys.filter(x => x);
-                            }
+                        curPageState.pageDetails && curPageState.pageDetails.dataRows.map((p, ind) => {
+                            let dspCi = curPageState.curPage.displayColumnInfo;                            
                             return <tr key={ind}>{
-                                keys.map((key, ck) => {
+                                dspCi.map((dc, ck) => {
                                     return <td key={ck}>{
-                                        curPageState.curPage.displayItem ? curPageState.curPage.displayItem(pagePrms,curPageState, key, p[key], p, ind) : (p[key] && p[key].val)
+                                        p.displayData[dc.field]
                                     }</td>
                                 })
                             }</tr>

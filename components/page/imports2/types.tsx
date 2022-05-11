@@ -13,18 +13,6 @@ export interface IPaymentWithArg extends IPayment
     invalidDesc: string;
 }
 
-export interface IPageDefPrms extends IBasicImportParams {
-    //dispatchCurPageState: React.Dispatch<React.SetStateAction<IPageStates>>;
-    //showProgress: (str: string) => void; //progressDlg.setDialogText('processing');
-    //createHouse: (state: IPageStates, data: { [key: string]: IItemData }) => void;  //setDlgContent(createHouseFunc(state, all))
-    //createOwner: () => void; //setDlgContent(createOwnerFunc(item.val))
-    //hideDlg: () => void; //setDlgContent(null);
-    refreshOwners: () => Promise<void>;
-    refreshTenants: () => Promise<void>;
-    setDlgContent: React.Dispatch<React.SetStateAction<JSX.Element>>;
-    //setErrorStr: (str: string) => void;
-}
-
 export interface IColumnInfo {
     colType: 'string' | 'number' | 'houseAddress' | 'tenantName' | 'workerName' | 'dateYYYY-MM-DD';
 }
@@ -50,27 +38,41 @@ export interface IPageInfo {
 
     dbLoader?: (selOwners:IOwnerInfo[]) => Promise<IDbSaveData[]>; 
     idField?: ALLFieldNames;
+
+    rowComparers?: IRowComparer[];
 }
 
 
 export interface IStringDict {
-    [key: string]: string; //key is of ALLFieldNames
+    [key: string]: string | number; //key is of ALLFieldNames
 }
 
+export type ROWDataType = 'DB' | 'Sheet';
 
-
-export interface ICompRowData {
-    importSheetData: IStringDict;
-    dbItemData?: IDbSaveData;
+export interface ISheetRowData {
+    importSheetData: IStringDict;    
     saveData: IDbSaveData;
-    disabled: boolean;
+    needUpdate: boolean;
     invalid: string;
-    matchRes: 'matched' | 'diff' | 'nomatch' | 'NA';
+    dataType: ROWDataType;
+    matchToKey: string;
+    matched: IDbSaveData;
+    matcherName: string;
+    displayData: IStringDict;
 }
+
+export interface IDbRowMatchData {
+    dbItemData: IDbSaveData;
+    dataType: ROWDataType;
+    matchedToKey: string;
+    displayData: IStringDict;
+}
+
+export type ICompRowData = ISheetRowData | IDbRowMatchData;
 
 export interface IPageDataDetails {
     dataRows: ICompRowData[];
-    colNames: IStringDict;    
+    colNames: IStringDict;
 }
 
 export interface IPageStates {
@@ -94,18 +96,6 @@ export interface IPageStates {
 }    
 
 
-export interface IBasicImportParams {
-    pageState: IPageStates;
-    dispatchCurPageState: React.Dispatch<React.SetStateAction<IPageStates>>;
-    showProgress: (str: string) => void; //progressDlg.setDialogText('processing');    
-    
-    setErrorStr: (str: string) => void;
-
-    //setDlgContent: React.Dispatch<React.SetStateAction<JSX.Element>>;
-    //refreshOwners: () => Promise<void>;
-}
-
-
 
 export function getHouseByAddress(state: IPageStates, addr:string) {
     return state.housesByAddress[addr.toLowerCase().trim()]
@@ -121,6 +111,7 @@ export interface IPageParms {
 }
 
 export interface IRowComparer {
-    init: (pageState: IPageStates, dbData: IDbSaveData[]) => IRowComparer;
+    name: string;
     compareRow: (importSheetData: IStringDict, dbItemData?: IDbSaveData) => boolean;
+    getRowKey: (data: IDbSaveData) => string;
 }
