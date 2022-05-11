@@ -108,7 +108,7 @@ export function ImportPage() {
                 }
             })
         })
-    }, [sheetId, curPageState.stateReloaded, curPageState.curPage, curPageState.existingOwnersByName, curPageState.payments])
+    }, [sheetId, curPageState.selectedOwners, curPageState.stateReloaded, curPageState.curPage, curPageState.existingOwnersByName, curPageState.payments])
         
 
     const pages = getPageDefs();
@@ -118,6 +118,7 @@ export function ImportPage() {
     errorDlg.getDialog.bind(errorDlg);
     progressDlg.getDialog.bind(progressDlg);
     errorDlg.getDialog()
+    
     return <div className="container-fluid">
         <BaseDialog children={dlgContent} show={dlgContent != null} />        
         {
