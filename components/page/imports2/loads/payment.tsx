@@ -1,6 +1,6 @@
 
 import { IHouseInfo, IPayment } from '../../../reportTypes';
-import { IDbInserter, IDbSaveData, IRowComparer, YYYYMMDDFormater } from '../types'
+import { IDbInserter, IDbSaveData, IRowComparer, YYYYMMDDFormater, IPageStates, ISheetRowData, ALLFieldNames, IPageParms } from '../types'
 
 export const PaymentRowCompare: IRowComparer[] = [
     {
@@ -22,6 +22,35 @@ export const PaymentRowCompare: IRowComparer[] = [
         },
     }
 ];
+
+
+export function displayItem(params: IPageParms, state: IPageStates, sheetRow: ISheetRowData, field: ALLFieldNames): JSX.Element {
+    if (field === 'receivedAmount') {
+        const itemVal = sheetRow.displayData[field];
+        return <button disabled={!!sheetRow.needUpdate || !!sheetRow.invalid} onClick={async () => {
+            //setProgressStr('processing')
+            if (sheetRow.invalid) return;
+            params.showProgress('processing');
+            try {
+                await state.curPage.dbInserter.createEntity(sheetRow.saveData);
+                sheetRow.needUpdate = false;
+                params.dispatchCurPageState(state => ({
+                    ...state,                
+                }));
+                params.showProgress('');
+            } catch (err) {
+                const errStr = `Error create payment ${err.message}`;
+                console.log(errStr);
+                console.log(err);
+                params.showProgress('');
+                params.setErrorStr(errStr);
+            }
+            //setDlgContent(createPaymentFunc(state, all, rowInd))
+
+        }}> Click to create ${itemVal}</button>
+    }
+    return null;
+}
 
 
 /*

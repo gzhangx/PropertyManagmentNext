@@ -187,23 +187,17 @@ export function ImportPage() {
                     {
                         curPageState.pageDetails && curPageState.pageDetails.dataRows.map((p, ind) => {
                             let dspCi = curPageState.curPage.displayColumnInfo;                            
+                            let sheetRow: ISheetRowData = null;
+                            if (curPageState.curPage.dbLoader) {
+                                if (p.dataType === 'Sheet') {
+                                    sheetRow = p as ISheetRowData;                                    
+                                }
+                            }                            
                             return <tr key={ind}>{
-                                dspCi.map((dc, ck) => {
-                                    let prefix = '';
-                                    if (ck === 0) {
-                                        if (curPageState.curPage.dbLoader) {
-                                            if (p.dataType === 'Sheet') {
-                                                const sr = p as ISheetRowData;
-                                                if (sr.matched) {
-                                                    prefix = 'Matched';
-                                                } else {
-                                                    prefix = 'Need Create'
-                                                }
-                                            }
-                                        }
-                                    }
+                                dspCi.map((dc, ck) => {                                    
+                                    const customDsp = curPageState.curPage.displayItem ? curPageState.curPage.displayItem(pagePrms, curPageState, sheetRow, dc.field) : null;
                                     return <td key={ck}>{
-                                        prefix+p.displayData[dc.field]
+                                        customDsp || p.displayData[dc.field]
                                     }</td>
                                 })
                             }</tr>
