@@ -102,6 +102,7 @@ export function ImportPage() {
         if (!curPageState.curPage) return;
         genericPageLoader(pagePrms, sheetId, curPageState).catch(err => {
             const errStr = err.error || err.message;
+            console.log('genericPageLoaderError',err)
             errorDlg.setDialogAction(errStr, () => {
                 if (errStr && errStr.indexOf('authorization') >= 0) {
                     router.push('/Login')

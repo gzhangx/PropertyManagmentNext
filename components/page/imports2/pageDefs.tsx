@@ -6,20 +6,17 @@ import { InforDialog, GetInfoDialogHelper } from '../../generic/basedialog';
 import moment from 'moment'
 import {keyBy, omit, mapValues} from 'lodash'
 import React from 'react';
-import { createPayment } from './helpers'
+
+import { getBasicPageDefs } from './loads/basicPageInfo'
+import { ALLFieldNames } from '../imports/types';
 
 import * as lease from './loads/lease'
 //import * as tenantLoad from './loads/tenants'
 import * as maintenceRecords from './loads/maintenanceRecords'
 import * as houseLoader from './loads/house';
+import * as paymentLoader from './loads/payment';
 
-import { getBasicPageDefs } from './loads/basicPageInfo'
-import { ALLFieldNames } from '../imports/types';
-function getPaymentKey(pmt: IPayment) {        
-    const date = moment(pmt.receivedDate).format('YYYY-MM-DD')        
-    const amt = pmt.receivedAmount.toFixed(2);
-    return `${date}-${amt}-${pmt.houseID}-${pmt.paymentID || ''}-${(pmt.paymentTypeID || '').trim()}-${(pmt.notes || '').trim()}`;
-}    
+import * as inserter from './loads/inserter';
 
 
 export function getPageDefs() {
@@ -27,11 +24,11 @@ export function getPageDefs() {
     const paymentFieldMap: ALLFieldNames[] = [
                 'receivedDate',
         'receivedAmount',
-        'houseID',
+        'address',
         'paymentTypeID',
-        'paymentProcessor',
-        //'paidBy',
         'notes',
+        'paymentProcessor',
+        //'paidBy',        
                 //'created',
                 //'modified',                
                 //'month',                
@@ -47,7 +44,10 @@ export function getPageDefs() {
                 field,
               name:field,  
             })),
+            dbLoader: () => getPaymentRecords().then(r => r as any as IDbSaveData[]),
             idField: 'receivedDate',
+            rowComparers: paymentLoader.PaymentRowCompare,
+            dbInserter: inserter.PaymentDbInserter,
             /*
             displayHeader: (params: IPageDefPrms,state, field, key) => {
                 const fieldName = state.curPage.fieldMap[key];

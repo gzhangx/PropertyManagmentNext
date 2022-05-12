@@ -1,5 +1,7 @@
 
-import { IPageInfo, IStringDict, ICompRowData, IPageStates, IPageParms, IPageDataDetails, IDbSaveData, ISheetRowData, IDbRowMatchData, IRowComparer } from './types'
+import {
+    IPageInfo, IStringDict, ICompRowData, IPageStates, IPageParms, IPageDataDetails, IDbSaveData, ISheetRowData, IDbRowMatchData, IRowComparer,
+    IDbInserter} from './types'
 import { googleSheetRead, getOwners, sqlAdd, getHouseInfo, getPaymentRecords } from '../../api'
 import { keyBy } from 'lodash'
 import moment from 'moment';
@@ -51,37 +53,45 @@ async function loadPageSheetDataRaw(sheetId: string, curPage: IPageInfo): Promis
     });
 }
 
+export function reloadPayments(params: IPageParms) {
+    params.dispatchCurPageState(state => {
+        return {
+            ...state,
+            reloadPayments: true,            
+        }
+    })
+}
 
-export async function createPayment(params: IPageParms, curPageState: IPageStates, rowInd: number, reloadPayments: boolean) {    
-    const state = curPageState;
+export async function createEntity(params: IPageParms, changeRow: ISheetRowData, inserter: IDbInserter) {
+    //const state = curPageState;
     const dispatchCurPageState = params.dispatchCurPageState;
-    const changeRow = state.pageDetails.dataRows[rowInd] as ISheetRowData;
+    //const changeRow = state.pageDetails.dataRows[rowInd] as ISheetRowData;
     const saveData = changeRow.saveData;
     changeRow.needUpdate = true;
     if (changeRow.invalid) {
         console.log(`invalid payment, don't create ${changeRow.invalid}`);
         return;
     }
-    sqlAdd('rentPaymentInfo',
-        saveData, true
-    ).then(res => {
+    //sqlAdd('rentPaymentInfo',
+    //    saveData, true
+    //).
+    return inserter.createEntity(saveData).then(res => {
         console.log('sql add owner');
-        console.log(res)
+        console.log(res);
+        dispatchCurPageState(state => {
+            return {
+                ...state,
+                stateReloaded: ++state.stateReloaded,
+                pageDetails: {
+                    ...state.pageDetails,
+                }
+            }
+        })
     }).catch(err => {
         console.log('sql add owner err');
         console.log(err)
         params.setErrorStr(`sql add rentpayment error ${err.message}`);
-    })
-    dispatchCurPageState(state => {
-        return {
-            ...state,
-            stateReloaded: ++state.stateReloaded,
-            reloadPayments,
-            pageDetails: {
-                ...state.pageDetails,
-            }
-        }
-    })
+    })    
 }
 
 
@@ -134,6 +144,7 @@ function matchItems(sheetData: ISheetRowData[], dbData: IDbSaveData[], cmp: IRow
     })
     const dbDataKeyed = dbMatchData.reduce((acc, d) => {
         const key = cmp.getRowKey(d.dbItemData);
+        console.log('generate db keysToMatch', key);
         let cont = acc[key];
         if (!cont) {
             cont = [];
@@ -166,7 +177,15 @@ function matchItems(sheetData: ISheetRowData[], dbData: IDbSaveData[], cmp: IRow
 function stdDisplayField(fieldNames: ALLFieldNames[], obj: IStringDict, pageState: IPageStates) : IStringDict {
     return fieldNames.reduce((acc, fieldName) => {
         let dsp = obj[fieldName];
-        if (!dsp && dsp !== '') return;
+        if (dsp === 0) {
+            acc[fieldName] = dsp;
+            return acc;
+        }
+        if (dsp === null || dsp === undefined) {
+            acc[fieldName] = '';
+            return acc;
+        }
+        if (!dsp && dsp !== '') return acc;
         switch (fieldName) {
             case 'date':
             case 'receivedDate':
@@ -177,8 +196,8 @@ function stdDisplayField(fieldNames: ALLFieldNames[], obj: IStringDict, pageStat
             case 'deposit':
             case 'receivedAmount':
             case 'petDeposit':
-                if (typeof dsp === 'number') return dsp.toFixed(2);
-                dsp = parseFloat(dsp || '0').toFixed(2);
+                if (typeof dsp === 'number') dsp = dsp.toFixed(2);
+                else dsp = parseFloat(dsp || '0').toFixed(2);
                 break;
             case 'houseID':
                 break;
@@ -244,27 +263,31 @@ export function getDisplayHeaders(params: IPageParms, curPageState: IPageStates)
     return curPageState.curPage && curPageState.curPage.displayColumnInfo && curPageState.curPage.displayColumnInfo.map((colInfo, key) => {
         const fieldName = colInfo.field;
         let dspVal = colInfo.name;
-        if (fieldName === 'receivedAmount') {
-            return <>Amount <button className='btn btn-primary' onClick={async () => {
-                for (let i = 0; i < curPageState.pageDetails.dataRows.length; i++) {
-                    const curRow = curPageState.pageDetails.dataRows[i];
-                    params.showProgress(`processing ${i}/${curPageState.pageDetails.dataRows.length}`);
-                    if (curRow.dataType === 'Sheet') {
-                        const sheetRow = curRow as ISheetRowData;
-                        try {
-                            await createPayment(params, curPageState, i, i === curPageState.pageDetails.dataRows.length - 1);
-                        } catch (err) {
-                            const errStr = `Error create payment ${err.message}`;
-                            console.log(errStr);
-                            console.log(err);
-                            params.showProgress('');
-                            params.setErrorStr(errStr);
-                            break;
+        const inserter = curPageState.curPage.dbInserter;
+        if (inserter) {
+            if (fieldName === 'receivedAmount') {
+                return <>Amount <button className='btn btn-primary' onClick={async () => {
+                    for (let i = 0; i < curPageState.pageDetails.dataRows.length; i++) {
+                        const curRow = curPageState.pageDetails.dataRows[i];
+                        params.showProgress(`processing ${i}/${curPageState.pageDetails.dataRows.length}`);
+                        if (curRow.dataType === 'Sheet') {
+                            const sheetRow = curRow as ISheetRowData;
+                            try {
+                                await createEntity(params, sheetRow, inserter);
+                            } catch (err) {
+                                const errStr = `Error createViaInserter ${inserter.name} ${err.message}`;
+                                console.log(errStr);
+                                console.log(err);
+                                params.showProgress('');
+                                params.setErrorStr(errStr);
+                                break;
+                            }
                         }
                     }
-                }
-                params.showProgress('done');
-            }}>Process All</button></>
+                    reloadPayments(params);
+                    params.showProgress('done');
+                }}>Process All</button></>
+            }
         }
         return <td key={key}>{            
             dspVal

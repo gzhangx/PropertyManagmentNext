@@ -1,5 +1,6 @@
 
 import { IOwnerInfo, IHouseInfo, IPayment, ITenantInfo } from '../../reportTypes';
+import moment from 'moment';
 
 export type ALLFieldNames = '' | 'address' | 'city' | 'zip' | 'ownerName' | 'receivedDate' | 'receivedAmount' | 'houseID' | 'paymentTypeID' | 'paymentProcessor' | 'notes'
     | 'startDate' | 'endDate' | 'monthlyRent' | 'deposit' | 'petDeposit' | 'otherDeposit' | 'comment' | 'tenant1' | 'tenant2' | 'tenant3' | 'tenant4'
@@ -29,6 +30,11 @@ export interface IDisplayColumnInfo {
 export interface IDbSaveData {
     [key: string]: string | number | null; //key is of ALLFieldNames
 }
+
+export interface IDbInserter {
+    name: string;
+    createEntity: (data: IDbSaveData) => Promise<void>;
+}
 export interface IPageInfo {
     pageName: 'Tenants Info' | 'Lease Info' | 'PaymentRecord' | 'House Info' | 'MaintainessRecord';
     range: string;
@@ -40,6 +46,7 @@ export interface IPageInfo {
     idField?: ALLFieldNames;
 
     rowComparers?: IRowComparer[];
+    dbInserter?: IDbInserter;
 }
 
 
@@ -113,4 +120,8 @@ export interface IPageParms {
 export interface IRowComparer {
     name: string;
     getRowKey: (data: IDbSaveData) => string;
+}
+
+export function YYYYMMDDFormater(date: string) : string {
+    return moment(date).format('YYYY-MM-DD');
 }

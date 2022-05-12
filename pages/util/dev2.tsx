@@ -5,7 +5,7 @@ export function DevelopPage() {
         <div className="row">
             Div2
         </div>
-        <ImportPage/>        
+        <ImportPage />
         <div className="row">        
         </div>
     </div>

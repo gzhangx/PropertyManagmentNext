@@ -1,4 +1,29 @@
-export function test(){}
+
+import { IHouseInfo, IPayment } from '../../../reportTypes';
+import { IDbInserter, IDbSaveData, IRowComparer, YYYYMMDDFormater } from '../types'
+
+export const PaymentRowCompare: IRowComparer[] = [
+    {
+        name: 'Payment Row Comparer',
+        getRowKey: (data: IDbSaveData) => {
+            const pmt = data as any as IPayment;            
+            const date = YYYYMMDDFormater(pmt.receivedDate);
+            const amt = pmt.receivedAmount.toFixed(2);
+            return `${date}-${amt}-${pmt.houseID}-${(pmt.paymentTypeID || '').trim()}-${(pmt.notes || '').trim()}`;
+        },
+    },
+    {
+        name: 'Payment Row Comparer No Notes',
+        getRowKey: (data: IDbSaveData) => {
+            const pmt = data as any as IPayment;
+            const date = YYYYMMDDFormater(pmt.receivedDate);
+            const amt = pmt.receivedAmount.toFixed(2);
+            return `${date}-${amt}-${pmt.houseID}-${(pmt.paymentTypeID || '').trim()}`;
+        },
+    }
+];
+
+
 /*
 import { IPaymentWithArg, IPageInfo, IPageStates, IPageParms } from '../types'
 import { googleSheetRead, getOwners, sqlAdd, getHouseInfo, getPaymentRecords } from '../../../api'
