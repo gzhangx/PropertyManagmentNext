@@ -53,15 +53,6 @@ async function loadPageSheetDataRaw(sheetId: string, curPage: IPageInfo): Promis
     });
 }
 
-export function reloadPayments(params: IPageParms) {
-    params.dispatchCurPageState(state => {
-        return {
-            ...state,
-            reloadPayments: true,            
-        }
-    })
-}
-
 export async function createEntity(params: IPageParms, changeRow: ISheetRowData, inserter: IDbInserter) {
     //const state = curPageState;
     const dispatchCurPageState = params.dispatchCurPageState;
@@ -289,7 +280,8 @@ export function getDisplayHeaders(params: IPageParms, curPageState: IPageStates)
                             }
                         }
                     }
-                    reloadPayments(params);
+                    //reloadPayments(params);
+                    if (curPageState.curPage.reloadEntity) curPageState.curPage.reloadEntity(params);
                     params.showProgress('done');
                 }}>Process All</button></>
             }

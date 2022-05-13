@@ -42,13 +42,21 @@ export function getPageDefs() {
             fieldMap: paymentFieldMap,
             displayColumnInfo: paymentFieldMap.map(field => ({
                 field,
-              name:field,  
+                name: field,
             })),
             dbLoader: () => getPaymentRecords().then(r => r as any as IDbSaveData[]),
             idField: 'receivedDate',
             rowComparers: paymentLoader.PaymentRowCompare,
             dbInserter: inserter.PaymentDbInserter,
-            displayItem: paymentLoader.displayItem,            
+            displayItem: paymentLoader.displayItem,
+            reloadEntity: (params: IPageParms) => {
+                params.dispatchCurPageState(state => {
+                    return {
+                        ...state,
+                        reloadPayments: true,
+                    }
+                })
+            }
         },
         {
             pageName: 'House Info',

@@ -49,6 +49,7 @@ export interface IPageInfo {
     dbInserter?: IDbInserter;
     displayItem?: (params: IPageParms, state: IPageStates, sheetRow: ISheetRowData, field: ALLFieldNames) => JSX.Element;
     cmpSortField?: ALLFieldNames; //used to show sheet/db rows and sort by, usually date
+    reloadEntity?: (prms: IPageParms) => void;
 }
 
 
