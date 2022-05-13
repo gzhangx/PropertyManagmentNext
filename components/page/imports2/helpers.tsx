@@ -117,7 +117,7 @@ export async function genericPageLoader(prms: IPageParms, sheetId: string, pageS
     if (page.rowComparers) {
         page.rowComparers.forEach(cmp => matchItems(sheetDatas, dbData, cmp));
     }
-    console.log("dbData and sheetDatas", dbData, sheetDatas)
+    //console.log("dbData and sheetDatas", dbData, sheetDatas)
     prms.dispatchCurPageState(state => {
         return {
             ...state,
