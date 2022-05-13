@@ -112,7 +112,10 @@ export async function genericPageLoader(prms: IPageParms, sheetId: string, pageS
     }    
 
     const sheetDatas = pageDetails.dataRows as ISheetRowData[];
-    const displayData = stdProcessSheetData(sheetDatas, pageState);
+    const displayData = stdProcessSheetData(sheetDatas, {
+        ...pageState,
+        ...hi,
+    });
 
     if (page.rowComparers) {
         page.rowComparers.forEach(cmp => matchItems(sheetDatas, dbData, cmp));
