@@ -117,6 +117,7 @@ export async function genericPageLoader(prms: IPageParms, sheetId: string, pageS
     if (page.rowComparers) {
         page.rowComparers.forEach(cmp => matchItems(sheetDatas, dbData, cmp));
     }
+    console.log("dbData and sheetDatas", dbData, sheetDatas)
     prms.dispatchCurPageState(state => {
         return {
             ...state,
@@ -139,7 +140,6 @@ function matchItems(sheetData: ISheetRowData[], dbData: IDbSaveData[], cmp: IRow
     })
     const dbDataKeyed = dbMatchData.reduce((acc, d) => {
         const key = cmp.getRowKey(d.dbItemData);
-        console.log('generate db keysToMatch', key);
         let cont = acc[key];
         if (!cont) {
             cont = [];
@@ -152,7 +152,7 @@ function matchItems(sheetData: ISheetRowData[], dbData: IDbSaveData[], cmp: IRow
     });
     
     sheetData.map(sd => {        
-        const key = cmp.getRowKey(sd.importSheetData);
+        const key = cmp.getRowKey(sd.importSheetData);    
         const matchedAll = dbDataKeyed[key];
         if (matchedAll && matchedAll.length) {
             const matched = matchedAll.find(m => !m.matchedToKey);
@@ -223,7 +223,7 @@ function stdProcessSheetData(sheetData: ISheetRowData[], pageState: IPageStates)
                         acc['ownerID'] = house.ownerID;
                     } else {
                         acc['houseID'] = null;
-                        acc[fieldName] = `Invalid(${v})`;
+                        //acc[fieldName] = `Invalid(${v})`;
                         sd.invalid = 'house';
                         acc.invalidDesc = 'house';
                     }

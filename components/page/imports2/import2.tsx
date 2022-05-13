@@ -100,8 +100,10 @@ export function ImportPage() {
         setErrorStr: errorDlg.setDialogText,
         showProgress: msg => progressDlg.setDialogText(msg),
     };
+    
     useEffect(() => {
         if (!curPageState.curPage) return;
+        console.log("genericPageLoader loading",sheetId)
         genericPageLoader(pagePrms, sheetId, curPageState).catch(err => {
             const errStr = err.error || err.message;
             console.log('genericPageLoaderError',err)
@@ -111,7 +113,8 @@ export function ImportPage() {
                 }
             })
         })
-    }, [sheetId, curPageState.selectedOwners, curPageState.stateReloaded, curPageState.curPage, curPageState.existingOwnersByName, curPageState.payments])
+    }, [sheetId, curPageState.selectedOwners,  curPageState.curPage])
+    //curPageState.payments curPageState.stateReloaded,, curPageState.existingOwnersByName,
         
 
     const pages = getPageDefs();
