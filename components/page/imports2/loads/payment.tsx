@@ -27,7 +27,7 @@ export const PaymentRowCompare: IRowComparer[] = [
 export function displayItem(params: IPageParms, state: IPageStates, sheetRow: ISheetRowData, field: ALLFieldNames): JSX.Element {
     if (field === 'receivedAmount') {
         const itemVal = sheetRow.displayData[field];
-        return <button disabled={!!sheetRow.needUpdate || !!sheetRow.invalid} onClick={async () => {
+        return <button disabled={!sheetRow.needUpdate || !!sheetRow.invalid} onClick={async () => {
             //setProgressStr('processing')
             if (sheetRow.invalid) return;
             params.showProgress('processing');
@@ -48,6 +48,9 @@ export function displayItem(params: IPageParms, state: IPageStates, sheetRow: IS
             //setDlgContent(createPaymentFunc(state, all, rowInd))
 
         }}> Click to create ${itemVal}</button>
+    }
+    if (sheetRow.invalid) {
+        return <div style={{ color: 'red' }}>{ sheetRow.displayData[field]}</div>
     }
     return null;
 }

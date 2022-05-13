@@ -185,23 +185,7 @@ export function ImportPage() {
                 </thead>
                 <tbody>
                     {
-                        curPageState.pageDetails && curPageState.pageDetails.dataRows.map((p, ind) => {
-                            let dspCi = curPageState.curPage.displayColumnInfo;                            
-                            let sheetRow: ISheetRowData = null;
-                            if (curPageState.curPage.dbLoader) {
-                                if (p.dataType === 'Sheet') {
-                                    sheetRow = p as ISheetRowData;                                    
-                                }
-                            }                            
-                            return <tr key={ind}>{
-                                dspCi.map((dc, ck) => {                                    
-                                    const customDsp = curPageState.curPage.displayItem ? curPageState.curPage.displayItem(pagePrms, curPageState, sheetRow, dc.field) : null;
-                                    return <td key={ck}>{
-                                        customDsp || p.displayData[dc.field]
-                                    }</td>
-                                })
-                            }</tr>
-                        })
+                        displayItems(pagePrms, curPageState)
                     }
                 </tbody>
             </table>
@@ -211,6 +195,25 @@ export function ImportPage() {
 }
 
 
-function displayHeader(pagePrms: IPageParms, colName:string, colKey: number) {
+function displayItems(pagePrms: IPageParms, curPageState: IPageStates) {
+    if (!curPageState.pageDetails) return;
+    const dspCi = curPageState.curPage.displayColumnInfo;
+
+    
+    return curPageState.pageDetails.dataRows.filter(x => x.dataType === 'Sheet').map(x => x as ISheetRowData)
+        .filter(x => !x.matched)
+        .map((sheetRow, ind) => {
+            const showItem = (field: ALLFieldNames) => curPageState.curPage.displayItem ?
+                (curPageState.curPage.displayItem(pagePrms, curPageState, sheetRow, field)) || sheetRow.displayData[field]
+                : sheetRow.displayData[field];
+            return <tr key={ind}>{
+                dspCi.map((dc, ck) => {                    
+                    return <td key={ck}>{
+                        showItem(dc.field)
+                    }</td>
+                })
+            }</tr>
+        })
+    
 
 }

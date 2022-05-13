@@ -190,7 +190,11 @@ function stdDisplayField(fieldNames: ALLFieldNames[], obj: IStringDict, pageStat
             case 'date':
             case 'receivedDate':
             case 'startDate':
-                dsp = moment(dsp).format('YYYY-MM-DD');
+                const mmt = moment(dsp);
+                if (mmt.isValid())
+                    dsp = mmt.format('YYYY-MM-DD');
+                else
+                    dsp = `Invalid(${dsp})`;
                 break;
             case 'monthlyRent':
             case 'deposit':
@@ -224,6 +228,7 @@ function stdProcessSheetData(sheetData: ISheetRowData[], pageState: IPageStates)
                         acc['ownerID'] = house.ownerID;
                     } else {
                         acc['houseID'] = null;
+                        acc[fieldName] = `Invalid(${v})`;
                         sd.invalid = 'house';
                         acc.invalidDesc = 'house';
                     }

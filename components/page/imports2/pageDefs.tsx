@@ -48,74 +48,7 @@ export function getPageDefs() {
             idField: 'receivedDate',
             rowComparers: paymentLoader.PaymentRowCompare,
             dbInserter: inserter.PaymentDbInserter,
-            /*
-            displayHeader: (params: IPageDefPrms,state, field, key) => {
-                const fieldName = state.curPage.fieldMap[key];
-                if (fieldName === 'receivedAmount') {
-                    return <>Amount <button className='btn btn-primary' onClick={async () => {
-                        for (let i = 0; i < state.pageDetails.rows.length; i++) {
-                            const curRow = state.pageDetails.rows[i];
-                            params.showProgress(`processing ${i}/${state.pageDetails.rows.length}`);
-                            if (curRow['NOTFOUND'] && !curRow[INVALID_PAYMENT_ROW_TAG]) {
-                                try {
-                                    params.pageState = state;
-                                    await createPayment(params, i, i === state.pageDetails.rows.length - 1);
-                                } catch (err) {
-                                    const errStr = `Error create payment ${err.message}`;
-                                    console.log(errStr);
-                                    console.log(err);
-                                    params.showProgress('');
-                                    params.setErrorStr(errStr);
-                                    break;
-                                }
-                            }
-                        }
-                        params.showProgress('done');
-                    }}>Process All</button></>
-                }
-                return field;
-            },
-            displayItem: (params: IPageDefPrms, state: IPageStates, field: string, item: IItemData, all, rowInd) => {
-                if (!item) return 'NOITEM';
-                if (field === 'receivedAmount') {
-                    if (all['NOTFOUND']) {
-                        //return `${item.val}=>Need import`
-                        return <button disabled={!!all['DISABLED'] || !!all[INVALID_PAYMENT_ROW_TAG]} onClick={async () => {
-                            //setProgressStr('processing')
-                            if (all[INVALID_PAYMENT_ROW_TAG]) return;
-                            params.showProgress('processing');
-                            try {
-                                params.pageState = state;
-                                await createPayment(params, rowInd, true);
-                                params.showProgress('');
-                            } catch (err) {
-                                const errStr = `Error create payment ${err.message}`;
-                                console.log(errStr);
-                                console.log(err);
-                                params.showProgress('');
-                                params.setErrorStr(errStr);
-                            }
-                            //setDlgContent(createPaymentFunc(state, all, rowInd))
-
-                        }}> Click to create ${item.val}</button>
-                    }
-                    return '$'+item.val;
-                }
-                if (field === 'houseID') {
-                    if (state.getHouseByAddress(state, item.val)) {
-                        return `OK ${item.val}`;
-                    }
-                    //state.existingOwnersByName[]
-                    //all[ownerName]
-                    return <button  disabled={!!all['DISABLED'] || !!all[INVALID_PAYMENT_ROW_TAG]}  onClick={() => {
-                        if (all[INVALID_PAYMENT_ROW_TAG]) return;
-                        //params.createHouse(state, all)
-                        params.setDlgContent(createHouseFunc(params,state, all))
-                    }}> Click to create {item.val}</button>
-                } else
-                    return item.val;
-            }
-            */
+            displayItem: paymentLoader.displayItem,            
         },
         {
             pageName: 'House Info',
