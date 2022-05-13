@@ -1,4 +1,5 @@
-
+export function test(){}
+/*
 import moment from 'moment'
 import { IBasicImportParams, IPaymentWithArg, IPageInfo, IItemData, IDataDetails, IPageStates, IPageDefPrms } from '../types'
 import { googleSheetRead, getOwners, sqlAdd, getLeases, sqlGet } from '../../../api'
@@ -174,3 +175,4 @@ export function lease_DisplayItem(params: IPageDefPrms, state: IPageStates, fiel
 export function lease_DisplayHeader(params: IPageDefPrms, state: IPageStates, field: string, key: number): JSX.Element | string {
     return '';
 }
+*/

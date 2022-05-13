@@ -96,6 +96,10 @@ export async function getHouseState() {
 
 export async function genericPageLoader(prms: IPageParms, sheetId: string, pageState: IPageStates) {
     const page = pageState.curPage;
+    if (!sheetId) {
+        console.log('no sheet id, return');
+        return;
+    }
     const pageDetails = await loadPageSheetDataRaw(sheetId, page);
     let hi = {};
     if (!pageState.houses) {
