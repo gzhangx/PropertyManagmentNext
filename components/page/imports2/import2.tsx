@@ -8,12 +8,14 @@ import moment from 'moment';
 import { useRouter } from 'next/router'
 
 import { BaseDialog } from '../../generic/basedialog'
-import { ALLFieldNames, IPaymentWithArg, IPageInfo, IPageStates, IStringDict, IPageParms, ISheetRowData } from './types'
+import { ALLFieldNames, IPaymentWithArg, IPageInfo, IPageStates, IStringDict, IPageParms, ISheetRowData, IDbRowMatchData } from './types'
 import { genericPageLoader, getDisplayHeaders } from './helpers'
 import { getPageDefs } from './pageDefs'
 
 import { useIncomeExpensesContext } from '../../states/PaymentExpenseState'
 import { IRootPageState, useRootPageContext } from '../../states/RootState'
+
+import { sortBy } from 'lodash';
 
 function getSheetId(rootCtx: IRootPageState, mainCtx: IIncomeExpensesContextValue) : string {
     const loginUserId = rootCtx.userInfo.id;
@@ -200,20 +202,37 @@ function displayItems(pagePrms: IPageParms, curPageState: IPageStates) {
     const dspCi = curPageState.curPage.displayColumnInfo;
 
     
-    return curPageState.pageDetails.dataRows.filter(x => x.dataType === 'Sheet').map(x => x as ISheetRowData)
+    const cmpSortField = curPageState.curPage.cmpSortField;
+    const sheetDsp = curPageState.pageDetails.dataRows.filter(x => x.dataType === 'Sheet').map(x => x as ISheetRowData)
         .filter(x => !x.matched)
         .map((sheetRow, ind) => {
             const showItem = (field: ALLFieldNames) => curPageState.curPage.displayItem ?
                 (curPageState.curPage.displayItem(pagePrms, curPageState, sheetRow, field)) || sheetRow.displayData[field]
                 : sheetRow.displayData[field];
-            return <tr key={ind}>{
-                dspCi.map((dc, ck) => {                    
-                    return <td key={ck}>{
-                        showItem(dc.field)
-                    }</td>
-                })
-            }</tr>
+            return {
+                sort: sheetRow.displayData[cmpSortField], dsp: <tr key={ind}>{
+                    dspCi.map((dc, ck) => {
+                        return <td key={ck}>{
+                            showItem(dc.field)
+                        }</td>
+                    })
+                }</tr>
+            };
+        });
+    
+    const dbDsp = curPageState.pageDetails.dataRows.filter(x => x.dataType === 'DB').map(x => x as IDbRowMatchData)
+        .filter(x => !x.matchedToKey).map((dbRow, ind) => {
+            return {
+                sort: dbRow.dbItemData[cmpSortField], dsp: <tr key={ind}>{
+                    dspCi.map((dc, ck) => {
+                        return <td key={ck}>DB-{
+                            dbRow.dbItemData[dc.field]
+                        }</td>
+                    })
+                }</tr>
+            }
         })
     
-
+    const combinedDsp = sortBy(sheetDsp.concat(dbDsp), d => d.sort).map(d=>d.dsp);
+    return combinedDsp;
 }
