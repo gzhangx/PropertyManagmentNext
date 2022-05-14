@@ -72,7 +72,7 @@ export async function createEntity(params: IPageParms, changeRow: ISheetRowData,
         dispatchCurPageState(state => {
             return {
                 ...state,
-                stateReloaded: ++state.stateReloaded,
+                //stateReloaded: ++state.stateReloaded,
                 pageDetails: {
                     ...state.pageDetails,
                 }

@@ -32,7 +32,7 @@ export function displayItem(params: IPageParms, state: IPageStates, sheetRow: IS
             if (sheetRow.invalid) return;
             params.showProgress('processing');
             try {
-                await state.curPage.dbInserter.createEntity(sheetRow.saveData);
+                await state.curPage.dbInserter.createEntity(sheetRow.importSheetData);
                 sheetRow.needUpdate = false;
                 params.dispatchCurPageState(state => ({
                     ...state,                

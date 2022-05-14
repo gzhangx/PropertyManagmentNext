@@ -63,7 +63,7 @@ export function ImportPage() {
                     ...state,
                     existingOwnersById: keyBy(own, 'ownerID'),
                     existingOwnersByName: keyBy(own, 'ownerName'),
-                    stateReloaded: state.stateReloaded + 1,
+                    //stateReloaded: state.stateReloaded + 1,
                 };
             });
         }).catch(err => {
@@ -113,7 +113,7 @@ export function ImportPage() {
                 }
             })
         })
-    }, [sheetId, curPageState.selectedOwners,  curPageState.curPage])
+    }, [sheetId, curPageState.selectedOwners, curPageState.curPage, curPageState.stateReloaded])
     //curPageState.payments curPageState.stateReloaded,, curPageState.existingOwnersByName,
         
 
