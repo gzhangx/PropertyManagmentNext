@@ -235,8 +235,17 @@ function stdProcessSheetData(sheetData: ISheetRowData[], pageState: IPageStates)
                 case 'monthlyRent':
                 case 'deposit':
                 case 'petDeposit':
+                    if (v === null || v === undefined) {
+                        acc[fieldName] = 'invalid(null)';
+                        sd.invalid = fieldName;
+                        acc.invalidDesc = `${fieldName} Invalid(null)`;
+                    }
                     if (typeof v === 'string') {
-                        v = v.replace(/[\$, ]/g, '');
+                        v = v.replace(/[\$, ]/g, '').trim();
+                        const neg = v.match(/\(([0-9]+(.[0-9]*){0,1}){1}\)/);
+                        if (neg) {
+                            v = '-'+neg[1];
+                        }
                         v = parseFloat(v);
                     }
                     acc[fieldName] = v;
