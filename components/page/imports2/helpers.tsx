@@ -120,9 +120,16 @@ export async function genericPageLoader(prms: IPageParms, sheetId: string, pageS
         ...pageState,
         ...hi,
     });
-
+    let dbMatchData: IDbRowMatchData[] = null;
     if (page.rowComparers) {
-        page.rowComparers.forEach(cmp => matchItems(sheetDatas, dbData, cmp));
+        dbMatchData = dbData.map(dbItemData => {
+            return {
+                dbItemData,
+                dataType: 'DB',
+                matchedToKey: null,
+            } as IDbRowMatchData;
+        });
+        page.rowComparers.forEach(cmp => matchItems(sheetDatas, dbMatchData, cmp));
     }
     //console.log("dbData and sheetDatas", dbData, sheetDatas)
     prms.dispatchCurPageState(state => {
@@ -137,14 +144,7 @@ export async function genericPageLoader(prms: IPageParms, sheetId: string, pageS
 }
 
 //return true if not totally fixed
-function matchItems(sheetData: ISheetRowData[], dbData: IDbSaveData[], cmp: IRowComparer): boolean {
-    const dbMatchData = dbData.map(dbItemData => {
-        return {
-            dbItemData,
-            dataType: 'DB',
-            matchedToKey: null,
-        } as IDbRowMatchData;
-    })
+function matchItems(sheetData: ISheetRowData[], dbMatchData: IDbRowMatchData[], cmp: IRowComparer): boolean {    
     const dbDataKeyed = dbMatchData.reduce((acc, d) => {
         const key = cmp.getRowKey(d.dbItemData);
         let cont = acc[key];

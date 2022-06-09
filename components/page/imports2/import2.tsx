@@ -192,6 +192,10 @@ export function ImportPage() {
                     {
                         displayItems(pagePrms, curPageState)
                     }
+                    <tr><td>DB Extras</td></tr>
+                    {
+                        displayExtraDbItems(pagePrms, curPageState)
+                    }
                 </tbody>
             </table>
             
@@ -237,5 +241,31 @@ function displayItems(pagePrms: IPageParms, curPageState: IPageStates) {
         })
     
     const combinedDsp = sortBy(sheetDsp.concat(dbDsp), d => d.sort).map(d=>d.dsp);
+    return combinedDsp;
+}
+
+
+function displayExtraDbItems(pagePrms: IPageParms, curPageState: IPageStates) {
+    if (!curPageState.pageDetails) return;
+    if (!curPageState.pageDetails.dbMatchData) return;
+    const dspCi = curPageState.curPage.displayColumnInfo;
+
+
+    const cmpSortField = curPageState.curPage.cmpSortField;
+
+    const dbDsp = curPageState.pageDetails.dbMatchData.filter(x => x.dataType === 'DB').map(x => x as IDbRowMatchData)
+        .filter(x => !x.matchedToKey).map((dbRow, ind) => {
+            return {
+                sort: dbRow.dbItemData[cmpSortField], dsp: <tr key={ind}>{
+                    dspCi.map((dc, ck) => {
+                        return <td key={ck}>DB-{
+                            dbRow.dbItemData[dc.field]
+                        }</td>
+                    })
+                }</tr>
+            }
+        })
+
+    const combinedDsp = sortBy(dbDsp, d => d.sort).map(d => d.dsp);
     return combinedDsp;
 }

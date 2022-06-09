@@ -83,6 +83,7 @@ export type ICompRowData = ISheetRowData | IDbRowMatchData;
 export interface IPageDataDetails {
     dataRows: ICompRowData[];
     colNames: IStringDict;
+    dbMatchData?: IDbRowMatchData[];
 }
 
 export interface IPageStates {

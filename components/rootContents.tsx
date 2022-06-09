@@ -27,7 +27,7 @@ const allSections = [
                 page: <MonthlyComp/>,
             },
             {
-                name: 'Develop',
+                name: 'Develop (old dontuse)',
                 page: <DevelopPage />,
                 selected: false,
             },
