@@ -50,6 +50,7 @@ export function getPageDefs(selectedOwners: IOwnerInfo[]) {
             rowComparers: paymentLoader.PaymentRowCompare,
             dbInserter: inserter.PaymentDbInserter,
             displayItem: paymentLoader.displayItem,
+            shouldShowCreateButton: colInfo => colInfo.field === 'receivedAmount',
             reloadEntity: (params: IPageParms) => {
                 params.dispatchCurPageState(state => {
                     return {
@@ -72,6 +73,7 @@ export function getPageDefs(selectedOwners: IOwnerInfo[]) {
             ],
             dbLoader: h => getHouseInfo().then(r => r as any as IDbSaveData[]),
             rowComparers: houseLoader.HouseRowCompare,
+            shouldShowCreateButton: colInfo => colInfo.field === 'address',
             displayColumnInfo: [
                 {
                     field: 'address',
@@ -100,6 +102,8 @@ export function getPageDefs(selectedOwners: IOwnerInfo[]) {
             rowComparers: tenantLoad.TenantRowCompare,
             dbLoader: () => theApi.getTenants(selectedOwners).then(r => r as any as IDbSaveData[]),
             processSheetData: tenantLoad.processSheetData,
+            shouldShowCreateButton: colInfo => colInfo.field === 'fullName',
+            dbInserter: inserter.getDbInserter('tenantInfo'),
         },
         {
             ...basicDef.maintenceRecords,

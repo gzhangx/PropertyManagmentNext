@@ -149,8 +149,9 @@ export interface ISqlRequestWhereItem {
     val: string | number | (string | number)[];
 }
 
+export type TableNames = 'rentPaymentInfo' | 'houseInfo' | 'maintenanceRecords' | 'ownerInfo' | 'leaseInfo' | 'tenantInfo' | 'workerComp';
 export interface ISqlRequest {
-    table: 'rentPaymentInfo' | 'houseInfo' | 'maintenanceRecords' | 'ownerInfo' | 'leaseInfo' | 'tenantInfo' | 'workerComp';
+    table: TableNames;
     fields?: (ISqlRequestFieldDef | string)[];
     joins?: any;
     order?: ISqlOrderDef[];

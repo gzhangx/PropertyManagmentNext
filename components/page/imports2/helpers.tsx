@@ -285,9 +285,10 @@ export function getDisplayHeaders(params: IPageParms, curPageState: IPageStates)
         const fieldName = colInfo.field;
         let dspVal = colInfo.name;
         const inserter = curPageState.curPage.dbInserter;
-        if (inserter) {
-            if (fieldName === 'receivedAmount') {
-                return <>Amount <button className='btn btn-primary' onClick={async () => {
+        const insertBtnCheck = curPageState.curPage.shouldShowCreateButton;
+        if (inserter && insertBtnCheck) {
+            if (insertBtnCheck(colInfo)) {
+                return <>{ dspVal} <button className='btn btn-primary' onClick={async () => {
                     let processedCount = 0, updatedCount = 0;
                     for (let i = 0; i < curPageState.pageDetails.dataRows.length; i++) {
                         const curRow = curPageState.pageDetails.dataRows[i];
@@ -314,7 +315,7 @@ export function getDisplayHeaders(params: IPageParms, curPageState: IPageStates)
                     //reloadPayments(params);
                     if (curPageState.curPage.reloadEntity) curPageState.curPage.reloadEntity(params);
                     params.showProgress('done');
-                }}>Process All Payments</button></>
+                }}>Process All</button></>
             }
         }
         return <td key={key}>{            

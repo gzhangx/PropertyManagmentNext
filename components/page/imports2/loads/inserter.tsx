@@ -1,4 +1,4 @@
-import { sqlAdd } from '../../../api'
+import { sqlAdd, TableNames } from '../../../api'
 import { IDbInserter,  } from '../types'
 export const PaymentDbInserter: IDbInserter = {
     name: 'Payment inserter',
@@ -10,4 +10,19 @@ export const PaymentDbInserter: IDbInserter = {
             return res;
         })
     }
+}
+
+
+export function getDbInserter(name: TableNames): IDbInserter {
+    return {
+        name,
+        createEntity: saveData => {
+            return sqlAdd(name,
+                saveData, true
+            ).then(res => {
+                console.log(`sql add ${name}`, res);
+                return res;
+            })
+        }
+    };
 }
