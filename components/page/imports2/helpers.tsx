@@ -57,12 +57,16 @@ export async function createEntity(params: IPageParms, changeRow: ISheetRowData,
     //const state = curPageState;
     const dispatchCurPageState = params.dispatchCurPageState;
     //const changeRow = state.pageDetails.dataRows[rowInd] as ISheetRowData;
-    const saveData = changeRow.saveData;
-    changeRow.needUpdate = true;
+    const saveData = changeRow.importSheetData;    
     if (changeRow.invalid) {
         console.log(`invalid payment, don't create ${changeRow.invalid}`);
         return;
     }
+    if (!changeRow.needUpdate) {
+        console.log(`up-to-date entity ${changeRow.needUpdate}`);
+        return;
+    }
+    changeRow.needUpdate = false;
     //sqlAdd('rentPaymentInfo',
     //    saveData, true
     //).
@@ -163,6 +167,7 @@ function matchItems(sheetData: ISheetRowData[], dbData: IDbSaveData[], cmp: IRow
                 sd.matchToKey = key;
                 sd.matched = matched.dbItemData;
                 sd.matcherName = cmp.name;
+                sd.needUpdate = false;
                 matched.matchedToKey = key;                
             }
         }
@@ -279,12 +284,18 @@ export function getDisplayHeaders(params: IPageParms, curPageState: IPageStates)
         if (inserter) {
             if (fieldName === 'receivedAmount') {
                 return <>Amount <button className='btn btn-primary' onClick={async () => {
+                    let processedCount = 0, updatedCount = 0;
                     for (let i = 0; i < curPageState.pageDetails.dataRows.length; i++) {
                         const curRow = curPageState.pageDetails.dataRows[i];
-                        params.showProgress(`processing ${i}/${curPageState.pageDetails.dataRows.length}`);
+                        processedCount++;                       
+                        params.showProgress(`processing ${i}/${curPageState.pageDetails.dataRows.length} updated=${updatedCount}`);
                         if (curRow.dataType === 'Sheet') {
                             const sheetRow = curRow as ISheetRowData;
-                            try {
+                            if (!sheetRow.needUpdate) {
+                                continue;
+                            }
+                            updatedCount++;
+                            try {                                
                                 await createEntity(params, sheetRow, inserter);
                             } catch (err) {
                                 const errStr = `Error createViaInserter ${inserter.name} ${err.message}`;
@@ -299,7 +310,7 @@ export function getDisplayHeaders(params: IPageParms, curPageState: IPageStates)
                     //reloadPayments(params);
                     if (curPageState.curPage.reloadEntity) curPageState.curPage.reloadEntity(params);
                     params.showProgress('done');
-                }}>Process All</button></>
+                }}>Process All Payments</button></>
             }
         }
         return <td key={key}>{            

@@ -29,7 +29,7 @@ export function displayItem(params: IPageParms, state: IPageStates, sheetRow: IS
         const itemVal = sheetRow.displayData[field];
         return <button disabled={!sheetRow.needUpdate || !!sheetRow.invalid} onClick={async () => {
             //setProgressStr('processing')
-            if (sheetRow.invalid) return;
+            if (sheetRow.invalid || !sheetRow.needUpdate) return;
             params.showProgress('processing');
             try {
                 await state.curPage.dbInserter.createEntity(sheetRow.importSheetData);

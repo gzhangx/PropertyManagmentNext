@@ -61,7 +61,7 @@ export type ROWDataType = 'DB' | 'Sheet';
 
 export interface ISheetRowData {
     importSheetData: IStringDict;    
-    saveData: IDbSaveData;
+    //saveData: IDbSaveData;
     needUpdate: boolean;
     invalid: string;
     dataType: ROWDataType;
