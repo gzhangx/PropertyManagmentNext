@@ -8,7 +8,7 @@ import moment from 'moment';
 import { useRouter } from 'next/router'
 
 import { BaseDialog } from '../../generic/basedialog'
-import { ALLFieldNames, IPaymentWithArg, IPageInfo, IPageStates, IStringDict, IPageParms, ISheetRowData, IDbRowMatchData } from './types'
+import { ALLFieldNames, IPaymentWithArg, IPageInfo, IPageStates, IStringDict, IPageParms, ISheetRowData, IDbRowMatchData, IDisplayColumnInfo } from './types'
 import { genericPageLoader, getDisplayHeaders } from './helpers'
 import { getPageDefs } from './pageDefs'
 
@@ -204,6 +204,38 @@ export function ImportPage() {
 }
 
 
+function stdTryDisplayItemForCreate(params: IPageParms, state: IPageStates, sheetRow: ISheetRowData, dc: IDisplayColumnInfo): JSX.Element {
+    const field: ALLFieldNames = dc.field;
+    if (state.curPage.dbInserter && state.curPage.shouldShowCreateButton && state.curPage.shouldShowCreateButton(dc)) {
+        const itemVal = sheetRow.displayData[field];
+        return <button disabled={!sheetRow.needUpdate || !!sheetRow.invalid} onClick={async () => {
+            //setProgressStr('processing')
+            if (sheetRow.invalid || !sheetRow.needUpdate) return;
+            params.showProgress('processing');
+            try {
+                await state.curPage.dbInserter.createEntity(sheetRow.importSheetData);
+                sheetRow.needUpdate = false;
+                params.dispatchCurPageState(state => ({
+                    ...state,
+                }));
+                params.showProgress('');
+            } catch (err) {
+                const errStr = `Error create payment ${err.message}`;
+                console.log(errStr);
+                console.log(err);
+                params.showProgress('');
+                params.setErrorStr(errStr);
+            }
+            //setDlgContent(createPaymentFunc(state, all, rowInd))
+
+        }}> Click to create ${itemVal}</button>
+    }
+    if (sheetRow.invalid) {
+        return <div style={{ color: 'red' }}>{sheetRow.displayData[field]}</div>
+    }
+    return null;
+}
+
 function displayItems(pagePrms: IPageParms, curPageState: IPageStates) {
     if (!curPageState.pageDetails) return;
     const dspCi = curPageState.curPage.displayColumnInfo;
@@ -213,14 +245,18 @@ function displayItems(pagePrms: IPageParms, curPageState: IPageStates) {
     const sheetDsp = curPageState.pageDetails.dataRows
         .filter(x => !x.matched)
         .map((sheetRow, ind) => {
-            const showItem = (field: ALLFieldNames) => curPageState.curPage.displayItem ?
-                (curPageState.curPage.displayItem(pagePrms, curPageState, sheetRow, field)) || sheetRow.displayData[field]
-                : sheetRow.displayData[field];
+            const showItem = (dc: IDisplayColumnInfo) => {
+                const field = dc.field;
+                return curPageState.curPage.displayItem ?
+                    (curPageState.curPage.displayItem(pagePrms, curPageState, sheetRow, field)) || sheetRow.displayData[field]
+                    :
+                    (stdTryDisplayItemForCreate(pagePrms, curPageState, sheetRow, dc) || sheetRow.displayData[field]);
+            }
             return {
                 sort: sheetRow.displayData[cmpSortField], dsp: <tr key={ind}>{
                     dspCi.map((dc, ck) => {
                         return <td key={ck}>{
-                            showItem(dc.field)
+                            showItem(dc)
                         }</td>
                     })
                 }</tr>
