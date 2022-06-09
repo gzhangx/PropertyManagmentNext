@@ -30,6 +30,7 @@ export default function Login(props) {
         console.log('doLogin')
         return api.loginUserSetToken(state.username, state.password).then(res => {
             if (!res.error) {
+                rState.setUserInfo(res);
                 router.push('/dashboard');
             } else {
                 dlgPrm.setDialogInfo({
