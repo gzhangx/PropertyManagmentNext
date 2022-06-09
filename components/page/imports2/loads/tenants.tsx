@@ -10,7 +10,7 @@ export const TenantRowCompare: IRowComparer[] = [
     }
 ];
 
-export function processSheetData(datas: ISheetRowData[]) {
+export async function extraProcessSheetData(datas: ISheetRowData[]) {
     datas.forEach(data => {
         const full = (data.importSheetData['firstName'] || '') + ' ' + (data.importSheetData['lastName'] || '').toString().trim();
         data.importSheetData['fullName'] = full;

@@ -101,7 +101,7 @@ export function getPageDefs(selectedOwners: IOwnerInfo[]) {
             ...basicDef.tenant,
             rowComparers: tenantLoad.TenantRowCompare,
             dbLoader: () => theApi.getTenants(selectedOwners).then(r => r as any as IDbSaveData[]),
-            processSheetData: tenantLoad.processSheetData,
+            extraProcessSheetData: tenantLoad.extraProcessSheetData,
             shouldShowCreateButton: colInfo => colInfo.field === 'fullName',
             dbInserter: inserter.getDbInserter('tenantInfo'),
         },
