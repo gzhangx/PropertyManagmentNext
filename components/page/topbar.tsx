@@ -9,7 +9,7 @@ export function TopBar(props) {
 
     const rootContext = useRootPageContext();
     const paymentCtx = useIncomeExpensesContext();
-    const loginInfo = getLoginInfo();
+    const loginInfo = rootContext.userInfo; //getLoginInfo();
     
     const ownerByKey = keyBy(paymentCtx.allOwners, 'ownerID');
     const ownerSels = (!loginInfo || !loginInfo.ownerPCodes) ? [] : (loginInfo.ownerPCodes).map(id => {

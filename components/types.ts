@@ -33,7 +33,7 @@ export interface IPageState {
 }
 
 export interface ILoginResponse {
-    error: string;
+    error?: string;
     token: string;
     name: string;
     id: number;

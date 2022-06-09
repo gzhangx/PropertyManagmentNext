@@ -1,17 +1,14 @@
 import { createContext, SetStateAction, useContext, useState, Dispatch } from 'react';
 //import {IPageState} from '../types'
-import { getLoginInfo} from '../api'
-export interface IUserInfo {
-    id: number;
-    name: string;
-    token: string;
-}
+import { getLoginInfo } from '../api'
+import { ILoginResponse } from '../types';
+
 export interface IRootPageState {
     sideBarStates: { [key: string]: boolean | string };
     setSideBarStates: Dispatch<SetStateAction<{}>>;
     //pageState: IPageState;         
-    userInfo: IUserInfo;
-    setUserInfo: Dispatch<SetStateAction<IUserInfo>>;
+    userInfo: ILoginResponse;
+    setUserInfo: Dispatch<SetStateAction<ILoginResponse>>;
 }
 
 
@@ -33,7 +30,7 @@ export const getSideBarCurrentSelectedItemName = (ctx:IRootPageState)=>{
 export function RootPageStateWrapper({ children }) {
     const [sideBarStates, setSideBarStates] = useState({});
     //const [pageProps, setPageProps] = useState({});
-    const [userInfo, setUserInfo] = useState<IUserInfo>(getLoginInfo() || { id: 0, name:'', token:''});
+    const [userInfo, setUserInfo] = useState<ILoginResponse>(getLoginInfo() || { id: 0, name:'', token:'',ownerPCodes:[],});
     const defVal: IRootPageState = {
         sideBarStates,
         setSideBarStates,
