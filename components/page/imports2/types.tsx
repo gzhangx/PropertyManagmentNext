@@ -42,7 +42,8 @@ export interface IPageInfo {
     fieldMap: ALLFieldNames[];
     displayColumnInfo: IDisplayColumnInfo[];
 
-    dbLoader?: (selOwners:IOwnerInfo[]) => Promise<IDbSaveData[]>; 
+    dbLoader?: (selOwners: IOwnerInfo[]) => Promise<IDbSaveData[]>;
+    processSheetData?: (data: ISheetRowData[]) => void;
     idField?: ALLFieldNames;
 
     rowComparers?: IRowComparer[];
@@ -81,7 +82,7 @@ export interface IDbRowMatchData {
 export type ICompRowData = ISheetRowData | IDbRowMatchData;
 
 export interface IPageDataDetails {
-    dataRows: ICompRowData[];
+    dataRows: ISheetRowData[];
     colNames: IStringDict;
     dbMatchData?: IDbRowMatchData[];
 }

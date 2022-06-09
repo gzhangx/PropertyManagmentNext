@@ -117,7 +117,7 @@ export function ImportPage() {
     //curPageState.payments curPageState.stateReloaded,, curPageState.existingOwnersByName,
         
 
-    const pages = getPageDefs();
+    const pages = getPageDefs(selectedOwners);
     console.log(`curPageState.stateReloaded=${curPageState.stateReloaded}`);
 
     
@@ -210,7 +210,7 @@ function displayItems(pagePrms: IPageParms, curPageState: IPageStates) {
 
     
     const cmpSortField = curPageState.curPage.cmpSortField;
-    const sheetDsp = curPageState.pageDetails.dataRows.filter(x => x.dataType === 'Sheet').map(x => x as ISheetRowData)
+    const sheetDsp = curPageState.pageDetails.dataRows
         .filter(x => !x.matched)
         .map((sheetRow, ind) => {
             const showItem = (field: ALLFieldNames) => curPageState.curPage.displayItem ?
@@ -227,20 +227,7 @@ function displayItems(pagePrms: IPageParms, curPageState: IPageStates) {
             };
         });
     
-    const dbDsp = curPageState.pageDetails.dataRows.filter(x => x.dataType === 'DB').map(x => x as IDbRowMatchData)
-        .filter(x => !x.matchedToKey).map((dbRow, ind) => {
-            return {
-                sort: dbRow.dbItemData[cmpSortField], dsp: <tr key={ind}>{
-                    dspCi.map((dc, ck) => {
-                        return <td key={ck}>DB-{
-                            dbRow.dbItemData[dc.field]
-                        }</td>
-                    })
-                }</tr>
-            }
-        })
-    
-    const combinedDsp = sortBy(sheetDsp.concat(dbDsp), d => d.sort).map(d=>d.dsp);
+    const combinedDsp = sortBy(sheetDsp, d => d.sort).map(d=>d.dsp);
     return combinedDsp;
 }
 

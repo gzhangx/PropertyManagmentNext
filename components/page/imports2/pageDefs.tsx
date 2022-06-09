@@ -2,6 +2,7 @@
 import { IOwnerInfo, IHouseInfo, IPayment } from '../../reportTypes';
 import { IPaymentWithArg, IPageInfo, IPageDataDetails, IPageStates, IPageParms, IDbSaveData } from './types'
 import { googleSheetRead, getOwners, sqlAdd, getHouseInfo, getPaymentRecords } from '../../api'
+import * as theApi from '../../api'
 import { InforDialog, GetInfoDialogHelper } from '../../generic/basedialog';
 import moment from 'moment'
 import {keyBy, omit, mapValues} from 'lodash'
@@ -11,7 +12,7 @@ import { getBasicPageDefs } from './loads/basicPageInfo'
 import { ALLFieldNames } from '../imports/types';
 
 import * as lease from './loads/lease'
-//import * as tenantLoad from './loads/tenants'
+import * as tenantLoad from './loads/tenants'
 import * as maintenceRecords from './loads/maintenanceRecords'
 import * as houseLoader from './loads/house';
 import * as paymentLoader from './loads/payment';
@@ -19,7 +20,7 @@ import * as paymentLoader from './loads/payment';
 import * as inserter from './loads/inserter';
 
 
-export function getPageDefs() {
+export function getPageDefs(selectedOwners: IOwnerInfo[]) {
 
     const paymentFieldMap: ALLFieldNames[] = [
                 'receivedDate',
@@ -96,6 +97,9 @@ export function getPageDefs() {
         },
         {
             ...basicDef.tenant,
+            rowComparers: tenantLoad.TenantRowCompare,
+            dbLoader: () => theApi.getTenants(selectedOwners).then(r => r as any as IDbSaveData[]),
+            processSheetData: tenantLoad.processSheetData,
         },
         {
             ...basicDef.maintenceRecords,

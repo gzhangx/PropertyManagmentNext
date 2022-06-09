@@ -1,5 +1,21 @@
-export function test() {
-    
+import { IDbSaveData, IRowComparer, IStringDict, ISheetRowData } from '../types'
+import { ITenantInfo } from '../../../reportTypes';
+export const TenantRowCompare: IRowComparer[] = [
+    {
+        name: 'Tenant Row Comparer',
+        getRowKey: (data: IDbSaveData) => {
+            const hi = data as any as ITenantInfo;
+            return hi.fullName.toLowerCase().trim();
+        },
+    }
+];
+
+export function processSheetData(datas: ISheetRowData[]) {
+    datas.forEach(data => {
+        const full = (data.importSheetData['firstName'] || '') + ' ' + (data.importSheetData['lastName'] || '').toString().trim();
+        data.importSheetData['fullName'] = full;
+        data.displayData['fullName'] = full;
+    })
 }
 /*
 import moment from 'moment'

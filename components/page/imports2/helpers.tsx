@@ -120,6 +120,10 @@ export async function genericPageLoader(prms: IPageParms, sheetId: string, pageS
         ...pageState,
         ...hi,
     });
+
+    if (pageState.curPage.processSheetData) {
+        pageState.curPage.processSheetData(pageDetails.dataRows)
+    }
     let dbMatchData: IDbRowMatchData[] = null;
     if (page.rowComparers) {
         dbMatchData = dbData.map(dbItemData => {

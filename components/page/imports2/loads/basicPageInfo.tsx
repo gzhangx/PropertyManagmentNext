@@ -65,6 +65,28 @@ export function getBasicPageDefs() {
                 'email',
                 'comment',
             ],
+            displayColumnInfo: [
+                {
+                    field: 'firstName',
+                    name: 'First Name'
+                },
+                {
+                    field: 'fullName',
+                    name: 'Full Name'
+                },
+                {
+                    field: 'phone',
+                    name: 'phone'
+                },
+                {
+                    field: 'email',
+                    name: 'email'
+                },
+                {
+                    field: 'comment',
+                    name: 'comment'
+                },
+            ],
             idField: 'fullName',
         } as IPageInfo,
         maintenceRecords: {
