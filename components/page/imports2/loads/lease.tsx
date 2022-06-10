@@ -1,4 +1,26 @@
-export function test(){}
+import { IDbSaveData, IRowComparer, IStringDict, ISheetRowData } from '../types'
+import { ILeaseInfo } from '../../../reportTypes';
+import {Promise} from 'bluebird';
+
+export const LeaseRowCompare: IRowComparer[] = [
+    {
+        name: 'Lease Row Comparer',
+        getRowKey: (data: IDbSaveData) => {
+            const le = data as any as ILeaseInfo;
+            return `${le.ownerID}-${le.houseID}-${le.tenantID}-${le.startDate}-${le.endDate}`;
+        },
+    }
+];
+
+export async function leaseExtraProcessSheetData(datas: ISheetRowData[]): Promise<void> {
+    await Promise.map(datas, async data => {
+    }, {concurrency: 2});
+    datas.forEach(data => {
+        const full = (data.importSheetData['firstName'] || '') + ' ' + (data.importSheetData['lastName'] || '').toString().trim();
+        data.importSheetData['fullName'] = full;
+        data.displayData['fullName'] = full;
+    })
+}
 /*
 import moment from 'moment'
 import { IBasicImportParams, IPaymentWithArg, IPageInfo, IItemData, IDataDetails, IPageStates, IPageDefPrms } from '../types'
