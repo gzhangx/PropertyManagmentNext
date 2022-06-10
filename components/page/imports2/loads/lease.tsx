@@ -12,15 +12,13 @@ export const LeaseRowCompare: IRowComparer[] = [
     }
 ];
 
-export async function leaseExtraProcessSheetData(pageData: IPageDataDetails): Promise<void> {
-    const datas = pageData.dataRows;
-    await Promise.map(datas, async data => {
-    }, {concurrency: 2});
+export async function leaseExtraProcessSheetData(datas: ISheetRowData[]): Promise<ISheetRowData[]> {
     datas.forEach(data => {
         const full = (data.importSheetData['firstName'] || '') + ' ' + (data.importSheetData['lastName'] || '').toString().trim();
         data.importSheetData['fullName'] = full;
         data.displayData['fullName'] = full;
     })
+    return datas;
 }
 /*
 import moment from 'moment'

@@ -3,7 +3,7 @@ import {
     IPageInfo, IStringDict, ICompRowData, IPageStates, IPageParms, IPageDataDetails, IDbSaveData, ISheetRowData, IDbRowMatchData, IRowComparer,
     IDbInserter} from './types'
 import { googleSheetRead, getOwners, sqlAdd, getHouseInfo, getPaymentRecords } from '../../api'
-import { keyBy } from 'lodash'
+import { keyBy, xor } from 'lodash'
 import moment from 'moment';
 import { ALLFieldNames, getHouseByAddress } from '../imports2/types';
 //const sheetId = '1UU9EYL7ZYpfHV6Jmd2CvVb6oBuQ6ekTR7AWXIlMvNCg';
@@ -114,16 +114,14 @@ export async function genericPageLoader(prms: IPageParms, sheetId: string, pageS
     if (page.dbLoader) {
         dbData = await page.dbLoader(pageState.selectedOwners);
     }    
-
-    const sheetDatas = pageDetails.dataRows as ISheetRowData[];
+    
+    let extraProcessSheetData: (pg: ISheetRowData[]) => Promise<ISheetRowData[]> = pageState.curPage.extraProcessSheetData || (x => Promise.resolve(x));
+    const sheetDatas = await extraProcessSheetData(pageDetails.dataRows as ISheetRowData[]);
     const displayData = stdProcessSheetData(sheetDatas, {
         ...pageState,
         ...hi,
     });
 
-    if (pageState.curPage.extraProcessSheetData) {
-        await pageState.curPage.extraProcessSheetData(pageDetails)
-    }
     let dbMatchData: IDbRowMatchData[] = null;
     if (page.rowComparers) {
         dbMatchData = dbData.map(dbItemData => {

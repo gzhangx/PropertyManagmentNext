@@ -10,13 +10,13 @@ export const TenantRowCompare: IRowComparer[] = [
     }
 ];
 
-export async function extraProcessSheetData(pageData: IPageDataDetails) {
-    const datas = pageData.dataRows;
+export async function extraProcessSheetData(datas: ISheetRowData[]) {
     datas.forEach(data => {
         const full = (data.importSheetData['firstName'] || '') + ' ' + (data.importSheetData['lastName'] || '').toString().trim();
         data.importSheetData['fullName'] = full;
         data.displayData['fullName'] = full;
     })
+    return datas;
 }
 /*
 import moment from 'moment'
