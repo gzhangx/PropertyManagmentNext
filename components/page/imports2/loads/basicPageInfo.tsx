@@ -20,6 +20,32 @@ export function getBasicPageDefs() {
                 'tenant3',
                 'tenant4',
             ],
+            displayColumnInfo: [
+                {
+                    field: 'address',
+                    name: 'House'
+                },
+                {
+                    field: 'startDate',
+                    name: 'Start Date'
+                },
+                {
+                    field: 'endDate',
+                    name: 'End Date'
+                },
+                {
+                    field: 'deposit',
+                    name: 'Deposit'
+                },
+                {
+                    field: 'comment',
+                    name: 'comment'
+                },
+                {
+                    field: 'tenant',
+                    name: 'Tenant'
+                },
+            ],
             idField: 'houseID',
         } as IPageInfo,
         paymentRecord: {

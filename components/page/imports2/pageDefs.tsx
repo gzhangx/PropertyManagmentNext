@@ -96,6 +96,11 @@ export function getPageDefs(selectedOwners: IOwnerInfo[]) {
         },
         {
             ...basicDef.lease,
+            rowComparers: lease.LeaseRowCompare,
+            dbLoader: () => theApi.getLeases(selectedOwners).then(r => r as any as IDbSaveData[]),
+            extraProcessSheetData: lease.leaseExtraProcessSheetData,
+            shouldShowCreateButton: colInfo => colInfo.field === 'address',
+            dbInserter: inserter.getDbInserter('leaseInfo'),
         },
         {
             ...basicDef.tenant,
