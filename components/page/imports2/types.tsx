@@ -3,7 +3,7 @@ import { IOwnerInfo, IHouseInfo, IPayment, ITenantInfo } from '../../reportTypes
 import moment from 'moment';
 
 export type ALLFieldNames = '' | 'address' | 'city' | 'zip' | 'ownerName' | 'receivedDate' | 'receivedAmount' | 'houseID' | 'paymentTypeID' | 'paymentProcessor' | 'notes'
-    | 'startDate' | 'endDate' | 'monthlyRent' | 'deposit' | 'petDeposit' | 'otherDeposit' | 'comment' | 'tenant1' | 'tenant2' | 'tenant3' | 'tenant4'
+    | 'startDate' | 'endDate' | 'monthlyRent' | 'deposit' | 'petDeposit' | 'otherDeposit' | 'comment' | 'tenant1' | 'tenant2' | 'tenant3' | 'tenant4' | 'tenant'
     | 'firstName' | 'lastName' | 'fullName' | 'phone' | 'email' | 'date';
 
 export interface IPaymentWithArg extends IPayment
