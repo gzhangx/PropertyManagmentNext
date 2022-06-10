@@ -122,7 +122,7 @@ export async function genericPageLoader(prms: IPageParms, sheetId: string, pageS
     });
 
     if (pageState.curPage.extraProcessSheetData) {
-        await pageState.curPage.extraProcessSheetData(pageDetails.dataRows)
+        await pageState.curPage.extraProcessSheetData(pageDetails)
     }
     let dbMatchData: IDbRowMatchData[] = null;
     if (page.rowComparers) {

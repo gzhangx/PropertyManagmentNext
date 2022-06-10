@@ -43,7 +43,7 @@ export interface IPageInfo {
     displayColumnInfo: IDisplayColumnInfo[];
 
     dbLoader?: (selOwners: IOwnerInfo[]) => Promise<IDbSaveData[]>;
-    extraProcessSheetData?: (data: ISheetRowData[]) => Promise<void>;
+    extraProcessSheetData?: (pageData: IPageDataDetails) => Promise<void>;
     idField?: ALLFieldNames;
 
     rowComparers?: IRowComparer[];

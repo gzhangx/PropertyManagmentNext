@@ -1,4 +1,4 @@
-import { IDbSaveData, IRowComparer, IStringDict, ISheetRowData } from '../types'
+import { IDbSaveData, IRowComparer, IStringDict, ISheetRowData, IPageDataDetails } from '../types'
 import { ITenantInfo } from '../../../reportTypes';
 export const TenantRowCompare: IRowComparer[] = [
     {
@@ -10,7 +10,8 @@ export const TenantRowCompare: IRowComparer[] = [
     }
 ];
 
-export async function extraProcessSheetData(datas: ISheetRowData[]) {
+export async function extraProcessSheetData(pageData: IPageDataDetails) {
+    const datas = pageData.dataRows;
     datas.forEach(data => {
         const full = (data.importSheetData['firstName'] || '') + ' ' + (data.importSheetData['lastName'] || '').toString().trim();
         data.importSheetData['fullName'] = full;

@@ -1,4 +1,4 @@
-import { IDbSaveData, IRowComparer, IStringDict, ISheetRowData } from '../types'
+import { IDbSaveData, IRowComparer, IStringDict, ISheetRowData, IPageDataDetails } from '../types'
 import { ILeaseInfo } from '../../../reportTypes';
 import {Promise} from 'bluebird';
 
@@ -12,7 +12,8 @@ export const LeaseRowCompare: IRowComparer[] = [
     }
 ];
 
-export async function leaseExtraProcessSheetData(datas: ISheetRowData[]): Promise<void> {
+export async function leaseExtraProcessSheetData(pageData: IPageDataDetails): Promise<void> {
+    const datas = pageData.dataRows;
     await Promise.map(datas, async data => {
     }, {concurrency: 2});
     datas.forEach(data => {
