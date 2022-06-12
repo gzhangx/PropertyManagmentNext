@@ -7,7 +7,7 @@ export function getBasicPageDefs() {
             range: 'A1:M',
             fieldMap: [
                 '',
-                'houseID',
+                'address',
                 'startDate',
                 'endDate',
                 'monthlyRent',
