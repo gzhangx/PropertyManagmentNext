@@ -14,6 +14,8 @@ import {
     IHouseAnchorInfo,
     IStringBoolMap,
 } from '../reportTypes';
+import { useRootPageContext } from './RootState';
+
 export const TOTALCOLNAME = 'coltotal';
 export const fMoneyformat = (amt:number)=> {
     if (!amt) return '-';
@@ -46,7 +48,9 @@ export function useIncomeExpensesContext() {
     return useContext(IncomeExpensesContext);
 }
 export function PaymentExpenseStateWrapper(props: {
-    children: any}) {
+    children: any
+}) {
+    const rootCtx = useRootPageContext();
     const [selectedOwners, setSelectedOwners] = useState<IOwnerInfo[]>([]);
     const [allOwners, setAllOwners] = useState<IOwnerInfo[]>([]);
     const [pageProps, setPageProps] = useState<IPagePropsByTable>({
@@ -114,7 +118,7 @@ export function PaymentExpenseStateWrapper(props: {
                 }
             }
         })
-    }, []);
+    }, [rootCtx.userInfo]);
 
     useEffect(() => {
         setMonthes(allMonthes);
