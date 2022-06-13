@@ -264,6 +264,7 @@ function stdProcessSheetData(sheetData: ISheetRowData[], pageState: IPageStates)
                 case 'receivedDate':
                 case 'date':
                 case 'startDate':
+                case 'endDate':
                     const mt = moment(v);
                     if (!mt.isValid()) {
                         sd.invalid = fieldName;                        
