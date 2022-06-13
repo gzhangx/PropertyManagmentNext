@@ -51,7 +51,7 @@ export async function leaseExtraProcessSheetData(datasInput: ISheetRowData[], pa
 
 export function displayItem(params: IPageParms, state: IPageStates, sheetRow: ISheetRowData, field: ALLFieldNames): JSX.Element{
     if (field === 'startDate') return null;
-    return <div>{ field} {sheetRow.displayData[field] }</div>;
+    return <div>{sheetRow.displayData[field] }</div>;
 }
 /*
 import moment from 'moment'
