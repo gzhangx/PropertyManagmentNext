@@ -117,6 +117,7 @@ export async function genericPageLoader(prms: IPageParms, sheetId: string, pageS
     
     let extraProcessSheetData: (pg: ISheetRowData[]) => Promise<ISheetRowData[]> = pageState.curPage.extraProcessSheetData || (x => Promise.resolve(x));
     const sheetDatas = await extraProcessSheetData(pageDetails.dataRows as ISheetRowData[]);
+    pageDetails.dataRows = sheetDatas;
     const displayData = stdProcessSheetData(sheetDatas, {
         ...pageState,
         ...hi,
@@ -134,7 +135,7 @@ export async function genericPageLoader(prms: IPageParms, sheetId: string, pageS
         page.rowComparers.forEach(cmp => matchItems(sheetDatas, dbMatchData, cmp));
     }
     //console.log("dbData and sheetDatas", dbData, sheetDatas)
-    prms.dispatchCurPageState(state => {
+    if (prms) prms.dispatchCurPageState(state => {
         return {
             ...state,
             pageDetails,
@@ -143,6 +144,7 @@ export async function genericPageLoader(prms: IPageParms, sheetId: string, pageS
             ...hi,
         }
     });
+    return pageDetails;
 }
 
 //return true if not totally fixed

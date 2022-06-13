@@ -20,7 +20,7 @@ import * as paymentLoader from './loads/payment';
 import * as inserter from './loads/inserter';
 
 
-export function getPageDefs(selectedOwners: IOwnerInfo[]) {
+export function getPageDefs() {
 
     const paymentFieldMap: ALLFieldNames[] = [
                 'receivedDate',
@@ -97,7 +97,7 @@ export function getPageDefs(selectedOwners: IOwnerInfo[]) {
         {
             ...basicDef.lease,
             rowComparers: lease.LeaseRowCompare,
-            dbLoader: () => theApi.getLeases(selectedOwners).then(r => r as any as IDbSaveData[]),
+            dbLoader: (selectedOwners) => theApi.getLeases(selectedOwners).then(r => r as any as IDbSaveData[]),
             extraProcessSheetData: lease.leaseExtraProcessSheetData,
             shouldShowCreateButton: colInfo => colInfo.field === 'address',
             dbInserter: inserter.getDbInserter('leaseInfo'),
@@ -105,7 +105,7 @@ export function getPageDefs(selectedOwners: IOwnerInfo[]) {
         {
             ...basicDef.tenant,
             rowComparers: tenantLoad.TenantRowCompare,
-            dbLoader: () => theApi.getTenants(selectedOwners).then(r => r as any as IDbSaveData[]),
+            dbLoader: (selectedOwners) => theApi.getTenants(selectedOwners).then(r => r as any as IDbSaveData[]),
             extraProcessSheetData: tenantLoad.extraProcessSheetData,
             shouldShowCreateButton: colInfo => colInfo.field === 'fullName',
             dbInserter: inserter.getDbInserter('tenantInfo'),

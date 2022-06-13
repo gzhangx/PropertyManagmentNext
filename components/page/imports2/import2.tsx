@@ -117,7 +117,7 @@ export function ImportPage() {
     //curPageState.payments curPageState.stateReloaded,, curPageState.existingOwnersByName,
         
 
-    const pages = getPageDefs(selectedOwners);
+    const pages = getPageDefs();
     console.log(`curPageState.stateReloaded=${curPageState.stateReloaded}`);
 
     
