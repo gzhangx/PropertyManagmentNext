@@ -19,6 +19,7 @@ export function getBasicPageDefs() {
                 'tenant2',
                 'tenant3',
                 'tenant4',
+                'tenant', //not here, added to force mapping
             ],
             displayColumnInfo: [
                 {

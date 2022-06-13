@@ -273,6 +273,9 @@ function stdProcessSheetData(sheetData: ISheetRowData[], pageState: IPageStates)
                         acc[fieldName] = dateStr;
                     }
                     break;
+                case 'tenant':
+                    acc[fieldName] = v;
+                    break;
             }
         });
         const displayData = stdDisplayField(fieldNames, { ...acc }, pageState);
