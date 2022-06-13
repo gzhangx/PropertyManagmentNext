@@ -15,10 +15,14 @@ export const LeaseRowCompare: IRowComparer[] = [
 export async function leaseExtraProcessSheetData(datasInput: ISheetRowData[]): Promise<ISheetRowData[]> {
     const datas: ISheetRowData[] = datasInput.reduce((acc, data) => {
         ['tenant1', 'tenant2', 'tenant3', 'tenant4'].forEach(tn => {
-            if (data[tn]) {
+            const tenant = data.importSheetData[tn];
+            if (tenant) {
+                data.importSheetData['tenant'] = tenant;
                 acc.push({
                     ...data,
-                    tenant: data[tn],
+                    importSheetData: {
+                        ...data.importSheetData,
+                    }
                 })
             }
         });

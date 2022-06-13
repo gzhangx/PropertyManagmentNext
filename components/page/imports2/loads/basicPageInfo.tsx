@@ -46,7 +46,7 @@ export function getBasicPageDefs() {
                     name: 'Tenant'
                 },
             ],
-            idField: 'houseID',
+            idField: 'address',
         } as IPageInfo,
         paymentRecord: {
             pageName: 'PaymentRecord',
