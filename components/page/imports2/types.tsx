@@ -33,7 +33,7 @@ export interface IDbSaveData {
 
 export interface IDbInserter {
     name: string;
-    createEntity: (data: IDbSaveData) => Promise<void>;
+    createEntity: (data: IDbSaveData) => Promise<{id:string}>;
 }
 export interface IPageInfo {
     pageName: 'Tenants Info' | 'Lease Info' | 'PaymentRecord' | 'House Info' | 'MaintainessRecord';

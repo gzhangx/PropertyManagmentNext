@@ -5,6 +5,7 @@ import { Promise } from 'bluebird';
 import { genericPageLoader  } from '../helpers';
 import * as pageDefs from '../pageDefs'
 import { IPageStates } from '../types';
+import * as inserters from './inserter';
 
 import * as lutil from './util';
 
@@ -87,6 +88,18 @@ export function displayItem(params: IPageParms, state: IPageStates, sheetRow: IS
                 //return <div>{displayStrValue} (!!Not DB Value)</div>;        
                 return <div><button className='btn btn-primary' onClick={() => {
                     console.log('on create tenant, sheetRow is', sheetRow, tnt);
+                    const ins = inserters.getDbInserter('tenantInfo');
+                    tnt.importSheetData['ownerID'] = sheetRow.importSheetData['ownerID'];
+                    ins.createEntity(tnt.importSheetData).then(res => {
+                        console.log(res);
+                        const tenantID = res.id;
+                        tnt.matched = {
+                            tenantID,
+                        }
+                        params.dispatchCurPageState(state => ({
+                            ...state,
+                        }));
+                    })
                 }}>{displayStrValue} (Click To Create DB Val)</button></div>
             }
         }
