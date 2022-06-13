@@ -99,8 +99,9 @@ export function getPageDefs() {
             rowComparers: lease.LeaseRowCompare,
             dbLoader: (selectedOwners) => theApi.getLeases(selectedOwners).then(r => r as any as IDbSaveData[]),
             extraProcessSheetData: lease.leaseExtraProcessSheetData,
-            shouldShowCreateButton: colInfo => colInfo.field === 'address',
+            shouldShowCreateButton: colInfo => colInfo.field === 'startDate',
             dbInserter: inserter.getDbInserter('leaseInfo'),
+            displayItem: lease.displayItem,
         },
         {
             ...basicDef.tenant,

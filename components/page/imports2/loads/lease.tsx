@@ -1,4 +1,4 @@
-import { IDbSaveData, IRowComparer, IStringDict, ISheetRowData, IPageDataDetails } from '../types'
+import { IDbSaveData, IRowComparer, IStringDict, ISheetRowData, IPageDataDetails, ALLFieldNames, IPageParms } from '../types'
 import { ILeaseInfo } from '../../../reportTypes';
 import { Promise } from 'bluebird';
 
@@ -47,6 +47,11 @@ export async function leaseExtraProcessSheetData(datasInput: ISheetRowData[], pa
     datas.forEach(data => {
     })
     return datas;
+}
+
+export function displayItem(params: IPageParms, state: IPageStates, sheetRow: ISheetRowData, field: ALLFieldNames): JSX.Element{
+    if (field === 'startDate') return null;
+    return <div>{ field} {sheetRow.displayData[field] }</div>;
 }
 /*
 import moment from 'moment'

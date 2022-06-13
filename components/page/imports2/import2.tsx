@@ -248,10 +248,14 @@ function displayItems(pagePrms: IPageParms, curPageState: IPageStates) {
         .map((sheetRow, ind) => {
             const showItem = (dc: IDisplayColumnInfo) => {
                 const field = dc.field;
-                return curPageState.curPage.displayItem ?
-                    (curPageState.curPage.displayItem(pagePrms, curPageState, sheetRow, field)) || sheetRow.displayData[field]
-                    :
-                    (stdTryDisplayItemForCreate(pagePrms, curPageState, sheetRow, dc) || sheetRow.displayData[field]);
+                let dspRes = null;
+                if (curPageState.curPage.displayItem)
+                    dspRes = (curPageState.curPage.displayItem(pagePrms, curPageState, sheetRow, field));
+                    
+                if (!dspRes) {
+                    dspRes = (stdTryDisplayItemForCreate(pagePrms, curPageState, sheetRow, dc) || sheetRow.displayData[field]);
+                }
+                return dspRes;
             }
             return {
                 sort: sheetRow.displayData[cmpSortField], dsp: <tr key={ind}>{
