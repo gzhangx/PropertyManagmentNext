@@ -86,7 +86,7 @@ export function displayItem(params: IPageParms, state: IPageStates, sheetRow: IS
             if (!tnt.matched) {
                 //return <div>{displayStrValue} (!!Not DB Value)</div>;        
                 return <div><button className='btn btn-primary' onClick={() => {
-                    console.log('on create tenant, sheetRow is', sheetRow);
+                    console.log('on create tenant, sheetRow is', sheetRow, tnt);
                 }}>{displayStrValue} (Click To Create DB Val)</button></div>
             }
         }

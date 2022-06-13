@@ -280,6 +280,9 @@ function stdProcessSheetData(sheetData: ISheetRowData[], pageState: IPageStates)
                 case 'tenant':
                     acc[fieldName] = v;
                     break;
+                case 'comment':
+                    acc[fieldName] = v || '';
+                    break;
             }
         });
         const displayData = stdDisplayField(fieldNames, { ...acc }, pageState);
