@@ -5,6 +5,9 @@ import { Promise } from 'bluebird';
 import { genericPageLoader  } from '../helpers';
 import * as pageDefs from '../pageDefs'
 import { IPageStates } from '../types';
+
+import * as lutil from './util';
+
 export const LeaseRowCompare: IRowComparer[] = [
     {
         name: 'Lease Row Comparer',
@@ -15,6 +18,11 @@ export const LeaseRowCompare: IRowComparer[] = [
     }
 ];
 
+
+interface ILeaseItemByName { [key: string]: ISheetRowData; }
+interface ILeaseCustomData {
+    tenantsByName: ILeaseItemByName;
+}
 export async function leaseExtraProcessSheetData(datasInput: ISheetRowData[], pageState: IPageStates): Promise<ISheetRowData[]> {
 
     const leasePageInfo = pageDefs.getPageDefs().find(p => p.pageName === 'Tenants Info');
@@ -23,9 +31,14 @@ export async function leaseExtraProcessSheetData(datasInput: ISheetRowData[], pa
         curPage: leasePageInfo,
     });
     const tenantsByName = tenantsRowSheet.dataRows.reduce((acc, dr) => {
-        acc[dr.importSheetData['fullName'].toString().toLowerCase().trim()] = dr;
+        acc[lutil.getStdLowerName(dr.importSheetData['fullName'])] = dr;
         return acc;
-    }, {} as { [key: string]: ISheetRowData; });
+    }, {} as ILeaseItemByName);
+
+
+    pageState.pageDetails.customData = {
+        tenantsByName,
+    } as ILeaseCustomData;
     console.log('tenatnasByName', tenantsByName, tenantsRowSheet)
 
     const datas: ISheetRowData[] = datasInput.reduce((acc, data) => {
@@ -34,7 +47,7 @@ export async function leaseExtraProcessSheetData(datasInput: ISheetRowData[], pa
             if (tenant) {
                 data.importSheetData['tenant'] = tenant;
                 acc.push({
-                    ...data,
+                    ...data,                    
                     importSheetData: {
                         ...data.importSheetData,
                     }
@@ -51,7 +64,16 @@ export async function leaseExtraProcessSheetData(datasInput: ISheetRowData[], pa
 
 export function displayItem(params: IPageParms, state: IPageStates, sheetRow: ISheetRowData, field: ALLFieldNames): JSX.Element{
     if (field === 'startDate') return null;
-    return <div>{sheetRow.displayData[field] }</div>;
+    const displayStrValue = sheetRow.displayData[field];
+    const leaseCustData = state.pageDetails.customData as ILeaseCustomData;    
+    if (field === 'tenant') {
+        const tnameTag = lutil.getStdLowerName(displayStrValue?.toString());
+        const tnt = (leaseCustData?.tenantsByName || {})[tnameTag];
+        if (!tnt) {
+            return <div>{displayStrValue} (!!No sheet value)</div>;        
+        }
+    }
+    return <div>{displayStrValue }</div>;
 }
 /*
 import moment from 'moment'

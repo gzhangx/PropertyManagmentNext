@@ -70,8 +70,7 @@ export interface ISheetRowData {
     matchToKey: string;
     matched: IDbSaveData;
     matcherName: string;
-    displayData: IStringDict;
-    customData?: any; //used by lease to track tenant address etc
+    displayData: IStringDict;    
 }
 
 export interface IDbRowMatchData {
@@ -87,6 +86,7 @@ export interface IPageDataDetails {
     dataRows: ISheetRowData[];
     colNames: IStringDict;
     dbMatchData?: IDbRowMatchData[];
+    customData?: any; //used by lease to track tenant address etc
 }
 
 export interface IPageStates {

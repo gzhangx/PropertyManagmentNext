@@ -6,6 +6,7 @@ import { googleSheetRead, getOwners, sqlAdd, getHouseInfo, getPaymentRecords } f
 import { keyBy, xor } from 'lodash'
 import moment from 'moment';
 import { ALLFieldNames, getHouseByAddress } from '../imports2/types';
+import * as lutil from './loads/util';
 //const sheetId = '1UU9EYL7ZYpfHV6Jmd2CvVb6oBuQ6ekTR7AWXIlMvNCg';
 
 async function loadPageSheetDataRaw(sheetId: string, curPage: IPageInfo): Promise<IPageDataDetails> {
@@ -94,7 +95,7 @@ export async function getHouseState() {
     const hi = await getHouseInfo();
     return {
         houses: hi,
-        housesByAddress: keyBy(hi, h => h.address.toLowerCase()),
+        housesByAddress: keyBy(hi, h => lutil.getStdLowerName(h.address)),
     }
 }
 
@@ -106,6 +107,7 @@ export async function genericPageLoader(prms: IPageParms, pageState: IPageStates
         return;
     }
     const pageDetails = await loadPageSheetDataRaw(sheetId, page);
+    pageState.pageDetails = pageDetails;
     let hi = {};
     if (!pageState.houses) {
         //const hi = await getHouseInfo();
