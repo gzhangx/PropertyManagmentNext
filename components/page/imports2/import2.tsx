@@ -105,6 +105,7 @@ export function ImportPage() {
         if (!curPageState.curPage) return;
         console.log("genericPageLoader loading", sheetId)
         curPageState.sheetId = sheetId;
+        curPageState.selectedOwners = selectedOwners;
         genericPageLoader(pagePrms, curPageState).catch(err => {
             const errStr = err.error || err.message;
             console.log('genericPageLoaderError',err)
@@ -114,7 +115,7 @@ export function ImportPage() {
                 }
             })
         })
-    }, [sheetId, curPageState.selectedOwners, curPageState.curPage, curPageState.stateReloaded])
+    }, [sheetId, selectedOwners, curPageState.curPage, curPageState.stateReloaded])
     //curPageState.payments curPageState.stateReloaded,, curPageState.existingOwnersByName,
         
 
