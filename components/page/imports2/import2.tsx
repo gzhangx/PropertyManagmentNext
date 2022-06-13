@@ -103,8 +103,9 @@ export function ImportPage() {
     
     useEffect(() => {
         if (!curPageState.curPage) return;
-        console.log("genericPageLoader loading",sheetId)
-        genericPageLoader(pagePrms, sheetId, curPageState).catch(err => {
+        console.log("genericPageLoader loading", sheetId)
+        curPageState.sheetId = sheetId;
+        genericPageLoader(pagePrms, curPageState).catch(err => {
             const errStr = err.error || err.message;
             console.log('genericPageLoaderError',err)
             errorDlg.setDialogAction(errStr, () => {

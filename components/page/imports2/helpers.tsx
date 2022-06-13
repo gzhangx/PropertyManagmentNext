@@ -98,7 +98,8 @@ export async function getHouseState() {
     }
 }
 
-export async function genericPageLoader(prms: IPageParms, sheetId: string, pageState: IPageStates) {
+export async function genericPageLoader(prms: IPageParms, pageState: IPageStates) {
+    const sheetId = pageState.sheetId;
     const page = pageState.curPage;
     if (!sheetId) {
         console.log('no sheet id, return');
@@ -115,8 +116,9 @@ export async function genericPageLoader(prms: IPageParms, sheetId: string, pageS
         dbData = await page.dbLoader(pageState.selectedOwners);
     }    
     
-    let extraProcessSheetData: (pg: ISheetRowData[]) => Promise<ISheetRowData[]> = pageState.curPage.extraProcessSheetData || (x => Promise.resolve(x));
-    const sheetDatas = await extraProcessSheetData(pageDetails.dataRows as ISheetRowData[]);
+    let extraProcessSheetData: (pg: ISheetRowData[], pageState: IPageStates) => Promise<ISheetRowData[]> = pageState.curPage.extraProcessSheetData || ((x, _) => Promise.resolve(x));
+    pageState.sheetId = sheetId;
+    const sheetDatas = await extraProcessSheetData(pageDetails.dataRows as ISheetRowData[], pageState);
     pageDetails.dataRows = sheetDatas;
     const displayData = stdProcessSheetData(sheetDatas, {
         ...pageState,

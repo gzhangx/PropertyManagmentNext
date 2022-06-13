@@ -1,7 +1,10 @@
 import { IDbSaveData, IRowComparer, IStringDict, ISheetRowData, IPageDataDetails } from '../types'
 import { ILeaseInfo } from '../../../reportTypes';
-import {Promise} from 'bluebird';
+import { Promise } from 'bluebird';
 
+import { genericPageLoader  } from '../helpers';
+import * as pageDefs from '../pageDefs'
+import { IPageStates } from '../types';
 export const LeaseRowCompare: IRowComparer[] = [
     {
         name: 'Lease Row Comparer',
@@ -12,7 +15,19 @@ export const LeaseRowCompare: IRowComparer[] = [
     }
 ];
 
-export async function leaseExtraProcessSheetData(datasInput: ISheetRowData[]): Promise<ISheetRowData[]> {
+export async function leaseExtraProcessSheetData(datasInput: ISheetRowData[], pageState: IPageStates): Promise<ISheetRowData[]> {
+
+    const leasePageInfo = pageDefs.getPageDefs().find(p => p.pageName === 'Tenants Info');
+    const tenantsRowSheet = await genericPageLoader(null, {
+        ...pageState,
+        curPage: leasePageInfo,
+    });
+    const tenantsByName = tenantsRowSheet.dataRows.reduce((acc, dr) => {
+        acc[dr.importSheetData['fullName'].toString().toLowerCase().trim()] = dr;
+        return acc;
+    }, {} as { [key: string]: ISheetRowData; });
+    console.log('tenatnasByName', tenantsByName, tenantsRowSheet)
+
     const datas: ISheetRowData[] = datasInput.reduce((acc, data) => {
         ['tenant1', 'tenant2', 'tenant3', 'tenant4'].forEach(tn => {
             const tenant = data.importSheetData[tn];
