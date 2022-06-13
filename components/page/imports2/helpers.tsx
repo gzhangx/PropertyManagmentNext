@@ -261,6 +261,7 @@ function stdProcessSheetData(sheetData: ISheetRowData[], pageState: IPageStates)
                         }
                         v = parseFloat(v);
                     }
+                    if (v === NaN || !v) v = 0;
                     acc[fieldName] = v;
                     break;
                 case 'receivedDate':

@@ -27,6 +27,10 @@ export function getBasicPageDefs() {
                     name: 'House'
                 },
                 {
+                    field: 'tenant',
+                    name: 'Tenant'
+                },
+                {
                     field: 'startDate',
                     name: 'Start Date'
                 },
@@ -42,10 +46,7 @@ export function getBasicPageDefs() {
                     field: 'comment',
                     name: 'comment'
                 },
-                {
-                    field: 'tenant',
-                    name: 'Tenant'
-                },
+                
             ],
             idField: 'address',
         } as IPageInfo,

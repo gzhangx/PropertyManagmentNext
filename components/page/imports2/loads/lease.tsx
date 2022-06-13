@@ -22,6 +22,7 @@ export const LeaseRowCompare: IRowComparer[] = [
 interface ILeaseItemByName { [key: string]: ISheetRowData; }
 interface ILeaseCustomData {
     tenantsByName: ILeaseItemByName;
+    housesByName: ILeaseItemByName;
 }
 export async function leaseExtraProcessSheetData(datasInput: ISheetRowData[], pageState: IPageStates): Promise<ISheetRowData[]> {
 
@@ -31,13 +32,23 @@ export async function leaseExtraProcessSheetData(datasInput: ISheetRowData[], pa
         curPage: leasePageInfo,
     });
     const tenantsByName = tenantsRowSheet.dataRows.reduce((acc, dr) => {
-        acc[lutil.getStdLowerName(dr.importSheetData['fullName'])] = dr;
+        acc[lutil.getStdLowerName(dr.importSheetData['fullName'].toString())] = dr;
         return acc;
     }, {} as ILeaseItemByName);
 
+    const housePageInfo = pageDefs.getPageDefs().find(p => p.pageName === 'House Info');
+    const houseRowSheet = await genericPageLoader(null, {
+        ...pageState,
+        curPage: housePageInfo,
+    });
+    const housesByName = houseRowSheet.dataRows.reduce((acc, dr) => {
+        acc[lutil.getStdLowerName(dr.importSheetData['address'].toString())] = dr;
+        return acc;
+    }, {} as ILeaseItemByName);
 
     pageState.pageDetails.customData = {
         tenantsByName,
+        housesByName,
     } as ILeaseCustomData;
     console.log('tenatnasByName', tenantsByName, tenantsRowSheet)
 
@@ -66,11 +77,30 @@ export function displayItem(params: IPageParms, state: IPageStates, sheetRow: IS
     if (field === 'startDate') return null;
     const displayStrValue = sheetRow.displayData[field];
     const leaseCustData = state.pageDetails.customData as ILeaseCustomData;    
-    if (field === 'tenant') {
-        const tnameTag = lutil.getStdLowerName(displayStrValue?.toString());
+    const tnameTag = lutil.getStdLowerName(displayStrValue?.toString());
+    if (field === 'tenant') {        
         const tnt = (leaseCustData?.tenantsByName || {})[tnameTag];
         if (!tnt) {
             return <div>{displayStrValue} (!!No sheet value)</div>;        
+        } else {
+            if (!tnt.matched) {
+                //return <div>{displayStrValue} (!!Not DB Value)</div>;        
+                return <div><button className='btn btn-primary' onClick={() => {
+                    console.log('on create tenant, sheetRow is', sheetRow);
+                }}>{displayStrValue} (Click To Create DB Val)</button></div>
+            }
+        }
+    } else if (field === 'address') {
+        const house = (leaseCustData?.housesByName || {})[tnameTag];
+        if (!house) {
+            return <div>{displayStrValue} (!!No sheet value)</div>;        
+        } else {
+            if (!house.matched) {
+                //return <div>{displayStrValue} (!!Not DB Value)</div>;        
+                return <div><button className='btn btn-primary' onClick={() => {
+
+                }}>{displayStrValue} (Click To Create DB Val, Need implementation)</button></div>
+            }
         }
     }
     return <div>{displayStrValue }</div>;
