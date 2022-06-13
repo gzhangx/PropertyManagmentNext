@@ -71,6 +71,7 @@ export interface ISheetRowData {
     matched: IDbSaveData;
     matcherName: string;
     displayData: IStringDict;
+    customData: any; //used by lease to track tenant address etc
 }
 
 export interface IDbRowMatchData {
