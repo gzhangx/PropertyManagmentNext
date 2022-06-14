@@ -22,6 +22,12 @@ export const LeaseRowCompare: IRowComparer[] = [
             const le = data as any as ILeaseInfo;
             return `${le.ownerID}:${le.houseID}:${le.tenantID}:${fixDates(le.startDate)}:${fixDates(le.endDate)}`;
         },
+        checkRowValid(data) {
+            const le = data as any as ILeaseInfo;
+            if (!le.houseID) return 'House not saved';
+            if (!le.tenantID) return 'Tenant Not Saved'
+            return null;
+        },
     }
 ];
 

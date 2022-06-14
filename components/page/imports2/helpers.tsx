@@ -136,7 +136,16 @@ export async function genericPageLoader(prms: IPageParms, pageState: IPageStates
                 matchedToKey: null,
             } as IDbRowMatchData;
         });
-        page.rowComparers.forEach(cmp => matchItems(sheetDatas, dbMatchData, cmp));
+        page.rowComparers.forEach(cmp => {
+            matchItems(sheetDatas, dbMatchData, cmp);
+            sheetDatas.forEach(dd => {
+                if (!cmp.checkRowValid) return;
+                const err = cmp.checkRowValid(dd.importSheetData);
+                if (!dd.invalid && err) {
+                    dd.invalid = err;
+                }
+            })
+        });
     }
     //console.log("dbData and sheetDatas", dbData, sheetDatas)
     if (prms) prms.dispatchCurPageState(state => {

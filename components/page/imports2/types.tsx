@@ -127,6 +127,7 @@ export interface IPageParms {
 export interface IRowComparer {
     name: string;
     getRowKey: (data: IDbSaveData) => string;
+    checkRowValid?: (data: IDbSaveData) => string | null;
 }
 
 export function YYYYMMDDFormater(date: string) : string {
