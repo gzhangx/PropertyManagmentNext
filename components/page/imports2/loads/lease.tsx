@@ -153,7 +153,15 @@ export function displayDbExtra(params: IPageParms, state: IPageStates, dbMatch: 
             const leaseID = dbMatch.dbItemData['leaseID'] as string;
             console.log('delete', leaseID)
             api.deleteLeases(leaseID).then(res => {
-                console.log('delete got', res)
+                console.log('delete got', res);
+                const newdbMatchData = state.pageDetails.dbMatchData.filter(d => d.dbItemData['leaseID'] !== leaseID)
+                params.dispatchCurPageState(state => ({
+                    ...state,
+                    pageDetails: {
+                        ...state.pageDetails,
+                        dbMatchData: newdbMatchData,
+                    }
+                }))
             })
         }}>Delete({dbMatch.dbItemData[field]})</button>
     }
