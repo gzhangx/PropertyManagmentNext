@@ -25,6 +25,21 @@ interface ILeaseCustomData {
     tenantsByName: ILeaseItemByName;
     housesByName: ILeaseItemByName;
 }
+
+function fixLeaseData(dataInput: ISheetRowData, pageState: IPageStates)
+{
+    const data = dataInput.importSheetData;
+    const leaseCustData = pageState.pageDetails.customData as ILeaseCustomData;    
+    if (!data['tenantID']) {
+        const tenantKey = lutil.getStdLowerName(data['tenant'].toString());
+        const matched = leaseCustData.tenantsByName[tenantKey];
+        if (!matched) return;
+        if (matched.matched) {
+            data['tenantID'] = matched.matched['tenantID'];
+            console.log('matched tenantID is ', data['tenantID'])
+        }
+    }
+}
 export async function leaseExtraProcessSheetData(datasInput: ISheetRowData[], pageState: IPageStates): Promise<ISheetRowData[]> {
 
     const leasePageInfo = pageDefs.getPageDefs().find(p => p.pageName === 'Tenants Info');
@@ -58,6 +73,7 @@ export async function leaseExtraProcessSheetData(datasInput: ISheetRowData[], pa
             const tenant = data.importSheetData[tn];
             if (tenant) {
                 data.importSheetData['tenant'] = tenant;
+                fixLeaseData(data, pageState);
                 acc.push({
                     ...data,                    
                     importSheetData: {
