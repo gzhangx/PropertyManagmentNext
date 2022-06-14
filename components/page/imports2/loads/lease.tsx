@@ -8,13 +8,19 @@ import { IPageStates } from '../types';
 import * as inserters from './inserter';
 
 import * as lutil from './util';
+import moment from 'moment';
 
+function fixDates(date: string): string {
+    const mnt = moment(date);
+    if (mnt.isValid()) return mnt.format('YYYY-MM-DD');
+    return date;
+}
 export const LeaseRowCompare: IRowComparer[] = [
     {
         name: 'Lease Row Comparer',
         getRowKey: (data: IDbSaveData) => {
             const le = data as any as ILeaseInfo;
-            return `${le.ownerID}-${le.houseID}-${le.tenantID}-${le.startDate}-${le.endDate}`;
+            return `${le.ownerID}:${le.houseID}:${le.tenantID}:${fixDates(le.startDate)}:${fixDates(le.endDate)}`;
         },
     }
 ];
