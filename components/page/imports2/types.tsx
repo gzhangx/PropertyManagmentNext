@@ -50,6 +50,7 @@ export interface IPageInfo {
     dbInserter?: IDbInserter;
     shouldShowCreateButton?: (colInfo: IDisplayColumnInfo) => boolean;
     displayItem?: (params: IPageParms, state: IPageStates, sheetRow: ISheetRowData, field: ALLFieldNames) => JSX.Element;
+    displayDbExtra?: (params: IPageParms, state: IPageStates, dbMatch: IDbRowMatchData, field: ALLFieldNames) => JSX.Element | number| string;
     cmpSortField?: ALLFieldNames; //used to show sheet/db rows and sort by, usually date
     reloadEntity?: (prms: IPageParms) => void;
 }

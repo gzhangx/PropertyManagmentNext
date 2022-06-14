@@ -102,6 +102,7 @@ export function getPageDefs() {
             shouldShowCreateButton: colInfo => colInfo.field === 'startDate',
             dbInserter: inserter.getDbInserter('leaseInfo'),
             displayItem: lease.displayItem,
+            displayDbExtra: lease.displayDbExtra,
         },
         {
             ...basicDef.tenant,

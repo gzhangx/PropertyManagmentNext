@@ -1,6 +1,6 @@
 
 import axios, { Method } from 'axios';
-import { IGetModelReturn, TYPEDBTables } from './types'
+import { IGetModelReturn } from './types'
 
 export interface ISiteConfig {
     baseUrl: string;
@@ -168,7 +168,7 @@ export async function sqlGet(input: ISqlRequest): Promise<any> {
     return doPost(`sql/get?tableDbg=${input.table}`, input);
 }
 
-export async function sqlAdd(table: string, fields: { [key: string]: string | number; }, create:boolean) {
+export async function sqlAdd(table: TableNames, fields: { [key: string]: string | number; }, create:boolean) {
     //     "table":"tenantInfo",
     //     "fields":{"tenantID":"289a8120-01fd-11eb-8993-ab1bf8206feb", "firstName":"gang", "lastName":"testlong"},
     //    "create":true
@@ -180,13 +180,13 @@ export async function sqlAdd(table: string, fields: { [key: string]: string | nu
     })
 }
 
-export function sqlDelete(table, id) {
+export function sqlDelete(table: TableNames, id: string): Promise<{ affectedRows : number}>{
     return doPost(`sql/del`, {
         table, id,
     })
 }
 
-export async function getModel(name: TYPEDBTables) : Promise<IGetModelReturn> {
+export async function getModel(name: TableNames) : Promise<IGetModelReturn> {
     return doPost(`getModel?name=${name}`, null, 'GET') as Promise<IGetModelReturn>;
 }
 
@@ -319,6 +319,10 @@ export async function getLeases(ownerInfos: IOwnerInfo[]) : Promise<ILeaseInfo[]
     }).then((r: {rows:ILeaseInfo[]})=>{
         return r.rows;
     })    
+}
+
+export async function deleteLeases(leaseID:string) {
+    return sqlDelete('leaseInfo', leaseID);
 }
 
 // Used by cashflow

@@ -285,10 +285,14 @@ function displayExtraDbItems(pagePrms: IPageParms, curPageState: IPageStates) {
     const dbDsp = curPageState.pageDetails.dbMatchData.filter(x => x.dataType === 'DB').map(x => x as IDbRowMatchData)
         .filter(x => !x.matchedToKey).map((dbRow, ind) => {
             return {
-                sort: dbRow.dbItemData[cmpSortField], dsp: <tr key={ind}>{
+                sort: dbRow.dbItemData[cmpSortField], dsp: <tr key={ind}>{                    
                     dspCi.map((dc, ck) => {
-                        return <td key={ck}>DB-{
-                            dbRow.dbItemData[dc.field]
+                        let dspVal: string | number | JSX.Element = 'DB-'+dbRow.dbItemData[dc.field];
+                        if (curPageState.curPage.displayDbExtra) {
+                            dspVal = curPageState.curPage.displayDbExtra(pagePrms, curPageState, dbRow, dc.field);
+                        }
+                        return <td key={ck}>{
+                            dspVal
                         }</td>
                     })
                 }</tr>

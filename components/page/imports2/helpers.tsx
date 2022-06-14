@@ -147,6 +147,7 @@ export async function genericPageLoader(prms: IPageParms, pageState: IPageStates
             })
         });
     }
+    pageDetails.dbMatchData = dbMatchData;
     //console.log("dbData and sheetDatas", dbData, sheetDatas)
     if (prms) prms.dispatchCurPageState(state => {
         return {

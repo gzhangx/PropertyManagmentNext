@@ -1,4 +1,4 @@
-import { IDbSaveData, IRowComparer, IStringDict, ISheetRowData, IPageDataDetails, ALLFieldNames, IPageParms } from '../types'
+import { IDbSaveData, IRowComparer, IStringDict, ISheetRowData, IPageDataDetails, ALLFieldNames, IPageParms, IDbRowMatchData } from '../types'
 import { ILeaseInfo } from '../../../reportTypes';
 import { Promise } from 'bluebird';
 
@@ -9,6 +9,7 @@ import * as inserters from './inserter';
 
 import * as lutil from './util';
 import moment from 'moment';
+import * as api from '../../../api'
 
 function fixDates(date: string): string {
     const mnt = moment(date);
@@ -144,6 +145,19 @@ export function displayItem(params: IPageParms, state: IPageStates, sheetRow: IS
         }
     }
     return <div>{displayStrValue }</div>;
+}
+
+export function displayDbExtra(params: IPageParms, state: IPageStates, dbMatch: IDbRowMatchData, field: ALLFieldNames) {
+    if (field === 'address') {
+        return <button className='btn btn-primary' onClick={() => {
+            const leaseID = dbMatch.dbItemData['leaseID'] as string;
+            console.log('delete', leaseID)
+            api.deleteLeases(leaseID).then(res => {
+                console.log('delete got', res)
+            })
+        }}>Delete({dbMatch.dbItemData[field]})</button>
+    }
+    return dbMatch.dbItemData[field];
 }
 /*
 import moment from 'moment'

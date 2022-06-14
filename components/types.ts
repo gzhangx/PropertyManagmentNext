@@ -1,6 +1,6 @@
 import React from "react";
 
-export type TYPEDBTables = 'ownerInfo' | 'rentPaymentInfo' | 'houseInfo';
+//export type TYPEDBTables = 'ownerInfo' | 'rentPaymentInfo' | 'houseInfo';
 
 export type SortOps = '' | 'asc' | 'desc';
 export interface ISqlOrderDef {
