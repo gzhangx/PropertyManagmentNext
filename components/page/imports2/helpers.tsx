@@ -321,8 +321,21 @@ export function getDisplayHeaders(params: IPageParms, curPageState: IPageStates)
                                 continue;
                             }
                             updatedCount++;
-                            try {                                
-                                await createEntity(params, sheetRow, inserter);
+                            try {       
+                                let err = null;
+                                if (curPageState.curPage.rowComparers) {
+                                    curPageState.curPage.rowComparers.forEach(rc => {
+                                        if (!rc.checkRowValid) return;
+                                        err = err || rc.checkRowValid(sheetRow.importSheetData);
+                                    })
+                                }
+                                if (!err)
+                                    await createEntity(params, sheetRow, inserter);
+                                else {
+                                    console.log(err);    
+                                    params.setErrorStr(err);
+                                    break;
+                                }
                             } catch (err) {
                                 const errStr = `Error createViaInserter ${inserter.name} ${err.message}`;
                                 console.log(errStr);
