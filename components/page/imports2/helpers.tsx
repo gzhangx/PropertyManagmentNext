@@ -332,7 +332,7 @@ export function getDisplayHeaders(params: IPageParms, curPageState: IPageStates)
                                 if (!err)
                                     await createEntity(params, sheetRow, inserter);
                                 else {
-                                    console.log(err);    
+                                    console.log('Found error during process all for page',err);    
                                     params.setErrorStr(err);
                                     break;
                                 }
