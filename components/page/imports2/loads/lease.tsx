@@ -81,7 +81,8 @@ export async function leaseExtraProcessSheetData(datasInput: ISheetRowData[], pa
     console.log('tenatnasByName', tenantsByName, tenantsRowSheet)
 
     const datas: ISheetRowData[] = datasInput.reduce((acc, data) => {
-        ['tenant1', 'tenant2', 'tenant3', 'tenant4'].forEach(tn => {
+        //'tenant2', 'tenant3', 'tenant4'
+        ['tenant1', ].forEach(tn => {
             const tenant = data.importSheetData[tn];
             if (tenant) {
                 data.importSheetData['tenant'] = tenant;
