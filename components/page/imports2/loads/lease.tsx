@@ -48,7 +48,7 @@ function fixLeaseData(dataInput: ISheetRowData, pageState: IPageStates)
         if (!matched) return;
         if (matched.matched) {
             data['tenantID'] = matched.matched['tenantID'];
-            console.log('matched tenantID is ', data['tenantID'])
+            //console.log('matched tenantID is ', data['tenantID'])
         }
     }
 }
@@ -78,7 +78,7 @@ export async function leaseExtraProcessSheetData(datasInput: ISheetRowData[], pa
         tenantsByName,
         housesByName,
     } as ILeaseCustomData;
-    console.log('tenatnasByName', tenantsByName, tenantsRowSheet)
+    //console.log('tenatnasByName', tenantsByName, tenantsRowSheet)
 
     const datas: ISheetRowData[] = datasInput.reduce((acc, data) => {
         //'tenant2', 'tenant3', 'tenant4'
@@ -97,9 +97,7 @@ export async function leaseExtraProcessSheetData(datasInput: ISheetRowData[], pa
         });
         return acc;
     }, []);
-    console.log(`lease page data`, datas, datasInput)
-    datas.forEach(data => {
-    })
+    console.log(`lease page data`, datas)
     return datas;
 }
 
