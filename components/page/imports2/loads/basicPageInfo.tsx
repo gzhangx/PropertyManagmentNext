@@ -124,10 +124,36 @@ export function getBasicPageDefs() {
                 'date',
                 'description',
                 'amount',
-                'houseID',
+                'address',
                 'expenseCategoryId',
                 'workerID',
                 'comment'
+            ],
+            displayColumnInfo: [
+                {
+                    field: 'date',
+                    name: 'Date',
+                },
+                {
+                    field: 'description',
+                    name: 'Description',
+                },
+                {
+                    field: 'amount',
+                    name: 'Amount',
+                },
+                {
+                    field: 'address',
+                    name: 'Address',
+                },
+                {
+                    field: 'expenseCategoryId',
+                    name: 'ExpenseCategoryId',
+                },
+                {
+                    field: 'workerID',
+                    name: 'Worker',
+                },
             ],
             idField:'date',
         } as IPageInfo,
