@@ -143,7 +143,7 @@ export const GenCrudAdd = (props: IGenGrudAddProps) => {
         setData(initData);
     }, [JSON.stringify(initData)])
     const [columnInfoMaps, setColumnInfoMaps] = useState({});
-    const loadColumnInfo = async colInf => {
+    const loadColumnInfo = async (colInf:IColumnInfo[]) => {
         const hasFks = colInf.filter(c => c.foreignKey).filter(c => c.foreignKey.table);
         await bluebird.Promise.map(hasFks, async fk => {
             const tbl = fk.foreignKey.table;
