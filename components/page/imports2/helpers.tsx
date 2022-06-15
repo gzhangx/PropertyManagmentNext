@@ -221,6 +221,7 @@ function stdDisplayField(fieldNames: ALLFieldNames[], obj: IStringDict, pageStat
             case 'deposit':
             case 'receivedAmount':
             case 'petDeposit':
+            case 'amount':
                 if (typeof dsp === 'number') dsp = dsp.toFixed(2);
                 else dsp = parseFloat(dsp || '0').toFixed(2);
                 break;
@@ -258,6 +259,7 @@ function stdProcessSheetData(sheetData: ISheetRowData[], pageState: IPageStates)
                 case 'monthlyRent':
                 case 'deposit':
                 case 'petDeposit':
+                case 'amount':
                     if (v === null || v === undefined) {
                         acc[fieldName] = 'invalid(null)';
                         sd.invalid = fieldName;
