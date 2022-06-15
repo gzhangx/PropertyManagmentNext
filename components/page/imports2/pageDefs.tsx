@@ -114,6 +114,11 @@ export function getPageDefs() {
         },
         {
             ...basicDef.maintenceRecords,
+            rowComparers: maintenceRecords.maintenanceRowCompare,
+            dbLoader: (selectedOwners) => theApi.getMaintenanceReport(selectedOwners).then(r => r as any as IDbSaveData[]),
+            extraProcessSheetData: maintenceRecords.maintenanceExtraProcessSheetData,
+            shouldShowCreateButton: colInfo => colInfo.field === 'address',
+            dbInserter: inserter.getDbInserter('maintenanceRecords'),
         }
     ];
     return pages;
