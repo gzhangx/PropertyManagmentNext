@@ -337,7 +337,7 @@ export function getDisplayHeaders(params: IPageParms, curPageState: IPageStates)
                                 else {
                                     console.log('Found error during process all for page',err);    
                                     params.setErrorStr(err);
-                                    break;
+                                    //break;
                                 }
                             } catch (err) {
                                 const errStr = `Error createViaInserter ${inserter.name} ${err.message}`;
