@@ -1,5 +1,6 @@
-import { sqlAdd, TableNames } from '../../../api'
-import { IDbInserter,  } from '../types'
+import { sqlAdd, } from '../../../api'
+import { IDbInserter, } from '../types'
+import { TableNames} from '../../../types'
 export const PaymentDbInserter: IDbInserter = {
     name: 'Payment inserter',
     createEntity: saveData => {

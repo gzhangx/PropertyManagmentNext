@@ -2,7 +2,7 @@ import {
     getModel, sqlGet, sqlAdd, sqlDelete, ISqlRequestFieldDef,
     ISqlRequestWhereItem
 } from '../api';
-import { ISqlOrderDef, IGetModelReturn, IDBFieldDef, TYPEDBTables } from '../types'
+import { ISqlOrderDef, IGetModelReturn, IDBFieldDef, TableNames } from '../types'
 import { get } from 'lodash';
 const mod = {
     models: {} as {[key:string]:IGetModelReturn}
@@ -16,7 +16,7 @@ interface IOpts {
     rowCount: number;
     offset:number;
 }
-export function createHelper(table: TYPEDBTables) {
+export function createHelper(table: TableNames) {
     if (!table) return null;
     const accModel = () => mod.models[table];
     const accModelFields = () => get(accModel(), 'fields', [] as IDBFieldDef[]);

@@ -6,14 +6,14 @@ import { createHelper, LoadMapperType } from './datahelpers';
 import { getFKDefs } from './GenCrudTableFkTrans';
 import { useRootPageContext } from '../states/RootState'
 
-import { IPageFilter, TYPEDBTables } from '../types'
+import { IPageFilter, TableNames } from '../types'
 import { ISqlRequestWhereItem} from '../api'
 import { useIncomeExpensesContext } from '../states/PaymentExpenseState'
 import { IOwnerInfo } from '../reportTypes';
 
 type IDisplayFieldType = ({ field: string; desc: string; } | string)[];
 interface IGenListProps { //copied from gencrud, need combine and refactor later
-    table: TYPEDBTables;
+    table: TableNames;
     columnInfo: IColumnInfo[];    
     displayFields?: IDisplayFieldType;
     loadMapper?: LoadMapperType;

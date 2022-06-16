@@ -1,6 +1,6 @@
 
 import axios, { Method } from 'axios';
-import { IGetModelReturn } from './types'
+import { IGetModelReturn, TableNames } from './types'
 
 export interface ISiteConfig {
     baseUrl: string;
@@ -149,7 +149,7 @@ export interface ISqlRequestWhereItem {
     val: string | number | (string | number)[];
 }
 
-export type TableNames = 'rentPaymentInfo' | 'houseInfo' | 'maintenanceRecords' | 'ownerInfo' | 'leaseInfo' | 'tenantInfo' | 'workerComp';
+//export type TableNames = 'rentPaymentInfo' | 'houseInfo' | 'maintenanceRecords' | 'ownerInfo' | 'leaseInfo' | 'tenantInfo' | 'workerComp';
 export interface ISqlRequest {
     table: TableNames;
     fields?: (ISqlRequestFieldDef | string)[];

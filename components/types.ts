@@ -2,6 +2,7 @@ import React from "react";
 
 //export type TYPEDBTables = 'ownerInfo' | 'rentPaymentInfo' | 'houseInfo';
 
+export type TableNames = 'rentPaymentInfo' | 'houseInfo' | 'maintenanceRecords' | 'ownerInfo' | 'leaseInfo' | 'tenantInfo' | 'workerComp';
 export type SortOps = '' | 'asc' | 'desc';
 export interface ISqlOrderDef {
     name: string;
