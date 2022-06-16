@@ -197,7 +197,7 @@ export async function getMaintenanceReport(ownerInfos: IOwnerInfo[]): Promise<IE
     if (!ownerInfos || !ownerInfos.length) return [];
     return sqlGet({
         //fields:['month', 'houseID','address', {op:'sum', field:'amount', name:'amount'},'expenseCategoryName','displayOrder'],
-        fields: ['month', 'houseID', 'address', 'amount', 'expenseCategoryName', 'displayOrder', 'date', 'comment', 'description'],
+        fields: ['month', 'houseID', 'address', 'amount', 'expenseCategoryName', 'expenseCategoryID', 'displayOrder', 'date', 'comment', 'description', 'workerID', 'workerFirstName', 'workerLastName'],
         table:'maintenanceRecords',
         whereArray:[{
             field:'ownerID',
