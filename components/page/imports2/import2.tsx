@@ -208,7 +208,8 @@ export function ImportPage() {
 
 function stdTryDisplayItemForCreate(params: IPageParms, state: IPageStates, sheetRow: ISheetRowData, dc: IDisplayColumnInfo): JSX.Element {
     const field: ALLFieldNames = dc.field;
-    if (state.curPage.dbInserter && state.curPage.shouldShowCreateButton && state.curPage.shouldShowCreateButton(dc)) {
+    const showCreateBtn = state.curPage.shouldShowCreateButton && state.curPage.shouldShowCreateButton(dc);
+    if (state.curPage.dbInserter && showCreateBtn && !sheetRow.invalid) {
         const itemVal = sheetRow.displayData[field];
         return <button disabled={!sheetRow.needUpdate || !!sheetRow.invalid} onClick={async () => {
             //setProgressStr('processing')
@@ -233,6 +234,9 @@ function stdTryDisplayItemForCreate(params: IPageParms, state: IPageStates, shee
         }}> Click to create ${itemVal}</button>
     }
     if (sheetRow.invalid) {
+        if (showCreateBtn) {
+            return <div style={{ color: 'red' }}>{sheetRow.displayData[field]} ({ sheetRow.invalid})</div>    
+        }
         return <div style={{ color: 'red' }}>{sheetRow.displayData[field]}</div>
     }
     return null;

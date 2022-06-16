@@ -4,7 +4,9 @@ import moment from 'moment';
 
 export type ALLFieldNames = '' | 'address' | 'city' | 'zip' | 'ownerName' | 'receivedDate' | 'receivedAmount' | 'amount' | 'houseID' | 'paymentTypeID' | 'paymentProcessor' | 'notes'
     | 'startDate' | 'endDate' | 'monthlyRent' | 'deposit' | 'petDeposit' | 'otherDeposit' | 'comment' | 'tenant1' | 'tenant2' | 'tenant3' | 'tenant4' | 'tenant'
-    | 'firstName' | 'lastName' | 'fullName' | 'phone' | 'email' | 'date';
+    | 'firstName' | 'lastName' | 'fullName' | 'phone' | 'email' | 'date'
+    | 'maintenanceImportAddress' //special processing fields
+    ;
 
 export interface IPaymentWithArg extends IPayment
 {
@@ -127,7 +129,7 @@ export interface IPageParms {
 
 export interface IRowComparer {
     name: string;
-    getRowKey: (data: IDbSaveData) => string;
+    getRowKey: (data: IDbSaveData, source:'DB'|'Sheet') => string;
     checkRowValid?: (data: IDbSaveData) => string | null;
 }
 

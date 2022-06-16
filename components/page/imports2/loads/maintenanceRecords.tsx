@@ -18,15 +18,19 @@ function fixDates(date: string): string {
 export const maintenanceRowCompare: IRowComparer[] = [
     {
         name: 'Maintenance Row Comparer',
-        getRowKey: (data: IDbSaveData) => {
+        getRowKey: (data: IDbSaveData, source) => {
             const le = data as any as IMaintenanceRawData;
             let amt: any = le.amount;
             if (typeof amt === 'number') {
                 amt = amt.toFixed(2);
+                //console.log(`'${source}' type of amt ${typeof amt}`, amt)
+            } else {
+                //console.log(`'${source}' type of amt ${typeof amt}`,amt)
             }
             const date = fixDates(le.date);            
-            const key = `a=${le.amount}:d=${date}:hid=${le.houseID}:wid=${(le.workerID)}:expCat=${(le.expenseCategoryId)}:cmt=${(le.comment)}`;
-            console.log('key====',key)
+            const key = `a=${amt}:d=${date}:hid=${le.houseID}:wid=${(le.workerID)}:expCat=${(le.expenseCategoryId)}:cmt=${(le.comment)}`;
+            //console.log(`key(${source})====`,key)
+            //if (source === 'DB') console.log('tempshow db data', data);
             return key;
         },
         checkRowValid(data) {

@@ -164,7 +164,7 @@ export async function genericPageLoader(prms: IPageParms, pageState: IPageStates
 //return true if not totally fixed
 function matchItems(sheetData: ISheetRowData[], dbMatchData: IDbRowMatchData[], cmp: IRowComparer): boolean {    
     const dbDataKeyed = dbMatchData.reduce((acc, d) => {
-        const key = cmp.getRowKey(d.dbItemData);
+        const key = cmp.getRowKey(d.dbItemData, 'DB');
         let cont = acc[key];
         if (!cont) {
             cont = [];
@@ -177,7 +177,7 @@ function matchItems(sheetData: ISheetRowData[], dbMatchData: IDbRowMatchData[], 
     });
     
     sheetData.map(sd => {        
-        const key = cmp.getRowKey(sd.importSheetData);    
+        const key = cmp.getRowKey(sd.importSheetData, 'Sheet');    
         const matchedAll = dbDataKeyed[key];
         if (matchedAll && matchedAll.length) {
             const matched = matchedAll.find(m => !m.matchedToKey);

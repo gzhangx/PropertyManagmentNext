@@ -124,7 +124,7 @@ export function getBasicPageDefs() {
                 'date',
                 'description',
                 'amount',
-                'mntAddress', //rename to prevent default handling
+                'maintenanceImportAddress', //rename to prevent default handling
                 'expenseCategoryId',
                 'workerID',
                 'comment'
@@ -143,7 +143,7 @@ export function getBasicPageDefs() {
                     name: 'Amount',
                 },
                 {
-                    field: 'mntAddress',
+                    field: 'maintenanceImportAddress',
                     name: 'Address',
                 },
                 {

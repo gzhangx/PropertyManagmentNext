@@ -117,7 +117,7 @@ export function getPageDefs() {
             rowComparers: maintenceRecords.maintenanceRowCompare,
             dbLoader: (selectedOwners) => theApi.getMaintenanceReport(selectedOwners).then(r => r as any as IDbSaveData[]),
             extraProcessSheetData: maintenceRecords.maintenanceExtraProcessSheetData,
-            shouldShowCreateButton: colInfo => colInfo.field === 'address',
+            shouldShowCreateButton: colInfo => colInfo.field === 'maintenanceImportAddress',
             dbInserter: inserter.getDbInserter('maintenanceRecords'),
         }
     ];
