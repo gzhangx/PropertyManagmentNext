@@ -32,7 +32,7 @@ export const LeaseRowCompare: IRowComparer[] = [
     }
 ];
 
-
+//change to ICmpItemByName later
 interface ILeaseItemByName { [key: string]: ISheetRowData; }
 interface ILeaseCustomData {
     tenantsByName: ILeaseItemByName;

@@ -37,8 +37,10 @@ export interface IDbInserter {
     name: string;
     createEntity: (data: IDbSaveData) => Promise<{id:string}>;
 }
+
+export type PageNames = 'Tenants Info' | 'Lease Info' | 'PaymentRecord' | 'House Info' | 'MaintainessRecord';
 export interface IPageInfo {
-    pageName: 'Tenants Info' | 'Lease Info' | 'PaymentRecord' | 'House Info' | 'MaintainessRecord';
+    pageName: PageNames;
     range: string;
 
     fieldMap: ALLFieldNames[];

@@ -1,10 +1,11 @@
-import { IDbSaveData, IRowComparer, IStringDict, ISheetRowData, IPageDataDetails, ALLFieldNames, IPageParms, IDbRowMatchData } from '../types'
-import { IMaintenanceRawData } from '../../../reportTypes';
+import { IDbSaveData, IRowComparer, IStringDict, ISheetRowData, IPageDataDetails, ALLFieldNames, IPageParms, IDbRowMatchData, PageNames } from '../types'
+import { IHouseInfo, IMaintenanceRawData } from '../../../reportTypes';
 import { Promise } from 'bluebird';
 
 import { genericPageLoader } from '../helpers';
-import * as pageDefs from '../pageDefs'
+
 import { IPageStates } from '../types';
+import { getRelatedTableByName, ICmpItemByName } from './cmpUtil';
 
 import * as lutil from './util';
 import moment from 'moment';
@@ -35,7 +36,8 @@ export const maintenanceRowCompare: IRowComparer[] = [
         },
         checkRowValid(data) {
             const le = data as any as IMaintenanceRawData;
-            if (!le.workerID) return 'worker not saved';
+            //if (!le.workerID) return 'worker not saved';
+            if (!le.expenseCategoryId) return 'no expenseCategory';
             if (!le.houseID) return 'House Not Saved'
             return null;
         },
@@ -43,22 +45,52 @@ export const maintenanceRowCompare: IRowComparer[] = [
 ];
 
 
+interface IMaintenanceCustomData {
+    //workersByName: ICmpItemByName;
+    //expenseCategoriesByName: ICmpItemByName;
+    housesByName: ICmpItemByName;
+}
+
+function fixManintenceData(dataInput: ISheetRowData, pageState: IPageStates) {
+    const data = dataInput.importSheetData;
+    const leaseCustData = pageState.pageDetails.customData as IMaintenanceCustomData;
+    if (!data['houseID']) {
+        const houseKey = lutil.getStdLowerName(data['maintenanceImportAddress'].toString());
+        const matched = leaseCustData.housesByName[houseKey];
+        if (!matched) return;
+        if (matched.matched) {
+            data['houseID'] = matched.matched['houseID'];
+            //console.log('matched tenantID is ', data['tenantID'])
+        }
+    }
+}
 
 export async function maintenanceExtraProcessSheetData(datasInput: ISheetRowData[], pageState: IPageStates): Promise<ISheetRowData[]> {
+    const housesByName = await getRelatedTableByName(pageState, 'House Info');
+    //const workersByName = await getRelatedTableByName(pageState, '');
+    pageState.pageDetails.customData = {        
+        housesByName,
+    } as IMaintenanceCustomData;
+    
 
-    /*
-    const leasePageInfo = pageDefs.getPageDefs().find(p => p.pageName === 'Tenants Info');
-    const tenantsRowSheet = await genericPageLoader(null, {
-        ...pageState,
-        curPage: leasePageInfo,
-    });
-    const tenantsByName = tenantsRowSheet.dataRows.reduce((acc, dr) => {
-        acc[lutil.getStdLowerName(dr.importSheetData['fullName'].toString())] = dr;
+    const datas: ISheetRowData[] = datasInput.reduce((acc, data) => {
+        
+        const address = data.importSheetData['maintenanceImportAddress'];
+        if (address) {            
+            fixManintenceData(data, pageState);
+                acc.push({
+                    ...data,
+                    importSheetData: {
+                        ...data.importSheetData,
+                    }
+                })
+            }
+        
         return acc;
-    }, {} as ILeaseItemByName);
-*/
+    }, []);
 
-    return datasInput;
+    console.log('extraprocess maintenance=', datas)
+    return datas;
 }
 
 export function displayItem(params: IPageParms, state: IPageStates, sheetRow: ISheetRowData, field: ALLFieldNames): JSX.Element {
