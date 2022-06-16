@@ -29,8 +29,8 @@ export const maintenanceRowCompare: IRowComparer[] = [
                 //console.log(`'${source}' type of amt ${typeof amt}`,amt)
             }
             const date = fixDates(le.date);            
-            const key = `a=${amt}:d=${date}:hid=${le.houseID}:wid=${(le.workerID)}:expCat=${(le.expenseCategoryId)}:cmt=${(le.comment)}`;
-            //console.log(`key(${source})====`,key)
+            const key = `a=${amt}:d=${date}:hid=${le.houseID}:wid=${(le.workerID || '')}:expCat=${(le.expenseCategoryId)}:cmt=${(le.comment)}`;
+            console.log(`key(${source})====`,key)
             //if (source === 'DB') console.log('tempshow db data', data);
             return key;
         },
