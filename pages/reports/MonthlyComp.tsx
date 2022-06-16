@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { sqlGet } from '../../components/api';
-import { IMaintenanceDataResponse, IWorkerCompResponse, IWorkerInfoShort } from '../../components/reportTypes'
+import { IMaintenanceDataResponse, IWorkerCompResponse, IWorkerInfoShort, IMaintenanceRawData, IPayment } from '../../components/reportTypes'
 import { EditTextDropdown } from '../../components/generic/EditTextDropdown';
 
 import { orderBy, sumBy, uniqBy } from 'lodash';
@@ -9,7 +9,7 @@ import { doCalc } from '../../components/utils/monthlyCompUtil';
 import { GetInfoDialogHelper } from '../../components/generic/basedialog'
 
 
-function includeInCommission(r) {
+function includeInCommission(r: IPayment) {
     return r.includeInCommission !== '0' || r.paymentTypeID === 'Rent';
     
 }
@@ -52,7 +52,7 @@ export default function MonthlyComp() {
             }
             ],
             groupByArray: [{ 'field': 'month' }]
-        }).then(res => {
+        }).then((res: { rows: IMaintenanceRawData[]}) => {
             let rows = res.rows.map(r => r.month).map(m => m.substr(0, 7));
 
             sqlGet({
@@ -147,7 +147,7 @@ export default function MonthlyComp() {
         sqlGet({
             table: 'rentPaymentInfo',
             whereArray: [{ field: 'month', op: '=', val: curMonth.value }],
-        }).then(res => {
+        }).then((res: {rows:IPayment[]}) => {
             setPayments(res.rows.filter(includeInCommission));
         })
     }, [curMonth]);

@@ -156,12 +156,12 @@ export interface IWorkerComp {
     houseID: string;
 }
 
-export interface IWorkerCompResponse  {
-    workerID: string;
-    dayOfMonth: string;
-    type: 'percent' | 'amount';
-    amount: number;
-    houseID: string;
+export interface IWorkerCompResponse extends IWorkerComp {
+    //workerID: string;
+    //dayOfMonth: string;
+    //type: 'percent' | 'amount';
+    //amount: number;
+    //houseID: string;
     address: string;
     firstName: string;
     lastName: string;

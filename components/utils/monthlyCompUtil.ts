@@ -1,6 +1,6 @@
 import { orderBy, sumBy, uniqBy } from 'lodash';
 import moment from 'moment';
-import { IWorkerComp, IPayment, IMaintenanceRawData } from '../reportTypes'
+import { IWorkerComp, IPayment, IMaintenanceRawData, IWorkerCompResponse } from '../reportTypes'
 
 interface IWorkerCompWithAddress extends IWorkerComp
 {
@@ -63,7 +63,7 @@ export interface ICompCalcResult {
 }
 
 export interface IDoCompCalcParms {
-    curWorkerCompTop: any;
+    curWorkerCompTop: IWorkerCompResponse;
     payments: IPayment[];
     maintenanceRecords: IMaintenanceRecordWithCatNameAndAddr[];
 }
