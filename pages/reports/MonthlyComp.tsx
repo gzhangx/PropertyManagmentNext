@@ -8,6 +8,11 @@ import { orderBy, sumBy, uniqBy } from 'lodash';
 import { doCalc } from '../../components/utils/monthlyCompUtil';
 import { GetInfoDialogHelper } from '../../components/generic/basedialog'
 
+
+function includeInCommission(r) {
+    return r.includeInCommission !== '0' || r.paymentTypeID === 'Rent';
+    
+}
 export default function MonthlyComp() {
     //const { ownerInfo} = props.compPrm;
     interface IWorkerOptions extends IWorkerInfoShort{
@@ -30,12 +35,44 @@ export default function MonthlyComp() {
     const [showDetails, setShowDetails] = useState({});
     const workerToOptin = (w:IWorkerInfoShort) => ({
         value: w.workerID,
-        label: `${w.firstName} ${w.lastName}`,
+        label: w.workerID,
     });
 
     const errorDlgHelper = GetInfoDialogHelper();
     //load comp params
     useEffect(() => {
+
+        sqlGet({
+            table: 'maintenanceRecords',
+            fields: ['month'],
+            whereArray: [{
+                field: 'workerID',
+                op: '=',
+                val: curWorker.value,
+            }
+            ],
+            groupByArray: [{ 'field': 'month' }]
+        }).then(res => {
+            let rows = res.rows.map(r => r.month).map(m => m.substr(0, 7));
+
+            sqlGet({
+                table: 'rentPaymentInfo',
+                fields: ['month'],
+                groupByArray: [{ 'field': 'month' }]
+            }).then((paymentMonthes: { rows: { month: string }[] }) => {
+                let mrows = uniqBy(paymentMonthes.rows.map(r => r.month).concat(rows), x => x);
+                mrows = orderBy(mrows, [x => x], ['desc']);
+                //console.log(mrows);
+                //console.log('payment monthes')
+                const m = mrows.map(value => ({
+                    value,
+                    label: value,
+                }));
+                setMonthes(m);
+                if (m.length) setCurMonth(m[0]);
+            })
+        });
+
         sqlGet({
             table: 'workerComp',
             //fields: ['workerID', 'firstName', 'lastName'],
@@ -50,98 +87,76 @@ export default function MonthlyComp() {
                 cmp.push(wc);
                 return acc;
             }, {}));
-            const workerOpts = uniqBy(res.rows, x => x.workerID).map((w, ind) => {                
-                return {
-                    ...w,
-                    value: w.workerID,
-                    label: `${w.firstName} ${w.lastName}`,
-                    selected: ind === 0,
-                } as IWorkerOptions
-            })
-            setWorkers(workerOpts);
-            if (workerOpts.length) {                
-                setCurWorker(workerOpts[0]);
-            }
-            sqlGet({
-                table: 'maintenanceRecords',
-                fields: ['workerID', 'workerFirstName', 'workerLastName'],
-                groupByArray: [{ 'field': 'workerID' }]
-            }).then((resMW: {rows:IMaintenanceDataResponse[]}) => {
-                const resMWWkr = uniqBy(resMW.rows.map(r => {
-                    return {
-                        workerID: r.workerID,
-                        firstName: r.workerFirstName,
-                        lastName: r.workerLastName,
-                    }
-                }), x => x.workerID);
-
-                const all = uniqBy(workerOpts.concat(resMWWkr.map(r => {
-                    return {
-                        ...r,
-                        selected: false,
-                    } as IWorkerOptions
-                })), a => a.workerID).map((opt,ind) => {
-                    return {
-                        ...opt,
-                        selected: ind === 0,
-                    }
-                });
-                setWorkers(all)
-                if (workerOpts.length) {                
-                    setCurWorker(workerOpts.find(w=>w.selected));
-                }         
-            });
-        }).catch(err => {
             
+            //setWorkers(workerOpts);
+            //if (workerOpts.length) {                
+            //    setCurWorker(workerOpts[0]);
+            //}
+            
+        }).catch(err => {
+            console.log('Monthly Comp init error', err)
         });       
         
     }, []);
     //load aggregated months
     useEffect(() => {
-        if (!curWorker.value) return;
+        if (!curMonth.value) return;
+
         sqlGet({
             table: 'maintenanceRecords',
-            fields: ['month'],
+            fields: ['workerID', 'workerFirstName', 'workerLastName'],
             whereArray: [{
-                field: 'workerID',
+                field: 'month',
                 op: '=',
-                val: curWorker.value,
-            }            
-        ],
-            groupByArray: [{ 'field': 'month' }]
-        }).then(res => {
-            let rows = res.rows.map(r=>r.month).map(m=>m.substr(0,7));            
-            
-            sqlGet({
-                table: 'rentPaymentInfo',
-                fields: ['month'],
-                whereArray: [{ field: 'workerID', op: '=', val: curWorker.value }],
-                groupByArray: [{ 'field': 'month' }]
-            }).then((paymentMonthes: { rows: {month:string}[]}) => {
-                let mrows = uniqBy(paymentMonthes.rows.map(r => r.month).concat(rows), x => x);
-                mrows = orderBy(mrows, [x => x], ['desc']);
-                //console.log(mrows);
-                //console.log('payment monthes')
-                const m = mrows.map(value => ({
-                    value,
-                    label: value,
-                }));
-                setMonthes(m);
-                if (m.length) setCurMonth(m[0]);
+                val: curMonth.value,
+            }],
+            groupByArray: [{ 'field': 'workerID' }]
+        }).then((resMW: { rows: IMaintenanceDataResponse[] }) => {
+            const resMWWkr = uniqBy(resMW.rows.map(r => {
+                return {
+                    workerID: r.workerID,
+                    label: r.workerID,
+                    firstName: r.workerFirstName,
+                    lastName: r.workerLastName,
+                }
+            }), x => x.workerID);
+            const workerOpts = uniqBy(Object.values(workerComps), x => x.workerID).map((w, ind) => {
+                return {
+                    ...w,
+                    value: w.workerID,
+                    label: w.firstName ?`${w.firstName} ${w.lastName}` : w.workerID,
+                    selected: ind === 0,
+                } as IWorkerOptions
             })
+            const all = uniqBy(workerOpts.concat(resMWWkr.map(r => {
+                return {
+                    ...r,
+                    selected: false,
+                } as IWorkerOptions
+            })), a => a.workerID).map((opt, ind) => {
+                return {
+                    ...opt,
+                    selected: ind === 0,
+                }
+            });
+            setWorkers(all)
+            if (workerOpts.length) {
+                setCurWorker(workerOpts.find(w => w.selected));
+            }
         });
-    }, [curWorker]);
+        sqlGet({
+            table: 'rentPaymentInfo',
+            whereArray: [{ field: 'month', op: '=', val: curMonth.value }],
+        }).then(res => {
+            setPayments(res.rows.filter(includeInCommission));
+        })
+    }, [curMonth]);
     
     
     useEffect(() => {
         if (!curWorker?.value) return;
         if (!curMonth?.value) return;
-        sqlGet({
-            table: 'rentPaymentInfo',
-            whereArray:[{field:'workerID', op:'=',val: curWorker.value},{field:'month',op:'=',val:curMonth.value}],
-        }).then(res => {
-            setPayments(res.rows.filter(r => r.includeInCommission !== '0'));
-        })
+        
 
         sqlGet({
             table:'maintenanceRecords',
@@ -154,7 +169,7 @@ export default function MonthlyComp() {
             const rows = orderBy(res.rows,['date']);
             setMaintenanceRecords(rows);
         })
-    }, [curMonth.value]);
+    }, [curMonth.value, curWorker.value]);
 
     const curWorkerCompTops = workerComps[curWorker.value] || [];
     const curWorkerCompTop = curWorkerCompTops[0];
