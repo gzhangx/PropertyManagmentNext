@@ -119,6 +119,7 @@ export interface IPageStates {
     stateReloaded: number;
 
     reloadPayments: boolean;
+    showMatchedItems: boolean;
 }    
 
 

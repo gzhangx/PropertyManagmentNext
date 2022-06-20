@@ -46,7 +46,7 @@ export function ImportPage() {
         stateReloaded: 0,
         housesByAddress: {},
         //paymentsByDateEct: {},
-        
+        showMatchedItems: false,
     } as IPageStates);
 
     const rootCtx = useRootPageContext();
@@ -173,7 +173,12 @@ export function ImportPage() {
                                 }}>Reload Users</button>
                             </div>
                             <div className="col-auto">
-                                <i className="fas fa-calendar fa-2x text-gray-300 fa - calendar"></i>
+                                <i className="fas fa-calendar fa-2x text-gray-300 fa - calendar" onClick={() => {
+                                    dispatchCurPageState(state => ({
+                                        ...state,
+                                        showMatchedItems: !state.showMatchedItems,
+                                    }))
+                                }}>{ curPageState.showMatchedItems?'R':'' }</i>
                             </div>
                         </div>
                     </div>
@@ -261,7 +266,7 @@ function displayItems(pagePrms: IPageParms, curPageState: IPageStates) {
         return true;
     }
     const sheetDsp = curPageState.pageDetails.dataRows
-        .filter(x => !x.matched && belongsToOwner(x.importSheetData))
+        .filter(x => (!x.matched || curPageState.showMatchedItems) && belongsToOwner(x.importSheetData))
         .map((sheetRow, ind) => {
             const showItem = (dc: IDisplayColumnInfo) => {
                 const field = dc.field;
