@@ -298,8 +298,17 @@ function displayExtraDbItems(pagePrms: IPageParms, curPageState: IPageStates) {
 
     const cmpSortField = curPageState.curPage.cmpSortField;
 
+    const selectedOwnersById = keyBy(curPageState.selectedOwners, 'ownerID');
+    const belongsToOwner = (data: IStringDict) => {
+        const dataOwner = data['ownerID'];
+        if (dataOwner) {
+            return !!selectedOwnersById[dataOwner];
+        }
+        return true;
+    }
+
     const dbDsp = curPageState.pageDetails.dbMatchData.filter(x => x.dataType === 'DB').map(x => x as IDbRowMatchData)
-        .filter(x => !x.matchedToKey).map((dbRow, ind) => {
+        .filter(x => !x.matchedToKey && belongsToOwner(x.dbItemData)).map((dbRow, ind) => {
             return {
                 sort: dbRow.dbItemData[cmpSortField], dsp: <tr key={ind}>{                    
                     dspCi.map((dc, ck) => {
