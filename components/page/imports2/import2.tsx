@@ -300,8 +300,18 @@ function displayExtraDbItems(pagePrms: IPageParms, curPageState: IPageStates) {
                                 dspVal = <div>
                                     <div>{dspVal}</div>
                                     <button onClick={() => {
-                                        const id = dbRow.dbItemData[curPageState.curPage.dbItemIdField];
-                                        console.log('deleting ', id, curPageState.curPage.dbItemIdField, dbRow.dbItemData);
+                                        const idField = curPageState.curPage.dbItemIdField;
+                                        const id = dbRow.dbItemData[idField];                                        
+                                        curPageState.curPage.deleteById(id as string).then(r => {
+                                            console.log(`affected for ${id}`, r.affectedRows);
+                                            pagePrms.dispatchCurPageState(state => ({
+                                                ...state,  
+                                                pageDetails: {
+                                                    ...state.pageDetails,
+                                                    dbMatchData: state.pageDetails.dbMatchData.filter(x=>x.dbItemData[idField] !== id),
+                                                }
+                                            }))
+                                        })
                                     }}>Delete</button>
                                 </div>
                             }
