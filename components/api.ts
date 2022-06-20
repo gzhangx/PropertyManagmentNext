@@ -267,7 +267,9 @@ export async function getHouseInfo(): Promise<IHouseInfo[]> {
 
 export async function getPaymentRecords(): Promise<IPayment[]> {
     return sqlGet({
-        fields: [ 'receivedDate',
+        fields: [
+            'paymentID',
+            'receivedDate',
         'receivedAmount',
         'houseID',
         'paymentTypeID',

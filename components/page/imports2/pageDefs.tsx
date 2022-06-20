@@ -46,6 +46,7 @@ export function getPageDefs() {
                 name: field,
             })),
             dbLoader: () => getPaymentRecords().then(r => r as any as IDbSaveData[]),
+            dbItemIdField: 'paymentID',
             sheetMustExistField: 'receivedDate',
             rowComparers: paymentLoader.PaymentRowCompare,
             dbInserter: inserter.PaymentDbInserter,

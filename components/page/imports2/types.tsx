@@ -6,6 +6,7 @@ import { ISqlDeleteResponse } from '../../types';
 export type ALLFieldNames = '' | 'address' | 'city' | 'zip' | 'ownerName' | 'receivedDate' | 'receivedAmount' | 'amount' | 'houseID' | 'paymentTypeID' | 'paymentProcessor' | 'notes'
     | 'startDate' | 'endDate' | 'monthlyRent' | 'deposit' | 'petDeposit' | 'otherDeposit' | 'comment' | 'tenant1' | 'tenant2' | 'tenant3' | 'tenant4' | 'tenant'
     | 'firstName' | 'lastName' | 'fullName' | 'phone' | 'email' | 'date'
+    | 'paymentID'
     | 'maintenanceImportAddress' //special processing fields
     ;
 
@@ -48,6 +49,7 @@ export interface IPageInfo {
     displayColumnInfo: IDisplayColumnInfo[];
 
     dbLoader?: (selOwners: IOwnerInfo[]) => Promise<IDbSaveData[]>;
+    dbItemIdField?: ALLFieldNames;
     extraProcessSheetData?: (pageData: ISheetRowData[], pageState: IPageStates) => Promise<ISheetRowData[]>;
     sheetMustExistField?: ALLFieldNames;
 
