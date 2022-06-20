@@ -49,6 +49,7 @@ export function getPageDefs() {
             idField: 'receivedDate',
             rowComparers: paymentLoader.PaymentRowCompare,
             dbInserter: inserter.PaymentDbInserter,
+            deleteById: paymentLoader.deleteById,
             displayItem: paymentLoader.displayItem,
             shouldShowCreateButton: colInfo => colInfo.field === 'receivedAmount',
             reloadEntity: (params: IPageParms) => {

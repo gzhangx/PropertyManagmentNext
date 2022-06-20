@@ -2,6 +2,8 @@
 import { IHouseInfo, IPayment } from '../../../reportTypes';
 import { IDbInserter, IDbSaveData, IRowComparer, YYYYMMDDFormater, IPageStates, ISheetRowData, ALLFieldNames, IPageParms } from '../types'
 
+import * as api from '../../../api';
+
 export const PaymentRowCompare: IRowComparer[] = [
     {
         name: 'Payment Row Comparer',
@@ -56,6 +58,10 @@ export function displayItem(params: IPageParms, state: IPageStates, sheetRow: IS
 }
 
 
+
+export async function deleteById(id: string) {
+    return api.deleteById('rentPaymentInfo', id);
+}
 /*
 import { IPaymentWithArg, IPageInfo, IPageStates, IPageParms } from '../types'
 import { googleSheetRead, getOwners, sqlAdd, getHouseInfo, getPaymentRecords } from '../../../api'

@@ -1,12 +1,13 @@
 
 import axios, { Method } from 'axios';
-import { IGetModelReturn, TableNames } from './types'
+import { IGetModelReturn, TableNames, ISqlDeleteResponse  } from './types'
 
 export interface ISiteConfig {
     baseUrl: string;
     googleClientId: string;
     redirectUrl: string;
 }
+
 let sitConfig:ISiteConfig = null;
 export async function getConfig() : Promise<ISiteConfig> {
     const site = "local1" || process.env.SITE;
@@ -180,7 +181,7 @@ export async function sqlAdd(table: TableNames, fields: { [key: string]: string 
     })
 }
 
-export function sqlDelete(table: TableNames, id: string): Promise<{ affectedRows : number}>{
+export function sqlDelete(table: TableNames, id: string): Promise<ISqlDeleteResponse>{
     return doPost(`sql/del`, {
         table, id,
     })
@@ -346,6 +347,10 @@ export async function getTenants(ownerInfos: IOwnerInfo[]): Promise<ITenantInfo[
     } as ISqlRequest).then((r: { rows: ITenantInfo[] }) => {
         return r.rows;
     });
+}
+
+export async function deleteById(tableName: TableNames, id: string) {
+    return sqlDelete(tableName, id);
 }
 
 

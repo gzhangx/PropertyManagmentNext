@@ -1,6 +1,7 @@
 
 import { IOwnerInfo, IHouseInfo, IPayment, ITenantInfo } from '../../reportTypes';
 import moment from 'moment';
+import { ISqlDeleteResponse } from '../../types';
 
 export type ALLFieldNames = '' | 'address' | 'city' | 'zip' | 'ownerName' | 'receivedDate' | 'receivedAmount' | 'amount' | 'houseID' | 'paymentTypeID' | 'paymentProcessor' | 'notes'
     | 'startDate' | 'endDate' | 'monthlyRent' | 'deposit' | 'petDeposit' | 'otherDeposit' | 'comment' | 'tenant1' | 'tenant2' | 'tenant3' | 'tenant4' | 'tenant'
@@ -52,6 +53,7 @@ export interface IPageInfo {
 
     rowComparers?: IRowComparer[];
     dbInserter?: IDbInserter;
+    deleteById?: (id: string) => Promise<ISqlDeleteResponse>;
     shouldShowCreateButton?: (colInfo: IDisplayColumnInfo) => boolean;
     displayItem?: (params: IPageParms, state: IPageStates, sheetRow: ISheetRowData, field: ALLFieldNames) => JSX.Element;
     displayDbExtra?: (params: IPageParms, state: IPageStates, dbMatch: IDbRowMatchData, field: ALLFieldNames) => JSX.Element | number| string;

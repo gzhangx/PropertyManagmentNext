@@ -295,6 +295,17 @@ function displayExtraDbItems(pagePrms: IPageParms, curPageState: IPageStates) {
                         if (curPageState.curPage.displayDbExtra) {
                             dspVal = curPageState.curPage.displayDbExtra(pagePrms, curPageState, dbRow, dc.field);
                         }
+                        if (curPageState.curPage.deleteById) {
+                            if (dc.field === curPageState.curPage.idField) {
+                                dspVal = <div>
+                                    <div>{dspVal}</div>
+                                    <button onClick={() => {
+                                        const id = dbRow.dbItemData[dc.field];
+                                        console.log('deleting ', id, dc.field, dbRow.dbItemData);
+                                    }}>Delete</button>
+                                </div>
+                            }
+                        }
                         return <td key={ck}>{
                             dspVal
                         }</td>
