@@ -9,7 +9,7 @@ import {keyBy, omit, mapValues} from 'lodash'
 import React from 'react';
 
 import { getBasicPageDefs } from './loads/basicPageInfo'
-import { ALLFieldNames } from '../imports/types';
+import { ALLFieldNames } from './types';
 
 import * as lease from './loads/lease'
 import * as tenantLoad from './loads/tenants'

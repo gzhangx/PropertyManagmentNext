@@ -3,7 +3,6 @@ import { OwnerList } from '../components/page/reports/ownerList'
 import { HouseList } from '../components/page/reports/houseList'
 import { RentpaymentInfo } from '../components/page/reports/rentpaymentInfo'
 import { CashFlowReport } from '../components/page/reports/cashflow'
-import { DevelopPage } from '../pages/util/dev'
 import * as dev2 from '../pages/util/dev2'
 import GoogleAuth from '../pages/google/googleAuth'
 
@@ -25,11 +24,6 @@ const allSections = [
             {
                 name: 'Comp Report',
                 page: <MonthlyComp/>,
-            },
-            {
-                name: 'Develop (old dontuse)',
-                page: <DevelopPage />,
-                selected: false,
             },
             {
                 name: 'Develop 2',
