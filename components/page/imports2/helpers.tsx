@@ -278,6 +278,7 @@ function stdProcessSheetData(sheetData: ICompRowData[], pageState: IPageStates) 
                 case 'monthlyRent':
                 case 'deposit':
                 case 'petDeposit':
+                case 'otherDeposit':
                 case 'amount':
                     if (v === null || v === undefined) {
                         acc[fieldName] = 'invalid(null)';

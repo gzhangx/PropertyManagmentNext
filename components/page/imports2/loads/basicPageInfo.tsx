@@ -6,7 +6,7 @@ export function getBasicPageDefs() {
             pageName: 'Lease Info',
             range: 'A1:M',
             fieldMap: [
-                '',
+                'lIdNotUsed',
                 'address',
                 'startDate',
                 'endDate',
@@ -15,6 +15,9 @@ export function getBasicPageDefs() {
                 'petDeposit',
                 'otherDeposit',
                 'comment',
+                'reasonOfTermination',
+                'terminationDate',
+                'terminationComments',
                 'tenant1',
                 'tenant2',
                 'tenant3',
