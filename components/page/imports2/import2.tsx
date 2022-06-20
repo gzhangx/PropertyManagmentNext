@@ -261,13 +261,13 @@ function displayItems(pagePrms: IPageParms, curPageState: IPageStates) {
         return true;
     }
     const sheetDsp = curPageState.pageDetails.dataRows
-        .filter(x => !x.matched)
+        .filter(x => !x.matched && belongsToOwner(x.importSheetData))
         .map((sheetRow, ind) => {
             const showItem = (dc: IDisplayColumnInfo) => {
                 const field = dc.field;
                 let dspRes = null;
                 if (curPageState.curPage.displayItem)
-                    dspRes = (curPageState.curPage.displayItem(pagePrms, curPageState, sheetRow, field, belongsToOwner));
+                    dspRes = (curPageState.curPage.displayItem(pagePrms, curPageState, sheetRow, field));
                     
                 if (!dspRes) {
                     dspRes = (stdTryDisplayItemForCreate(pagePrms, curPageState, sheetRow, dc, belongsToOwner) || sheetRow.displayData[field]);
