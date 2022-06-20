@@ -257,6 +257,8 @@ function stdProcessSheetData(sheetData: ICompRowData[], pageState: IPageStates) 
                             const house = pageState.housesById[acc['houseID']];
                             if (house) {
                                 acc[fieldName] = house.address;
+                            } else {
+                                acc[fieldName] = `${v} Unable to match house`;
                             }
                         }
                         break;
