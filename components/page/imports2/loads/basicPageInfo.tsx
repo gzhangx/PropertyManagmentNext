@@ -53,19 +53,6 @@ export function getBasicPageDefs() {
         paymentRecord: {
             pageName: 'PaymentRecord',
             range: 'A1:F',
-            fieldMap: [
-                'receivedDate',
-                'receivedAmount',
-                'houseID',
-                'paymentTypeID',
-                'paymentProcessor',
-                //'paidBy',
-                'notes',
-                //'created',
-                //'modified',                
-                //'month',                
-                //'ownerID',
-            ],
             idField: 'receivedDate',
         },
         houseInfo: {
