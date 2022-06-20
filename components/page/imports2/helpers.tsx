@@ -43,7 +43,7 @@ async function loadPageSheetDataRaw(sheetId: string, curPage: IPageInfo): Promis
                 matcherName: '',
                 displayData: {},
             } as ISheetRowData;
-        }).filter(x => x.importSheetData[curPage.idField]);
+        }).filter(x => x.importSheetData[curPage.sheetMustExistField]);
         return {
             colNames,
             dataRows,

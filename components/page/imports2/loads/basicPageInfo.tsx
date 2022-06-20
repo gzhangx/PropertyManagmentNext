@@ -48,7 +48,7 @@ export function getBasicPageDefs() {
                 },
                 
             ],
-            idField: 'address',
+            sheetMustExistField: 'address',
         } as IPageInfo,
         paymentRecord: {
             pageName: 'PaymentRecord',
@@ -115,7 +115,7 @@ export function getBasicPageDefs() {
                     name: 'comment'
                 },
             ],
-            idField: 'fullName',
+            sheetMustExistField: 'fullName',
         } as IPageInfo,
         maintenceRecords: {
             pageName: 'MaintainessRecord',
@@ -155,7 +155,7 @@ export function getBasicPageDefs() {
                     name: 'Worker',
                 },
             ],
-            idField:'date',
+            sheetMustExistField:'date',
         } as IPageInfo,
     }
 }

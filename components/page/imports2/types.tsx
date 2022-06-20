@@ -49,7 +49,7 @@ export interface IPageInfo {
 
     dbLoader?: (selOwners: IOwnerInfo[]) => Promise<IDbSaveData[]>;
     extraProcessSheetData?: (pageData: ISheetRowData[], pageState: IPageStates) => Promise<ISheetRowData[]>;
-    idField?: ALLFieldNames;
+    sheetMustExistField?: ALLFieldNames;
 
     rowComparers?: IRowComparer[];
     dbInserter?: IDbInserter;

@@ -296,7 +296,7 @@ function displayExtraDbItems(pagePrms: IPageParms, curPageState: IPageStates) {
                             dspVal = curPageState.curPage.displayDbExtra(pagePrms, curPageState, dbRow, dc.field);
                         }
                         if (curPageState.curPage.deleteById) {
-                            if (dc.field === curPageState.curPage.idField) {
+                            if (dc.field === curPageState.curPage.sheetMustExistField) {
                                 dspVal = <div>
                                     <div>{dspVal}</div>
                                     <button onClick={() => {

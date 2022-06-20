@@ -46,7 +46,7 @@ export function getPageDefs() {
                 name: field,
             })),
             dbLoader: () => getPaymentRecords().then(r => r as any as IDbSaveData[]),
-            idField: 'receivedDate',
+            sheetMustExistField: 'receivedDate',
             rowComparers: paymentLoader.PaymentRowCompare,
             dbInserter: inserter.PaymentDbInserter,
             deleteById: paymentLoader.deleteById,
@@ -93,7 +93,7 @@ export function getPageDefs() {
                     name: 'Owner'
                 },
             ],
-            idField: 'address',                       
+            sheetMustExistField: 'address',                       
         },
         {
             ...basicDef.lease,
