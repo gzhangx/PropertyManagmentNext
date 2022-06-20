@@ -206,10 +206,14 @@ export function ImportPage() {
 }
 
 
-function stdTryDisplayItemForCreate(params: IPageParms, state: IPageStates, sheetRow: ISheetRowData, dc: IDisplayColumnInfo): JSX.Element {
+function stdTryDisplayItemForCreate(params: IPageParms, state: IPageStates, sheetRow: ISheetRowData, dc: IDisplayColumnInfo,
+    belongsToOwnerCheck: (data:IStringDict)=>boolean
+): JSX.Element {
     const field: ALLFieldNames = dc.field;
     const showCreateBtn = state.curPage.shouldShowCreateButton && state.curPage.shouldShowCreateButton(dc);
-    if (state.curPage.dbInserter && showCreateBtn && !sheetRow.invalid) {
+    
+    const belongsToOwner = belongsToOwnerCheck(sheetRow.importSheetData);
+    if (state.curPage.dbInserter && showCreateBtn && !sheetRow.invalid && belongsToOwner) {
         const itemVal = sheetRow.displayData[field];
         return <button disabled={!sheetRow.needUpdate || !!sheetRow.invalid} onClick={async () => {
             //setProgressStr('processing')
@@ -248,6 +252,14 @@ function displayItems(pagePrms: IPageParms, curPageState: IPageStates) {
 
     
     const cmpSortField = curPageState.curPage.cmpSortField;
+    const selectedOwnersById = keyBy(curPageState.selectedOwners, 'ownerID');
+    const belongsToOwner = (data: IStringDict) =>{
+        const dataOwner = data['ownerID'];
+        if (dataOwner) {
+            return !!selectedOwnersById[dataOwner];
+        }
+        return true;
+    }
     const sheetDsp = curPageState.pageDetails.dataRows
         .filter(x => !x.matched)
         .map((sheetRow, ind) => {
@@ -255,10 +267,10 @@ function displayItems(pagePrms: IPageParms, curPageState: IPageStates) {
                 const field = dc.field;
                 let dspRes = null;
                 if (curPageState.curPage.displayItem)
-                    dspRes = (curPageState.curPage.displayItem(pagePrms, curPageState, sheetRow, field));
+                    dspRes = (curPageState.curPage.displayItem(pagePrms, curPageState, sheetRow, field, belongsToOwner));
                     
                 if (!dspRes) {
-                    dspRes = (stdTryDisplayItemForCreate(pagePrms, curPageState, sheetRow, dc) || sheetRow.displayData[field]);
+                    dspRes = (stdTryDisplayItemForCreate(pagePrms, curPageState, sheetRow, dc, belongsToOwner) || sheetRow.displayData[field]);
                 }
                 return dspRes;
             }
