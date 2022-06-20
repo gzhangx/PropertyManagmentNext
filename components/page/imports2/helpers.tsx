@@ -96,6 +96,7 @@ export async function getHouseState() {
     return {
         houses: hi,
         housesByAddress: keyBy(hi, h => lutil.getStdLowerName(h.address)),
+        housesById: keyBy(hi, h => h.houseID),
     }
 }
 
@@ -148,6 +149,10 @@ export async function genericPageLoader(prms: IPageParms, pageState: IPageStates
         });
     }
     pageDetails.dbMatchData = dbMatchData;
+    stdProcessSheetData(dbMatchData, {
+        ...pageState,
+        ...hi,
+    })
     //console.log("dbData and sheetDatas", dbData, sheetDatas)
     if (prms) prms.dispatchCurPageState(state => {
         return {
@@ -236,14 +241,26 @@ function stdDisplayField(fieldNames: ALLFieldNames[], obj: IStringDict, pageStat
 }
 
 
-function stdProcessSheetData(sheetData: ISheetRowData[], pageState: IPageStates) : IStringDict[] {
+function stdProcessSheetData(sheetData: ICompRowData[], pageState: IPageStates) : IStringDict[] {
     const fieldNames = pageState.curPage.fieldMap.filter(f => f);
     return sheetData.map(sd => {
-        const acc = sd.importSheetData;
+        const acc = (sd as ISheetRowData).importSheetData || (sd as IDbRowMatchData).dbItemData;        
         fieldNames.forEach(fieldName => {            
             let v = acc[fieldName];
             switch (fieldName) {
                 case 'address':
+                    if (!v) {
+                        if (!acc['houseID']) {
+                            sd.invalid = 'house';
+                            acc.invalidDesc = 'house';
+                        } else {
+                            const house = pageState.housesById[acc['houseID']];
+                            if (house) {
+                                acc[fieldName] = house.address;
+                            }
+                        }
+                        break;
+                    }
                     const house = getHouseByAddress(pageState, v as string);                    
                     if (house) {
                         acc['houseID'] = house.houseID;

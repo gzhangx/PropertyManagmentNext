@@ -79,14 +79,16 @@ export interface ISheetRowData {
     matchToKey: string;
     matched: IDbSaveData;
     matcherName: string;
-    displayData: IStringDict;    
+    displayData: IStringDict;   
 }
 
 export interface IDbRowMatchData {
     dbItemData: IDbSaveData;
     dataType: ROWDataType;
     matchedToKey: string;
-    displayData: IStringDict;
+    displayData?: IStringDict;
+
+    invalid?: string; //not used, matching ISheetRowData
 }
 
 export type ICompRowData = ISheetRowData | IDbRowMatchData;
@@ -107,7 +109,8 @@ export interface IPageStates {
     existingOwnersByName: { [ownerName: string]: IOwnerInfo };
     existingOwnersById: { [ownerId: number]: IOwnerInfo };
     missingOwnersByName: { [ownerName: string]: boolean };
-    housesByAddress: { [ownerName: string]: IHouseInfo };
+    housesByAddress: { [address: string]: IHouseInfo };
+    housesById: { [houseID: string]: IHouseInfo };
     houses: IHouseInfo[];
     payments: IPaymentWithArg[];
     tenants: ITenantInfo[];
