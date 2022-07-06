@@ -13,7 +13,7 @@ export async function getConfig() : Promise<ISiteConfig> {
     const site = "local1" || process.env.SITE;
     if (sitConfig) return sitConfig;
     sitConfig = {
-        baseUrl: 'http://192.168.1.41/pmapi',
+        baseUrl: 'http://192.168.1.40/pmapi',
         redirectUrl: 'http://localhost:3000',
         googleClientId: '',
     };    
