@@ -166,13 +166,7 @@ export function CashFlowReport(props) {
                                 </tr>
                             })
                         }
-
-                        {
-                            monAddr.houseAry.map(house => {
-                                return <tr><td>1111{ house.address}</td></tr>
-                                
-                            })
-                        }
+                        
                         <tr>
 
                             <td className='tdLeftSubCategoryHeader'>Sub Total:

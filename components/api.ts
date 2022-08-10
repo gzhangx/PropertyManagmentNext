@@ -308,9 +308,11 @@ export async function getPaymnents(ownerInfos: IOwnerInfo[]) : Promise<IPayment[
             val: ownerInfos.map(o=>o.ownerID),
         }]
     }).then((r: {rows:IPayment[]})=>{
-        return r.rows.map(r=>{
+        return r.rows.map(r => {
+            const paymentTypeName = r.paymentTypeName || r.paymentTypeID;
             return {
                 ...r,
+                paymentTypeName,
                 date: r.receivedDate,
                 amount: r.receivedAmount,
             }
