@@ -65,6 +65,7 @@ export interface IExpenseData {
     date: string;
     description: string;
     expenseCategoryName: string;
+    expenseCategoryId: string; //this could be the name in the new realm
     houseID: string;
     month: string;
 }

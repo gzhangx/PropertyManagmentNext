@@ -207,10 +207,12 @@ export async function getMaintenanceReport(ownerInfos: IOwnerInfo[]): Promise<IE
         }],
         //groupByArray: [{ field: 'month' }, { field: 'houseID' }, { field: 'address' }, { field: 'expenseCategoryID' }, { field: 'expenseCategoryName'},{field:'displayOrder'}]
     }).then((r: { rows: IExpenseData[]})=>{
-        return r.rows.map(r=>{
+        return r.rows.map(r => {
+            const expenseCategoryName = r.expenseCategoryName || r.expenseCategoryId;
             return {
                 ...r,
-                category: r.expenseCategoryName,
+                expenseCategoryName,
+                category: expenseCategoryName,
             }
         });
     });    
