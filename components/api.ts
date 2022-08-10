@@ -287,7 +287,13 @@ export async function getPaymentRecords(): Promise<IPayment[]> {
             //val: ownerInfos.map(o=>o.ownerID),
         //}],        
     }).then((r: { rows: IPayment[]}) => {
-        return r.rows.filter(x=>x.houseID);
+        return r.rows.filter(x => x.houseID).map(p => {
+            const paymentTypeName = p.paymentTypeName || p.paymentTypeID;
+            return {
+                ...p,
+                paymentTypeName,
+            }
+        })
     });    
 }
 

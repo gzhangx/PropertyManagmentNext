@@ -12,6 +12,7 @@ export function CashFlowReport(props) {
     
     const monAddr = getPaymentsByMonthAddress(payments, paymentCalcOpts);
 
+    console.log(monAddr)
     const calculatedMaintData = getMaintenanceData(rawExpenseData, paymentCalcOpts);
     const [showDetail, setShowDetail] = useState(null);
     const [showExpenseDetail, setShowExpenseDetail] = useState(null);
@@ -163,6 +164,13 @@ export function CashFlowReport(props) {
                                         })
                                     }
                                 </tr>
+                            })
+                        }
+
+                        {
+                            monAddr.houseAry.map(house => {
+                                return <tr><td>1111{ house.address}</td></tr>
+                                
                             })
                         }
                         <tr>
