@@ -8,11 +8,12 @@ import {
 
 import { sideBarContentLookup} from '../components/rootContents'
 import { useEffect } from 'react'
+import { NAVPrefix } from '../components/nav/consts'
 export default function () {
-    const router = useRouter()
-    const currentPath = router.query.route;
+    const router = useRouter()    
     const rs = useRootPageContext();
-    
+    const path = (new RegExp(`${NAVPrefix}\/(.*)$`).exec(router.asPath) || [])[1];
+    const currentPath = path || router.query.route;
     useEffect(() => {
         if (currentPath && typeof currentPath === 'string') {
             if (sideBarContentLookup[currentPath]) {

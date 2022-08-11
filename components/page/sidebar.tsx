@@ -6,6 +6,8 @@ import {
     activeSideBarItem, isSidebarItemActive,
 } from "../states/RootState"
 
+import { NAVPrefix } from '../nav/consts'
+
 
 export interface IMainSideBarItem {
     name: string;
@@ -53,7 +55,11 @@ export function MainSideBar(props : IMainSideBarProps) {
         //const active = rs.sideBarStates[getSideBarCurrentActiveItemKey()] === itemName;
         const active = isSidebarItemActive(rs, itm.name);
 
-        return <Link href={`/${itm.name}`}>
+        return <Link href={`/${NAVPrefix}/${itm.name}`} key={ind}>
+            <a className="collapse-item">{itm.displayName} {active && <i className="fas fa-anchor"></i>}</a>
+        </Link>
+
+        return <Link href={`${NAVPrefix}/${itm.name}`} >
             <a className="collapse-item" href={`/${itm.name}`} key={ind}>{itm.displayName} {active && <i className="fas fa-anchor"></i>}</a>
         </Link>
         return <a className="collapse-item" href="#" onClick={getLinkOnClick(itm.name) as any} key={ind}>{itm.displayName} {active && <i className="fas fa-anchor"></i>    }</a>;
