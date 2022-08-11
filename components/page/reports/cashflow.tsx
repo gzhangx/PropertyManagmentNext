@@ -12,7 +12,7 @@ export function CashFlowReport(props) {
     
     const monAddr = getPaymentsByMonthAddress(payments, paymentCalcOpts);
 
-    console.log(monAddr)
+
     const calculatedMaintData = getMaintenanceData(rawExpenseData, paymentCalcOpts);
     const [showDetail, setShowDetail] = useState(null);
     const [showExpenseDetail, setShowExpenseDetail] = useState(null);
@@ -192,11 +192,8 @@ export function CashFlowReport(props) {
                                         monthes.map((mon, key) => {
                                             const catMon = calculatedMaintData.getCatMonth(cat, mon);
                                             return <td key={key} className="tdCenter" onClick={() => {
-                                                if (catMon.amountCalcParts) {
-                                                    console.log('catMon')
-                                                    console.log(catMon)
+                                                if (catMon.amountCalcParts) {                                                    
                                                     const msgs = catMon.amountCalcParts.reduce((acc, r) => {
-                                                        console.log(r)
                                                         if (r.calcInfo) {
                                                             r.calcInfo.forEach(i => acc.push({
                                                                 debugText: i.info

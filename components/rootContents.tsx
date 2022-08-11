@@ -57,16 +57,17 @@ const allSections = [
 
 
 const { sections, sideBarContentLookup } = allSections.reduce((acc, sec) => {
-    const name = sec.name;        
+    const name = sec.name;
+    const getPgName = (p: {name: string}) => `${name}:${p.name}`.replace(/ /g, '');
     const section = {
         name,
         displayName: name,
-        pages: sec.pages.map(p => ({ name: `${name}:${p.name}`, displayName: p.name, selected: p.selected })),
+        pages: sec.pages.map(p => ({ name: getPgName(p), displayName: p.name, selected: p.selected })),
     }
     acc.sectionsByName[name] = section;
     acc.sections.push(section);
     acc.sideBarContentLookup = sec.pages.reduce((acc, p) => {
-        const pname = `${name}:${p.name}`;
+        const pname = getPgName(p);
         acc[pname] = p.page;
         return acc;
     }, acc.sideBarContentLookup);

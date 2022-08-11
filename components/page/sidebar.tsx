@@ -1,7 +1,10 @@
 import Link from 'next/link'
 import { PageNavTab } from './navTab';
 import { useEffect } from 'react'
-import { useRootPageContext, getSideBarItemKey, getSideBarCurrentActiveItemKey } from "../states/RootState"
+import {
+    useRootPageContext,
+    activeSideBarItem, isSidebarItemActive,
+} from "../states/RootState"
 
 
 export interface IMainSideBarItem {
@@ -26,36 +29,35 @@ export function MainSideBar(props : IMainSideBarProps) {
         props.sections.forEach(section => {
             section.pages.forEach(page => {
                 if (page.selected) {
-                    const itemName = getSideBarItemKey(page.name);            
-                    rs.sideBarStates[getSideBarCurrentActiveItemKey()] = itemName;
-                    rs.sideBarStates[itemName] = true;
-                    rs.setSideBarStates({ ...rs.sideBarStates });
+                    //const itemName = getSideBarItemKey(page.name);            
+                    //rs.sideBarStates[getSideBarCurrentActiveItemKey()] = itemName;                    
+                    //rs.setSideBarStates({ ...rs.sideBarStates });
+                    activeSideBarItem(rs, page.name);
                 }
             })
         })
     },[]);
     const getLinkOnClick = (name:string)=>{
-        const itemName = getSideBarItemKey(name);
+        //const itemName = getSideBarItemKey(name);
         return (e:MouseEvent)=>{
             e.preventDefault();
-            const curActiveName = rs.sideBarStates[getSideBarCurrentActiveItemKey()] as string;
-            if (curActiveName) {
-                rs.sideBarStates[rs.sideBarStates[getSideBarCurrentActiveItemKey()] as string] = false;
-            }
+            //const curActiveName = rs.sideBarStates[getSideBarCurrentActiveItemKey()] as string;
             
-            rs.sideBarStates[getSideBarCurrentActiveItemKey()] = itemName;
-            rs.sideBarStates[itemName] = true;
-            rs.setSideBarStates({ ...rs.sideBarStates });
+            //rs.sideBarStates[getSideBarCurrentActiveItemKey()] = itemName;
+            //rs.setSideBarStates({ ...rs.sideBarStates });
+            activeSideBarItem(rs, name);
         }
     }
     const getItemLink = (itm: IMainSideBarItem, ind:number) => {
-        const itemName = getSideBarItemKey(itm.name);
-        const active = rs.sideBarStates[getSideBarCurrentActiveItemKey()] === itemName;
+        //const itemName = getSideBarItemKey(itm.name);
+        //const active = rs.sideBarStates[getSideBarCurrentActiveItemKey()] === itemName;
+        const active = isSidebarItemActive(rs, itm.name);
         return <a className="collapse-item" href="#" onClick={getLinkOnClick(itm.name) as any} key={ind}>{itm.displayName} {active && <i className="fas fa-anchor"></i>    }</a>;
     }
     const getItemLinkSimple = (name: string, ind:number) => {
-        const itemName = getSideBarItemKey(name);
-        const active = rs.sideBarStates[getSideBarCurrentActiveItemKey()] === itemName;
+        //const itemName = getSideBarItemKey(name);
+        //const active = rs.sideBarStates[getSideBarCurrentActiveItemKey()] === itemName;
+        const active = isSidebarItemActive(rs, name);
         return <a className="collapse-item" href="#" onClick={getLinkOnClick(name) as any} key={ind}>{name} {active && <i className="fas fa-anchor"></i>    }</a>;
     }
     return <ul className="navbar-nav bg-gradient-primary sidebar sidebar-dark accordion" id="accordionSidebar">
@@ -82,23 +84,25 @@ export function MainSideBar(props : IMainSideBarProps) {
             Interface
         </div>
 
-        <PageNavTab name="Components"
-            header={
-                <>
-                    <i className="fas fa-fw fa-cog"></i>
-                    <span>Components</span>
-                </>
-            }
-            body={
-                <>
-                    <h6 className="collapse-header">Custom Components:</h6>                    
-                    {
-                        ['Developers', 'Admins'].map(getItemLinkSimple)
-                    }
-                    <a className="collapse-item" href="#">NA</a>
-                </>
-            }
-        ></PageNavTab>
+        {
+            false && <PageNavTab name="Components"
+                header={
+                    <>
+                        <i className="fas fa-fw fa-cog"></i>
+                        <span>Components</span>
+                    </>
+                }
+                body={
+                    <>
+                        <h6 className="collapse-header">Custom Components:</h6>
+                        {
+                            ['Developers', 'Admins'].map(getItemLinkSimple)
+                        }
+                        <a className="collapse-item" href="#">NA</a>
+                    </>
+                }
+            ></PageNavTab>
+        }
 
         {
             props.sections.map((section, pkey) => {
