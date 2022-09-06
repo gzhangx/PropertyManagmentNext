@@ -120,14 +120,14 @@ export default function MonthlyComp() {
                     lastName: r.workerLastName,
                 }
             }), x => x.workerID);
-            const workerOpts = uniqBy(Object.values(workerComps), x => x.workerID).map((w, ind) => {
-                return {
-                    ...w,
-                    value: w.workerID,
-                    label: w.firstName ?`${w.firstName} ${w.lastName}` : w.workerID,
+            const workerOpts = Object.keys(workerComps).map((workerID, ind) => {
+                return {                    
+                    workerID,
+                    label: workerID,
                     selected: ind === 0,
                 } as IWorkerOptions
-            })
+            });
+            
             const all = uniqBy(workerOpts.concat(resMWWkr.map(r => {
                 return {
                     ...r,
