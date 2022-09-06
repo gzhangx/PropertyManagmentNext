@@ -122,6 +122,7 @@ export function PaymentExpenseStateWrapper(props: {
                 }
             }
         }).catch(err => {
+            console.log('failed to get owneres, sending to login', err);
             setLoginError(err.error || err.message);
             router.push('/Login')
         });
