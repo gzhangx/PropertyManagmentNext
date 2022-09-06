@@ -115,7 +115,8 @@ export default function Login(props) {
                                                 Login
                                             </a>
                                             <hr />
-                                            <GoogleAuth/>
+                                            { //<GoogleAuth /> comment out
+                                            }
                                             <a href="#" className="btn btn-facebook btn-user btn-block"
                                                 onClick={commingSoon}
                                             >
