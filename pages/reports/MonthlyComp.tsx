@@ -141,7 +141,7 @@ export default function MonthlyComp() {
             });
             setWorkers(all)
             if (workerOpts.length) {
-                setCurWorker(workerOpts.find(w => w.selected));
+                setCurWorker(workerToOptin(workerOpts.find(w => w.selected)));
             }
         });
         sqlGet({
