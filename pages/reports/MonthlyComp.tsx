@@ -229,17 +229,19 @@ export default function MonthlyComp() {
         {
             true && <div>
                 <table className='table'>
+                    <thead>
+                        <tr>
+                            {
+                                csvContent[0] ? csvContent[0].map((itm, key) => <td key={key}><b>{itm}</b></td>):null
+                            }
+                        </tr>
+                    </thead>
+                    <tbody>
                 {
                         csvContent.map((csvLine, key) => {
                         
-                            return key === 0 ?
-                                <thead key={key}>
-                                    <tr>
-                                    {
-                                            csvLine.map((itm, key) => <td key={key}><b>{itm}</b></td>)
-                                        }
-                                    </tr>
-                                </thead>
+                            return key === 0 ? null
+                                
                                 :
                                 <tr key={key}>
                                     {
@@ -247,7 +249,8 @@ export default function MonthlyComp() {
                                     }
                                 </tr>
                         })
-                    }
+                        }
+                    </tbody>
                 </table>
             </div>
         }        
