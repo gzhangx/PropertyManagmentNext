@@ -176,6 +176,8 @@ export interface IIncomeExpensesContextValue {
     //setPageProps: (a: IPagePropsByTable) => void;
     selectedOwners: IOwnerInfo[];
     setSelectedOwners: (a: IOwnerInfo[]) => void;
+    loginError: string;
+    setLoginError: (s: string) => void;
     allOwners: IOwnerInfo[];
     rawExpenseData: IExpenseData[];
     payments: IPayment[];

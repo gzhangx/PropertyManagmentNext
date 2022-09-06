@@ -342,7 +342,11 @@ export async function deleteLeases(leaseID:string) {
 export async function getOwners() : Promise<IOwnerInfo[]> {
     return sqlGet({
         table:'ownerInfo',        
-    } as ISqlRequest).then((r: {rows:IOwnerInfo[]})=>{
+    } as ISqlRequest).then((r: { rows: IOwnerInfo[], error: string }) => {
+        if (r.error) {
+            console.log('has error', r);
+            throw r;
+        }
         return r.rows;
     });    
 }

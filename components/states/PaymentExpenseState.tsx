@@ -4,7 +4,9 @@ import { orderBy, sortBy, pick, uniqBy, uniq } from 'lodash';
 import { getMaintenanceReport, getPaymnents, getHouseAnchorInfo, getOwners } from '../api';
 
 import { IPagePropsByTable } from '../types'
-import {IEditTextDropdownItem} from '../generic/EditTextDropdown'
+import { IEditTextDropdownItem } from '../generic/EditTextDropdown'
+import { useRouter } from 'next/router'
+
 import {
     IPayment, IIncomeExpensesContextValue,
     IHouseInfo,
@@ -53,6 +55,7 @@ export function PaymentExpenseStateWrapper(props: {
     const rootCtx = useRootPageContext();
     const [selectedOwners, setSelectedOwners] = useState<IOwnerInfo[]>([]);
     const [allOwners, setAllOwners] = useState<IOwnerInfo[]>([]);
+    const [loginError, setLoginError] = useState<string>('');
     const [pageProps, setPageProps] = useState<IPagePropsByTable>({
         pagePropsTableInfo: {},
         reloadCount: 0,
@@ -74,6 +77,7 @@ export function PaymentExpenseStateWrapper(props: {
     const [selectedMonths, setSelectedMonths] = useState<IStringBoolMap>({});
     const [selectedHouses, setSelectedHouses] = useState<IStringBoolMap>({});
 
+    const router = useRouter();
 
     function addMonths(mons: string[]) {
         setAllMonths(orig => {
@@ -117,7 +121,10 @@ export function PaymentExpenseStateWrapper(props: {
                     setSelectedOwners([owners[0]]);
                 }
             }
-        })
+        }).catch(err => {
+            setLoginError(err.error || err.message);
+            router.push('/Login')
+        });
     }, [rootCtx.userInfo]);
 
     useEffect(() => {
@@ -216,6 +223,8 @@ export function PaymentExpenseStateWrapper(props: {
             pageProps,
             setPageProps,
         },
+        loginError,
+        setLoginError,
         selectedOwners, setSelectedOwners,
         rawExpenseData,
         payments,
