@@ -3,6 +3,9 @@ import { OwnerList } from '../components/page/reports/ownerList'
 import { HouseList } from '../components/page/reports/houseList'
 import { RentpaymentInfo } from '../components/page/reports/rentpaymentInfo'
 import { CashFlowReport } from '../components/page/reports/cashflow'
+
+import { MaintenanceRecords } from '../components/page/reports/maintenanceList'
+
 import * as dev2 from '../pages/util/dev2'
 import GoogleAuth from '../pages/google/googleAuth'
 
@@ -50,6 +53,10 @@ const allSections = [
             {
                 name: 'Payments',
                 page: <RentpaymentInfo/>,
+            },
+            {
+                name: 'MaintenanceRecords',
+                page: <MaintenanceRecords/>,
             },
         ]
     },
