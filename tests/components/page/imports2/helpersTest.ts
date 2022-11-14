@@ -5,7 +5,7 @@ describe('HelperTests', function(){
 
     it('should pass', ()=>{
         const test = {
-            dataType: 'Sheet' as ROWDataType,
+            dataType: 'Sheet',
             needUpdate: false,
             displayData: null,
             importSheetData: {
