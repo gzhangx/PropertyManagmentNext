@@ -137,6 +137,9 @@ export const GenCrud = (props: IGenGrudProps) => {
         setDspState('addNew');
     }
 
+    const forceUpdatePageProps = () => {
+        setPageProps({ ...pageProps,  reloadCount: (pageProps.reloadCount || 0) + 1 });
+    }
     const getFieldSort = (field:string) => {
         const opToDesc = {
             'asc': 'AS',
@@ -167,7 +170,8 @@ export const GenCrud = (props: IGenGrudProps) => {
                 set(pageProps.pagePropsTableInfo, [table, 'sorts'], fieldSorts.filter(s => s.op));
             }
             //setPageProps({ ...pageProps });
-            setPageProps(Object.assign({}, pageProps, { reloadCount: (pageProps.reloadCount || 0) + 1 }));
+            //setPageProps(Object.assign({}, pageProps, { reloadCount: (pageProps.reloadCount || 0) + 1 }));
+            forceUpdatePageProps();
         }
         return <a href='' onClick={onSortClick}>{shortDesc}</a>;
     };
@@ -222,20 +226,28 @@ export const GenCrud = (props: IGenGrudProps) => {
                                                 onSelectionChanged={val => {
                                                     fv.field = val.value;
                                                     setFilterVals(filterVals);
+                                                    forceUpdatePageProps();
                                                 }
                                                 }></EditTextDropdown></td>
                                             <td><EditTextDropdown items={filterOptions}
                                                 onSelectionChanged={val => {
                                                     fv.op = val.value;
                                                     setFilterVals(filterVals);
+                                                    forceUpdatePageProps();
                                                 }
                                                 }></EditTextDropdown></td>
                                             <td><input name={fv.field} onChange={v => {
                                                 fv.val = v.target.value;
+                                                setFilterVals(filterVals);
+                                                forceUpdatePageProps();
                                             }}></input></td>
                                             <td><a href="" onClick={e => {
                                                 e.preventDefault();
-                                                setFilterVals(filterVals.filter(f => f.id !== fv.id));
+                                                const newFilterVals = filterVals.filter(f => f.id !== fv.id);
+                                                setFilterVals(newFilterVals);
+                                                set(pageProps, [table, 'filters'], newFilterVals);
+                                                //setPageProps({ ...pageProps });
+                                                forceUpdatePageProps();
                                             }}>Remove</a></td>
                                         </tr>
                                     })
@@ -243,9 +255,13 @@ export const GenCrud = (props: IGenGrudProps) => {
                                 <tr><td><a href="" onClick={
                                     e => {
                                         e.preventDefault();
-                                        setFilterVals([...filterVals,
-                                        { id: v1(), table, op: defaultFilter.value as SQLOPS, val: '', field:'' }
-                                        ])
+                                        const newFilterVals = [...filterVals,
+                                        { id: v1(), table, op: defaultFilter.value as SQLOPS, val: '', field: '' }
+                                        ];
+                                        setFilterVals(newFilterVals);
+                                        set(pageProps, [table, 'filters'], newFilterVals);
+                                        //setPageProps({ ...pageProps });
+                                        forceUpdatePageProps();
                                     }
                                 } >Add</a></td>
                                     <td><a href="" onClick={
@@ -253,7 +269,8 @@ export const GenCrud = (props: IGenGrudProps) => {
                                             e.preventDefault();
                                             //console.log(filterVals);
                                             set(pageProps, [table, 'filters'], filterVals);
-                                            setPageProps({ ...pageProps });
+                                            //setPageProps({ ...pageProps });
+                                            forceUpdatePageProps();
                                             //setPageProps(Object.assign({}, pageProps, { reloadCount: (pageProps.reloadCount || 0) + 1 }));
                                         }
                                     } >Submit</a></td>
