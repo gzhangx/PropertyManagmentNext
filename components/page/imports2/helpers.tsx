@@ -167,7 +167,7 @@ export async function genericPageLoader(prms: IPageParms, pageState: IPageStates
 }
 
 //return true if not totally fixed
-function matchItems(sheetData: ISheetRowData[], dbMatchData: IDbRowMatchData[], cmp: IRowComparer): boolean {    
+export function matchItems(sheetData: ISheetRowData[], dbMatchData: IDbRowMatchData[], cmp: IRowComparer): boolean {
     const dbDataKeyed = dbMatchData.reduce((acc, d) => {
         const key = cmp.getRowKey(d.dbItemData, 'DB');
         let cont = acc[key];
