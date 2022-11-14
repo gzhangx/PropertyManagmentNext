@@ -78,7 +78,7 @@ export function getPaymentsByMonthAddress(paymentsByMonth: IPayment[], opts: IPa
         //console.log(d);
         if (!isGoodMonth(d.month)) return acc;        
         if (!isGoodHouseId(d.houseID)) return acc;
-        const isNotRent = d.paymentTypeName !== 'Rent';
+        const isNotRent = (d.paymentTypeName ||'').toLowerCase() !== 'rent';
                 
         const catByKey = isNotRent ? acc.nonRentByKey : acc.houseByKey;
         const catAry = isNotRent ? acc.nonRentAry : acc.houseAry;
