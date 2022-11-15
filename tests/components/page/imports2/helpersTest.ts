@@ -6,14 +6,14 @@ describe('HelperTests', function(){
     function getFakeSheetRowData(ref: string) : ISheetRowData {
         return {
             dataType: 'Sheet',
-            needUpdate: false,
+            needUpdate: true,
             displayData: null,
             importSheetData: {
                 ref,
             },
             invalid: '',
             matched: null,
-            matchToKey: '',
+            matchToKey: null,
             matcherName: '',
         };
     }
@@ -44,6 +44,24 @@ describe('HelperTests', function(){
             }
         });
         assert.equal(matchRes, true);
+        assert.deepEqual(sheetData.map(d=>{
+            return {
+                matched: d.matched?.ref,
+                matchedToKey: d.matchToKey,
+                matcherName: d.matcherName,
+                needUpdate: d.needUpdate,
+            }
+        }), [{
+            matched: '1',
+            matchedToKey: '1',
+            matcherName: 'fake',
+            needUpdate: false,
+        },{
+            matched: undefined,
+            matchedToKey:null,
+            matcherName: '',
+            needUpdate: true,
+        }])
     });
 
 })
