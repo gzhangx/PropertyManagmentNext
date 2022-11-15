@@ -135,6 +135,7 @@ describe('HelperTests', function(){
             needUpdate: true,
         }]);
 
+        //PaymentRowCompare: IRowComparer
     });
 
 })
