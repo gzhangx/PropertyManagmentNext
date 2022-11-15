@@ -1,23 +1,8 @@
-import { matchItems} from '../../../../components/page/imports2/helpers'
+import { matchItems} from '../../../../components/page/imports2/utils'
 import {IDbRowMatchData, IDbSaveData, ISheetRowData, ROWDataType} from "../../../../components/page/imports2/types";
+import assert from 'assert';
 
 describe('HelperTests', function(){
-
-    it('should pass', ()=>{
-        const test = {
-            dataType: 'Sheet',
-            needUpdate: false,
-            displayData: null,
-            importSheetData: {
-                ref:'1',
-            },
-            invalid: '',
-            matched: null,
-            matchToKey: '',
-            matcherName: '',
-        } as ISheetRowData;
-    });
-
     function getFakeSheetRowData(ref: string) : ISheetRowData {
         return {
             dataType: 'Sheet',
@@ -45,17 +30,20 @@ describe('HelperTests', function(){
     it('should matchItem ', function() {
         const sheetData: ISheetRowData[] =[
             getFakeSheetRowData('1'),
+            getFakeSheetRowData('1'),
         ];
-        const dbData: IDbRowMatchData[] = [getFakeDbRowData('1')];
-        /*
-        matchItems(sheetData, dbData, {
+        const dbData: IDbRowMatchData[] = [
+            getFakeDbRowData('1'),
+            getFakeDbRowData('2'),
+        ];
+
+        const matchRes = matchItems(sheetData, dbData, {
             name:'fake',
             getRowKey: (data: IDbSaveData, src) => {
                 return data.ref as string;
             }
-        })
-
-         */
+        });
+        assert.equal(matchRes, true);
     });
 
 })
