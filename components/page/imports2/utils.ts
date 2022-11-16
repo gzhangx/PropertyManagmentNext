@@ -9,8 +9,10 @@ import {
     IPageStates,
     ICompRowData, getHouseByAddress,
 } from './types'
-import { googleSheetRead,  } from '../../api'
+import {getHouseInfo, googleSheetRead,} from '../../api'
 import moment from "moment/moment";
+import {keyBy} from "lodash";
+import * as lutil from "./loads/util";
 
 
 export async function loadPageSheetDataRaw(sheetId: string, curPage: IPageInfo): Promise<IPageDataDetails> {
@@ -213,4 +215,13 @@ export function stdProcessSheetData(sheetData: ICompRowData[], pageState: IPageS
         sd.displayData = displayData;
         return displayData;
     });
+}
+
+export async function getHouseState() {
+    const hi = await getHouseInfo();
+    return {
+        houses: hi,
+        housesByAddress: keyBy(hi, h => lutil.getStdLowerName(h.address)),
+        housesById: keyBy(hi, h => h.houseID),
+    }
 }

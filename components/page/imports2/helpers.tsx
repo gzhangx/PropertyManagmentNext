@@ -8,7 +8,7 @@ import moment from 'moment';
 import { ALLFieldNames, getHouseByAddress } from '../imports2/types';
 import * as lutil from './loads/util';
 
-import { matchItems, loadPageSheetDataRaw, stdProcessSheetData } from './utils'
+import { matchItems, loadPageSheetDataRaw, stdProcessSheetData, getHouseState } from './utils'
 //const sheetId = '1UU9EYL7ZYpfHV6Jmd2CvVb6oBuQ6ekTR7AWXIlMvNCg';
 
 export async function createEntity(params: IPageParms, changeRow: ISheetRowData, inserter: IDbInserter) {
@@ -48,14 +48,7 @@ export async function createEntity(params: IPageParms, changeRow: ISheetRowData,
 }
 
 
-export async function getHouseState() {
-    const hi = await getHouseInfo();
-    return {
-        houses: hi,
-        housesByAddress: keyBy(hi, h => lutil.getStdLowerName(h.address)),
-        housesById: keyBy(hi, h => h.houseID),
-    }
-}
+
 
 export async function genericPageLoader(prms: IPageParms, pageState: IPageStates) {
     const sheetId = pageState.sheetId;

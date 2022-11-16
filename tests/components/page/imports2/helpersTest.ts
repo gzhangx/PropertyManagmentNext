@@ -1,13 +1,15 @@
-import { matchItems, loadPageSheetDataRaw} from '../../../../components/page/imports2/utils'
+import {matchItems, loadPageSheetDataRaw, stdProcessSheetData} from '../../../../components/page/imports2/utils'
 import {
     IDbRowMatchData,
     IDbSaveData,
-    IPageInfo,
+    IPageInfo, IPageStates, IRowComparer,
     ISheetRowData,
-    ROWDataType
+    ROWDataType, YYYYMMDDFormater
 } from "../../../../components/page/imports2/types";
 import assert from 'assert';
 import * as api from '../../../../components/api';
+import {IPayment} from "../../../../components/reportTypes";
+import {getHouseState} from "../../../../components/page/imports2/utils";
 
 describe('HelperTests', function(){
     function getFakeSheetRowData(ref: string, ref2?: string) : ISheetRowData {
@@ -146,7 +148,7 @@ describe('HelperTests', function(){
     });
 
     it('should load data for real', async function(){
-        const curPage = {
+        const page = {
             "pageName": "PaymentRecord",
             "range": "A1:F",
             "fieldMap": [
@@ -206,11 +208,73 @@ describe('HelperTests', function(){
         api.setFakeLocalStorage('login.token', res.token);
         //console.log(res);
         console.log('getPayment records');
-        const dbRecords = await api.getPaymentRecords().then(r => r as any as IDbSaveData[]);
+        const dbData = await api.getPaymentRecords().then(r => r as any as IDbSaveData[]);
         //console.log(dbRecords);
 
         console.log('loadPageSheetDataRaw loadPageSheetDataRaw');
-        const pageDataDetails = await loadPageSheetDataRaw(sheetId, curPage as IPageInfo);
+        const pageDetails = await loadPageSheetDataRaw(sheetId, page as IPageInfo);
 
+        const sheetDatas = pageDetails.dataRows as ISheetRowData[];
+        const pageState: IPageStates = {} as IPageStates;
+        pageState.curPage = page as IPageInfo;
+        pageState.sheetId = sheetId;
+        let hi = {};
+        if (!pageState.houses) {
+            //const hi = await getHouseInfo();
+            hi = await getHouseState();
+        }
+        stdProcessSheetData(sheetDatas, {
+            ...pageState,
+            ...hi,
+        });
+        pageDetails.dataRows = sheetDatas;
+
+        const PaymentRowCompare: IRowComparer[] = [
+            {
+                name: 'Payment Row Comparer',
+                getRowKey: (data: IDbSaveData) => {
+                    const pmt = data as any as IPayment;
+                    const date = YYYYMMDDFormater(pmt.receivedDate);
+                    try {
+                        const amt = pmt.receivedAmount.toFixed(2);
+                    }catch(exc) {
+                        console.log(exc, pmt)
+                    }
+                    const amt = pmt.receivedAmount.toFixed(2);
+                    return `${date}-${amt}-${pmt.houseID}-${(pmt.paymentTypeID || '').trim()}-${(pmt.notes || '').trim()}`;
+                },
+            },
+            {
+                name: 'Payment Row Comparer No Notes',
+                getRowKey: (data: IDbSaveData) => {
+                    const pmt = data as any as IPayment;
+                    const date = YYYYMMDDFormater(pmt.receivedDate);
+                    const amt = pmt.receivedAmount.toFixed(2);
+                    return `${date}-${amt}-${pmt.houseID}-${(pmt.paymentTypeID || '').trim()}`;
+                },
+            }
+        ];
+
+        let dbMatchData: IDbRowMatchData[] = null;
+        if (PaymentRowCompare) {
+            dbMatchData = dbData.map(dbItemData => {
+                return {
+                    dbItemData,
+                    dataType: 'DB',
+                    matchedToKey: null,
+                } as IDbRowMatchData;
+            });
+            PaymentRowCompare.forEach(cmp => {
+                matchItems(sheetDatas, dbMatchData, cmp);
+                sheetDatas.forEach(dd => {
+                    if (!cmp.checkRowValid) return;
+                    const err = cmp.checkRowValid(dd.importSheetData);
+                    if (!dd.invalid && err) {
+                        dd.invalid = err;
+                    }
+                })
+            });
+            console.log(dbMatchData);
+        }
     })
 })
