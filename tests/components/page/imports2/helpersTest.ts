@@ -147,7 +147,74 @@ describe('HelperTests', function(){
         //PaymentRowCompare: IRowComparer
     });
 
+    it('should matchItem 2 steps that matches multiple', function() {
+        const sheetData: ISheetRowData[] =[
+            getFakeSheetRowData('1', '1'),
+            getFakeSheetRowData('1', '2'),
+        ];
+        const dbData: IDbRowMatchData[] = [
+            getFakeDbRowData('1', '1'),
+            getFakeDbRowData('1', '3'),
+            getFakeDbRowData('1', '4'),
+        ];
+
+        const matchRes1 = matchItems(sheetData, dbData, {
+            name:'fake',
+            getRowKey: (data: IDbSaveData, src) => {
+                return (data.ref+'_'+data.ref2) as string;
+            }
+        });
+        assert.equal(matchRes1, true);
+        assert.deepEqual(sheetData.map(d=>{
+            return {
+                matched: d.matched?.ref,
+                matchedToKey: d.matchToKey,
+                matcherName: d.matcherName,
+                needUpdate: d.needUpdate,
+            }
+        }), [{
+            matched: '1',
+            matchedToKey: '1_1',
+            matcherName: 'fake',
+            needUpdate: false,
+        },{
+            matched: undefined,
+            matchedToKey:null,
+            matcherName: '',
+            needUpdate: true,
+        }]);
+
+        const matchRes2 = matchItems(sheetData, dbData, {
+            name:'fake',
+            getRowKey: (data: IDbSaveData, src) => {
+                return data.ref as string;
+            }
+        });
+
+        assert.deepEqual(sheetData.map(d=>{
+            return {
+                matched: d.matched?.ref,
+                matchedToKey: d.matchToKey,
+                matcherName: d.matcherName,
+                needUpdate: d.needUpdate,
+            }
+        }), [{
+            matched: '1',
+            matchedToKey: '1_1',
+            matcherName: 'fake',
+            needUpdate: false,
+        },{
+            matched: '1',
+            matchedToKey:'1',
+            matcherName: 'fake',
+            needUpdate: false,
+        }]);
+
+        //PaymentRowCompare: IRowComparer
+    });
+
     it('should load data for real', async function(){
+        //testing genericPageLoader in helpers.tsx
         const page = {
             "pageName": "PaymentRecord",
             "range": "A1:F",
@@ -273,12 +340,14 @@ describe('HelperTests', function(){
                         dd.invalid = err;
                     }
                 })
+                const debugCheck183Amt = dbMatchData.filter(d=>d.dbItemData.receivedAmount==183.87);
             });
             //console.log(dbMatchData);
 
             const notMatched = dbMatchData.filter(x => x.dataType === 'DB').map(x => x as IDbRowMatchData)
                 .filter(x => !x.matchedToKey && x.dbItemData.ownerID === 1)
             console.log(notMatched);
+            console.log('extra:', dbMatchData.filter(x=>x.dbItemData.receivedAmount === 183.87));
         }
     })
 })

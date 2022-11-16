@@ -76,6 +76,7 @@ export function matchItems(sheetData: ISheetRowData[], dbMatchData: IDbRowMatchD
     });
 
     sheetData.map(sd => {
+        if (sd.matchToKey) return;
         const key = cmp.getRowKey(sd.importSheetData, 'Sheet');
         const matchedAll = dbDataKeyed[key];
         if (matchedAll && matchedAll.length) {
