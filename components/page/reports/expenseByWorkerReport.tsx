@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { fMoneyformat, useIncomeExpensesContext } from '../../states/PaymentExpenseState';
 import { MonthRange } from './monthRange';
-import { getPaymentsByMonthAddress, getMaintenanceData, IAmountAndPmtRecords } from './reportUtil';
+import { getPaymentsByMonthAddress, getMaintenanceData, getMaintenanceDataByWorker, IMaintenanceDataByWorkerMonthRes, IMaintenanceMonthWorkerAmtRec } from './reportUtil';
 import moment from 'moment';
 //import {saveToGS} from './utils/updateGS';
 import { CloseableDialog } from '../../generic/basedialog'
@@ -10,12 +10,20 @@ export function ExpenseByWorkerReport(props) {
     const ctx = useIncomeExpensesContext();
     const { payments, rawExpenseData, selectedHouses, monthes, paymentCalcOpts } = ctx;
 
+    paymentCalcOpts.isGoodWorkerId = () => true;
     const monAddr = getPaymentsByMonthAddress(payments, paymentCalcOpts);
 
 
-    const calculatedMaintData = getMaintenanceData(rawExpenseData, paymentCalcOpts);
+    const calculatedMaintData = getMaintenanceDataByWorker(rawExpenseData, paymentCalcOpts);
     const [showDetail, setShowDetail] = useState(null);
     const [showExpenseDetail, setShowExpenseDetail] = useState(null);
+
+    const getWorkerMon = (workerID: string, mon: string) => {
+        const def = {} as IMaintenanceMonthWorkerAmtRec;
+        const wkr = calculatedMaintData.byWorkerByMonth[workerID];
+        if (!wkr) return def;
+        return wkr[mon] || def;
+    }
 
     const saveCsvGS = csv => {
         var link = document.createElement("a");
@@ -46,9 +54,9 @@ export function ExpenseByWorkerReport(props) {
         csvContent.push(['Expenses', '', ...monthes.map(() => '')]);
 
 
-        [...calculatedMaintData.categoryNames].forEach(cat => {
-            csvContent.push([cat, fMoneyformat(calculatedMaintData.categoryTotals[cat]),
-                ...monthes.map(mon => fMoneyformat(calculatedMaintData.getCatMonth(cat, mon).amount))
+        [...calculatedMaintData.workerIDs].forEach(cat => {
+            csvContent.push([cat, fMoneyformat(calculatedMaintData.workerTotals[cat]),
+                ...monthes.map(mon => fMoneyformat(getWorkerMon(cat, mon).totalAmountWokerMonth))
             ])
 
         })
@@ -82,6 +90,8 @@ export function ExpenseByWorkerReport(props) {
             //saveToGS(csvContent)
         }
     }
+
+    
 
     return <div>
         <CloseableDialog show={!!showDetail} setShow={() => setShowDetail(null)}>
@@ -134,43 +144,14 @@ export function ExpenseByWorkerReport(props) {
 
 
                         {
-                            [...calculatedMaintData.categoryNames].map((cat, key) => {
+                            [...calculatedMaintData.workerIDs].map((cat, key) => {
                                 return <tr key={key}>
-                                    <td className='tdLeftSubCategoryHeader'>{cat}</td><td className="tdCenter  tdTotalItalic">{fMoneyformat(calculatedMaintData.categoryTotals[cat])}</td>
+                                    <td className='tdLeftSubCategoryHeader'>{cat}</td><td className="tdCenter  tdTotalItalic">{fMoneyformat(calculatedMaintData.workerTotals[cat])}</td>
                                     {
                                         monthes.map((mon, key) => {
-                                            const catMon = calculatedMaintData.getCatMonth(cat, mon);
+                                            const catMon = getWorkerMon(cat, mon);
                                             return <td key={key} className="tdCenter" onClick={() => {
-                                                if (catMon.amountCalcParts) {
-                                                    const msgs = catMon.amountCalcParts.reduce((acc, r) => {
-                                                        if (r.calcInfo) {
-                                                            r.calcInfo.forEach(i => acc.push({
-                                                                debugText: i.info
-                                                            }));
-                                                        }
-                                                        return acc;
-                                                    }, [
-                                                        {
-                                                            debugText: `For Total expense of ${catMon.amount.toFixed(2)}`
-                                                        },
-                                                        ...catMon.records.reduce((acc, r) => {
-                                                            acc.push({
-                                                                debugText: `=> ${r.amount} is from`
-                                                            });
-                                                            r.records.forEach(r => {
-                                                                acc.push({
-                                                                    debugText: `===> ${moment(r.date).format('YYYY-MM-DD')} ${r.amount} ${r.comment} ${r.description}`
-                                                                });
-                                                            })
-                                                            return acc;
-                                                        }, []),
-                                                        {
-                                                            debugText: '====== breakdowns '
-                                                        }
-                                                    ]);
-                                                    setShowExpenseDetail(msgs)
-                                                }
-                                            }}>{fMoneyformat(catMon.amount)}</td>
+                                            }}>{fMoneyformat(catMon.totalAmountWokerMonth)}</td>
                                         })
                                     }
                                 </tr>
