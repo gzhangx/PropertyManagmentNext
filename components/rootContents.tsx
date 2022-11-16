@@ -3,6 +3,7 @@ import { OwnerList } from '../components/page/reports/ownerList'
 import { HouseList } from '../components/page/reports/houseList'
 import { RentpaymentInfo } from '../components/page/reports/rentpaymentInfo'
 import { CashFlowReport } from '../components/page/reports/cashflow'
+import { ExpenseByWorkerReport } from '../components/page/reports/ExpenseByWorkerReport'
 
 import { MaintenanceRecords } from '../components/page/reports/maintenanceList'
 
@@ -27,6 +28,10 @@ const allSections = [
             {
                 name: 'Comp Report',
                 page: <MonthlyComp/>,
+            },
+            {
+                name: '1099 Report',
+                page: <ExpenseByWorkerReport />,
             },
             {
                 name: 'Develop 2',

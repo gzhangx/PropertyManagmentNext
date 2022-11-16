@@ -43,6 +43,7 @@ export function getPaymentsByMonthAddress(paymentsByMonth: IPayment[], opts: IPa
     if (!opts) opts = {
         isGoodMonth: () => true,
         isGoodHouseId: () => true,
+        isGoodWorkerId: ()=> true,
         getHouseShareInfo: ()=>[],
     };
     const { isGoodMonth, isGoodHouseId, getHouseShareInfo } = opts;
@@ -156,6 +157,13 @@ export interface IMaintenanceMonthCatAmtRec {
     records: IExpenseData[];
 };
 
+export interface IMaintenanceMonthWorkerAmtRec {
+    workerID: string;
+    month: string;
+    totalAmountWokerMonth: number;
+    records: IExpenseData[];
+}
+
 export interface IMaintenceCatMonData 
 {
     amount: number;
@@ -175,7 +183,7 @@ export interface IMaintenanceDataByMonthRes {
         [cat: string]: {
             [mon: string]: IMaintenceCatMonData;
         }
-    },
+    },    
     categoryNames: string[],
     categoryTotals: {
         [cat: string]: number;
@@ -198,6 +206,25 @@ export interface IMaintenanceDataByMonthRes {
 }
 
 
+export interface IMaintenanceDataByWorkerMonthRes {
+    monthByName: { [mon: string]: { total: number } };
+    monthes: string[];
+    byWorkerByMonth: {
+        [workerID: string]: {
+            [mon: string]: IMaintenanceMonthWorkerAmtRec;
+        }
+    };
+    workerIDs: string[];
+    workerTotals: {
+        [workerID: string]: number;
+    };
+    monthlyTotal: {
+        [mon: string]: number;
+    };
+    total: 0;
+}
+
+
 export interface IHousePartsCalcInfo {
     curTotal: number;
     house: IHouseInfo;
@@ -215,6 +242,7 @@ export function getMaintenanceData(maintenanceRecordsRaw: IExpenseData[], opts: 
     if (!opts) opts = {
         isGoodMonth: () => true,
         isGoodHouseId: () => true,
+        isGoodWorkerId: ()=>true,
         getHouseShareInfo: () => [],
     };
 
@@ -377,6 +405,9 @@ export function getMaintenanceData(maintenanceRecordsRaw: IExpenseData[], opts: 
         categoriesByKey: {},
         categoryNames: [],
         categoryTotals: {},
+        workerIDs: [],
+        workerTotals: {},
+        byWorkerByMonth: {},
         monthlyTotal: {},
         total: 0,
         getCatMonth: () => ({
@@ -406,5 +437,84 @@ export function getMaintenanceData(maintenanceRecordsRaw: IExpenseData[], opts: 
         if (!catMon) return {} as IMaintenceCatMonData;
         return (catMon[mon] || {}) as IMaintenceCatMonData;
     };
+    return maintenceData;
+}
+
+
+
+export function getMaintenanceDataByWorker(maintenanceRecordsRaw: IExpenseData[], opts: IPaymentCalcOpts): IMaintenanceDataByWorkerMonthRes {
+    if (!opts) opts = {
+        isGoodMonth: () => true,
+        isGoodHouseId: () => true,
+        isGoodWorkerId: () => true,
+        getHouseShareInfo: () => [],
+    };
+
+    const { isGoodMonth, getHouseShareInfo, isGoodWorkerId } = opts;
+    const houseInfo = getHouseShareInfo();
+    const validHouseIds = houseInfo.reduce((acc, h) => {
+        acc[h.id] = true;
+        return acc;
+    }, {} as { [id: string]: boolean });
+   
+
+    const maintenceData: IMaintenanceDataByWorkerMonthRes = maintenanceRecordsRaw.reduce((acc, r) => {
+        const month = r.month.length === 7 ? r.month : moment(r.month).add(2, 'days').format('YYYY-MM');
+        if (!isGoodMonth(month)) return acc;
+        if (!isGoodWorkerId(r.workerID) && !r.workerID) return acc;
+
+        let monthData = acc.monthByName[month];
+        if (!monthData) {
+            acc.monthByName[month] = {
+                total: 0,
+            };
+            acc.monthes.push(month);
+        }
+        let cats = acc.byWorkerByMonth[r.workerID];
+        if (!cats) {
+            cats = {};
+            acc.byWorkerByMonth[r.workerID] = cats;
+            acc.workerIDs.push(r.workerID);
+        }
+        
+        let catMonth = cats[month];
+        if (!catMonth) {
+            catMonth = {
+                workerID: r.workerID,
+                month,
+                totalAmountWokerMonth: 0,
+                records: [],
+            }
+            cats[month] = catMonth;
+        }
+        catMonth.totalAmountWokerMonth += r.amount;
+
+        catMonth.records.push(r);
+        acc.workerTotals[r.workerID] = (acc.workerTotals[r.workerID] || 0) + r.amount;
+        acc.monthlyTotal[month] = (acc.monthlyTotal[month] || 0) + r.amount;
+
+        acc.total += r.amount;
+        return acc;
+    }, {
+        monthByName: {},
+        monthes: [],
+        workerIDs: [],
+        workerTotals: {},
+        byWorkerByMonth: {},
+        monthlyTotal: {},
+        total: 0,
+    } as IMaintenanceDataByWorkerMonthRes);
+
+    const sortLowOthers = (cats: string[]) => {
+        const others = 'Others';
+        const res = cats.filter(k => k !== others);
+        res.sort();
+        if (cats.filter(k => k === others).length) {
+            res.push(others);
+        }
+        return res;
+    }
+
+    maintenceData.workerIDs = sortLowOthers(maintenceData.workerIDs);    
     return maintenceData;
 }

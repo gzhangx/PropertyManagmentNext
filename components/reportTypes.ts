@@ -67,6 +67,9 @@ export interface IExpenseData {
     expenseCategoryName: string;
     expenseCategoryId: string; //this could be the name in the new realm
     houseID: string;
+    workerID: string;
+    workerFirstName: string;
+    workerLastName: string;
     month: string;
 }
 
@@ -126,6 +129,7 @@ export interface ITenantInfo {
 export interface IPaymentCalcOpts {
     isGoodMonth: (mon: string) => boolean;
     isGoodHouseId: (mon: string) => boolean;
+    isGoodWorkerId: (workerID: string) => boolean;
     getHouseShareInfo: () => IHouseAnchorInfo[];
 }
 
