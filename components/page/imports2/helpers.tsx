@@ -8,7 +8,7 @@ import moment from 'moment';
 import { ALLFieldNames, getHouseByAddress } from '../imports2/types';
 import * as lutil from './loads/util';
 
-import { matchItems, loadPageSheetDataRaw } from './utils'
+import { matchItems, loadPageSheetDataRaw, stdProcessSheetData } from './utils'
 //const sheetId = '1UU9EYL7ZYpfHV6Jmd2CvVb6oBuQ6ekTR7AWXIlMvNCg';
 
 export async function createEntity(params: IPageParms, changeRow: ISheetRowData, inserter: IDbInserter) {
@@ -123,128 +123,6 @@ export async function genericPageLoader(prms: IPageParms, pageState: IPageStates
     return pageDetails;
 }
 
-function stdDisplayField(fieldNames: ALLFieldNames[], obj: IStringDict, pageState: IPageStates) : IStringDict {
-    return fieldNames.reduce((acc, fieldName) => {
-        let dsp = obj[fieldName];
-        if (dsp === 0) {
-            acc[fieldName] = dsp;
-            return acc;
-        }
-        if (dsp === null || dsp === undefined) {
-            acc[fieldName] = '';
-            return acc;
-        }
-        if (!dsp && dsp !== '') return acc;
-        switch (fieldName) {
-            case 'date':
-            case 'receivedDate':
-            case 'startDate':
-                const mmt = moment(dsp);
-                if (mmt.isValid())
-                    dsp = mmt.format('YYYY-MM-DD');
-                else
-                    dsp = `Invalid(${dsp})`;
-                break;
-            case 'monthlyRent':
-            case 'deposit':
-            case 'receivedAmount':
-            case 'petDeposit':
-            case 'amount':
-                if (typeof dsp === 'number') dsp = dsp.toFixed(2);
-                else dsp = parseFloat(dsp || '0').toFixed(2);
-                break;
-            case 'houseID':
-                break;
-            case 'ownerName':
-                break;
-        }
-        acc[fieldName] = dsp;
-        return acc;
-    }, {});
-}
-
-
-function stdProcessSheetData(sheetData: ICompRowData[], pageState: IPageStates) : IStringDict[] {
-    const fieldNames = pageState.curPage.fieldMap.filter(f => f);
-    return sheetData.map(sd => {
-        const acc = (sd as ISheetRowData).importSheetData || (sd as IDbRowMatchData).dbItemData;        
-        fieldNames.forEach(fieldName => {            
-            let v = acc[fieldName];
-            switch (fieldName) {
-                case 'address':
-                    if (!v) {
-                        if (!acc['houseID']) {
-                            sd.invalid = 'house';
-                            acc.invalidDesc = 'house';
-                        } else {
-                            const house = pageState.housesById[acc['houseID']];
-                            if (house) {
-                                acc[fieldName] = house.address;
-                            } else {
-                                acc[fieldName] = `${v} Unable to match house`;
-                            }
-                        }
-                        break;
-                    }
-                    const house = getHouseByAddress(pageState, v as string);                    
-                    if (house) {
-                        acc['houseID'] = house.houseID;
-                        acc['ownerID'] = house.ownerID;
-                    } else {
-                        acc['houseID'] = null;
-                        //acc[fieldName] = `Invalid(${v})`;
-                        sd.invalid = 'house';
-                        acc.invalidDesc = 'house';
-                    }
-                    break;
-                case 'receivedAmount':
-                case 'monthlyRent':
-                case 'deposit':
-                case 'petDeposit':
-                case 'otherDeposit':
-                case 'amount':
-                    if (v === null || v === undefined) {
-                        acc[fieldName] = 'invalid(null)';
-                        sd.invalid = fieldName;
-                        acc.invalidDesc = `${fieldName} Invalid(null)`;
-                    }
-                    if (typeof v === 'string') {
-                        v = v.replace(/[\$, ]/g, '').trim();
-                        const neg = v.match(/\(([0-9]+(.[0-9]*){0,1}){1}\)/);
-                        if (neg) {
-                            v = '-'+neg[1];
-                        }
-                        v = parseFloat(v);
-                    }
-                    if (v === NaN || !v) v = 0;
-                    acc[fieldName] = v;
-                    break;
-                case 'receivedDate':
-                case 'date':
-                case 'startDate':
-                case 'endDate':
-                    const mt = moment(v);
-                    if (!mt.isValid()) {
-                        sd.invalid = fieldName;                        
-                        acc.invalidDesc = `bad date ${fieldName}:${v}`;
-                    } else {
-                        const dateStr = mt.format('YYYY-MM-DD');
-                        acc[fieldName] = dateStr;
-                    }
-                    break;
-                case 'tenant':
-                    acc[fieldName] = v;
-                    break;
-                case 'comment':
-                    acc[fieldName] = v || '';
-                    break;
-            }
-        });
-        const displayData = stdDisplayField(fieldNames, { ...acc }, pageState);
-        sd.displayData = displayData;
-        return displayData;
-    });   
-}
 
 export function getDisplayHeaders(params: IPageParms, curPageState: IPageStates) {
     
