@@ -1,6 +1,13 @@
-import { matchItems} from '../../../../components/page/imports2/utils'
-import {IDbRowMatchData, IDbSaveData, ISheetRowData, ROWDataType} from "../../../../components/page/imports2/types";
+import { matchItems, loadPageSheetDataRaw} from '../../../../components/page/imports2/utils'
+import {
+    IDbRowMatchData,
+    IDbSaveData,
+    IPageInfo,
+    ISheetRowData,
+    ROWDataType
+} from "../../../../components/page/imports2/types";
 import assert from 'assert';
+import * as api from '../../../../components/api';
 
 describe('HelperTests', function(){
     function getFakeSheetRowData(ref: string, ref2?: string) : ISheetRowData {
@@ -138,4 +145,72 @@ describe('HelperTests', function(){
         //PaymentRowCompare: IRowComparer
     });
 
+    it('should load data for real', async function(){
+        const curPage = {
+            "pageName": "PaymentRecord",
+            "range": "A1:F",
+            "fieldMap": [
+                "receivedDate",
+                "receivedAmount",
+                "address",
+                "paymentTypeID",
+                "notes",
+                "paymentProcessor"
+            ],
+            "displayColumnInfo": [
+                {
+                    "field": "receivedDate",
+                    "name": "receivedDate"
+                },
+                {
+                    "field": "receivedAmount",
+                    "name": "receivedAmount"
+                },
+                {
+                    "field": "address",
+                    "name": "address"
+                },
+                {
+                    "field": "paymentTypeID",
+                    "name": "paymentTypeID"
+                },
+                {
+                    "field": "notes",
+                    "name": "notes"
+                },
+                {
+                    "field": "paymentProcessor",
+                    "name": "paymentProcessor"
+                }
+            ],
+            "dbItemIdField": "paymentID",
+            "sheetMustExistField": "receivedDate",
+            "rowComparers": [
+                {
+                    "name": "Payment Row Comparer"
+                },
+                {
+                    "name": "Payment Row Comparer No Notes"
+                }
+            ],
+            "dbInserter": {
+                "name": "Payment inserter"
+            }
+        };
+        const sheetId = process.env.SHEETID;
+
+        const res = await api.doPost('auth/login', {
+            username: process.env.USERNAME,
+            password: process.env.PASSWORD,
+        })
+        api.setFakeLocalStorage('login.token', res.token);
+        //console.log(res);
+        console.log('getPayment records');
+        const dbRecords = await api.getPaymentRecords().then(r => r as any as IDbSaveData[]);
+        //console.log(dbRecords);
+
+        console.log('loadPageSheetDataRaw loadPageSheetDataRaw');
+        const pageDataDetails = await loadPageSheetDataRaw(sheetId, curPage as IPageInfo);
+
+    })
 })

@@ -21,8 +21,10 @@ export async function getConfig() : Promise<ISiteConfig> {
         sitConfig.baseUrl = 'http://localhost:8081/pmapi';
         sitConfig.redirectUrl = 'http://localhost:3000';
     }
-    const cliInfo = await getGoogleClientId();
-    sitConfig.googleClientId = cliInfo.client_id;
+    if (getLoginToken()) {
+        const cliInfo = await getGoogleClientId();
+        sitConfig.googleClientId = cliInfo.client_id;
+    }
     return sitConfig;
 }
 //const baseUrlDev = 'http://localhost:8081/pmapi'
@@ -39,12 +41,12 @@ import {
     ITenantInfo,
 } from './reportTypes';
 
-async function doPost(path: string, data: object, method?: Method): Promise<any> {
+export async function doPost(path: string, data: object, method?: Method, authToken?: string): Promise<any> {
     const headers = {
         "Content-Type": "application/json",
         //"Authorization": `Bearer ${access_token}`,
     };
-    const auth = getLoginToken();
+    const auth = authToken || getLoginToken();
     if (auth) {
         headers['Authorization'] = `Bearer ${auth}`;
     }
@@ -101,12 +103,18 @@ export async function loginUserSetToken(username: string, password: string): Pro
     });
 }
 
-export function getLoginToken() {
+
+const fakeLocalStorage: {[name:string]:string} = {};
+export function setFakeLocalStorage(name: string, val:string) {
+    fakeLocalStorage[name] = val;
+}
+
+export function getLoginToken() : string {
     //const rState = useRootPageContext();
     //if (rState.userInfo.token) return rState.userInfo.token;
     if (typeof window == 'undefined') {
         //runnng on server
-        return null;
+        return fakeLocalStorage['login.token'];
     }
     const token = localStorage.getItem('login.token');
     if (!token) return null;
