@@ -274,7 +274,11 @@ describe('HelperTests', function(){
                     }
                 })
             });
-            console.log(dbMatchData);
+            //console.log(dbMatchData);
+
+            const notMatched = dbMatchData.filter(x => x.dataType === 'DB').map(x => x as IDbRowMatchData)
+                .filter(x => !x.matchedToKey && x.dbItemData.ownerID === 1)
+            console.log(notMatched);
         }
     })
 })
