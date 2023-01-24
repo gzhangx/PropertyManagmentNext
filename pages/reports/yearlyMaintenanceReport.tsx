@@ -13,6 +13,7 @@ import {
 } from '../../components/reportTypes';
 
 import { CloseableDialog } from '../../components/generic/basedialog'
+import { rootCertificates } from "tls";
 
 
 interface IWithTotal {
@@ -45,6 +46,7 @@ interface IYearlyMaintenanceReportState {
     workerInfos: IWorkerInfo[];
     workerInfoMapping: { [id: string]: IWorkerInfo };
     showWorkers: { [id: string]: boolean };
+    goodWorkers: { [name: string]: boolean };
     showCategories: {[cat:string]:boolean};
     rawData: IMaintenanceRawData[];
     allRawData: IMaintenanceRawData[];
@@ -63,6 +65,7 @@ export default function YearlyMaintenanceReport() {
         workerInfos: [],
         workerInfoMapping: {},
         showWorkers: {},
+        goodWorkers: {},
         showCategories: {},
         rawData: [],
         allRawData: [],
@@ -73,8 +76,17 @@ export default function YearlyMaintenanceReport() {
     
     useEffect(() => {
  
-        getMaintenanceFromSheet('Workers Info').then(res => {
-            
+        getMaintenanceFromSheet('Workers Info').then(rows => {
+            const goodWorkers = rows.reduce((acc, r) => {
+                acc[r.workerID] = true;
+                return acc;
+            }, {} as { [name: string]: boolean });
+            setState(prev => {
+                return {
+                    ...prev,
+                    goodWorkers,
+                }
+            })
         });
         getMaintenanceFromSheet('MaintainessRecord').then(rows => {
             const reduInfo = rows.reduce((acc, row) => {
@@ -129,7 +141,7 @@ export default function YearlyMaintenanceReport() {
 
     useEffect(() => {
         formatData(state, setState);
-    }, [state.rawData, state.showCategories]);
+    }, [state.rawData, state.showCategories, state.goodWorkers]);
 
     interface IShowDetailsData {
         amount: number;
@@ -324,30 +336,20 @@ function formatData(state: IYearlyMaintenanceReportState, setState: React.Dispat
     }
 
 
-    function sortRowSpecial(row: IMaintenanceRawData) {
-        if (row.expenseCategoryId === 'food and drink') {
-            row.workerID = 'Resturant';
-            row.comment = row.workerID;
-        }
-        const workerID = row.workerID;
-        if (workerID.startsWith('AMZN') || workerID.startsWith('Amazon')) {
-            row.workerID = 'Amazon';
-        }
-        if (workerID.startsWith('THE HOME DEPOT') || workerID.startsWith('HOMEDEPOT')) {
-            row.workerID = 'HOMEDEPOT';
-        }
-        if (workerID.startsWith('LOWES')) {
-            row.workerID = 'LOWES';
-        }
+    function getDspWorker(row: IMaintenanceRawData) {
+        if (!state.goodWorkers[row.workerID]) {
+            return "OtherUser";
+        }        
+        return row.workerID;
     }
     const byWorkerByCat = dataRows.reduce((acc, d) => {
         //if (!state.showWorkers[d.workerID]) return acc;
         //if (!state.showCategories[d.expenseCategoryId]) return acc;
 
-        sortRowSpecial(d);
-        if (!acc.workerIdHashFind[d.workerID]) {
-            acc.workerIdHashFind[d.workerID] = true;
-            acc.workerIds.push(d.workerID);
+        const workerID = getDspWorker(d);
+        if (!acc.workerIdHashFind[workerID]) {
+            acc.workerIdHashFind[workerID] = true;
+            acc.workerIds.push(workerID);
         }
         
 
@@ -355,7 +357,7 @@ function formatData(state: IYearlyMaintenanceReportState, setState: React.Dispat
             acc.catIdHashFind[d.expenseCategoryId] = true;
             acc.catIds.push(d.expenseCategoryId);
         }
-        const wkr = getSet(acc.byWorker, d.workerID, {});
+        const wkr = getSet(acc.byWorker, workerID, {});
         const exp = getSet(wkr, d.expenseCategoryId, {
             total: 0,
             items: [],
@@ -363,7 +365,7 @@ function formatData(state: IYearlyMaintenanceReportState, setState: React.Dispat
         exp.total += d.amount;
         exp.items.push(d);
 
-        const wkrTotal = getSet(acc.byWorkerTotal, d.workerID, {total: 0, items:[]}) as IWithTotal;
+        const wkrTotal = getSet(acc.byWorkerTotal, workerID, {total: 0, items:[]}) as IWithTotal;
         wkrTotal.total += d.amount;
         wkrTotal.items.push(d);
 
