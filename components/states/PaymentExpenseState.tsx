@@ -242,6 +242,7 @@ export function PaymentExpenseStateWrapper(props: {
             isGoodMonth: m => selectedMonths[m],
             isGoodHouseId: id => selectedHouses[id],
             getHouseShareInfo: () => [...houseAnchorInfo],
+            isGoodWorkerId: workerID => true, //DEBUGREMOVE add check
         }
     };
     return <IncomeExpensesContext.Provider value={incomExpCtx}>

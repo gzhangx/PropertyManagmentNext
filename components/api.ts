@@ -1,6 +1,7 @@
 
-import axios, { Method } from 'axios';
-import { IGetModelReturn, TableNames, ISqlDeleteResponse  } from './types'
+import {httpRequest } from '@gzhangx/googleapi'
+import { IGetModelReturn, TableNames, ISqlDeleteResponse } from './types'
+import moment from 'moment';
 
 export interface ISiteConfig {
     baseUrl: string;
@@ -39,9 +40,10 @@ import {
     IPayment,
     ILeaseInfo,
     ITenantInfo,
+    IMaintenanceRawData,
 } from './reportTypes';
 
-export async function doPost(path: string, data: object, method?: Method, authToken?: string): Promise<any> {
+export async function doPost(path: string, data: object, method: httpRequest.HttpRequestMethod = 'POST', authToken: string = ''): Promise<any> {
     const headers = {
         "Content-Type": "application/json",
         //"Authorization": `Bearer ${access_token}`,
@@ -50,6 +52,25 @@ export async function doPost(path: string, data: object, method?: Method, authTo
     if (auth) {
         headers['Authorization'] = `Bearer ${auth}`;
     }
+
+    return httpRequest.doHttpRequest({
+        url: `${(await getConfig()).baseUrl}/${path}`,
+        method,
+        headers,
+        data,
+    }).then(r => {
+        return r.data;
+    }).catch(err => {
+        if (!err.response || !err.response.data) {
+            console.log(`axios request with no err response`, path, err);
+            throw err;
+        }
+        const data = err.response.data;
+        throw {
+            error: `${data.message || ''} ${data.rspErr || ''} ${data.error || ''}`,
+        }
+    })
+    /*
     return axios({
         url: `${(await getConfig()).baseUrl}/${path}`,
         headers,
@@ -67,6 +88,7 @@ export async function doPost(path: string, data: object, method?: Method, authTo
             error: `${data.message || ''} ${data.rspErr || ''} ${data.error || ''}`,
         }
     })
+    */
     /*
     const pdata = {
         method: method || 'POST',
@@ -408,4 +430,40 @@ export async function googleSheetRead(id:string, op:string, range:string) : Prom
     return doPost(`misc/sheet/${op}/${id}/${range}`, {}).then(r => {
         return r;
     })
+}
+
+type MaintenanceRecordSheetName = 'Workers Info' | 'MaintainessRecord';
+export async function getMaintenanceFromSheet(sheetName: MaintenanceRecordSheetName) : Promise<IMaintenanceRawData[]> {
+    const data = await doPost('misc/sheet/readMaintenanceRecord', {}, 'GET');
+    const noHeader = data.values.slice(1);
+    if (sheetName === 'Workers Info') {
+        return noHeader.map(n => {
+            return {
+                workerID: n[1],
+            } as IMaintenanceRawData
+        });
+    }
+    return noHeader.map(row => {
+        if (!row[2]) {
+            console.log('bad row', row);
+            return null;
+        }
+        const amountRow = row[2].replace('$', '').trim();
+        const [matched] = amountRow.matchAll(/\(([0-9.]+?)\)/g);
+        let amount = amountRow;
+        if (matched) {
+            amount = -parseFloat(matched[1]);
+        } else {
+            amount = parseFloat(amountRow);
+        }
+        return {
+            amount,
+            date: moment(row[0]).format('YYYY-MM-DD'),
+            description: (row[1] || '').trim(),
+            houseID: (row[3] || '').trim(),
+            expenseCategoryId: (row[4] || '').trim(),
+            workerID: (row[5] || '').trim(),
+            comment: (row[6] || '').trim(),
+        } as IMaintenanceRawData;
+    }).filter(x => x);
 }
