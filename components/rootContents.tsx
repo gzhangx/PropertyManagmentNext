@@ -3,9 +3,11 @@ import { OwnerList } from '../components/page/reports/ownerList'
 import { HouseList } from '../components/page/reports/houseList'
 import { RentpaymentInfo } from '../components/page/reports/rentpaymentInfo'
 import { CashFlowReport } from '../components/page/reports/cashflow'
-import { ExpenseByWorkerReport } from '../components/page/reports/ExpenseByWorkerReport'
+import { ExpenseByWorkerReport } from '../components/page/reports/expenseByWorkerReport'
 
 import { MaintenanceRecords } from '../components/page/reports/maintenanceList'
+
+import YearlyMaintenanceReport from '../pages/reports/yearlyMaintenanceReport';
 
 import * as dev2 from '../pages/util/dev2'
 import GoogleAuth from '../pages/google/googleAuth'
@@ -32,6 +34,10 @@ const allSections = [
             {
                 name: '1099 Report',
                 page: <ExpenseByWorkerReport />,
+            },
+            {
+                name: 'Yearly 1099 Report',
+                page: <YearlyMaintenanceReport/>,
             },
             {
                 name: 'Develop 2',
