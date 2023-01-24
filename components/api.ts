@@ -456,6 +456,10 @@ export async function getMaintenanceFromSheet(sheetName: MaintenanceRecordSheetN
         } else {
             amount = parseFloat(amountRow);
         }
+        if (isNaN(amount)) {
+            console.log('bad row nama amont', row);
+            return null;
+        }
         return {
             amount,
             date: moment(row[0]).format('YYYY-MM-DD'),

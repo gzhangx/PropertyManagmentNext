@@ -342,6 +342,7 @@ function formatData(state: IYearlyMaintenanceReportState, setState: React.Dispat
         }        
         return row.workerID;
     }
+
     const byWorkerByCat = dataRows.reduce((acc, d) => {
         //if (!state.showWorkers[d.workerID]) return acc;
         //if (!state.showCategories[d.expenseCategoryId]) return acc;
@@ -373,6 +374,7 @@ function formatData(state: IYearlyMaintenanceReportState, setState: React.Dispat
         byCats.total += d.amount;
         byCats.items.push(d);
         acc.total += d.amount;
+        //console.log('byCats.total', byCats.total, wkrTotal.total, d.amount);
         return acc;
     }, {
         byWorker: {},
@@ -384,6 +386,16 @@ function formatData(state: IYearlyMaintenanceReportState, setState: React.Dispat
         catIdHashFind: {},
         byWorkerTotal: {},
     } as IByWorkerByCat);
+
+    const totalByWorker = byWorkerByCat.workerIds.reduce((acc, wn) => {
+        acc += byWorkerByCat.byWorkerTotal[wn].total;
+        return acc;
+    }, 0);
+    const totalByCat = byWorkerByCat.catIds.reduce((acc, cid) => {
+        acc += byWorkerByCat.byCats[cid].total;
+        return acc;
+    }, 0);
+    console.log(`tota=${byWorkerByCat.total} by worker total=${totalByWorker} bycattota=${totalByCat}`); //just to veryf
     setState(prev => ({
         ...prev,
         byWorkerByCat,
