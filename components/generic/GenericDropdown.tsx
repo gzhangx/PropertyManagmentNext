@@ -4,6 +4,7 @@ import { useState , useEffect, useRef, SetStateAction, Dispatch} from "react";
 export interface IGenericDropdownProps {
     children?: any;
     items: any[];
+    selected?: any;
     onSelectionChanged: (any) => void;
     opts?: IGenericDropdownPropsOptional;
 }
@@ -12,7 +13,7 @@ export interface IGenericDropdownPropsOptional {
     defaultShow?: boolean;
     className?: string;
     placeHolder?: string;
-    selected?: any;
+    //selected?: any;
     setSelected?: Dispatch<SetStateAction<any>>;
     dataFormatter?: (any, keyInd: number) => (JSX.Element | string | null);
     getDropDownControl?: (show: boolean) => JSX.Element;
@@ -24,7 +25,7 @@ export function GenericDropdown(props: IGenericDropdownProps) {
     const opts = props.opts;
     const { defaultShow, className } = opts;
     const [show, setShow] = useState(defaultShow || false);
-    const getSelectedText = () => (opts.selected ? opts.selected.label || opts.selected.value : '');
+    const getSelectedText = () => (props.selected ? props.selected.label || props.selected.value : '');
     const [curDisplayValue, setCurDisplayValue] = useState(null);
     const topNode = useRef<HTMLLIElement>();
     useEffect(() => {
@@ -43,7 +44,11 @@ export function GenericDropdown(props: IGenericDropdownProps) {
         return () => {
             document.removeEventListener('mousedown', clickOutside);
         }
-    }, [show, opts.selected])
+    }, [show])
+
+    useEffect(() => {
+        setCurDisplayValue(getSelectedText());
+    }, [props.selected])
     const showClass = `dropdown-list ${className || 'dropdown-menu dropdown-menu-right shadow animated--grow-in'} ${show && 'show'}`;
 
     const filterItems = opts.filterItems || (itm=>(itm.label || '').toLocaleLowerCase().includes((curDisplayValue || '' ).toLocaleLowerCase()))

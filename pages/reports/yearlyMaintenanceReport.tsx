@@ -226,7 +226,7 @@ export default function YearlyMaintenanceReport() {
     return <div>
         <div className="row">
             <div className="col-sm-4">
-                <EditTextDropdown items={state.curYearOptions} onSelectionChanged={sel => {
+                <EditTextDropdown selected={ state.curYearSelection} items={state.curYearOptions} onSelectionChanged={sel => {
                     setState({
                         ...state,
                         dspYear: sel?.value || '',
@@ -235,7 +235,7 @@ export default function YearlyMaintenanceReport() {
                 }} ></EditTextDropdown>
             </div>
             <div className="col-sm-4">
-                <EditTextDropdown items={state.allSheetInfos} onSelectionChanged={sel => {
+                <EditTextDropdown selected={state.curSheetInfo} items={state.allSheetInfos} onSelectionChanged={sel => {
                     setState({
                         ...state,                        
                         curSheetInfo: sel,
