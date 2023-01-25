@@ -14,7 +14,7 @@ export interface IGenericDropdownPropsOptional {
     className?: string;
     placeHolder?: string;
     //selected?: any;
-    setSelected?: Dispatch<SetStateAction<any>>;
+    //setSelected?: Dispatch<SetStateAction<any>>;
     dataFormatter?: (any, keyInd: number) => (JSX.Element | string | null);
     getDropDownControl?: (show: boolean) => JSX.Element;
     filterItems?: (any) => boolean;
@@ -105,7 +105,6 @@ export function GenericDropdown(props: IGenericDropdownProps) {
                     return <a className={data.className || "dropdown-item d-flex align-items-center"} href="" key={keyInd}
                         onClick={() => {   
                             props.onSelectionChanged(data);
-                            opts.setSelected(data);
                             setCurDisplayValue(data.label);
                             setShow(false);
                         }}
