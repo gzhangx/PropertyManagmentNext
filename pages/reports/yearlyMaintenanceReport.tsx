@@ -2,6 +2,8 @@ import React, { useState, useEffect } from "react";
 
 import {
     getMaintenanceFromSheet,
+    getSheetInfo,
+    ISheetInfo,
 } from '../../components/api';
 import moment from 'moment';
 //import EditDropdown, {IOptions} from '../paymentMatch/EditDropdown';
@@ -13,7 +15,6 @@ import {
 } from '../../components/reportTypes';
 
 import { CloseableDialog } from '../../components/generic/basedialog'
-import { rootCertificates } from "tls";
 
 
 interface IWithTotal {
@@ -53,6 +54,8 @@ interface IYearlyMaintenanceReportState {
     dspYear: string,
     byWorkerByCat: IByWorkerByCat;
     ownerID: string;
+    curSheetInfo: IEditTextDropdownItem;
+    allSheetInfos: IEditTextDropdownItem[];
 }
 
 export default function YearlyMaintenanceReport() {
@@ -79,11 +82,33 @@ export default function YearlyMaintenanceReport() {
         dspYear: '',
         byWorkerByCat: {} as IByWorkerByCat,
         ownerID: '',
+        curSheetInfo: null,
+        allSheetInfos: [],
     });
     
-    useEffect(() => {
- 
-        getMaintenanceFromSheet('Workers Info').then(rows => {
+    useEffect(() => { 
+        getSheetInfo().then(res => {
+            const opts: IEditTextDropdownItem[] = res.map(r => {
+                return {
+                    label: r.desc,
+                    value: r.sheetId,
+                } as IEditTextDropdownItem
+            })
+            setState(prev => {
+                return {
+                    ...prev,
+                    curSheetInfo: opts[0],
+                    allSheetInfos: opts,
+                }
+            })
+        })                
+    }, []);
+
+
+    async function getData() {
+        if (!state.curSheetInfo) return;
+        if (!state.curSheetInfo.value) return;
+        await getMaintenanceFromSheet(state.curSheetInfo.value, 'Workers Info').then(rows => {
             const goodWorkers = rows.reduce((acc, r) => {
                 acc[r.workerID] = true;
                 return acc;
@@ -95,20 +120,20 @@ export default function YearlyMaintenanceReport() {
                 }
             })
         });
-        getMaintenanceFromSheet('MaintainessRecord').then(rows => {
+        await getMaintenanceFromSheet(state.curSheetInfo.value, 'MaintainessRecord').then(rows => {
             const reduInfo = rows.reduce((acc, row) => {
                 if (row.date < acc.minDate) {
                     console.log('useing min date (orig,new)', acc.minDate, row.date);
-                    acc.minDate = row.date;                    
+                    acc.minDate = row.date;
                 }
                 return acc;
             }, {
                 minDate: '9999-99-99',
             })
-            
+
             console.log('setting up maintenacedata info for yearly Maintenance')
             if (rows && rows.length) {
-                const  minDate = reduInfo.minDate;
+                const minDate = reduInfo.minDate;
                 const fromYYYY = moment(minDate).format('YYYY');
                 const currentYYYY = moment().format('YYYY');
                 const years = [] as string[];
@@ -119,7 +144,7 @@ export default function YearlyMaintenanceReport() {
                 console.log(`setting dspYear ${dspYear} length of ypar op=${years.length}`)
                 if (years.length === 0) {
                     console.log('year ret is ');
-                    
+
                 }
                 setState(prev => ({
                     ...prev,
@@ -133,14 +158,10 @@ export default function YearlyMaintenanceReport() {
                 }));
             }
         });
-
-
-
-
-
-    }, []);
-
-
+    }
+    useEffect(() => {
+        getData();
+    }, [state.curSheetInfo]);
     useEffect(() => {
         console.log(`loading data for ${state.dspYear}`)
         getDataForYYYY(state, setState);
@@ -192,13 +213,25 @@ export default function YearlyMaintenanceReport() {
         if (!amt) return 0;
         return amt.toFixed(2);
     }
-    return <div><EditTextDropdown items={state.curYearOptions} onSelectionChanged={sel => {        
-            setState({
-                ...state,
-                dspYear: sel?.value || '',
-                curYearSelection: sel,
-            })        
-    }} ></EditTextDropdown>
+    return <div>
+        <div className="row">
+            <div className="col-sm-4">
+                <EditTextDropdown items={state.curYearOptions} onSelectionChanged={sel => {
+                    setState({
+                        ...state,
+                        dspYear: sel?.value || '',
+                        curYearSelection: sel,
+                    })
+                }} ></EditTextDropdown>
+            </div>
+            <div className="col-sm-4">
+                <EditTextDropdown items={state.allSheetInfos} onSelectionChanged={sel => {
+                    setState({
+                        ...state,                        
+                        curSheetInfo: sel,
+                    })
+                }} ></EditTextDropdown></div>        
+        </div>
         <CloseableDialog show={!!showDetail} setShow={() => setShowDetail(null)}>
             <table>
                 {

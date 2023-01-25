@@ -433,8 +433,8 @@ export async function googleSheetRead(id:string, op:string, range:string) : Prom
 }
 
 type MaintenanceRecordSheetName = 'Workers Info' | 'MaintainessRecord';
-export async function getMaintenanceFromSheet(sheetName: MaintenanceRecordSheetName) : Promise<IMaintenanceRawData[]> {
-    const data = await doPost(`misc/sheet/readMaintenanceRecord?sheetId=${sheetName}`, {}, 'GET');
+export async function getMaintenanceFromSheet(sheetId: string, sheetName: MaintenanceRecordSheetName) : Promise<IMaintenanceRawData[]> {
+    const data = await doPost(`misc/sheet/readMaintenanceRecord?sheetId=${sheetId}&sheetName=${sheetName}`, {}, 'GET');
     const noHeader = data.values.slice(1);
     if (sheetName === 'Workers Info') {
         return noHeader.map(n => {
@@ -471,3 +471,16 @@ export async function getMaintenanceFromSheet(sheetName: MaintenanceRecordSheetN
         } as IMaintenanceRawData;
     }).filter(x => x);
 }
+
+
+
+export interface ISheetInfo {
+    sheetId: string;
+    desc: string;
+}
+export async function getSheetInfo(): Promise<ISheetInfo[]> {
+    const data = await doPost(`misc/sheet/getSheetNames`, {}, 'GET');
+    return data.users as ISheetInfo[];
+}
+
+
