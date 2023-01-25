@@ -435,6 +435,9 @@ export async function googleSheetRead(id:string, op:string, range:string) : Prom
 type MaintenanceRecordSheetName = 'Workers Info' | 'MaintainessRecord';
 export async function getMaintenanceFromSheet(sheetId: string, sheetName: MaintenanceRecordSheetName) : Promise<IMaintenanceRawData[]> {
     const data = await doPost(`misc/sheet/readMaintenanceRecord?sheetId=${sheetId}&sheetName=${sheetName}`, {}, 'GET');
+    if (!data.values) {
+        return [];
+    }
     const noHeader = data.values.slice(1);
     if (sheetName === 'Workers Info') {
         return noHeader.map(n => {

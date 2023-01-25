@@ -156,7 +156,17 @@ export default function YearlyMaintenanceReport() {
                     curYearSelection: { label: dspYear, value: dspYear },
                     allRawData: rows,
                 }));
+            } else {
+                setState(prev => ({
+                    ...prev,                    
+                    ownerID: 'TODOADD',
+                    curYearOptions: [],
+                    curYearSelection: {label:'No year'},
+                    allRawData: [],
+                }));
             }
+        }).catch(err => {
+            console.log(err);
         });
     }
     useEffect(() => {
