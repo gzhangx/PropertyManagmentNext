@@ -448,7 +448,7 @@ export async function getMaintenanceFromSheet(sheetName: MaintenanceRecordSheetN
             console.log('bad row', row);
             return null;
         }
-        const amountRow = row[2].replace('$', '').trim();
+        const amountRow = row[2].replace(/[$,]/g, '').trim();
         const [matched] = amountRow.matchAll(/\(([0-9.]+?)\)/g);
         let amount = amountRow;
         if (matched) {

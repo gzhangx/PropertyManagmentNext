@@ -66,7 +66,14 @@ export default function YearlyMaintenanceReport() {
         workerInfoMapping: {},
         showWorkers: {},
         goodWorkers: {},
-        showCategories: {},
+        showCategories: {
+            'Repair': true,
+            'Commission Fee': true,
+            'Management fee': true,
+            'Pest Control': true,
+            'Lawn Maintenance': true,
+            'Cleaning': true,            
+        },
         rawData: [],
         allRawData: [],
         dspYear: '',
@@ -345,7 +352,7 @@ function formatData(state: IYearlyMaintenanceReportState, setState: React.Dispat
 
     const byWorkerByCat = dataRows.reduce((acc, d) => {
         //if (!state.showWorkers[d.workerID]) return acc;
-        //if (!state.showCategories[d.expenseCategoryId]) return acc;
+        if (!state.showCategories[d.expenseCategoryId]) return acc;
 
         const workerID = getDspWorker(d);
         if (!acc.workerIdHashFind[workerID]) {
