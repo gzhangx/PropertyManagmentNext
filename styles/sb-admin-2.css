@@ -5829,7 +5829,7 @@ a.close.disabled {
     max-height: calc(100% - 3.5rem);
   }
   .modal-dialog-scrollable .modal-content {
-    max-height: calc(100vh - 3.5rem);
+    max-height: calc(100vh - 8.5rem);
   }
   .modal-dialog-centered {
     min-height: calc(100% - 3.5rem);

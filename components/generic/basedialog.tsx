@@ -32,7 +32,7 @@ export function CloseableDialog(props: IClosableDialogProps) {
     const test = <button type="button" className="btn btn-secondary" data-dismiss="modal" onClick={onClose}>Close</button>
     return <BaseDialog {...props}>
         <>
-            <div className="modal-dialog">
+            <div className="modal-dialog-scrollable">
                 <div className="modal-content">
                     {
                         props.title && <div className="modal-header">

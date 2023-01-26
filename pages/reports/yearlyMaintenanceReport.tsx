@@ -395,7 +395,8 @@ export default function YearlyMaintenanceReport() {
                     })
                 }} ></EditTextDropdown></div>        
         </div>
-        <CloseableDialog show={!!showDetail} setShow={() => setShowDetail(null)}>
+        <CloseableDialog show={!!showDetail} title='Item Details' setShow={() => setShowDetail(null)}>
+            <div className="modal-body">
             <table>
                 {
                     sortBy((showDetail || [] as IShowDetailsData[]), 'date').map(d => {
@@ -403,7 +404,8 @@ export default function YearlyMaintenanceReport() {
                     })
 
                 }
-            </table>
+                </table>
+            </div>
         </CloseableDialog>
         <div>
             <div className="container">
