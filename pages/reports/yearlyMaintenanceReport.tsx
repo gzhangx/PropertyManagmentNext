@@ -15,6 +15,8 @@ import {
 } from '../../components/reportTypes';
 
 import { CloseableDialog } from '../../components/generic/basedialog'
+import { CreateSaveButton} from '../../components/generic/SaveFile'
+
 interface IShowDetailsData {
     amount: number;
     address: string;
@@ -71,6 +73,11 @@ const amtDsp = (amt: number) => {
     return amt.toFixed(2);
 }
 
+function DoubleAryToCsv(data: string[][]): string {
+    return data.map(ss => {
+        ss.join(',');
+    }).join('\n');
+}
 function GenerateByCatData(state: IYearlyMaintenanceReportState, setShowDetail: React.Dispatch<React.SetStateAction<IShowDetailsData[]>>) {    
     const workerNames = state.byWorkerByCat.workerIds || [];
     const catIds = state.byWorkerByCat.catIds || [];
@@ -395,10 +402,21 @@ export default function YearlyMaintenanceReport() {
                         ...state,                        
                         curSheetInfo: sel,
                     })
-                }} ></EditTextDropdown></div>        
+                }} ></EditTextDropdown></div>
+            <div className="col-sm-2">
+                {
+                    state.exportData.length ? <CreateSaveButton content={DoubleAryToCsv(state.exportData)} />:''
+                }
+            </div>
         </div>
+
         <CloseableDialog show={!!showDetail} title='Item Details' setShow={() => setShowDetail(null)}>
             <div className="modal-body">
+                <div>
+                    {                    
+                        showDetail ? <CreateSaveButton content={showDetail.map(d => `${d.amount.toFixed(2)},${d.date},${d.address},${d.notes},${d.debugText}`).join('\n')}  />:''
+                    }
+                </div>
             <table>
                 {
                     sortBy((showDetail || [] as IShowDetailsData[]), 'date').map((d,tri) => {
