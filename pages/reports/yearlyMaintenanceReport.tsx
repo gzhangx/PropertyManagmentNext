@@ -15,7 +15,13 @@ import {
 } from '../../components/reportTypes';
 
 import { CloseableDialog } from '../../components/generic/basedialog'
-
+interface IShowDetailsData {
+    amount: number;
+    address: string;
+    notes: string;
+    date: string;
+    debugText?: string;
+}
 
 interface IWithTotal {
     total: number;
@@ -31,7 +37,8 @@ interface IByWorkerIdByCatId {
 interface IByWorkerByCat {
     byWorker: IByWorkerIdByCatId;
     byWorkerTotal: IHashWithTotal;
-    byCats: IHashWithTotal;
+    byCatTotal: IHashWithTotal;
+    byCats: IByWorkerIdByCatId;
     total: number;
     workerIds: string[];
     workerIdHashFind: { [id: string]: boolean };
@@ -58,6 +65,88 @@ interface IYearlyMaintenanceReportState {
     allSheetInfos: IEditTextDropdownItem[];
 }
 
+const amtDsp = (amt: number) => {
+    if (!amt) return 0;
+    return amt.toFixed(2);
+}
+
+function GenerateByCatData(state: IYearlyMaintenanceReportState, setShowDetail: React.Dispatch<React.SetStateAction<IShowDetailsData[]>>) {    
+    const workerNames = state.byWorkerByCat.workerIds || [];
+    const catIds = state.byWorkerByCat.catIds || [];
+    const dataBy = state.byWorkerByCat.byCats;
+    return <div>
+        <div>
+            <table className="table">
+                <thead>
+                    <tr>
+                        <th scope="col">#</th>
+                        {
+                            workerNames.map((n, keyi) => {
+                                return <th scope="col" key={keyi}>{n}</th>
+                            })
+                        }
+                        <th>Total</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {
+                        catIds.map((catId, tri) => {
+                            return <tr key={tri}>
+                                <th scope="row">{catId}</th>
+                                {
+                                    workerNames.map((workerName, keyi) => {
+                                        return <td scope="col" key={keyi} onClick={() => {
+                                            const wkrCat = dataBy[catId][workerName];
+                                            if (!wkrCat) return;
+                                            setShowDetail(wkrCat.items.map(itm => {
+                                                let date = itm.date;
+                                                if (date.length > 10) date = date.substring(0, 10);
+                                                return {
+                                                    address: itm.houseID,
+                                                    amount: itm.amount,
+                                                    date,
+                                                    notes: itm.description,
+                                                } as IShowDetailsData;
+                                            }))
+                                        }}>{
+                                                amtDsp(dataBy[catId][workerName]?.total)
+                                            }</td>
+                                    })
+                                }
+                            </tr>
+                        })
+                    }
+                    {
+                        <tr>
+                            <th>Grand Total:</th>
+                            {
+                                workerNames.map((workerName, keyi) => {
+                                    return <td scope="col" key={keyi} onClick={() => {
+                                        const wkrCat = state.byWorkerByCat.byWorkerTotal[workerName];
+                                        if (!wkrCat) return;
+                                        setShowDetail(wkrCat.items.map(itm => {
+                                            let date = itm.date;
+                                            if (date.length > 10) date = date.substring(0, 10);
+                                            return {
+                                                address: itm.houseID,
+                                                amount: itm.amount,
+                                                date,
+                                                notes: itm.description,
+                                            } as IShowDetailsData;
+                                        }))
+                                    }}>{
+                                            amtDsp(state.byWorkerByCat.byWorkerTotal[workerName].total)
+                                    }</td>
+                                })
+                            }
+                            <td>{amtDsp(state.byWorkerByCat?.total)}</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+}
 export default function YearlyMaintenanceReport() {
     
     const [state, setState] = useState<IYearlyMaintenanceReportState>({
@@ -181,13 +270,7 @@ export default function YearlyMaintenanceReport() {
         formatData(state, setState);
     }, [state.rawData, state.showCategories, state.goodWorkers]);
 
-    interface IShowDetailsData {
-        amount: number;
-        address: string;
-        notes: string;
-        date: string;
-        debugText?: string;
-    }
+    
     const [showDetail, setShowDetail] = useState<IShowDetailsData[] | null>(null);
 
     let names: { id: string; name: string; }[] = [];
@@ -219,10 +302,7 @@ export default function YearlyMaintenanceReport() {
     }
 
 
-    const amtDsp = (amt: number) => {
-        if (!amt) return 0;
-        return amt.toFixed(2);
-    }
+    
     return <div>
         <div className="row">
             <div className="col-sm-4">
@@ -254,6 +334,9 @@ export default function YearlyMaintenanceReport() {
         </CloseableDialog>
         <div>
             <div className="container">
+                {
+                    GenerateByCatData(state, setShowDetail)
+                }
                 {
                     state.expenseCategories.map((exp,keyi) => {
                         return <>
@@ -335,7 +418,7 @@ export default function YearlyMaintenanceReport() {
                         {
                             categoryNames.map((cat, keyi) => {
                                 return <td scope="col" key={keyi}>{
-                                    amtDsp(state.byWorkerByCat.byCats[cat.id]?.total)
+                                    amtDsp(state.byWorkerByCat?.byCatTotal[cat.id]?.total)
                                 }</td>
                             })
                         }
@@ -420,9 +503,18 @@ function formatData(state: IYearlyMaintenanceReportState, setState: React.Dispat
         wkrTotal.total += d.amount;
         wkrTotal.items.push(d);
 
-        const byCats = getSet(acc.byCats, d.expenseCategoryId, { total: 0, items:[] }) as IWithTotal;
-        byCats.total += d.amount;
-        byCats.items.push(d);
+
+        const catTotal = getSet(acc.byCatTotal, d.expenseCategoryId, { total: 0, items: [] }) as IWithTotal;
+        catTotal.total += d.amount;
+        catTotal.items.push(d);
+
+        const byCats = getSet(acc.byCats, d.expenseCategoryId, {});
+        const byCatByWorker = getSet(byCats, d.workerID, {
+            total: 0,
+            items: [],
+        });
+        byCatByWorker.total += d.amount;
+        byCatByWorker.items.push(d);
         acc.total += d.amount;
         //console.log('byCats.total', byCats.total, wkrTotal.total, d.amount);
         return acc;
@@ -435,14 +527,16 @@ function formatData(state: IYearlyMaintenanceReportState, setState: React.Dispat
         catIds: [],
         catIdHashFind: {},
         byWorkerTotal: {},
+        byCatTotal: {},
     } as IByWorkerByCat);
 
+    console.log('byWorkerByCat is', byWorkerByCat)
     const totalByWorker = byWorkerByCat.workerIds.reduce((acc, wn) => {
         acc += byWorkerByCat.byWorkerTotal[wn].total;
         return acc;
     }, 0);
     const totalByCat = byWorkerByCat.catIds.reduce((acc, cid) => {
-        acc += byWorkerByCat.byCats[cid].total;
+        acc += byWorkerByCat.byCatTotal[cid].total;
         return acc;
     }, 0);
     console.log(`tota=${byWorkerByCat.total} by worker total=${totalByWorker} bycattota=${totalByCat}`); //just to veryf
