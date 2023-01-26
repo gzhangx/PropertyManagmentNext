@@ -75,8 +75,8 @@ const amtDsp = (amt: number) => {
 
 function DoubleAryToCsv(data: string[][]): string {
     return data.map(ss => {
-        ss.join(',');
-    }).join('\n');
+        return ss.join(',');
+    }).join('\r\n');
 }
 function GenerateByCatData(state: IYearlyMaintenanceReportState, setShowDetail: React.Dispatch<React.SetStateAction<IShowDetailsData[]>>) {    
     const workerNames = state.byWorkerByCat.workerIds || [];
@@ -381,8 +381,7 @@ export default function YearlyMaintenanceReport() {
     }, [state.rawData, state.showCategories, state.goodWorkers]);
 
     
-    const [showDetail, setShowDetail] = useState<IShowDetailsData[] | null>(null);    
-
+    const [showDetail, setShowDetail] = useState<IShowDetailsData[] | null>(null);        
 
     
     return <div>
