@@ -41,11 +41,10 @@ interface IByWorkerByCat {
     byWorkerTotal: IHashWithTotal;
     byCatTotal: IHashWithTotal;
     byCats: IByWorkerIdByCatId;
-    total: number;
-    workerIds: string[];
+    total: number;    
     workerIdHashFind: { [id: string]: boolean };
     catIds: string[];
-    catIdHashFind: { [id: string]: boolean };
+    catIdHashFind: { [id: string]: boolean };    
 }
 
 interface IYearlyMaintenanceReportState {
@@ -66,6 +65,8 @@ interface IYearlyMaintenanceReportState {
     curSheetInfo: IEditTextDropdownItem;
     allSheetInfos: IEditTextDropdownItem[];
     exportData: string[][];
+    workerIds: string[];
+    dspWorkerIds: string[];
 }
 
 const amtDsp = (amt: number) => {
@@ -79,7 +80,7 @@ function DoubleAryToCsv(data: string[][]): string {
     }).join('\r\n');
 }
 function GenerateByCatData(state: IYearlyMaintenanceReportState, setShowDetail: React.Dispatch<React.SetStateAction<IShowDetailsData[]>>) {    
-    const workerNames = state.byWorkerByCat.workerIds || [];
+    const workerNames = state.dspWorkerIds || [];
     const catIds = state.byWorkerByCat.catIds || [];
     const dataBy = state.byWorkerByCat.byCats;
     return <div>
@@ -129,7 +130,7 @@ function GenerateByCatData(state: IYearlyMaintenanceReportState, setShowDetail: 
                             <th>Grand Total:</th>
                             {
                                 workerNames.map((workerName, keyi) => {
-                                    return <td scope="col" key={keyi} onClick={() => {
+                                    return <td scope="col" key={keyi} onClick={() => {                                        
                                         const wkrCat = state.byWorkerByCat.byWorkerTotal[workerName];
                                         if (!wkrCat) return;
                                         setShowDetail(wkrCat.items.map(itm => {
@@ -143,7 +144,7 @@ function GenerateByCatData(state: IYearlyMaintenanceReportState, setShowDetail: 
                                             } as IShowDetailsData;
                                         }))
                                     }}>{
-                                            amtDsp(state.byWorkerByCat.byWorkerTotal[workerName].total)
+                                            amtDsp(state.byWorkerByCat.byWorkerTotal[workerName]?.total)
                                     }</td>
                                 })
                             }
@@ -161,8 +162,8 @@ function GenerateByWorkerByCatDontWantData(state: IYearlyMaintenanceReportState,
 ) {   
     let names: { id: string; name: string; }[] = [];
     let categoryNames: { id: string; name: string; }[] = [];
-    if (state.byWorkerByCat && state.byWorkerByCat.workerIds) {
-        names = state.byWorkerByCat.workerIds.map(id => {
+    if (state.dspWorkerIds) {
+        names = state.dspWorkerIds.map(id => {
             const wi = state.workerInfoMapping[id];
             if (!wi) {
                 return {
@@ -283,6 +284,8 @@ export default function YearlyMaintenanceReport() {
         curSheetInfo: null,
         allSheetInfos: [],
         exportData: [],
+        workerIds:[],
+        dspWorkerIds: [],
     });
     
     useEffect(() => { 
@@ -320,17 +323,19 @@ export default function YearlyMaintenanceReport() {
             })
         });
         await getMaintenanceFromSheet(state.curSheetInfo.value, 'MaintainessRecord').then(rows => {
+            const showWorkers = {};
             const reduInfo = rows.reduce((acc, row) => {
                 if (row.date < acc.minDate) {
                     console.log('useing min date (orig,new)', acc.minDate, row.date);
                     acc.minDate = row.date;
                 }
+                showWorkers[getDspWorker(state, row)] = true;
                 return acc;
             }, {
                 minDate: '9999-99-99',
             })
 
-            console.log('setting up maintenacedata info for yearly Maintenance')
+            console.log('setting up maintenacedata info for yearly Maintenance', showWorkers)
             if (rows && rows.length) {
                 const minDate = reduInfo.minDate;
                 const fromYYYY = moment(minDate).format('YYYY');
@@ -354,6 +359,7 @@ export default function YearlyMaintenanceReport() {
                     curYearOptions: years.map(y => ({ label: y, value: y })),
                     curYearSelection: { label: dspYear, value: dspYear },
                     allRawData: rows,
+                    showWorkers,
                 }));
             } else {
                 setState(prev => ({
@@ -362,6 +368,7 @@ export default function YearlyMaintenanceReport() {
                     curYearOptions: [],
                     curYearSelection: {label:'No year'},
                     allRawData: [],
+                    showWorkers: {},
                 }));
             }
         }).catch(err => {
@@ -376,9 +383,12 @@ export default function YearlyMaintenanceReport() {
         getDataForYYYY(state, setState);
     }, [state.dspYear]);
 
+    const curShowWorkers = state.dspWorkerIds.map(w => {
+        return `${w}:${!!state.showWorkers[w]}`
+    }).join(',');
     useEffect(() => {
         formatData(state, setState);
-    }, [state.rawData, state.showCategories, state.goodWorkers]);
+    }, [state.rawData, state.showCategories, state.goodWorkers, curShowWorkers]);
 
     
     const [showDetail, setShowDetail] = useState<IShowDetailsData[] | null>(null);        
@@ -407,6 +417,39 @@ export default function YearlyMaintenanceReport() {
                     state.exportData.length ? <CreateSaveButton content={DoubleAryToCsv(state.exportData)} />:''
                 }
             </div>
+        </div>
+        <div className="row">
+            
+                {
+                    (state.workerIds || []).map((w,wi) => {
+                        return <div key={wi} className='' style={{
+                            marginLeft: '40px'
+                        }}><input className="form-check-input" type='checkbox' checked={state.showWorkers[w]}
+                                onClick={() => {
+                                    state.showWorkers[w] = !state.showWorkers[w];                                    
+                                    setState(prev => {
+                                        let dspWorkerIds = prev.dspWorkerIds;
+                                        if (prev.showWorkers[w]) {
+                                            if (!dspWorkerIds.includes(w)) {
+                                                dspWorkerIds.push(w);
+                                                dspWorkerIds.sort();
+                                            }
+                                        } else {
+                                            dspWorkerIds = dspWorkerIds.filter(dw => dw != w);
+                                        }
+                                        return {
+                                            ...prev,
+                                            showWorkers: state.showWorkers,
+                                            dspWorkerIds,
+                                        }
+                                    })
+                                }}
+                            /><label className="form-check-label" style={{
+                            marginRight:'10px'
+                        }}>{w}</label></div>
+                    })
+                }
+            
         </div>
 
         <CloseableDialog show={!!showDetail} title='Item Details' setShow={() => setShowDetail(null)}>
@@ -449,11 +492,27 @@ function getDataForYYYY(state: IYearlyMaintenanceReportState, setState: React.Di
     const startDate = m.format('YYYY-MM-DD');
     const endDate = m.add(1, 'year').startOf('year').format('YYYY-MM-DD');
     console.log(`star= ${startDate} end=${endDate}`)
+    const rawData = state.allRawData.filter(d => {
+        return d.date >= startDate && d.date <= endDate;
+    });
+    const workerIdsAcc = rawData.reduce((acc, r) => {
+        const workerId = getDspWorker(state, r)
+        if (!acc.found[workerId]) {
+            acc.found[workerId] = true;
+            acc.ary.push(workerId);
+        }
+        return acc;
+    }, {
+        ary: [] as string[],
+        found: {} as {[name:string]:boolean}
+    });
+    const workerIds = workerIdsAcc.ary.sort();
+    let dspWorkerIds = state.dspWorkerIds.length ? state.dspWorkerIds : workerIds;
     setState(prev => ({
-            ...prev,
-        rawData: prev.allRawData.filter(d => {
-            return d.date >= startDate && d.date <= endDate;
-            }),
+        ...prev,
+        rawData,        
+        workerIds,
+        dspWorkerIds,
     }))
     //getAllMaintenanceData(ownerID, startDate, endDate).then(rrr => {
     //    const dataRows = rrr.rows;
@@ -465,7 +524,12 @@ function getDataForYYYY(state: IYearlyMaintenanceReportState, setState: React.Di
     //});
 }
 
-
+function getDspWorker(state: IYearlyMaintenanceReportState, row: IMaintenanceRawData) {
+    if (!state.goodWorkers[row.workerID]) {
+        return "OtherUser";
+    }
+    return row.workerID;
+}
 function formatData(state: IYearlyMaintenanceReportState, setState: React.Dispatch<React.SetStateAction<IYearlyMaintenanceReportState>>) {
     const dataRows = state.rawData;
     function getSet<T extends (IWithTotal | IHashWithTotal)>(obj: {[id:string]:T}, id: string, init: T) {
@@ -478,21 +542,17 @@ function formatData(state: IYearlyMaintenanceReportState, setState: React.Dispat
     }
 
 
-    function getDspWorker(row: IMaintenanceRawData) {
-        if (!state.goodWorkers[row.workerID]) {
-            return "OtherUser";
-        }        
-        return row.workerID;
-    }
+    
 
     const byWorkerByCat = dataRows.reduce((acc, d) => {
-        //if (!state.showWorkers[d.workerID]) return acc;
+        if (!state.showWorkers[d.workerID]) {
+            return acc;
+        }
         if (!state.showCategories[d.expenseCategoryId]) return acc;
 
-        const workerID = getDspWorker(d);
+        const workerID = getDspWorker(state, d);
         if (!acc.workerIdHashFind[workerID]) {
             acc.workerIdHashFind[workerID] = true;
-            acc.workerIds.push(workerID);
         }
         
 
@@ -531,7 +591,6 @@ function formatData(state: IYearlyMaintenanceReportState, setState: React.Dispat
         byWorker: {},
         byCats: {},
         total: 0,
-        workerIds: [] as string[],
         workerIdHashFind: {},
         catIds: [],
         catIdHashFind: {},
@@ -540,17 +599,17 @@ function formatData(state: IYearlyMaintenanceReportState, setState: React.Dispat
     } as IByWorkerByCat);
 
     
-    const totalByWorker = byWorkerByCat.workerIds.reduce((acc, wn) => {
-        acc += byWorkerByCat.byWorkerTotal[wn].total;
+    const totalByWorker = state.workerIds.reduce((acc, wn) => {
+        acc += byWorkerByCat.byWorkerTotal[wn]?.total || 0;
         return acc;
     }, 0);
-    const exportData = [[''].concat(byWorkerByCat.workerIds)];
+    const exportData = [[''].concat(state.dspWorkerIds)];
     const totalByCat = byWorkerByCat.catIds.reduce((acc, cid) => {
         acc += byWorkerByCat.byCatTotal[cid].total;
-        exportData.push([cid,...byWorkerByCat.workerIds.map(w => (byWorkerByCat.byCats[cid][w]?.total || 0).toFixed(2))]);
+        exportData.push([cid,...state.dspWorkerIds.map(w => (byWorkerByCat.byCats[cid][w]?.total || 0).toFixed(2))]);
         return acc;
     }, 0);        
-    console.log('totals', exportData)
+    //console.log('totals', exportData)
     console.log(`tota=${byWorkerByCat.total} by worker total=${totalByWorker} bycattota=${totalByCat}`); //just to veryf
     setState(prev => ({
         ...prev,
