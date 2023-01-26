@@ -63,6 +63,7 @@ interface IYearlyMaintenanceReportState {
     ownerID: string;
     curSheetInfo: IEditTextDropdownItem;
     allSheetInfos: IEditTextDropdownItem[];
+    exportData: string[][];
 }
 
 const amtDsp = (amt: number) => {
@@ -274,6 +275,7 @@ export default function YearlyMaintenanceReport() {
         ownerID: '',
         curSheetInfo: null,
         allSheetInfos: [],
+        exportData: [],
     });
     
     useEffect(() => { 
@@ -399,8 +401,8 @@ export default function YearlyMaintenanceReport() {
             <div className="modal-body">
             <table>
                 {
-                    sortBy((showDetail || [] as IShowDetailsData[]), 'date').map(d => {
-                        return <tr><td>{d.amount.toFixed(2)}</td><td>{d.date}</td> <td>{d.address}</td><td> {d.notes}</td> <td>{d.debugText}</td></tr>
+                    sortBy((showDetail || [] as IShowDetailsData[]), 'date').map((d,tri) => {
+                        return <tr key={tri}><td>{d.amount.toFixed(2)}</td><td>{d.date}</td> <td>{d.address}</td><td> {d.notes}</td> <td>{d.debugText}</td></tr>
                     })
 
                 }
@@ -520,18 +522,22 @@ function formatData(state: IYearlyMaintenanceReportState, setState: React.Dispat
         byCatTotal: {},
     } as IByWorkerByCat);
 
-    console.log('byWorkerByCat is', byWorkerByCat)
+    
     const totalByWorker = byWorkerByCat.workerIds.reduce((acc, wn) => {
         acc += byWorkerByCat.byWorkerTotal[wn].total;
         return acc;
     }, 0);
+    const exportData = [[''].concat(byWorkerByCat.workerIds)];
     const totalByCat = byWorkerByCat.catIds.reduce((acc, cid) => {
         acc += byWorkerByCat.byCatTotal[cid].total;
+        exportData.push([cid,...byWorkerByCat.workerIds.map(w => (byWorkerByCat.byCats[cid][w]?.total || 0).toFixed(2))]);
         return acc;
-    }, 0);
+    }, 0);        
+    console.log('totals', exportData)
     console.log(`tota=${byWorkerByCat.total} by worker total=${totalByWorker} bycattota=${totalByCat}`); //just to veryf
     setState(prev => ({
         ...prev,
         byWorkerByCat,
+        exportData,
     }));
 }
