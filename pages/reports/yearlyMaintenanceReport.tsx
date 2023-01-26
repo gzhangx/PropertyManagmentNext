@@ -147,6 +147,107 @@ function GenerateByCatData(state: IYearlyMaintenanceReportState, setShowDetail: 
         </div>
     </div>
 }
+
+
+function GenerateByWorkerByCatDontWantData(state: IYearlyMaintenanceReportState, setShowDetail: React.Dispatch<React.SetStateAction<IShowDetailsData[]>>
+) {   
+    let names: { id: string; name: string; }[] = [];
+    let categoryNames: { id: string; name: string; }[] = [];
+    if (state.byWorkerByCat && state.byWorkerByCat.workerIds) {
+        names = state.byWorkerByCat.workerIds.map(id => {
+            const wi = state.workerInfoMapping[id];
+            if (!wi) {
+                return {
+                    id,
+                    name: id,
+                }
+            } else {
+                return {
+                    id,
+                    name: `${wi.firstName} ${wi.lastName}`
+                }
+            }
+        });
+        names = sortBy(names, 'name') as { id: string; name: string; }[];
+
+        categoryNames = state.byWorkerByCat.catIds.map(id => {
+            const name = state.expenseCategoriesMapping[id] || id;
+            return {
+                id,
+                name,
+            }
+        });
+    }
+    return <table className="table">
+        <thead>
+            <tr>
+                <th scope="col">#</th>
+                {
+                    categoryNames.map((n, keyi) => {
+                        return <th scope="col" key={keyi}>{n.name}</th>
+                    })
+                }
+                <th>Total</th>
+            </tr>
+        </thead>
+        <tbody>
+            {
+                names.map((n, tri) => {
+                    return <tr key={tri}>
+                        <th scope="row">{n.name}</th>
+                        {
+                            categoryNames.map((cat, keyi) => {
+                                return <td scope="col" key={keyi} onClick={() => {
+                                    const wkrCat = state.byWorkerByCat.byWorker[n.id][cat.id];
+                                    if (!wkrCat) return;
+                                    setShowDetail(wkrCat.items.map(itm => {
+                                        let date = itm.date;
+                                        if (date.length > 10) date = date.substring(0, 10);
+                                        return {
+                                            address: itm.houseID,
+                                            amount: itm.amount,
+                                            date,
+                                            notes: itm.description,
+                                        } as IShowDetailsData;
+                                    }))
+                                }}>{
+                                        amtDsp(state.byWorkerByCat.byWorker[n.id][cat.id]?.total)
+                                    }</td>
+                            })
+                        }
+                        <td onClick={() => {
+                            const wkrCat = state.byWorkerByCat.byWorkerTotal[n.id];
+                            if (!wkrCat) return;
+                            setShowDetail(wkrCat.items.map(itm => {
+                                let date = itm.date;
+                                if (date.length > 10) date = date.substring(0, 10);
+                                return {
+                                    address: itm.houseID,
+                                    amount: itm.amount,
+                                    date,
+                                    notes: itm.description,
+                                } as IShowDetailsData;
+                            }))
+                        }}>{amtDsp(state.byWorkerByCat.byWorkerTotal[n.id].total)}</td>
+                    </tr>
+                })
+            }
+            {
+                <tr>
+                    <th>Grand Total:</th>
+                    {
+                        categoryNames.map((cat, keyi) => {
+                            return <td scope="col" key={keyi}>{
+                                amtDsp(state.byWorkerByCat?.byCatTotal[cat.id]?.total)
+                            }</td>
+                        })
+                    }
+                    <td>{amtDsp(state.byWorkerByCat?.total)}</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
 export default function YearlyMaintenanceReport() {
     
     const [state, setState] = useState<IYearlyMaintenanceReportState>({
@@ -271,35 +372,7 @@ export default function YearlyMaintenanceReport() {
     }, [state.rawData, state.showCategories, state.goodWorkers]);
 
     
-    const [showDetail, setShowDetail] = useState<IShowDetailsData[] | null>(null);
-
-    let names: { id: string; name: string; }[] = [];
-    let categoryNames: { id: string; name: string; }[] = [];
-    if (state.byWorkerByCat && state.byWorkerByCat.workerIds) {
-        names = state.byWorkerByCat.workerIds.map(id => {
-            const wi = state.workerInfoMapping[id];
-            if (!wi) {
-                return {
-                    id,
-                    name: id,
-                }
-            } else {
-                return {
-                    id,
-                    name: `${wi.firstName} ${wi.lastName}`
-                }
-            }
-        });
-        names = sortBy(names, 'name') as { id: string; name: string;}[];
-
-        categoryNames = state.byWorkerByCat.catIds.map(id => {
-            const name = state.expenseCategoriesMapping[id] || id;
-            return {
-                id,
-                name,
-            }
-        });
-    }
+    const [showDetail, setShowDetail] = useState<IShowDetailsData[] | null>(null);    
 
 
     
@@ -334,99 +407,14 @@ export default function YearlyMaintenanceReport() {
         </CloseableDialog>
         <div>
             <div className="container">
-                {
-                    GenerateByCatData(state, setShowDetail)
-                }
-                {
-                    state.expenseCategories.map((exp,keyi) => {
-                        return <>
-                            <input type="checkbox" className="form-check-input" id="exampleCheck1"
-                                   checked={state.showCategories[exp.id]}
-                                   onClick={() => {
-                                       setState(prev => ({
-                                           ...prev,
-                                           showCategories: {
-                                               ...state.showCategories,
-                                               [exp.id]: !state.showCategories[exp.id],
-                                           }
-                                       }));
-                                   }}
-                            ></input>
-                            <span className="border" key={keyi}  >{exp.name}</span>
-                            <span> </span>
-                        </>
-                    })
-                }
+                
             </div>
-            <table className="table">
-                <thead>
-                <tr>
-                    <th scope="col">#</th>
-                    {
-                        categoryNames.map((n,keyi) => {
-                            return <th scope="col" key={keyi}>{n.name}</th>
-                        })
-                    }
-                    <th>Total</th>
-                </tr>
-                </thead>
-                <tbody>
-                {
-                    names.map((n, tri) => {
-                        return <tr key={tri}>
-                            <th scope="row">{n.name}</th>
-                            {
-                                categoryNames.map((cat, keyi) => {
-                                    return <td scope="col" key={keyi} onClick={() => {
-                                        const wkrCat = state.byWorkerByCat.byWorker[n.id][cat.id];
-                                        if (!wkrCat) return;
-                                        setShowDetail(wkrCat.items.map(itm => {
-                                            let date = itm.date;
-                                            if (date.length > 10) date = date.substring(0, 10);
-                                            return {
-                                                address: itm.houseID,
-                                                amount: itm.amount,
-                                                date,
-                                                notes: itm.description,
-                                            } as IShowDetailsData;
-                                        }))
-                                    }}>{
-                                        amtDsp(state.byWorkerByCat.byWorker[n.id][cat.id]?.total)
-                                    }</td>
-                                })
-                            }
-                            <td onClick={() => {
-                                const wkrCat = state.byWorkerByCat.byWorkerTotal[n.id];
-                                if (!wkrCat) return;
-                                setShowDetail(wkrCat.items.map(itm => {
-                                    let date = itm.date;
-                                    if (date.length > 10) date = date.substring(0, 10);
-                                    return {
-                                        address: itm.houseID,
-                                        amount: itm.amount,
-                                        date,
-                                        notes: itm.description,
-                                    } as IShowDetailsData;
-                                }))
-                            }}>{amtDsp(state.byWorkerByCat.byWorkerTotal[n.id].total)}</td>
-                        </tr>
-                    })
-                }
-                {
-                    <tr>
-                        <th>Grand Total:</th>
-                        {
-                            categoryNames.map((cat, keyi) => {
-                                return <td scope="col" key={keyi}>{
-                                    amtDsp(state.byWorkerByCat?.byCatTotal[cat.id]?.total)
-                                }</td>
-                            })
-                        }
-                        <td>{amtDsp(state.byWorkerByCat?.total)}</td>
-                    </tr>
-                }
-                </tbody>
-            </table>
+            {
+                GenerateByCatData(state, setShowDetail)
+            }
+            {
+                //GenerateByWorkerByCatDontWantData(state, setShowDetail)
+            }
         </div>
     </div>
 }
