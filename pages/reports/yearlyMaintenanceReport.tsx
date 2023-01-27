@@ -622,6 +622,10 @@ function getDspWorker(state: IYearlyMaintenanceReportState, row: IMaintenanceRaw
     }
     return row.workerID;
 }
+
+function round2(num: number) {
+    return Math.round(num * 100) / 100
+}
 function formatData(state: IYearlyMaintenanceReportState, setState: React.Dispatch<React.SetStateAction<IYearlyMaintenanceReportState>>) {
     const dataRows = state.rawData;
     function getSet<T extends (IWithTotal | IHashWithTotal)>(obj: {[id:string]:T}, id: string, init: T) {
@@ -665,15 +669,18 @@ function formatData(state: IYearlyMaintenanceReportState, setState: React.Dispat
             items: [],
         });
         exp.total += d.amount;
+        exp.total = round2(exp.total);
         exp.items.push(d);
 
         const wkrTotal = getSet(acc.byWorkerTotal, workerID, {total: 0, items:[]}) as IWithTotal;
         wkrTotal.total += d.amount;
+        wkrTotal.total = round2(wkrTotal.total);
         wkrTotal.items.push(d);
 
 
         const catTotal = getSet(acc.byCatTotal, d.expenseCategoryId, { total: 0, items: [] }) as IWithTotal;
         catTotal.total += d.amount;
+        catTotal.total = round2(catTotal.total);
         catTotal.items.push(d);
 
         const byCats = getSet(acc.byCats, d.expenseCategoryId, {});
@@ -682,8 +689,10 @@ function formatData(state: IYearlyMaintenanceReportState, setState: React.Dispat
             items: [],
         });
         byCatByWorker.total += d.amount;
+        byCatByWorker.total = round2(byCatByWorker.total);
         byCatByWorker.items.push(d);
         acc.total += d.amount;
+        acc.total = round2(acc.total)
         //console.log('byCats.total', byCats.total, wkrTotal.total, d.amount);
         return acc;
     }, {
