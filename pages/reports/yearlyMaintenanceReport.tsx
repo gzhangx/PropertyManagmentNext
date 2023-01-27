@@ -369,14 +369,18 @@ export default function YearlyMaintenanceReport() {
             }            
         });
         showProgress('Getting Data for ' + state.curSheetInfo.label);
-        await getMaintenanceFromSheet(state.curSheetInfo.value, 'MaintainessRecord').then(rows => {
+        await getMaintenanceFromSheet(state.curSheetInfo.value, 'MaintainessRecord').then(rawRows => {
             showProgress('');
+            const rows = rawRows.filter(row => {
+                if (!state.showCategories[row.expenseCategoryId]) return false;
+                return true;
+            });
             const showWorkers = {};
             const reduInfo = rows.reduce((acc, row) => {
                 if (row.date < acc.minDate) {
                     console.log('useing min date (orig,new)', acc.minDate, row.date);
                     acc.minDate = row.date;
-                }
+                }                
                 showWorkers[getDspWorker(state, row)] = true;
                 return acc;
             }, {
