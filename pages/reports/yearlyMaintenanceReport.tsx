@@ -107,7 +107,20 @@ function GenerateByCatData(state: IYearlyMaintenanceReportState, setShowDetail: 
                         {
                             workerNames.map((n, keyi) => {
                                 const wkrCat = state.byWorkerByCat.byWorkerTotal[n];
-                                return <th scope="col" key={keyi} style={get1099Color(wkrCat)}>{n}</th>
+                                const showDetail = () => {
+                                    if (!wkrCat) return;
+                                    setShowDetail(wkrCat.items.map(itm => {
+                                        let date = itm.date;
+                                        if (date.length > 10) date = date.substring(0, 10);
+                                        return {
+                                            address: itm.houseID,
+                                            amount: itm.amount,
+                                            date,
+                                            notes: itm.description,
+                                        } as IShowDetailsData;
+                                    }))
+                                }
+                                return <th scope="col" key={keyi} style={get1099Color(wkrCat)} onClick={showDetail}>{n}</th>
                             })
                         }
                         <th>Total</th>
@@ -147,20 +160,9 @@ function GenerateByCatData(state: IYearlyMaintenanceReportState, setShowDetail: 
                             {
                                 workerNames.map((workerName, keyi) => {
                                     const wkrCat = state.byWorkerByCat.byWorkerTotal[workerName];
-                                    return <td scope="col" style={get1099Color(wkrCat)} key={keyi} onClick={() => {                                                                                
-                                        if (!wkrCat) return;
-                                        setShowDetail(wkrCat.items.map(itm => {
-                                            let date = itm.date;
-                                            if (date.length > 10) date = date.substring(0, 10);
-                                            return {
-                                                address: itm.houseID,
-                                                amount: itm.amount,
-                                                date,
-                                                notes: itm.description,
-                                            } as IShowDetailsData;
-                                        }))
-                                    }}>{
-                                            amtDsp(wkrCat?.total)
+                                    
+                                    return <td scope="col" style={get1099Color(wkrCat)} key={keyi}>{
+                                        amtDsp(wkrCat?.total)
                                     }</td>
                                 })
                             }
