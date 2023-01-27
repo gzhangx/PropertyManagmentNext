@@ -92,6 +92,12 @@ function GenerateByCatData(state: IYearlyMaintenanceReportState, setShowDetail: 
     const workerNames = state.dspWorkerIds || [];
     const catIds = state.byWorkerByCat.catIds || [];
     const dataBy = state.byWorkerByCat.byCats;
+    const get1099Color = (wkrCat:IWithTotal):(React.CSSProperties) => {
+        return wkrCat?.total >= 600 ? {
+            fontWeight: 'bold',
+            color: 'green'
+        } : {}
+    }
     return <div>
         <div>
             <table className="table">
@@ -100,7 +106,8 @@ function GenerateByCatData(state: IYearlyMaintenanceReportState, setShowDetail: 
                         <th scope="col">#</th>
                         {
                             workerNames.map((n, keyi) => {
-                                return <th scope="col" key={keyi}>{n}</th>
+                                const wkrCat = state.byWorkerByCat.byWorkerTotal[n];
+                                return <th scope="col" key={keyi} style={get1099Color(wkrCat)}>{n}</th>
                             })
                         }
                         <th>Total</th>
@@ -113,8 +120,8 @@ function GenerateByCatData(state: IYearlyMaintenanceReportState, setShowDetail: 
                                 <th scope="row">{catId}</th>
                                 {
                                     workerNames.map((workerName, keyi) => {
-                                        return <td scope="col" key={keyi} onClick={() => {
-                                            const wkrCat = dataBy[catId][workerName];
+                                        const wkrCat = dataBy[catId][workerName];
+                                        return <td scope="col" key={keyi} onClick={() => {                                            
                                             if (!wkrCat) return;
                                             setShowDetail(wkrCat.items.map(itm => {
                                                 let date = itm.date;
@@ -127,7 +134,7 @@ function GenerateByCatData(state: IYearlyMaintenanceReportState, setShowDetail: 
                                                 } as IShowDetailsData;
                                             }))
                                         }}>{
-                                                amtDsp(dataBy[catId][workerName]?.total)
+                                                amtDsp(wkrCat?.total)
                                             }</td>
                                     })
                                 }
@@ -139,8 +146,8 @@ function GenerateByCatData(state: IYearlyMaintenanceReportState, setShowDetail: 
                             <th>Grand Total:</th>
                             {
                                 workerNames.map((workerName, keyi) => {
-                                    return <td scope="col" key={keyi} onClick={() => {                                        
-                                        const wkrCat = state.byWorkerByCat.byWorkerTotal[workerName];
+                                    const wkrCat = state.byWorkerByCat.byWorkerTotal[workerName];
+                                    return <td scope="col" style={get1099Color(wkrCat)} key={keyi} onClick={() => {                                                                                
                                         if (!wkrCat) return;
                                         setShowDetail(wkrCat.items.map(itm => {
                                             let date = itm.date;
@@ -153,7 +160,7 @@ function GenerateByCatData(state: IYearlyMaintenanceReportState, setShowDetail: 
                                             } as IShowDetailsData;
                                         }))
                                     }}>{
-                                            amtDsp(state.byWorkerByCat.byWorkerTotal[workerName]?.total)
+                                            amtDsp(wkrCat?.total)
                                     }</td>
                                 })
                             }
