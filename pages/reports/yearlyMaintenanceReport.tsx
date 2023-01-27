@@ -449,14 +449,14 @@ export default function YearlyMaintenanceReport() {
     useEffect(() => {
         //console.log(`loading data for ${state.dspYear}`, state.goodWorkers)
         getDataForYYYY(state, setState);
-    }, [state.dspYear, state.curSelectedOwner.label]);
+    }, [state.dspYear, state.curSelectedOwner?.label]);
 
     const curShowWorkers = state.dspWorkerIds.map(w => {
         return `${w}:${!!state.showWorkers[w]}`
     }).join(',');
     useEffect(() => {
         formatData(state, setState);
-    }, [state.curYearSelection.label, state.curSelectedOwner.label, state.curSheetInfo.label,  curShowWorkers]);
+    }, [state.curYearSelection?.label, state.curSelectedOwner?.label, state.curSheetInfo?.label,  curShowWorkers]);
 
     
     const [showDetail, setShowDetail] = useState<IShowDetailsData[] | null>(null);        
