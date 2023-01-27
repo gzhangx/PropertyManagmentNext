@@ -67,6 +67,7 @@ interface IYearlyMaintenanceReportState {
     exportData: string[][];
     workerIds: string[];
     dspWorkerIds: string[];
+    progressText: string;
 }
 
 const amtDsp = (amt: number) => {
@@ -286,8 +287,15 @@ export default function YearlyMaintenanceReport() {
         exportData: [],
         workerIds:[],
         dspWorkerIds: [],
+        progressText: '',
     });
     
+    const showProgress = progressText => setState(prev => {
+        return {
+            ...prev,
+            progressText,
+        }
+    })
     useEffect(() => { 
         getSheetInfo().then(res => {
             const opts: IEditTextDropdownItem[] = res.map(r => {
@@ -310,6 +318,7 @@ export default function YearlyMaintenanceReport() {
     async function getData() {
         if (!state.curSheetInfo) return;
         if (!state.curSheetInfo.value) return;
+        showProgress('Getting worker Info for ' + state.curSheetInfo.label);
         await getMaintenanceFromSheet(state.curSheetInfo.value, 'Workers Info').then(rows => {
             const goodWorkers = rows.reduce((acc, r) => {
                 acc[r.workerID] = true;
@@ -322,7 +331,9 @@ export default function YearlyMaintenanceReport() {
                 }
             })
         });
+        showProgress('Getting Data for ' + state.curSheetInfo.label);
         await getMaintenanceFromSheet(state.curSheetInfo.value, 'MaintainessRecord').then(rows => {
+            showProgress('');
             const showWorkers = {};
             const reduInfo = rows.reduce((acc, row) => {
                 if (row.date < acc.minDate) {
@@ -372,8 +383,10 @@ export default function YearlyMaintenanceReport() {
                 }));
             }
         }).catch(err => {
+            showProgress(err.message);
             console.log(err);
         });
+        
     }
     useEffect(() => {
         getData();
@@ -452,6 +465,15 @@ export default function YearlyMaintenanceReport() {
             
         </div>
 
+        <CloseableDialog show={!!state.progressText} title='Progress' setShow={() => {
+            showProgress('');
+        }}>
+            <div className="modal-body">
+                <div>
+                    {state.progressText}
+                </div>                
+            </div>
+        </CloseableDialog>
         <CloseableDialog show={!!showDetail} title='Item Details' setShow={() => setShowDetail(null)}>
             <div className="modal-body">
                 <div>
@@ -495,11 +517,13 @@ function getDataForYYYY(state: IYearlyMaintenanceReportState, setState: React.Di
     const rawData = state.allRawData.filter(d => {
         return d.date >= startDate && d.date <= endDate;
     });
+    const showWorkers = {};
     const workerIdsAcc = rawData.reduce((acc, r) => {
         const workerId = getDspWorker(state, r)
         if (!acc.found[workerId]) {
             acc.found[workerId] = true;
             acc.ary.push(workerId);
+            showWorkers[workerId] = true;
         }
         return acc;
     }, {
@@ -507,12 +531,13 @@ function getDataForYYYY(state: IYearlyMaintenanceReportState, setState: React.Di
         found: {} as {[name:string]:boolean}
     });
     const workerIds = workerIdsAcc.ary.sort();
-    let dspWorkerIds = state.dspWorkerIds.length ? state.dspWorkerIds : workerIds;
+    const dspWorkerIds = workerIds;
     setState(prev => ({
         ...prev,
         rawData,        
         workerIds,
         dspWorkerIds,
+        showWorkers,
     }))
     //getAllMaintenanceData(ownerID, startDate, endDate).then(rrr => {
     //    const dataRows = rrr.rows;
