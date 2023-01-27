@@ -361,17 +361,21 @@ export default function YearlyMaintenanceReport() {
                     console.log('year ret is ');
 
                 }
-                setState(prev => ({
-                    ...prev,
-                    minDate,
-                    fromYYYY,
-                    dspYear,
-                    ownerID: 'TODOADD',
-                    curYearOptions: years.map(y => ({ label: y, value: y })),
-                    curYearSelection: { label: dspYear, value: dspYear },
-                    allRawData: rows,
-                    showWorkers,
-                }));
+                setState(prev => {
+                    const newState = {
+                        ...prev,
+                        minDate,
+                        fromYYYY,
+                        dspYear,
+                        ownerID: 'TODOADD',
+                        curYearOptions: years.map(y => ({ label: y, value: y })),
+                        curYearSelection: { label: dspYear, value: dspYear },
+                        allRawData: rows,
+                        showWorkers,
+                    }
+                    getDataForYYYY(newState, setState);
+                    return newState;
+                });
             } else {
                 setState(prev => ({
                     ...prev,                    
