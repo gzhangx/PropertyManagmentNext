@@ -76,7 +76,7 @@ export function GenericDropdown(props: IGenericDropdownProps) {
                                 e.stopPropagation();
                                 e.preventDefault();
                                 setShow(!show);
-                                setCurDisplayValue('');
+                                //setCurDisplayValue('');
                             }}>
                                 <i className={show ?'far fa-arrow-alt-circle-down':"fas far fa-arrow-alt-circle-right"}></i>
                         </button>
@@ -86,7 +86,7 @@ export function GenericDropdown(props: IGenericDropdownProps) {
         }
         <div className={showClass}>
             {
-                items && items.filter(filterItems).map((data, keyInd) => {
+                items && (items.length < 5? items: items.filter(filterItems)).map((data, keyInd) => {
                     if (opts.dataFormatter) {
                         return opts.dataFormatter(data, keyInd);
                     }
