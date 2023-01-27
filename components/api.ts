@@ -475,6 +475,24 @@ export async function getMaintenanceFromSheet(sheetId: string, sheetName: Mainte
     }).filter(x => x);
 }
 
+export interface IHouseSheetInfo {
+    houseName: string;
+    ownerName: string;
+}
+export async function getHouseInfoFromSheet(sheetId: string): Promise<IHouseSheetInfo[]> {
+    const data = await doPost(`misc/sheet/readMaintenanceRecord?sheetId=${sheetId}&sheetName=House Info`, {}, 'GET');
+    if (!data.values) return [];
+    const header = data.values[0];
+    const houseInd = header.indexOf('HouseAddress');
+    const ownerInd = header.indexOf('Owner')
+    return data.values.slice(1).map(ary => {
+        return {
+            houseName: ary[houseInd],
+            ownerName: ary[ownerInd],
+        }
+    })
+}
+
 
 
 export interface ISheetInfo {
