@@ -331,21 +331,16 @@ export default function YearlyMaintenanceReport() {
         if (!state.curSheetInfo) return;
         if (!state.curSheetInfo.value) return;
         showProgress('Getting worker Info for ' + state.curSheetInfo.label);
-        await getMaintenanceFromSheet(state.curSheetInfo.value, 'Workers Info').then(rows => {
+        const goodWorkers = await getMaintenanceFromSheet(state.curSheetInfo.value, 'Workers Info').then(rows => {
             const goodWorkers = rows.reduce((acc, r) => {
                 acc[r.workerID] = true;
                 return acc;
-            }, {} as { [name: string]: boolean });
-            setState(prev => {
-                return {
-                    ...prev,
-                    goodWorkers,
-                }
-            })
+            }, {} as { [name: string]: boolean });            
+            return goodWorkers;
         });
 
         showProgress('Getting house infor');
-        await getHouseInfoFromSheet(state.curSheetInfo.value).then(houseInfo => {
+        const houssInfoEtc = await getHouseInfoFromSheet(state.curSheetInfo.value).then(houseInfo => {
             //console.log('houseInfo', houseInfo);
             const owners = houseInfo.reduce((acc, h) => {
                 acc.houseDict[h.houseName] = h.ownerName;
@@ -365,15 +360,13 @@ export default function YearlyMaintenanceReport() {
                     value: o,
                } 
             });
-            setState(prev => {
-                return {
-                    ...prev,
-                    houseInfo,
-                    curSelectedOwner: curOwnerOptions[0] || {label: 'NA'},
-                    curOwnerOptions,
-                    houseToOwnerMap: owners.houseDict,
-                }
-            })
+            return {
+                goodWorkers,
+                houseInfo,
+                curSelectedOwner: curOwnerOptions[0] || { label: 'NA' },
+                curOwnerOptions,
+                houseToOwnerMap: owners.houseDict,
+            }            
         });
         showProgress('Getting Data for ' + state.curSheetInfo.label);
         await getMaintenanceFromSheet(state.curSheetInfo.value, 'MaintainessRecord').then(rows => {
@@ -405,6 +398,7 @@ export default function YearlyMaintenanceReport() {
                     console.log('year ret is ');
 
                 }
+                //console.log('setting state after main data', houssInfoEtc.goodWorkers)
                 setState(prev => {
                     const newState = {
                         ...prev,
@@ -416,6 +410,7 @@ export default function YearlyMaintenanceReport() {
                         curYearSelection: { label: dspYear, value: dspYear },
                         allRawData: rows,
                         showWorkers,
+                        ...houssInfoEtc,
                     }
                     getDataForYYYY(newState, setState);
                     return newState;
@@ -428,6 +423,7 @@ export default function YearlyMaintenanceReport() {
                     curYearSelection: {label:'No year'},
                     allRawData: [],
                     showWorkers: {},
+                    ...houssInfoEtc,
                 }));
             }
         }).catch(err => {
@@ -440,7 +436,7 @@ export default function YearlyMaintenanceReport() {
         getData();
     }, [state.curSheetInfo]);
     useEffect(() => {
-        console.log(`loading data for ${state.dspYear}`)
+        //console.log(`loading data for ${state.dspYear}`, state.goodWorkers)
         getDataForYYYY(state, setState);
     }, [state.dspYear, state.curSelectedOwner.label]);
 
@@ -561,7 +557,7 @@ export default function YearlyMaintenanceReport() {
 }
 
 function getDataForYYYY(state: IYearlyMaintenanceReportState, setState: React.Dispatch<React.SetStateAction<IYearlyMaintenanceReportState>>) {
-    const { dspYear, ownerID } = state;
+    const { dspYear } = state;
     if (!dspYear) return;
     const m = moment(dspYear, 'YYYY');
     console.log(`data for ${dspYear} is `);
@@ -570,12 +566,17 @@ function getDataForYYYY(state: IYearlyMaintenanceReportState, setState: React.Di
     const endDate = m.add(1, 'year').startOf('year').format('YYYY-MM-DD');
     console.log(`star= ${startDate} end=${endDate}`)
     const rawData = state.allRawData.filter(d => {
+        const ownerID = state.houseToOwnerMap[d.houseID];
+        if (ownerID) {
+            if (ownerID !== state.curSelectedOwner.value) return false;
+        }
         return d.date >= startDate && d.date <= endDate;
     });
     const showWorkers = {};
     const workerIdsAcc = rawData.reduce((acc, r) => {
         const workerId = getDspWorker(state, r)
         if (!acc.found[workerId]) {
+            console.log('adding worker', workerId, r)
             acc.found[workerId] = true;
             acc.ary.push(workerId);
             showWorkers[workerId] = true;
