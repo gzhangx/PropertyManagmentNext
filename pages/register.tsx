@@ -105,12 +105,12 @@ export default function register() {
                             </form>
                             <hr />
                             <div className="text-center">
-                                <Link href="/forget">
+                                <Link href="/forget" legacyBehavior>
                                     <a className="small" href="forgot-password.html">Forgot Password?</a>
                                     </Link>
                             </div>
                             <div className="text-center">
-                                <Link href="/Login">
+                                <Link href="/Login" legacyBehavior>
                                     <a className="small" href="#">Already have an account? Login!</a>
                                 </Link>
                             </div>

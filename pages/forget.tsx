@@ -72,12 +72,12 @@ export default function ForgetPassword() {
                                 </form>
                                 <hr/>
                                     <div className="text-center">
-                                    <Link href="register">
+                                    <Link href="register" legacyBehavior>
                                             <a className="small" href="#">Create an Account!</a>
                                         </Link>
                                 </div>
                                     <div className="text-center">
-                                    <Link href="Login">
+                                    <Link href="Login" legacyBehavior>
                                             <a className="small" href="#">Already have an account? Login!</a>
                                     </Link>
                                 </div>

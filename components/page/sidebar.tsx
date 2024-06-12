@@ -55,7 +55,7 @@ export function MainSideBar(props : IMainSideBarProps) {
         //const active = rs.sideBarStates[getSideBarCurrentActiveItemKey()] === itemName;
         const active = isSidebarItemActive(rs, itm.name);
 
-        return <Link href={`/${NAVPrefix}/${itm.name}`} key={ind}>
+        return <Link href={`/${NAVPrefix}/${itm.name}`} key={ind} legacyBehavior>
             <a className="collapse-item">{itm.displayName} {active && <i className="fas fa-anchor"></i>}</a>
         </Link>
 
@@ -173,13 +173,13 @@ export function MainSideBar(props : IMainSideBarProps) {
             body={
                 <>
                     <h6 className="collapse-header">Login Screens:</h6>
-                    <Link href="Login">
+                    <Link href="Login" legacyBehavior>
                     <a className="collapse-item" href="#">Login</a>
                     </Link>
-                    <Link href="register">
+                    <Link href="register" legacyBehavior>
                     <a className="collapse-item" href="register.html">Register</a>
                     </Link>
-                    <Link href="forget">
+                    <Link href="forget" legacyBehavior>
                     <a className="collapse-item" href="forgot-password.html">Forgot Password</a>
                     </Link>
                     <div className="collapse-divider"></div>

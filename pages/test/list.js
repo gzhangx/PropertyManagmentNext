@@ -11,7 +11,7 @@ export default function FirstPost() {
             <li><div>Just a test</div></li>
             <li><Link href="/PMReports:CashFlow">Cash Flow</Link></li>
             <li><Link href="/PMInputs:OwnerInfo">PMInputs:OwnerInfo</Link></li>
-        <li><Link href="/">
+        <li><Link href="/" legacyBehavior>
             <a>Back to home</a>
             </Link></li>
         </ul>

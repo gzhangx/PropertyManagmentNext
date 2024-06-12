@@ -125,12 +125,12 @@ export default function Login(props) {
                                         </form>
                                         <hr />
                                         <div className="text-center">
-                                                <Link href="forget">
+                                                <Link href="forget" legacyBehavior>
                                                     <a className="small" href="forgot-password.html">Forgot Password?</a>
                                                 </Link>
                                         </div>
                                         <div className="text-center">
-                                            <Link href="register">
+                                            <Link href="register" legacyBehavior>
                                                 <a className="small" href="#">Create an Account!</a>
                                             </Link>
                                         </div>
