@@ -3,6 +3,8 @@ import { IOwnerInfo, IHouseInfo, IPayment, ITenantInfo } from '../../reportTypes
 import moment from 'moment';
 import { ISqlDeleteResponse } from '../../types';
 
+import type { JSX } from "react";
+
 export type ALLFieldNames = '' | 'address' | 'city' | 'zip' | 'ownerName' | 'receivedDate' | 'receivedAmount' | 'amount' | 'houseID' | 'paymentTypeID' | 'paymentProcessor' | 'notes'
     | 'startDate' | 'endDate' | 'monthlyRent' | 'deposit' | 'petDeposit' | 'otherDeposit' | 'comment' | 'tenant1' | 'tenant2' | 'tenant3' | 'tenant4' | 'tenant'
     | 'firstName' | 'lastName' | 'fullName' | 'phone' | 'email' | 'date'
@@ -120,7 +122,7 @@ export interface IPageStates {
 
     reloadPayments: boolean;
     showMatchedItems: boolean;
-}    
+}
 
 
 

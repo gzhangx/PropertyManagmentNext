@@ -188,7 +188,7 @@ export function stdProcessSheetData(sheetData: ICompRowData[], pageState: IPageS
                         }
                         v = parseFloat(v);
                     }
-                    if (v === NaN || !v) v = 0;
+                    if (Number.isNaN(v) || !v) v = 0;
                     acc[fieldName] = v;
                     break;
                 case 'receivedDate':

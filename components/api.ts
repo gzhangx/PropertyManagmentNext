@@ -1,5 +1,5 @@
 
-import {httpRequest } from '@gzhangx/googleapi'
+import * as httpRequest from '@gzhangx/googleapi/lib/httpRequest'
 import { IGetModelReturn, TableNames, ISqlDeleteResponse } from './types'
 import moment from 'moment';
 
@@ -11,7 +11,7 @@ export interface ISiteConfig {
 
 let sitConfig:ISiteConfig = null;
 export async function getConfig() : Promise<ISiteConfig> {
-    const site = "local1" || process.env.SITE;
+    const site = process.env.SITE || 'local1';
     if (sitConfig) return sitConfig;
     sitConfig = {
         baseUrl: 'http://192.168.0.40/pmapi',
@@ -47,11 +47,11 @@ export async function doPost(path: string, data: object, method: httpRequest.Htt
     const headers = {
         "Content-Type": "application/json",
         //"Authorization": `Bearer ${access_token}`,
-    };
-    const auth = authToken || getLoginToken();
-    if (auth) {
+    };        
+    const auth = authToken || getLoginToken();        
+    if (!!auth) {
         headers['Authorization'] = `Bearer ${auth}`;
-    }
+    }    
 
     return httpRequest.doHttpRequest({
         url: `${(await getConfig()).baseUrl}/${path}`,
@@ -114,6 +114,7 @@ export async function doPost(path: string, data: object, method: httpRequest.Htt
 export async function loginUserSetToken(username: string, password: string): Promise<ILoginResponse> {
     console.log('in login')
 
+    removeLoginToken();
     return doPost(`auth/login`, {
         username,
         password,
@@ -131,16 +132,23 @@ export function setFakeLocalStorage(name: string, val:string) {
     fakeLocalStorage[name] = val;
 }
 
-export function getLoginToken() : string {
+export function getLoginToken() : string|null {
     //const rState = useRootPageContext();
     //if (rState.userInfo.token) return rState.userInfo.token;
     if (typeof window == 'undefined') {
         //runnng on server
         return fakeLocalStorage['login.token'];
     }
-    const token = localStorage.getItem('login.token');
-    if (!token) return null;
+    const token = localStorage.getItem('login.token');    
+    if (!token) {
+        console.log(`get debugremove login.token got '${token}' typeof token=${typeof token} token=='null'=${token == 'null'} return null`)
+        return null;
+    }
     return token;
+}
+
+export function removeLoginToken() {
+    localStorage.removeItem('login.token');
 }
 
 

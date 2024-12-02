@@ -15,6 +15,8 @@ import GoogleAuth from '../pages/google/googleAuth'
 import { LeaseReport } from './page/reports/lease'
 import MonthlyComp from '../pages/reports/MonthlyComp'
 
+import type { JSX } from "react";
+
 const allSections = [
     {
         name: 'PM Reports',

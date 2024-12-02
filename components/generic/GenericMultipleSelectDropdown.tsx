@@ -1,4 +1,4 @@
-import { useState , useEffect, useRef, Dispatch, SetStateAction} from "react";
+import { useState, useEffect, useRef, Dispatch, SetStateAction, type JSX } from "react";
 
 
 export interface IGenericMultiSelectDropdownProps {    
@@ -14,7 +14,7 @@ export function GenericMultiSelectDropdown(props: IGenericMultiSelectDropdownPro
     
     const [show, setShow] = useState(defaultShow || false);
     const [mounted, setMounted] = useState(false);
-    const topNode = useRef<HTMLLIElement>();
+    const topNode = useRef<HTMLLIElement>(undefined);
 
     useEffect(() => {
         setMounted(true);

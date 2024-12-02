@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useReducer } from 'react';
+import React, { useState, useEffect, useReducer, type JSX } from 'react';
 import { googleSheetRead, getOwners, sqlAdd, getHouseInfo, getPaymentRecords, getTenants } from '../../api'
 import { EditTextDropdown } from '../../generic/EditTextDropdown'
 import { IOwnerInfo, IHouseInfo, IPayment, IIncomeExpensesContextValue } from '../../reportTypes';

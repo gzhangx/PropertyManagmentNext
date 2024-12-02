@@ -1,6 +1,6 @@
 import Link from 'next/link'
 import { PageNavTab } from './navTab';
-import { useEffect } from 'react'
+import { useEffect, type JSX } from 'react';
 import {
     useRootPageContext,
     activeSideBarItem, isSidebarItemActive,

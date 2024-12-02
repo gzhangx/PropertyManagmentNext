@@ -4,6 +4,8 @@ import { IDbInserter, IDbSaveData, IRowComparer, YYYYMMDDFormater, IPageStates, 
 
 import * as api from '../../../api';
 
+import type { JSX } from "react";
+
 export const PaymentRowCompare: IRowComparer[] = [
     {
         name: 'Payment Row Comparer',

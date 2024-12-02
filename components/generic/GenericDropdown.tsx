@@ -1,4 +1,4 @@
-import { useState , useEffect, useRef, SetStateAction, Dispatch} from "react";
+import { useState, useEffect, useRef, SetStateAction, Dispatch, type JSX } from "react";
 
 
 export interface IGenericDropdownProps {
@@ -27,7 +27,7 @@ export function GenericDropdown(props: IGenericDropdownProps) {
     const [show, setShow] = useState(defaultShow || false);
     const getSelectedText = () => (props.selected ? props.selected.label || props.selected.value : '');
     const [curDisplayValue, setCurDisplayValue] = useState(null);
-    const topNode = useRef<HTMLLIElement>();
+    const topNode = useRef<HTMLLIElement>(undefined);
     useEffect(() => {
         const clickOutside = (e: MouseEvent) => {
             if (!topNode.current) return;

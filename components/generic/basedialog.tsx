@@ -1,4 +1,4 @@
-import React from "react";
+import React, { type JSX } from "react";
 import react, { Dispatch, SetStateAction, useState } from "react";
 
 interface IGenericDialogProps {

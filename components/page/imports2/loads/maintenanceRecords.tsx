@@ -11,6 +11,8 @@ import * as lutil from './util';
 import moment from 'moment';
 import * as api from '../../../api'
 
+import type { JSX } from "react";
+
 function fixDates(date: string): string {
     const mnt = moment(date);
     if (mnt.isValid()) return mnt.format('YYYY-MM-DD');
