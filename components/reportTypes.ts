@@ -40,7 +40,7 @@ export interface IPayment {
 */
 
 export interface IOwnerInfo {
-    ownerID: number;
+    ownerID: string;
     ownerName: string;
     shortName: string;
     googleSheetId: string;

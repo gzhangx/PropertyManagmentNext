@@ -2,7 +2,8 @@ import React from "react";
 
 //export type TYPEDBTables = 'ownerInfo' | 'rentPaymentInfo' | 'houseInfo';
 
-export type TableNames = 'rentPaymentInfo' | 'houseInfo' | 'maintenanceRecords' | 'ownerInfo' | 'leaseInfo' | 'tenantInfo' | 'workerComp';
+export type TableNames = 'rentPaymentInfo' | 'houseInfo' | 'maintenanceRecords' | 'ownerInfo' | 'leaseInfo' | 'tenantInfo' | 'workerComp'
+    | 'googleApiCreds';
 export interface ISqlDeleteResponse {
     affectedRows: number;
 }
@@ -40,7 +41,7 @@ export interface ILoginResponse {
     error?: string;
     token: string;
     name: string;
-    id: number;
+    id: string;
     ownerPCodes: number[];
 }
 

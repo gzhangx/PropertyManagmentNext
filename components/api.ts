@@ -11,7 +11,7 @@ export interface ISiteConfig {
 
 let sitConfig:ISiteConfig = null;
 export async function getConfig() : Promise<ISiteConfig> {
-    const site = process.env.SITE || 'local1';
+    const site = process.env.SITE || 'local';
     if (sitConfig) return sitConfig;
     sitConfig = {
         baseUrl: 'http://192.168.0.40/pmapi',
@@ -513,3 +513,40 @@ export async function getSheetInfo(): Promise<ISheetInfo[]> {
 }
 
 
+interface IGoogleAuthInfo {
+    private_key_id: string;
+    private_key: string;
+    client_email: string;
+}
+
+export type IGoogleSheetAuthInfo = {
+    googleSheetId: string;
+} & IGoogleAuthInfo;
+
+export async function getSheetAuthInfo(ownerID: string): Promise<IGoogleSheetAuthInfo> {
+    const owners = await getOwners();
+    const owner = owners.find(o => o.ownerID === ownerID);
+    const googleSheetId = owner.googleSheetId;
+    const googleAuthInfos = await sqlGet({
+        table: 'googleApiCreds',
+        whereArray: [{
+            field: 'googleSheetId',
+            op: '=',
+            val: googleSheetId,
+        }],
+    }).then((r: { rows: IGoogleAuthInfo[], error: string }) => {        
+        return r.rows;
+    });
+    const googleAuthInfo: IGoogleAuthInfo = googleAuthInfos[0] || {} as IGoogleAuthInfo;
+    return {
+        googleSheetId,
+        ...googleAuthInfo,
+    }
+}
+
+export async function saveGoodSheetAuthInfo(ownerID: string, authInfo: IGoogleSheetAuthInfo) {
+    await doPost('misc/sheet/saveSheetAuthData', {
+        ownerID,
+        authInfo,
+    });
+}
