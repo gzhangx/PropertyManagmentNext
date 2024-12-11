@@ -11,7 +11,7 @@ export interface ISiteConfig {
 
 let sitConfig:ISiteConfig = null;
 export async function getConfig() : Promise<ISiteConfig> {
-    const site = process.env.SITE || 'local';
+    const site = process.env.SITE || 'local1';
     if (sitConfig) return sitConfig;
     sitConfig = {
         baseUrl: 'http://192.168.0.40/pmapi',
