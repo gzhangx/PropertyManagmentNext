@@ -5,27 +5,19 @@ import moment from 'moment';
 
 export interface ISiteConfig {
     baseUrl: string;
-    googleClientId: string;
-    redirectUrl: string;
 }
 
 let sitConfig:ISiteConfig = null;
 export async function getConfig() : Promise<ISiteConfig> {
     const site = process.env.SITE || 'local1';
+    const baseURL = process.env.BASE_URL || 'http://192.168.0.40';
     if (sitConfig) return sitConfig;
     sitConfig = {
-        baseUrl: 'http://192.168.0.40/pmapi',
-        redirectUrl: 'http://localhost:3000',
-        googleClientId: '',
+        baseUrl: `${baseURL}/pmapi`,
     };    
     if (site === 'local') {
         sitConfig.baseUrl = 'http://localhost:8081/pmapi';
-        sitConfig.redirectUrl = 'http://localhost:3000';
-    }
-    if (getLoginToken()) {
-        const cliInfo = await getGoogleClientId();
-        sitConfig.googleClientId = cliInfo.client_id;
-    }
+    }    
     return sitConfig;
 }
 //const baseUrlDev = 'http://localhost:8081/pmapi'
@@ -34,7 +26,7 @@ export const emailRegx = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/;
 
 import { ISqlOrderDef, ILoginResponse } from './types'
 import {
-    IHouseAnchorInfo, IOwnerInfo,
+    IHouseAnchorInfo,
     IExpenseData,
     IHouseInfo,
     IPayment,
@@ -118,10 +110,10 @@ export async function loginUserSetToken(username: string, password: string): Pro
     return doPost(`auth/login`, {
         username,
         password,
-    }).then((r: ILoginResponse) => {
+    }).then(async (r: ILoginResponse) => {
         if (r.error) return r;
         localStorage.setItem('login.token', r.token);
-        localStorage.setItem('login.info', JSON.stringify(r));
+        localStorage.setItem('login.info', JSON.stringify(r));        
         return r;
     });
 }
@@ -207,7 +199,7 @@ export async function sqlGet(input: ISqlRequest): Promise<any> {
     return doPost(`sql/get?tableDbg=${input.table}`, input);
 }
 
-export async function sqlAdd(table: TableNames, fields: { [key: string]: string | number; }, create:boolean) {
+export async function sqlAdd(table: TableNames, fields: { [key: string]: string | number; }, doCreate:boolean) {
     //     "table":"tenantInfo",
     //     "fields":{"tenantID":"289a8120-01fd-11eb-8993-ab1bf8206feb", "firstName":"gang", "lastName":"testlong"},
     //    "create":true
@@ -215,7 +207,7 @@ export async function sqlAdd(table: TableNames, fields: { [key: string]: string 
     return doPost(`sql/create`, {
         table,
         fields,
-        create,
+        doCreate,
     })
 }
 
@@ -232,17 +224,11 @@ export async function getModel(name: TableNames) : Promise<IGetModelReturn> {
 
 
 
-export async function getMaintenanceReport(ownerInfos: IOwnerInfo[]): Promise<IExpenseData[]> {
-    if (!ownerInfos || !ownerInfos.length) return [];
+export async function getMaintenanceReport(): Promise<IExpenseData[]> {
     return sqlGet({
         //fields:['month', 'houseID','address', {op:'sum', field:'amount', name:'amount'},'expenseCategoryName','displayOrder'],
         fields: ['month', 'houseID', 'address', 'amount', 'expenseCategoryName', 'expenseCategoryId', 'displayOrder', 'date', 'comment', 'description', 'workerID', 'workerFirstName', 'workerLastName'],
         table:'maintenanceRecords',
-        whereArray:[{
-            field:'ownerID',
-            op: 'in',
-            val: ownerInfos.map(o=>o.ownerID),
-        }],
         //groupByArray: [{ field: 'month' }, { field: 'houseID' }, { field: 'address' }, { field: 'expenseCategoryID' }, { field: 'expenseCategoryName'},{field:'displayOrder'}]
     }).then((r: { rows: IExpenseData[]})=>{
         return r.rows.map(r => {
@@ -256,16 +242,10 @@ export async function getMaintenanceReport(ownerInfos: IOwnerInfo[]): Promise<IE
     });    
 }
 
-export async function getHouseAnchorInfo(ownerInfos: IOwnerInfo[]): Promise<IHouseAnchorInfo[]> {
-    if (!ownerInfos || !ownerInfos.length) return [];
+export async function getHouseAnchorInfo(): Promise<IHouseAnchorInfo[]> {
     return sqlGet({
         fields: ['houseID','address'],
-        table: 'houseInfo',
-        whereArray: [{
-            field: 'ownerID',
-            op: 'in',
-            val: ownerInfos.map(o=>o.ownerID),
-        }],        
+        table: 'houseInfo',      
     }).then((r: { rows: IHouseInfo[]}) => {
         return r.rows.map(r => {
             return {
@@ -336,15 +316,9 @@ export async function getPaymentRecords(): Promise<IPayment[]> {
 }
 
 // Used by cashflow
-export async function getPaymnents(ownerInfos: IOwnerInfo[]) : Promise<IPayment[]> {
-    if (!ownerInfos || !ownerInfos.length) return [];
+export async function getPaymnents() : Promise<IPayment[]> {
     return sqlGet({
         table:'rentPaymentInfo',
-        whereArray:[{
-            field:'ownerID',
-            op: 'in',
-            val: ownerInfos.map(o=>o.ownerID),
-        }]
     }).then((r: {rows:IPayment[]})=>{
         return r.rows.map(r => {
             const paymentTypeName = r.paymentTypeName || r.paymentTypeID;
@@ -358,15 +332,9 @@ export async function getPaymnents(ownerInfos: IOwnerInfo[]) : Promise<IPayment[
     })    
 }
 
-export async function getLeases(ownerInfos: IOwnerInfo[]) : Promise<ILeaseInfo[]> {
-    if (!ownerInfos || !ownerInfos.length) return [];
+export async function getLeases() : Promise<ILeaseInfo[]> {
     return sqlGet({
         table:'leaseInfo',
-        whereArray:[{
-            field:'ownerID',
-            op: 'in',
-            val: ownerInfos.map(o=>o.ownerID),
-        }]
     }).then((r: {rows:ILeaseInfo[]})=>{
         return r.rows;
     })    
@@ -376,28 +344,15 @@ export async function deleteLeases(leaseID:string) {
     return sqlDelete('leaseInfo', leaseID);
 }
 
-// Used by cashflow
-export async function getOwners() : Promise<IOwnerInfo[]> {
-    return sqlGet({
-        table:'ownerInfo',        
-    } as ISqlRequest).then((r: { rows: IOwnerInfo[], error: string }) => {
-        if (r.error) {
-            console.log('has error', r);
-            throw r;
-        }
-        return r.rows;
-    });    
-}
 
-export async function getTenants(ownerInfos: IOwnerInfo[]): Promise<ITenantInfo[]> {
-    if (!ownerInfos || !ownerInfos.length) return [];
+export async function getTenants(): Promise<ITenantInfo[]> {
     return sqlGet({
         table: 'tenantInfo',
-        whereArray: [{
-            field: 'ownerID',
-            op: 'in',
-            val: ownerInfos.map(o => o.ownerID),
-        }]
+        //whereArray: [{
+        //    field: 'ownerID',
+        //    op: 'in',
+        //    val: ownerInfos.map(o => o.ownerID),
+        //}]
     } as ISqlRequest).then((r: { rows: ITenantInfo[] }) => {
         return r.rows;
     });
@@ -408,29 +363,6 @@ export async function deleteById(tableName: TableNames, id: string) {
 }
 
 
-export interface IGoogleToken {
-    access_token: string;
-    expires_in: number;
-    refresh_token: string;
-    scope: string;
-    token_type: string;
-}
-export async function createGoogleAuth(code:string, redirectUrl:string) : Promise<IGoogleToken>{
-    return doPost(`google/token`, {
-        code, redirectUrl,
-    }).then((r: IGoogleToken) => {
-        console.log(r);
-        return r;
-    });
-}
-
-export async function getGoogleClientId() {
-    return doPost(`google/clientId`, null, 'GET').then(r => {
-        return r as {
-            client_id: string;
-        };
-    })
-}
 
 export async function googleSheetRead(id:string, op:string, range:string) : Promise<{
     values: string[][];
@@ -523,30 +455,17 @@ export type IGoogleSheetAuthInfo = {
     googleSheetId: string;
 } & IGoogleAuthInfo;
 
-export async function getSheetAuthInfo(ownerID: string): Promise<IGoogleSheetAuthInfo> {
-    const owners = await getOwners();
-    const owner = owners.find(o => o.ownerID === ownerID);
-    const googleSheetId = owner.googleSheetId;
+export async function getSheetAuthInfo(): Promise<IGoogleSheetAuthInfo> {
     const googleAuthInfos = await sqlGet({
         table: 'googleApiCreds',
-        whereArray: [{
-            field: 'googleSheetId',
-            op: '=',
-            val: googleSheetId,
-        }],
-    }).then((r: { rows: IGoogleAuthInfo[], error: string }) => {        
+    }).then((r: { rows: IGoogleSheetAuthInfo[], error: string }) => {        
         return r.rows;
     });
-    const googleAuthInfo: IGoogleAuthInfo = googleAuthInfos[0] || {} as IGoogleAuthInfo;
-    return {
-        googleSheetId,
-        ...googleAuthInfo,
-    }
+    return googleAuthInfos[0];
 }
 
-export async function saveGoodSheetAuthInfo(ownerID: string, authInfo: IGoogleSheetAuthInfo) {
+export async function saveGoodSheetAuthInfo(authInfo: IGoogleSheetAuthInfo) {
     await doPost('misc/sheet/saveSheetAuthData', {
-        ownerID,
         authInfo,
     });
 }

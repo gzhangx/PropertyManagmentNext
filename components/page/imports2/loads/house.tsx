@@ -1,8 +1,10 @@
 
+import { getHouseInfo } from '../../../api';
 import { IHouseInfo } from '../../../reportTypes';
-import { IDbSaveData, IRowComparer, IStringDict } from '../types'
+import { IDbSaveData, IPageInfo, IRowComparer, } from '../types'
+import * as inserter from '../loads/inserter';
 
-export const HouseRowCompare: IRowComparer[] = [
+const HouseRowCompare: IRowComparer[] = [
     {
         name: 'House Row Comparer',
         getRowKey: (data: IDbSaveData) => { 
@@ -11,3 +13,41 @@ export const HouseRowCompare: IRowComparer[] = [
         },
     }
 ];
+
+
+export const housePageInfo: IPageInfo = {
+    pageName: 'House Info',
+    range: 'A1:I',
+    shouldNotCheckHouse: true,
+    fieldMap: [
+        '', 'address', 'city', 'zip',
+        '', //type
+        '', //beds
+        '', //rooms
+        '', //sqrt
+        'ownerName'
+    ],
+    dbLoader: () => getHouseInfo().then(r => r as any as IDbSaveData[]),
+    rowComparers: HouseRowCompare,
+    shouldShowCreateButton: colInfo => colInfo.field === 'address',
+    displayColumnInfo: [
+        {
+            field: 'address',
+            name: 'Address'
+        },
+        {
+            field: 'city',
+            name: 'City'
+        },
+        {
+            field: 'zip',
+            name: 'Zip'
+        },
+        {
+            field: 'ownerName',
+            name: 'Owner'
+        },
+    ],
+    sheetMustExistField: 'address',
+    dbInserter: inserter.getDbInserter('houseInfo'),
+};

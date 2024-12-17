@@ -10,15 +10,11 @@ export function TopBar(props) {
     const rootContext = useRootPageContext();
     const paymentCtx = useIncomeExpensesContext();
     const loginInfo = rootContext.userInfo; //getLoginInfo();
-    
-    const ownerByKey = keyBy(paymentCtx.allOwners, 'ownerID');
-    const ownerSels = (!loginInfo || !loginInfo.ownerPCodes) ? [] : (loginInfo.ownerPCodes).map(id => {
-        const r = ownerByKey[id] || {ownerID:id, ownerName:'Loading'};
-        return {
-            label: `${r.ownerID}-${r.ownerName}`,
-            value: id,
-        }
-    })
+        
+    const ownerSels: {
+        label: string;
+        value: string;
+    }[] = [];
     return <nav className="navbar navbar-expand navbar-light bg-white topbar mb-4 static-top shadow">
 
         <button id="sidebarToggleTop" className="btn btn-link d-md-none rounded-circle mr-3">
@@ -44,7 +40,7 @@ export function TopBar(props) {
                     return acc;
                 }, {                    
                 } as { [key: number]: boolean; });
-                paymentCtx.setSelectedOwners(paymentCtx.allOwners.filter(o=>selMap[o.ownerID]))
+                //paymentCtx.setSelectedOwners(paymentCtx.allOwners.filter(o=>selMap[o.ownerID]))
             }}/>
         </div>
 

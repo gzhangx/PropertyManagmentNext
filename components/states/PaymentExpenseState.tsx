@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useContext } from 'react';
 import moment from 'moment';
 import { orderBy, sortBy, pick, uniqBy, uniq } from 'lodash';
-import { getMaintenanceReport, getPaymnents, getHouseAnchorInfo, getOwners } from '../api';
+import { getMaintenanceReport, getPaymnents, getHouseAnchorInfo, getSheetAuthInfo, IGoogleSheetAuthInfo } from '../api';
 
 import { IPagePropsByTable } from '../types'
 import { IEditTextDropdownItem } from '../generic/EditTextDropdown'
@@ -11,7 +11,6 @@ import {
     IPayment, IIncomeExpensesContextValue,
     IHouseInfo,
     //IPageProps,
-    IOwnerInfo,
     IExpenseData,
     IHouseAnchorInfo,
     IStringBoolMap,
@@ -53,8 +52,6 @@ export function PaymentExpenseStateWrapper(props: {
     children: any
 }) {
     const rootCtx = useRootPageContext();
-    const [selectedOwners, setSelectedOwners] = useState<IOwnerInfo[]>([]);
-    const [allOwners, setAllOwners] = useState<IOwnerInfo[]>([]);
     const [loginError, setLoginError] = useState<string>('');
     const [pageProps, setPageProps] = useState<IPagePropsByTable>({
         pagePropsTableInfo: {},
@@ -65,6 +62,12 @@ export function PaymentExpenseStateWrapper(props: {
     
     const [allMonthes, setAllMonths] = useState<string[]>([]);
     const [allHouses, setAllHouses] = useState<IHouseInfo[]>([]); //{houseID, address}
+    const [googleSheetAuthInfo, setGoogleSheetAuthinfo] = useState<IGoogleSheetAuthInfo>({
+        client_email: 'NA',
+        googleSheetId: '',
+        private_key: '',
+        private_key_id: '',
+    } );
 
     const [houseAnchorInfo, setHouseAnchorInfo] = useState<IHouseAnchorInfo[]>([]);
 
@@ -112,22 +115,12 @@ export function PaymentExpenseStateWrapper(props: {
             return sortBy(r,['address']);
         });
     }
-    
-    useEffect(()=>{
-        getOwners().then(owners => {
-            if (owners) {
-                setAllOwners(owners);
-                if (owners.length) {
-                    setSelectedOwners([owners[0]]);
-                }
-            }
-        }).catch(err => {
-            console.log('failed to get owneres, sending to login', err);
-            setLoginError(err.error || err.message);
-            router.push('/Login')
-        });
-    }, [rootCtx.userInfo]);
 
+    useEffect(() => {
+        getSheetAuthInfo().then(auth => {
+            setGoogleSheetAuthinfo(auth);
+        })
+    }, [googleSheetAuthInfo.googleSheetId]);
     useEffect(() => {
         setMonthes(allMonthes);
 
@@ -182,11 +175,11 @@ export function PaymentExpenseStateWrapper(props: {
     
 
 
-    const beginReLoadPaymentData = (ownerInfo:IOwnerInfo[]) => {
-        getHouseAnchorInfo(ownerInfo).then(r => {            
+    const beginReLoadPaymentData = () => {
+        getHouseAnchorInfo().then(r => {            
             setHouseAnchorInfo(r);
         })
-        return getPaymnents(ownerInfo).then(r => {
+        return getPaymnents().then(r => {
             r = r.map(r => {
                 return {
                     ...r,
@@ -207,14 +200,14 @@ export function PaymentExpenseStateWrapper(props: {
     }
 
     useEffect(() => {
-        getMaintenanceReport(selectedOwners).then(d => {
+        getMaintenanceReport().then(d => {
             addMonths(uniq(d.map(r => r.month)));
             addHouses(d as any); //same sig
             setRawExpenseData(d);
         });
         
-        beginReLoadPaymentData(selectedOwners);
-    }, [selectedOwners]);
+        beginReLoadPaymentData();
+    }, [rootCtx.userInfo.id]);
 
 
 
@@ -224,9 +217,10 @@ export function PaymentExpenseStateWrapper(props: {
             pageProps,
             setPageProps,
         },
+        googleSheetAuthInfo,
+        setGoogleSheetAuthinfo,
         loginError,
         setLoginError,
-        selectedOwners, setSelectedOwners,
         rawExpenseData,
         payments,
         allMonthes,
@@ -237,7 +231,6 @@ export function PaymentExpenseStateWrapper(props: {
         selectedMonths, setSelectedMonths,
         selectedHouses, setSelectedHouses,
         beginReLoadPaymentData,
-        allOwners,
         paymentCalcOpts: {
             isGoodMonth: m => selectedMonths[m],
             isGoodHouseId: id => selectedHouses[id],

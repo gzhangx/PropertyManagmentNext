@@ -1,35 +1,24 @@
 import React, { useState, useEffect, useReducer, type JSX } from 'react';
-import { googleSheetRead, getOwners, sqlAdd, getHouseInfo, getPaymentRecords, getTenants, getSheetAuthInfo, saveGoodSheetAuthInfo } from '../../api'
+import { getTenants, saveGoodSheetAuthInfo } from '../../api'
 import type { IGoogleSheetAuthInfo } from '../../api';
 import { EditTextDropdown } from '../../generic/EditTextDropdown'
-import { IOwnerInfo, IHouseInfo, IPayment, IIncomeExpensesContextValue } from '../../reportTypes';
-import { keyBy, mapValues, omit } from 'lodash'
-import { InforDialog, GetInfoDialogHelper } from '../../generic/basedialog';
-import moment from 'moment';
+import { IIncomeExpensesContextValue } from '../../reportTypes';
+import { keyBy,  } from 'lodash'
+import { GetInfoDialogHelper } from '../../generic/basedialog';
 import { useRouter } from 'next/router'
 
 import { BaseDialog } from '../../generic/basedialog'
-import { ALLFieldNames, IPaymentWithArg, IPageInfo, IPageStates, IStringDict, IPageParms, ISheetRowData, IDbRowMatchData, IDisplayColumnInfo } from './types'
+import { ALLFieldNames, IPageStates, IStringDict, IPageParms, ISheetRowData, IDbRowMatchData, IDisplayColumnInfo } from './types'
 import { genericPageLoader, getDisplayHeaders } from './helpers'
 import { getPageDefs } from './pageDefs'
 
 import { useIncomeExpensesContext } from '../../states/PaymentExpenseState'
-import { IRootPageState, useRootPageContext } from '../../states/RootState'
+import {  useRootPageContext } from '../../states/RootState'
 
 import { sortBy } from 'lodash';
 
-function getSheetId(rootCtx: IRootPageState, mainCtx: IIncomeExpensesContextValue) : string {
-    const loginUserId = rootCtx.userInfo.id;
-    const owner = mainCtx.allOwners.find(o => o.ownerID === loginUserId);    
-    let sheetId = '';
-    if (owner) {        
-        sheetId = owner.googleSheetId;
-    }
-    const firstSelectedOwner = mainCtx.selectedOwners.find(o => o.googleSheetId)
-    if (firstSelectedOwner) {
-        sheetId = firstSelectedOwner.googleSheetId;
-    }
-    return sheetId;
+function getSheetId(mainCtx: IIncomeExpensesContextValue) : string {
+    return mainCtx.googleSheetAuthInfo.googleSheetId;
 }
 
 
@@ -38,8 +27,7 @@ export function ImportPage() {
     const router = useRouter();
     const [reloads, setReloads] = useState({
         reloadUsers: 0,
-    });
-    const [googleSheetAuthInfo, setGoogleSheetAuthinfo] = useState({} as IGoogleSheetAuthInfo);
+    });    
     //const [progressStr, setProgressStr] = useState('');
     const errorDlg = GetInfoDialogHelper();
     const progressDlg = GetInfoDialogHelper();
@@ -51,30 +39,16 @@ export function ImportPage() {
         showMatchedItems: false,
     } as IPageStates);
 
-    const rootCtx = useRootPageContext();
+    const rootCtx = useRootPageContext();    
     const mainCtx = useIncomeExpensesContext();
-    const sheetId = getSheetId(rootCtx, mainCtx);
-    const selectedOwners = mainCtx.selectedOwners;
+    const {  googleSheetAuthInfo, setGoogleSheetAuthinfo} = mainCtx;
+    const sheetId = getSheetId(mainCtx);
 
     //rootCtx.userInfo.
     //let sheetId = mainCtx.allOwners
-    const refreshOwners = () => {
-        return getOwners().then(own => {
-            dispatchCurPageState(state => {
-                return {
-                    ...state,
-                    existingOwnersById: keyBy(own, 'ownerID'),
-                    existingOwnersByName: keyBy(own, 'ownerName'),
-                    //stateReloaded: state.stateReloaded + 1,
-                };
-            });
-        }).catch(err => {
-            errorDlg.setDialogText(err.error || err.message);            
-        });
-    }
 
     const refreshTenants = () => {
-        return getTenants(selectedOwners).then(tenants => {
+        return getTenants().then(tenants => {
             dispatchCurPageState(state => {
                 return {
                     ...state, 
@@ -86,25 +60,15 @@ export function ImportPage() {
         });
     }
 
-    const refreshSheetAuthInfo = () =>{
-        if (!selectedOwners[0]) return;
-        return getSheetAuthInfo(selectedOwners[0].ownerID).then(authInfo => {
-            setGoogleSheetAuthinfo(authInfo)
-        })
-    };
-
     useEffect(() => {
-        refreshOwners();
         refreshTenants();
-        refreshSheetAuthInfo();
-    }, [reloads.reloadUsers,selectedOwners]);
+    }, [reloads.reloadUsers]);
 
 
     
 
     const pagePrms: IPageParms = {
         dispatchCurPageState,
-        refreshOwners,
         refreshTenants,
         setDlgContent,
         setErrorStr: errorDlg.setDialogText,
@@ -115,7 +79,6 @@ export function ImportPage() {
         if (!curPageState.curPage) return;
         console.log("genericPageLoader loading", sheetId)
         curPageState.sheetId = sheetId;
-        curPageState.selectedOwners = selectedOwners;
         genericPageLoader(pagePrms, curPageState).catch(err => {
             const errStr = err.error || err.message;
             console.log('genericPageLoaderError',err)
@@ -125,7 +88,7 @@ export function ImportPage() {
                 }
             })
         })
-    }, [sheetId, selectedOwners, curPageState.curPage, curPageState.stateReloaded])
+    }, [sheetId, curPageState.curPage, curPageState.stateReloaded])
     //curPageState.payments curPageState.stateReloaded,, curPageState.existingOwnersByName,
         
 
@@ -256,14 +219,7 @@ export function ImportPage() {
                             <div className="row no-gutters align-items-center">
                                 <div className="col col-xl-2">
                                     <button className='btn btn-primary' onClick={async () => {
-                                        if (!selectedOwners || selectedOwners.length === 0) {
-                                            return errorDlg.setDialogText('No owner selected');
-                                        }
-                                        if (selectedOwners.length > 1) {
-                                            return errorDlg.setDialogText('multiple owner selected');
-                                        }
-                                        const owner = selectedOwners[0];
-                                        await saveGoodSheetAuthInfo(owner.ownerID, googleSheetAuthInfo);
+                                        await saveGoodSheetAuthInfo(googleSheetAuthInfo);
                                     }} >Save</button>
                                 </div>                                
                             </div>
@@ -327,7 +283,7 @@ function stdTryDisplayItemForCreate(params: IPageParms, state: IPageStates, shee
             }
             //setDlgContent(createPaymentFunc(state, all, rowInd))
 
-        }}> Click to create ${itemVal}</button>
+        }}> Click to create (${itemVal})</button>
     }
     if (sheetRow.invalid) {
         if (showCreateBtn) {
@@ -344,11 +300,10 @@ function displayItems(pagePrms: IPageParms, curPageState: IPageStates) {
 
     
     const cmpSortField = curPageState.curPage.cmpSortField;
-    const selectedOwnersById = keyBy(curPageState.selectedOwners, 'ownerID');
     const belongsToOwner = (data: IStringDict) =>{
         const dataOwner = data['ownerID'];
         if (dataOwner) {
-            return !!selectedOwnersById[dataOwner];
+            return true; //TODO add filtering
         }
         return true;
     }
@@ -389,12 +344,11 @@ function displayExtraDbItems(pagePrms: IPageParms, curPageState: IPageStates) {
 
 
     const cmpSortField = curPageState.curPage.cmpSortField;
-
-    const selectedOwnersById = keyBy(curPageState.selectedOwners, 'ownerID');
+    
     const belongsToOwner = (data: IStringDict) => {
         const dataOwner = data['ownerID'];
         if (dataOwner) {
-            return !!selectedOwnersById[dataOwner];
+            return true; //TODO: add filtering
         }
         return true;
     }

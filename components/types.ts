@@ -42,7 +42,6 @@ export interface ILoginResponse {
     token: string;
     name: string;
     id: string;
-    ownerPCodes: number[];
 }
 
 //copied from api

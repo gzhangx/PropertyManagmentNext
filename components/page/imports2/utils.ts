@@ -138,6 +138,7 @@ function stdDisplayField(fieldNames: ALLFieldNames[], obj: IStringDict, pageStat
 
 export function stdProcessSheetData(sheetData: ICompRowData[], pageState: IPageStates) : IStringDict[] {
     const fieldNames = pageState.curPage.fieldMap.filter(f => f);
+    const shouldNotCheckHouse = pageState.curPage.shouldNotCheckHouse;
     return sheetData.map(sd => {
         const acc = (sd as ISheetRowData).importSheetData || (sd as IDbRowMatchData).dbItemData;
         fieldNames.forEach(fieldName => {
@@ -158,15 +159,20 @@ export function stdProcessSheetData(sheetData: ICompRowData[], pageState: IPageS
                         }
                         break;
                     }
-                    const house = getHouseByAddress(pageState, v as string);
-                    if (house) {
-                        acc['houseID'] = house.houseID;
-                        acc['ownerID'] = house.ownerID;
-                    } else {
-                        acc['houseID'] = null;
-                        //acc[fieldName] = `Invalid(${v})`;
-                        sd.invalid = 'house';
-                        acc.invalidDesc = 'house';
+                    if (!shouldNotCheckHouse) {
+                        const house = getHouseByAddress(pageState, v as string);
+                        if (house) {
+                            acc['houseID'] = house.houseID;
+                            acc['ownerID'] = house.ownerID;
+                        } else {
+                            acc['houseID'] = null;
+                            //acc[fieldName] = `Invalid(${v})`;
+                            sd.invalid = 'house';
+                            acc.invalidDesc = 'house';
+                        }
+                    } else {                        
+                        //if (!acc['houseID']) acc['houseID'] = '';
+                        acc[fieldName] = v;
                     }
                     break;
                 case 'receivedAmount':

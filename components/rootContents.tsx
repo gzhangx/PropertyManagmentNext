@@ -10,7 +10,6 @@ import { MaintenanceRecords } from '../components/page/reports/maintenanceList'
 import YearlyMaintenanceReport from '../pages/reports/yearlyMaintenanceReport';
 
 import * as dev2 from '../pages/util/dev2'
-import GoogleAuth from '../pages/google/googleAuth'
 
 import { LeaseReport } from './page/reports/lease'
 import MonthlyComp from '../pages/reports/MonthlyComp'
@@ -45,10 +44,6 @@ const allSections = [
                 name: 'Develop 2',
                 page: <dev2.DevelopPage />,
                 selected: true,
-            },
-            {
-                name: 'GoogleAuth',
-                page: <GoogleAuth></GoogleAuth>,
             },
         ]
     },

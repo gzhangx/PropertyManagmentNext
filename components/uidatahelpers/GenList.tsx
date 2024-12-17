@@ -4,12 +4,10 @@ import { IColumnInfo, ItemType, FieldValueType } from './GenCrudAdd';
 import { IFKDefs } from './GenCrudTableFkTrans'
 import { createHelper, LoadMapperType } from './datahelpers';
 import { getFKDefs } from './GenCrudTableFkTrans';
-import { useRootPageContext } from '../states/RootState'
 
-import { IPageFilter, TableNames } from '../types'
+import { TableNames } from '../types'
 import { ISqlRequestWhereItem} from '../api'
 import { useIncomeExpensesContext } from '../states/PaymentExpenseState'
-import { IOwnerInfo } from '../reportTypes';
 
 type IDisplayFieldType = ({ field: string; desc: string; } | string)[];
 interface IGenListProps { //copied from gencrud, need combine and refactor later
@@ -51,25 +49,10 @@ export function GenList(props: IGenListProps) {
     const [mainDataRows,setMainData]=useState([]);
     const [loading,setLoading]=useState(true);
     const [columnInf,setColumnInf]=useState(columnInfo || []);
-    const reload = async (selectedOwners: IOwnerInfo[]) => {
+    const reload = async () => {
         let whereArray = (getPageFilters(pageState, table) as any) as ISqlRequestWhereItem[];
         const order = getPageSorts(pageState, table);
 
-        if (selectedOwners && selectedOwners.length) {
-            const extraFilters = helper.getOwnerSecFields().reduce((acc, f) => {
-                
-                    const val = {
-                        field: f.field,
-                        op: 'in',
-                        val: selectedOwners.map(o=>o.ownerID.toString()),
-                    } as ISqlRequestWhereItem
-                    acc.push(val);
-                    return acc;
-                
-            }, [] as ISqlRequestWhereItem[]);
-            if (!whereArray) whereArray = extraFilters;
-            else whereArray = whereArray.concat(extraFilters);
-        }
         helper.loadData(loadMapper, {
             whereArray,
             order,
@@ -99,16 +82,16 @@ export function GenList(props: IGenListProps) {
             //if(columnInfo) {
             //    setColumnInf(columnInfo);
             //}
-            reload(secCtx.selectedOwners);
+            reload();
         }
         
         ld();        
-    },[columnInfo, pageState.pageProps.reloadCount, paggingInfo.pos, paggingInfo.total, secCtx.selectedOwners]);
+    },[columnInfo, pageState.pageProps.reloadCount, paggingInfo.pos, paggingInfo.total]);
 
     const doAdd = (data: ItemType, id: FieldValueType) => {        
         return helper.saveData(data,id).then(res => {
             setLoading(true);            
-            reload(null);
+            reload();
             return res;
         }).catch(err => {
             setLoading(false);
@@ -119,7 +102,7 @@ export function GenList(props: IGenListProps) {
     const doDelete=( field, id ) => {
         setLoading(true);
         helper.deleteData(id).then(() => {
-            reload(null);
+            reload();
         })
     }
     const displayFields=props.displayFields||helper.getModelFields().map(f => f.isId? null:f).filter(x => x) as IDisplayFieldType;

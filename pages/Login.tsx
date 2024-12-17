@@ -5,7 +5,6 @@ import { Dialog, IDialogInfo, createDialogPrms } from '../components/dialog';
 import { useRootPageContext } from "../components/states/RootState"
 import Link from 'next/link';
 
-import GoogleAuth from './google/googleAuth';
 export default function Login(props) {
     const router = useRouter();
 

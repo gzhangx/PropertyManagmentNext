@@ -15,8 +15,7 @@ export function LeaseReport(props) {
     
     const monAddr = getPaymentsByMonthAddress(payments, paymentCalcOpts);
 
-    const calculatedMaintData = getMaintenanceData(rawExpenseData, paymentCalcOpts);
-    const [showDetail, setShowDetail] = useState(null);
+    const calculatedMaintData = getMaintenanceData(rawExpenseData, paymentCalcOpts);    
     
     interface IPaymentOfMonth {
         paid: number;
@@ -35,7 +34,7 @@ export function LeaseReport(props) {
     const [leaseExpanded, setLeaseExpanded] = useState<{ [key: string]: boolean }>({});
     const monthlyDueDate = 3;
     useEffect(() => {
-        getLeases(ctx.selectedOwners).then(ls => {
+        getLeases().then(ls => {
             setLeases(ls.map(l => {
                 const monthlyInfo: IPaymentOfMonth[] = [];
                 const now = moment();
@@ -90,7 +89,7 @@ export function LeaseReport(props) {
                 return result;
             }));
         })
-    }, [ctx.selectedOwners]);
+    }, [ctx.googleSheetAuthInfo.googleSheetId]);
     
     const leaseFields = [
         {

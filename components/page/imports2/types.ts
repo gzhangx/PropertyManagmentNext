@@ -1,5 +1,5 @@
 
-import { IOwnerInfo, IHouseInfo, IPayment, ITenantInfo } from '../../reportTypes';
+import { IHouseInfo, IPayment, ITenantInfo } from '../../reportTypes';
 import moment from 'moment';
 import { ISqlDeleteResponse } from '../../types';
 
@@ -50,7 +50,9 @@ export interface IPageInfo {
     fieldMap: ALLFieldNames[];
     displayColumnInfo: IDisplayColumnInfo[];
 
-    dbLoader?: (selOwners: IOwnerInfo[]) => Promise<IDbSaveData[]>;
+    shouldNotCheckHouse?: boolean; //only HouseInfo should not check
+
+    dbLoader?: () => Promise<IDbSaveData[]>;
     dbItemIdField?: ALLFieldNames;
     extraProcessSheetData?: (pageData: ISheetRowData[], pageState: IPageStates) => Promise<ISheetRowData[]>;
     sheetMustExistField?: ALLFieldNames;
@@ -106,10 +108,8 @@ export interface IPageStates {
     curPage: IPageInfo;
     pageDetails: IPageDataDetails;
     sheetId: string; //not in state, passed around
-    selectedOwners: IOwnerInfo[]; //not in state, passed around
+    //selectedOwners: IOwnerInfo[]; //not in state, passed around
 
-    existingOwnersByName: { [ownerName: string]: IOwnerInfo };
-    existingOwnersById: { [ownerId: number]: IOwnerInfo };
     missingOwnersByName: { [ownerName: string]: boolean };
     housesByAddress: { [address: string]: IHouseInfo };
     housesById: { [houseID: string]: IHouseInfo };
@@ -132,7 +132,6 @@ export function getHouseByAddress(state: IPageStates, addr:string) {
 
 export interface IPageParms {
     dispatchCurPageState: React.Dispatch<(state: IPageStates) => IPageStates>;
-    refreshOwners: () => Promise<void>;
     refreshTenants: () => Promise<void>;
     setDlgContent: React.Dispatch<React.SetStateAction<JSX.Element>>;
     setErrorStr: (text: string) => void;

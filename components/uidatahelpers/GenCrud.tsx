@@ -5,7 +5,6 @@ import { EditTextDropdown, IEditTextDropdownItem, } from '../generic/EditTextDro
 import { GenCrudAdd, IColumnInfo, ItemType, FieldValueType } from './GenCrudAdd';
 import { ISqlOrderDef, SortOps, IPageFilter, IPagePropsByTable,IPageState } from '../types'
 import { IFKDefs} from './GenCrudTableFkTrans'
-import { IOwnerInfo } from '../reportTypes';
 import { SQLOPS } from '../api';
 
 
@@ -49,7 +48,7 @@ export interface IGenGrudProps {
     fkDefs?: IFKDefs;
     doDelete: (id: string, data:any) => void;
     idCol?: { field: string; }
-    reload?: (owners:IOwnerInfo[]) => Promise<void>;
+    reload?: () => Promise<void>;
 }
 
 export const GenCrud = (props: IGenGrudProps) => {

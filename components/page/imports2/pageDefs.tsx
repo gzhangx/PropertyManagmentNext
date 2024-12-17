@@ -1,11 +1,9 @@
 
-import { IOwnerInfo, IHouseInfo, IPayment } from '../../reportTypes';
-import { IPaymentWithArg, IPageInfo, IPageDataDetails, IPageStates, IPageParms, IDbSaveData } from './types'
-import { googleSheetRead, getOwners, sqlAdd, getHouseInfo, getPaymentRecords } from '../../api'
+
+import { IPageInfo, IPageStates, IPageParms, IDbSaveData } from './types'
+import { sqlAdd, getHouseInfo, getPaymentRecords } from '../../api'
 import * as theApi from '../../api'
-import { InforDialog, GetInfoDialogHelper } from '../../generic/basedialog';
-import moment from 'moment'
-import {keyBy, omit, mapValues} from 'lodash'
+import {mapValues} from 'lodash'
 import React from 'react';
 
 import { getBasicPageDefs } from './loads/basicPageInfo'
@@ -62,44 +60,11 @@ export function getPageDefs() {
                 })
             }
         },
-        {
-            pageName: 'House Info',
-            range: 'A1:I',
-            fieldMap: [
-                '', 'address', 'city', 'zip',
-                '', //type
-                '', //beds
-                '', //rooms
-                '', //sqrt
-                'ownerName'
-            ],
-            dbLoader: h => getHouseInfo().then(r => r as any as IDbSaveData[]),
-            rowComparers: houseLoader.HouseRowCompare,
-            shouldShowCreateButton: colInfo => colInfo.field === 'address',
-            displayColumnInfo: [
-                {
-                    field: 'address',
-                    name:'Address'
-                },
-                {
-                    field: 'city',
-                    name: 'City'
-                },
-                {
-                    field: 'zip',
-                    name: 'Zip'
-                },
-                {
-                    field: 'ownerName',
-                    name: 'Owner'
-                },
-            ],
-            sheetMustExistField: 'address',                       
-        },
+        houseLoader.housePageInfo,        
         {
             ...basicDef.lease,
             rowComparers: lease.LeaseRowCompare,
-            dbLoader: (selectedOwners) => theApi.getLeases(selectedOwners).then(r => r as any as IDbSaveData[]),
+            dbLoader: () => theApi.getLeases().then(r => r as any as IDbSaveData[]),
             extraProcessSheetData: lease.leaseExtraProcessSheetData,
             shouldShowCreateButton: colInfo => colInfo.field === 'startDate',
             dbInserter: inserter.getDbInserter('leaseInfo'),
@@ -109,7 +74,7 @@ export function getPageDefs() {
         {
             ...basicDef.tenant,
             rowComparers: tenantLoad.TenantRowCompare,
-            dbLoader: (selectedOwners) => theApi.getTenants(selectedOwners).then(r => r as any as IDbSaveData[]),
+            dbLoader: () => theApi.getTenants().then(r => r as any as IDbSaveData[]),
             extraProcessSheetData: tenantLoad.extraProcessSheetData,
             shouldShowCreateButton: colInfo => colInfo.field === 'fullName',
             dbInserter: inserter.getDbInserter('tenantInfo'),
@@ -117,7 +82,7 @@ export function getPageDefs() {
         {
             ...basicDef.maintenceRecords,
             rowComparers: maintenceRecords.maintenanceRowCompare,
-            dbLoader: (selectedOwners) => theApi.getMaintenanceReport(selectedOwners).then(r => r as any as IDbSaveData[]),
+            dbLoader: () => theApi.getMaintenanceReport().then(r => r as any as IDbSaveData[]),
             extraProcessSheetData: maintenceRecords.maintenanceExtraProcessSheetData,
             shouldShowCreateButton: colInfo => colInfo.field === 'maintenanceImportAddress',
             dbInserter: inserter.getDbInserter('maintenanceRecords'),
@@ -167,37 +132,6 @@ const createOwnerFunc = (params:IPageParms,ownerName: string, password='1') => {
             </div>
         </div>
 
-        <div className="row">
-            <div className="col-lg-12 mb-4">
-                <div className="card bg-light text-black shadow">
-                    <div className="card-body" style={{ display: 'flex', justifyContent:'flex-end'}}>
-                        <button className='btn btn-primary mx-1' onClick={() => {
-                            sqlAdd('ownerInfo', 
-                                {      
-                                    ownerName,
-                                    username: ownerName,
-                                    password,
-                                    shortName: ownerName,
-                                }, true                                
-                            ).then(res => {
-                                console.log('sql add owner');
-                                console.log(res)
-                                return params.refreshOwners().then(() => {
-                                    params.setDlgContent(null);  
-                                })                                    
-                            }).catch(err => {
-                                console.log('sql add owner err');
-                                console.log(err)
-                            })
-                        }}>Create</button>
-
-                        <button className='btn btn-success' onClick={() => {
-                            params.setDlgContent(null);
-                        }}>Close</button>
-                    </div>
-                </div>
-            </div>
-        </div>
 
     </div>
 };
@@ -205,12 +139,6 @@ const createOwnerFunc = (params:IPageParms,ownerName: string, password='1') => {
 
 export const createHouseFunc = (params:IPageParms, state: IPageStates, data: { [key: string]: string }) => {
     const saveData = mapValues(data, itm => itm);
-    const own = state.existingOwnersByName[saveData.ownerName];
-    if (!own) {
-        console.log('no owner found');
-        return <InforDialog message='No Owner Found' hide={() => params.setDlgContent(null)}></InforDialog>;            
-    }
-    saveData.ownerID = own.ownerID.toString();
     return <div className="col-lg-12 mb-4">            
         <div className="row">
             <div className="col-lg-12 mb-4">

@@ -42,7 +42,7 @@ export const getSideBarCurrentSelectedItemName = (ctx:IRootPageState)=>{
 export function RootPageStateWrapper({ children }) {
     const [sideBarStates, setSideBarStates] = useState({});
     //const [pageProps, setPageProps] = useState({});
-    const [userInfo, setUserInfo] = useState<ILoginResponse>(getLoginInfo() || { id: '', name:'', token:'',ownerPCodes:[],});
+    const [userInfo, setUserInfo] = useState<ILoginResponse>(getLoginInfo() || { id: '', name:'', token:'',});
     const defVal: IRootPageState = {
         sideBarStates,
         setSideBarStates,

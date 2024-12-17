@@ -1,5 +1,6 @@
 import { IPagePropsByTable, IPageState } from './types'
 import {IEditTextDropdownItem} from './generic/EditTextDropdown'
+import { IGoogleSheetAuthInfo } from './api';
 export interface IPayment {
     address: string;
     addressId: string;
@@ -39,13 +40,6 @@ export interface IPayment {
 };
 */
 
-export interface IOwnerInfo {
-    ownerID: string;
-    ownerName: string;
-    shortName: string;
-    googleSheetId: string;
-    selected: boolean;
-}
 
 export interface IHouseInfo {
     houseID: string;
@@ -178,11 +172,13 @@ export interface IIncomeExpensesContextValue {
     pageState: IPageState;
     //pageProps: IPagePropsByTable;
     //setPageProps: (a: IPagePropsByTable) => void;
-    selectedOwners: IOwnerInfo[];
-    setSelectedOwners: (a: IOwnerInfo[]) => void;
+    //selectedOwners: IOwnerInfo[];
+    //setSelectedOwners: (a: IOwnerInfo[]) => void;
+    googleSheetAuthInfo: IGoogleSheetAuthInfo;  
+    setGoogleSheetAuthinfo: (auth: IGoogleSheetAuthInfo) => void;
     loginError: string;
     setLoginError: (s: string) => void;
-    allOwners: IOwnerInfo[];
+    //allOwners: IOwnerInfo[];
     rawExpenseData: IExpenseData[];
     payments: IPayment[];
     allMonthes: string[];
@@ -196,6 +192,6 @@ export interface IIncomeExpensesContextValue {
     setSelectedMonths: (a: { [mon: string]: boolean }) => void;
     selectedHouses: {[id:string]:boolean};
     setSelectedHouses: (a: any) => void;
-    beginReLoadPaymentData: (o: IOwnerInfo[]) => Promise<void>;
+    beginReLoadPaymentData: () => Promise<void>;
     paymentCalcOpts: IPaymentCalcOpts;
 }

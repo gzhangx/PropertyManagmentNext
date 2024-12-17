@@ -1,6 +1,6 @@
 
-import { IHouseInfo, IPayment } from '../../../reportTypes';
-import { IDbInserter, IDbSaveData, IRowComparer, YYYYMMDDFormater, IPageStates, ISheetRowData, ALLFieldNames, IPageParms } from '../types'
+import { IPayment } from '../../../reportTypes';
+import { IDbSaveData, IRowComparer, YYYYMMDDFormater, IPageStates, ISheetRowData, ALLFieldNames, IPageParms } from '../types'
 
 import * as api from '../../../api';
 
@@ -31,6 +31,9 @@ export const PaymentRowCompare: IRowComparer[] = [
 export function displayItem(params: IPageParms, state: IPageStates, sheetRow: ISheetRowData, field: ALLFieldNames): JSX.Element {
     if (field === 'receivedAmount') {
         const itemVal = sheetRow.displayData[field];
+        let invalidInfo = '';
+        if (!sheetRow.needUpdate) invalidInfo = 'No Need to update ';
+        if (sheetRow.invalid) invalidInfo += ' Invalid: ' + sheetRow.invalid; 
         return <button disabled={!sheetRow.needUpdate || !!sheetRow.invalid} onClick={async () => {
             //setProgressStr('processing')
             if (sheetRow.invalid || !sheetRow.needUpdate) return;
@@ -51,7 +54,7 @@ export function displayItem(params: IPageParms, state: IPageStates, sheetRow: IS
             }
             //setDlgContent(createPaymentFunc(state, all, rowInd))
 
-        }}> Click to create ${itemVal}</button>
+        }}> Click to create p(${itemVal}) {invalidInfo}</button>
     }
     if (sheetRow.invalid) {
         return <div style={{ color: 'red' }}>{ sheetRow.displayData[field]}</div>
