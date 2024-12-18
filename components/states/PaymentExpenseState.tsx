@@ -64,7 +64,7 @@ export function PaymentExpenseStateWrapper(props: {
     const [allHouses, setAllHouses] = useState<IHouseInfo[]>([]); //{houseID, address}
     const [googleSheetAuthInfo, setGoogleSheetAuthinfo] = useState<IGoogleSheetAuthInfo>({
         client_email: 'NA',
-        googleSheetId: '',
+        googleSheetId: 'NA',
         private_key: '',
         private_key_id: '',
     } );
