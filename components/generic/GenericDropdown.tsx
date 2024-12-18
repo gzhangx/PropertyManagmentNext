@@ -1,9 +1,22 @@
 import { useState, useEffect, useRef, SetStateAction, Dispatch, type JSX } from "react";
 
+export interface IEditTextDropdownItem {
+    label: any;
+    value?: string;
+    selected?: boolean;
 
+    // move to display class
+    body?: any;
+    header?: any;
+    url?: any;
+    clsColor?: string;
+    clsIcon?: string;
+    className?: string;
+    subject?: string;
+}
 export interface IGenericDropdownProps {
     children?: any;
-    items: any[];
+    items: IEditTextDropdownItem[];
     selected?: any;
     onSelectionChanged: (any) => void;
     opts?: IGenericDropdownPropsOptional;
@@ -25,7 +38,12 @@ export function GenericDropdown(props: IGenericDropdownProps) {
     const opts = props.opts;
     const { defaultShow, className } = opts;
     const [show, setShow] = useState(defaultShow || false);
-    const getSelectedText = () => (props.selected ? props.selected.label || props.selected.value : '');
+    //const getSelectedText = () => (props.selected ? props.selected.label || props.selected.value : '');
+    const getSelectedText = () => {
+        const selectedItem = items.find(itm => itm.selected);
+        if (!selectedItem) return '';
+        return selectedItem.label;
+    }
     const [curDisplayValue, setCurDisplayValue] = useState(null);
     const topNode = useRef<HTMLLIElement>(undefined);
     useEffect(() => {

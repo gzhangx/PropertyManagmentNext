@@ -1,11 +1,13 @@
 import React, { useState } from 'react';
 import { set, get } from 'lodash';
 import { v1 } from 'uuid';
-import { EditTextDropdown, IEditTextDropdownItem, } from '../generic/EditTextDropdown';
-import { GenCrudAdd, IColumnInfo, ItemType, FieldValueType } from './GenCrudAdd';
+import { EditTextDropdown } from '../generic/EditTextDropdown';
+import { GenCrudAdd, IColumnInfo, ItemType } from './GenCrudAdd';
 import { ISqlOrderDef, SortOps, IPageFilter, IPagePropsByTable,IPageState } from '../types'
 import { IFKDefs} from './GenCrudTableFkTrans'
 import { SQLOPS } from '../api';
+import { FieldValueType } from './datahelpers';
+import { IEditTextDropdownItem } from '../generic/GenericDropdown';
 
 
 

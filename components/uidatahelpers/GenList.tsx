@@ -1,8 +1,8 @@
 import React,{useState,useEffect} from 'react';
 import { GenCrud, getPageSorts, getPageFilters } from './GenCrud';
-import { IColumnInfo, ItemType, FieldValueType } from './GenCrudAdd';
+import { IColumnInfo, ItemType } from './GenCrudAdd';
 import { IFKDefs } from './GenCrudTableFkTrans'
-import { createHelper, LoadMapperType } from './datahelpers';
+import { createHelper, FieldValueType, LoadMapperType } from './datahelpers';
 import { getFKDefs } from './GenCrudTableFkTrans';
 
 import { TableNames } from '../types'
@@ -76,6 +76,8 @@ export function GenList(props: IGenListProps) {
 
 
     useEffect(() => {
+        if (!table) return;
+        //if (!helper) return;
         const ld=async () => {                        
             await helper.loadModel();
             setColumnInf(helper.getModelFields() as IColumnInfo[]);
@@ -86,7 +88,7 @@ export function GenList(props: IGenListProps) {
         }
         
         ld();        
-    },[columnInfo, pageState.pageProps.reloadCount, paggingInfo.pos, paggingInfo.total]);
+    },[table || 'NA', columnInfo, pageState.pageProps.reloadCount, paggingInfo.pos, paggingInfo.total]);
 
     const doAdd = (data: ItemType, id: FieldValueType) => {        
         return helper.saveData(data,id).then(res => {

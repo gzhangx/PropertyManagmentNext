@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { createAndLoadHelper } from './datahelpers';
+import { createAndLoadHelper, FieldValueType } from './datahelpers';
 import { get } from 'lodash';
-import { EditTextDropdown, IEditTextDropdownItem, } from '../generic/EditTextDropdown';
+import { EditTextDropdown, } from '../generic/EditTextDropdown';
 import * as bluebird from 'bluebird';
 import {Dialog, createDialogPrms} from '../dialog'
 import { IFKDefs } from './GenCrudTableFkTrans'
 import { IDBFieldDef } from '../types';
+import { IEditTextDropdownItem } from '../generic/GenericDropdown';
 export interface IColumnInfo extends IDBFieldDef {
     //field: string;
     //isId?: boolean;
@@ -19,7 +20,7 @@ export interface IColumnInfo extends IDBFieldDef {
     dspFunc: (x: string) => string;
 }
 
-export type FieldValueType = string | number | null;
+
 export type ItemType = { [key: string]: FieldValueType; };
 export interface IGenGrudAddProps {
     columnInfo: IColumnInfo[];
@@ -230,7 +231,11 @@ export const GenCrudAdd = (props: IGenGrudAddProps) => {
                 {
                     columnInfo.map((c, cind) => {
                         if (!editItem) {
+                            //create
                             if (c.isId) return null;
+                        } else {
+                            //modify
+                            if (c.isId) return <div className='row' key={cind}>{data[c.field] || 'NNA' }</div>
                         }
                         if (c.dontShowOnEdit) return null;
 
@@ -245,8 +250,7 @@ export const GenCrudAdd = (props: IGenGrudAddProps) => {
                             const curSelection = options.filter(o => o.value === get(data, colField))[0];
                             if (curSelection) {
                                 curSelection.selected = true;
-                            }
-                            
+                            }                            
                             return <>
                                 
                                 <EditTextDropdown items={options}
