@@ -1,5 +1,4 @@
 import { IMainSideBarSection } from './page/sidebar'
-import { OwnerList } from '../components/page/reports/ownerList'
 import { HouseList } from '../components/page/reports/houseList'
 import { RentpaymentInfo } from '../components/page/reports/rentpaymentInfo'
 import { CashFlowReport } from '../components/page/reports/cashflow'
@@ -49,11 +48,7 @@ const allSections = [
     },
     {
         name: 'PM Inputs',
-        pages: [
-            {
-                name: 'Owner Info',
-                page: <OwnerList />,
-            },
+        pages: [            
             {
                 name: 'House Info',
                 page: <HouseList />,
