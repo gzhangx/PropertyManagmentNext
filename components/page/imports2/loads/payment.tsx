@@ -13,7 +13,7 @@ export const PaymentRowCompare: IRowComparer[] = [
             const pmt = data as any as IPayment;            
             const date = YYYYMMDDFormater(pmt.receivedDate);
             const amt = pmt.receivedAmount.toFixed(2);
-            return `${date}-${amt}-${pmt.houseID}-${(pmt.paymentTypeID || '').trim()}-${(pmt.notes || '').trim()}`;
+            return `${date}-${amt}-${pmt.houseID}-${(pmt.paymentTypeName || '').trim()}-${(pmt.notes || '').trim()}`;
         },
     },
     {
@@ -22,7 +22,7 @@ export const PaymentRowCompare: IRowComparer[] = [
             const pmt = data as any as IPayment;
             const date = YYYYMMDDFormater(pmt.receivedDate);
             const amt = pmt.receivedAmount.toFixed(2);
-            return `${date}-${amt}-${pmt.houseID}-${(pmt.paymentTypeID || '').trim()}`;
+            return `${date}-${amt}-${pmt.houseID}-${(pmt.paymentTypeName || '').trim()}`;
         },
     }
 ];

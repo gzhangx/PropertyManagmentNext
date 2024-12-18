@@ -160,6 +160,13 @@ export function getDisplayHeaders(params: IPageParms, curPageState: IPageStates)
                     }
                     //reloadPayments(params);
                     if (curPageState.curPage.reloadEntity) curPageState.curPage.reloadEntity(params);
+
+                    const deleteActions = getDeleteExtraFromDbItems(params, curPageState);
+                    for (let i = 0; i < deleteActions.length; i++) {
+                        const delAct = deleteActions[i];
+                        params.showProgress(`processing deletes ${i}/${deleteActions.length}`);
+                        await delAct.deleteFunction();
+                    }
                     params.showProgress('done');
                 }}>Process All</button></>
             }
@@ -169,4 +176,40 @@ export function getDisplayHeaders(params: IPageParms, curPageState: IPageStates)
         }</td>
     })
             
+}
+
+
+type DeleteExtraDbItemRet = {
+    deleteFunction: () => Promise<void>;
+    dbRow: IDbRowMatchData;
+    rowInd: number;
+}
+export function getDeleteExtraFromDbItems(pagePrms: IPageParms, curPageState: IPageStates): DeleteExtraDbItemRet[] {
+    const emptyRes: DeleteExtraDbItemRet[] = [];
+    if (!curPageState.pageDetails) return emptyRes;
+    if (!curPageState.pageDetails.dbMatchData) return emptyRes;
+    const deleteById = curPageState.curPage.deleteById;    
+    const dbMatchData: IDbRowMatchData[] = curPageState.pageDetails.dbMatchData.filter(x => x.dataType === 'DB');    
+    return dbMatchData.filter(x => !x.matchedToKey).map((dbRow, rowInd) => {
+        const deleteFunction = () => {
+            if (!deleteById) return;
+            const idField = curPageState.curPage.dbItemIdField;
+            const id = dbRow.dbItemData[idField];
+            return deleteById(id as string).then(r => {
+                console.log(`affected for ${id}`, r.affectedRows);
+                pagePrms.dispatchCurPageState(state => ({
+                    ...state,
+                    pageDetails: {
+                        ...state.pageDetails,
+                        dbMatchData: state.pageDetails.dbMatchData.filter(x => x.dbItemData[idField] !== id),
+                    }
+                }))
+            })
+        };
+        return {
+            deleteFunction,
+            dbRow,
+            rowInd,
+        };
+    });
 }

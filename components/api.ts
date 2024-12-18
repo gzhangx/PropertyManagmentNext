@@ -292,7 +292,7 @@ export async function getPaymentRecords(): Promise<IPayment[]> {
             'receivedDate',
         'receivedAmount',
         'houseID',
-        'paymentTypeID',
+        'paymentTypeName',
         'paymentProcessor',                
         //'paidBy',
         'notes',

@@ -24,7 +24,7 @@ export function getPageDefs() {
                 'receivedDate',
         'receivedAmount',
         'address',
-        'paymentTypeID',
+        'paymentTypeName',
         'notes',
         'paymentProcessor',
         //'paidBy',        

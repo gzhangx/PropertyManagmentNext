@@ -9,7 +9,7 @@ import { useRouter } from 'next/router'
 
 import { BaseDialog } from '../../generic/basedialog'
 import { ALLFieldNames, IPageStates, IStringDict, IPageParms, ISheetRowData, IDbRowMatchData, IDisplayColumnInfo } from './types'
-import { genericPageLoader, getDisplayHeaders } from './helpers'
+import { genericPageLoader, getDeleteExtraFromDbItems, getDisplayHeaders } from './helpers'
 import { getPageDefs } from './pageDefs'
 
 import { useIncomeExpensesContext } from '../../states/PaymentExpenseState'
@@ -353,10 +353,14 @@ function displayExtraDbItems(pagePrms: IPageParms, curPageState: IPageStates) {
         return true;
     }
 
-    const dbDsp = curPageState.pageDetails.dbMatchData.filter(x => x.dataType === 'DB').map(x => x as IDbRowMatchData)
-        .filter(x => !x.matchedToKey && belongsToOwner(x.dbItemData)).map((dbRow, ind) => {
+    const deleteFuncs = getDeleteExtraFromDbItems(pagePrms, curPageState);
+    const dbDsp = deleteFuncs.map(({
+        dbRow,
+        rowInd,
+        deleteFunction,
+    }) => {
             return {
-                sort: dbRow.dbItemData[cmpSortField], dsp: <tr key={ind}>{                    
+                sort: dbRow.dbItemData[cmpSortField], dsp: <tr key={rowInd}>{                    
                     dspCi.map((dc, ck) => {
                         let dspVal: string | number | JSX.Element = 'DB-'+dbRow.dbItemData[dc.field];
                         if (curPageState.curPage.displayDbExtra) {
@@ -366,20 +370,7 @@ function displayExtraDbItems(pagePrms: IPageParms, curPageState: IPageStates) {
                             if (dc.field === curPageState.curPage.sheetMustExistField) {
                                 dspVal = <div>
                                     <div>{dspVal}</div>
-                                    <button onClick={() => {
-                                        const idField = curPageState.curPage.dbItemIdField;
-                                        const id = dbRow.dbItemData[idField];                                        
-                                        curPageState.curPage.deleteById(id as string).then(r => {
-                                            console.log(`affected for ${id}`, r.affectedRows);
-                                            pagePrms.dispatchCurPageState(state => ({
-                                                ...state,  
-                                                pageDetails: {
-                                                    ...state.pageDetails,
-                                                    dbMatchData: state.pageDetails.dbMatchData.filter(x=>x.dbItemData[idField] !== id),
-                                                }
-                                            }))
-                                        })
-                                    }}>Delete</button>
+                                    <button onClick={deleteFunction}>Delete</button>
                                 </div>
                             }
                         }

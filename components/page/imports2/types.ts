@@ -5,7 +5,7 @@ import { ISqlDeleteResponse } from '../../types';
 
 import type { JSX } from "react";
 
-export type ALLFieldNames = '' | 'address' | 'city' | 'zip' | 'ownerName' | 'receivedDate' | 'receivedAmount' | 'amount' | 'houseID' | 'paymentTypeID' | 'paymentProcessor' | 'notes'
+export type ALLFieldNames = '' | 'address' | 'city' | 'zip' | 'ownerName' | 'receivedDate' | 'receivedAmount' | 'amount' | 'houseID' | 'paymentTypeName' | 'paymentProcessor' | 'notes'
     | 'startDate' | 'endDate' | 'monthlyRent' | 'deposit' | 'petDeposit' | 'otherDeposit' | 'comment' | 'tenant1' | 'tenant2' | 'tenant3' | 'tenant4' | 'tenant'
     | 'firstName' | 'lastName' | 'fullName' | 'phone' | 'email' | 'date'
     | 'paymentID'
