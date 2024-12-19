@@ -8,7 +8,7 @@ export interface IEditTextDropdownItem {
 export interface IGenericDropdownProps {
     children?: any;
     items: IEditTextDropdownItem[];
-    onSelectionChanged: (any) => void;
+    onSelectionChanged: (itm: IEditTextDropdownItem) => void;
     opts?: IGenericDropdownPropsOptional;    
 }
 

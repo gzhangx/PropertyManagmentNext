@@ -466,7 +466,7 @@ export default function YearlyMaintenanceReport() {
                     //selected={state.curSelectedOwner} 
                     setState({
                         ...state,
-                        curSelectedOwner: sel,
+                        curSelectedOwner: sel.label,
                     })
                 }} ></EditTextDropdown></div>
             <div className="col-sm-2">
