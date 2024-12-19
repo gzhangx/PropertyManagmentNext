@@ -48,7 +48,7 @@ interface IByWorkerByCat {
 }
 
 interface IYearlyMaintenanceReportState {
-    curYearSelection: IEditTextDropdownItem;
+    curYearSelection: string;
     curYearOptions: IEditTextDropdownItem[];
     expenseCategories: { id: string, name: string; }[];
     expenseCategoriesMapping: { [id: string]: string };
@@ -59,7 +59,6 @@ interface IYearlyMaintenanceReportState {
     showCategories: {[cat:string]:boolean};
     rawData: IMaintenanceRawData[];
     allRawData: IMaintenanceRawData[];
-    dspYear: string,
     byWorkerByCat: IByWorkerByCat;
     ownerID: string;
     exportData: string[][];
@@ -274,7 +273,7 @@ function GenerateByWorkerByCatDontWantData(state: IYearlyMaintenanceReportState,
 export default function YearlyMaintenanceReport() {
     
     const [state, setState] = useState<IYearlyMaintenanceReportState>({
-        curYearSelection: { label: 'NA', value: 'NA' } as IEditTextDropdownItem,
+        curYearSelection: '',
         curYearOptions: [],
         expenseCategories: [],
         expenseCategoriesMapping: {},
@@ -292,7 +291,6 @@ export default function YearlyMaintenanceReport() {
         },
         rawData: [],
         allRawData: [],
-        dspYear: '',
         byWorkerByCat: {} as IByWorkerByCat,
         ownerID: '',        
         exportData: [],
@@ -393,10 +391,9 @@ export default function YearlyMaintenanceReport() {
                         ...prev,
                         //minDate,
                         //fromYYYY,
-                        dspYear,
                         //ownerName: 'TODOADD',
                         curYearOptions: years.map(y => ({ label: y, value: y })),
-                        curYearSelection: { label: dspYear, value: dspYear },
+                        curYearSelection: dspYear,
                         allRawData: rows,
                         showWorkers,
                         ...houssInfoEtc,
@@ -410,7 +407,7 @@ export default function YearlyMaintenanceReport() {
                         ...prev,
                         //ownerName: 'TODOADD',
                         curYearOptions: [],
-                        curYearSelection: { label: 'No year' },
+                        curYearSelection: 'No year' ,
                         allRawData: [],
                         showWorkers: {},
                         ...houssInfoEtc,
@@ -430,14 +427,14 @@ export default function YearlyMaintenanceReport() {
     useEffect(() => {
         //console.log(`loading data for ${state.dspYear}`, state.goodWorkers)
         getDataForYYYY(state, setState);
-    }, [state.dspYear, state.curSelectedOwner]);
+    }, [state.curYearSelection, state.curSelectedOwner]);
 
     const curShowWorkers = state.dspWorkerIds.map(w => {
         return `${w}:${!!state.showWorkers[w]}`
     }).join(',');
     useEffect(() => {
         formatData(state, setState);
-    }, [state.curYearSelection?.label, state.curSelectedOwner,  curShowWorkers]);
+    }, [state.curYearSelection, state.curSelectedOwner,  curShowWorkers]);
 
     
     const [showDetail, setShowDetail] = useState<IShowDetailsData[] | null>(null);        
@@ -448,13 +445,12 @@ export default function YearlyMaintenanceReport() {
             <div className="col-sm-3">
                 <EditTextDropdown items={state.curYearOptions.map(o => ({
                     ...o,
-                    selected: o.label === state.curYearSelection.label
+                    selected: o.label === state.curYearSelection
                 }))} onSelectionChanged={sel => {
                     //selected={ state.curYearSelection}
                     setState({
                         ...state,
-                        dspYear: sel?.value || '',
-                        curYearSelection: sel,
+                        curYearSelection: sel.label,
                     })
                 }} ></EditTextDropdown>
             </div>
@@ -553,10 +549,10 @@ export default function YearlyMaintenanceReport() {
 }
 
 function getDataForYYYY(state: IYearlyMaintenanceReportState, setState: React.Dispatch<React.SetStateAction<IYearlyMaintenanceReportState>>) {
-    const { dspYear } = state;
-    if (!dspYear) return;
-    const m = moment(dspYear, 'YYYY');
-    console.log(`data for ${dspYear} is `);
+    const { curYearSelection } = state;
+    if (!curYearSelection) return;
+    const m = moment(curYearSelection, 'YYYY');
+    console.log(`data for ${curYearSelection} is `);
     console.log(m.toDate().toISOString());
     const startDate = m.format('YYYY-MM-DD');
     const endDate = m.add(1, 'year').startOf('year').format('YYYY-MM-DD');
