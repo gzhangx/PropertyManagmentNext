@@ -9,6 +9,12 @@ export interface IGenericDropdownProps {
     children?: any;
     items: IEditTextDropdownItem[];
     onSelectionChanged: (itm: IEditTextDropdownItem) => void;
+
+    setCurDisplayValue?: (string) => void;
+    curDisplayValue?: string;
+    setShow?: (boolean) => void;
+    show?: boolean;
+
     opts?: IGenericDropdownPropsOptional;    
 }
 
@@ -26,16 +32,29 @@ export interface IGenericDropdownPropsOptional {
 export function GenericDropdown(props: IGenericDropdownProps) {
     const { children, items, } = props;
     const opts = props.opts;
-    const { defaultShow, className } = opts;
-    const [show, setShow] = useState<boolean>(defaultShow || false);
+    const { defaultShow, className } = opts || {};
+    const [showInner, setShowInner] = useState<boolean>(defaultShow || false);
+    let show = showInner;
+    let setShow = setShowInner;
+    if (props.setShow) {
+        show = props.show;
+        setShow = props.setShow;
+    }
+    const [curDisplayValueInner, setCurDisplayValueInner] = useState<string>('');
+
+    let curDisplayValue = curDisplayValueInner;
+    let setCurDisplayValue = setCurDisplayValueInner
+    if (props.setCurDisplayValue) {
+        setCurDisplayValue = props.setCurDisplayValue;
+        curDisplayValue = props.curDisplayValue;
+    }
     const [showByButton, setShowByButton] = useState<boolean>(false);
     //const getSelectedText = () => (props.selected ? props.selected.label || props.selected.value : '');
     const getSelectedText = () => {
         const selectedItem = items.find(itm => itm.selected);
         if (!selectedItem) return '';
         return selectedItem.label;
-    }
-    const [curDisplayValue, setCurDisplayValue] = useState<string>('');
+    }    
     const topNode = useRef<HTMLLIElement>(undefined);
     useEffect(() => {
         const clickOutside = (e: MouseEvent) => {
@@ -112,8 +131,6 @@ export function GenericDropdown(props: IGenericDropdownProps) {
                     showByButton,
                     itemFormaterParam: {
                         onSelectionChanged: props.onSelectionChanged,
-                        setCurDisplayValue,                        
-                        setShow,
                         getDefaultSelectChangesFunc: data => {
                             return () => {
                                 props.onSelectionChanged(data);
@@ -133,9 +150,7 @@ export function GenericDropdown(props: IGenericDropdownProps) {
 
 
 interface IItemFormatterParams {
-    onSelectionChanged: (any) => void;
-    setCurDisplayValue: (string) => void;
-    setShow: (boolean) => void;
+    onSelectionChanged: (any) => void;    
     getDefaultSelectChangesFunc: (data: IEditTextDropdownItem) => (() => void);    
 }
 interface IItemMapperParams {

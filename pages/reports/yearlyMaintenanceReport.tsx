@@ -452,7 +452,16 @@ export default function YearlyMaintenanceReport() {
                         ...state,
                         curYearSelection: sel.label,
                     })
-                }} ></EditTextDropdown>
+                    }} curDisplayValue={state.curYearSelection} setCurDisplayValue={year => {
+                        setState(prev => {
+                            const newState: IYearlyMaintenanceReportState = {
+                                ...prev,
+                                
+                                curYearSelection: year,                                
+                            }                            
+                            return newState;
+                        });
+                    }}></EditTextDropdown>
             </div>
             <div className="col-sm-3">
                 <EditTextDropdown items={state.curOwnerOptions.map(o => ({
@@ -464,7 +473,16 @@ export default function YearlyMaintenanceReport() {
                         ...state,
                         curSelectedOwner: sel.label,
                     })
-                }} ></EditTextDropdown></div>
+                    }} curDisplayValue={state.curSelectedOwner} setCurDisplayValue={own => {
+                        setState(prev => {
+                            const newState: IYearlyMaintenanceReportState = {
+                                ...prev,
+
+                                curSelectedOwner: own,
+                            }
+                            return newState;
+                        });
+                }}></EditTextDropdown></div>
             <div className="col-sm-2">
                 {
                     state.exportData.length ? <CreateSaveButton content={DoubleAryToCsv(state.exportData)} />:''
