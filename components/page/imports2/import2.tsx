@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useReducer, type JSX } from 'react';
 import { getTenants, saveGoodSheetAuthInfo } from '../../api'
-import type { IGoogleSheetAuthInfo } from '../../api';
 import { EditTextDropdown } from '../../generic/EditTextDropdown'
 import { IIncomeExpensesContextValue } from '../../reportTypes';
 import { keyBy,  } from 'lodash'
@@ -8,7 +7,7 @@ import { GetInfoDialogHelper } from '../../generic/basedialog';
 import { useRouter } from 'next/router'
 
 import { BaseDialog } from '../../generic/basedialog'
-import { ALLFieldNames, IPageStates, IStringDict, IPageParms, ISheetRowData, IDbRowMatchData, IDisplayColumnInfo } from './types'
+import { ALLFieldNames, IPageStates, IStringDict, IPageParms, ISheetRowData, IDisplayColumnInfo } from './types'
 import { genericPageLoader, getDeleteExtraFromDbItems, getDisplayHeaders } from './helpers'
 import { getPageDefs } from './pageDefs'
 
@@ -38,8 +37,7 @@ export function ImportPage() {
         //paymentsByDateEct: {},
         showMatchedItems: false,
     } as IPageStates);
-
-    const rootCtx = useRootPageContext();    
+    
     const mainCtx = useIncomeExpensesContext();
     const {  googleSheetAuthInfo, setGoogleSheetAuthinfo} = mainCtx;
     const sheetId = getSheetId(mainCtx);
@@ -167,10 +165,14 @@ export function ImportPage() {
                                 <div className="col col-xl-2">
                                       GSheet Id
                                 </div>
-                                <div className="col col-xl-6">
+                                <div className="col col-xl-6">aaa
                                     <input type='text' value={googleSheetAuthInfo.googleSheetId || 'NA'} style={{ width: '420px' }}
                                         onChange={e => {
                                             console.log(e.target.value);
+                                            setGoogleSheetAuthinfo({
+                                                ...googleSheetAuthInfo,
+                                                googleSheetId: e.target.value,
+                                            })
                                         }}></input>
                                 </div>
                             </div>

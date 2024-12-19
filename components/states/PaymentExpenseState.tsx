@@ -117,7 +117,7 @@ export function PaymentExpenseStateWrapper(props: {
         getSheetAuthInfo().then(auth => {
             setGoogleSheetAuthinfo(auth);
         })
-    }, [googleSheetAuthInfo.googleSheetId]);
+    }, ['once']);
     useEffect(() => {
         setMonthes(allMonthes);
 
