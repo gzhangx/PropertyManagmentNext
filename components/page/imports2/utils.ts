@@ -163,7 +163,6 @@ export function stdProcessSheetData(sheetData: ICompRowData[], pageState: IPageS
                         const house = getHouseByAddress(pageState, v as string);
                         if (house) {
                             acc['houseID'] = house.houseID;
-                            acc['ownerID'] = house.ownerID;
                         } else {
                             acc['houseID'] = null;
                             //acc[fieldName] = `Invalid(${v})`;
