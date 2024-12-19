@@ -1,23 +1,22 @@
 import React, { useState, useEffect } from "react";
 
 import {
-    getMaintenanceFromSheet,
-    getHouseInfoFromSheet,
-    IHouseSheetInfo,
-    getSheetInfo,
-    ISheetInfo,
+    getMaintenanceFromSheet,    
+    getHouseInfo,
 } from '../../components/api';
 import moment from 'moment';
 //import EditDropdown, {IOptions} from '../paymentMatch/EditDropdown';
-import { EditTextDropdown , IEditTextDropdownItem } from '../../components/generic/EditTextDropdown';
+import { EditTextDropdown  } from '../../components/generic/EditTextDropdown';
 import { sortBy, words } from "lodash";
 import {
     IIncomeExpensesContextValue, IWorkerInfo,
     IMaintenanceRawData,
+    IHouseInfo,
 } from '../../components/reportTypes';
 
 import { CloseableDialog } from '../../components/generic/basedialog'
 import { CreateSaveButton} from '../../components/generic/SaveFile'
+import { IEditTextDropdownItem } from "../../components/generic/GenericDropdown";
 
 interface IShowDetailsData {
     amount: number;
@@ -64,14 +63,12 @@ interface IYearlyMaintenanceReportState {
     dspYear: string,
     byWorkerByCat: IByWorkerByCat;
     ownerID: string;
-    curSheetInfo: IEditTextDropdownItem;
-    allSheetInfos: IEditTextDropdownItem[];
     exportData: string[][];
     workerIds: string[];
     dspWorkerIds: string[];
     progressText: string;
-    houseInfo: IHouseSheetInfo[];
-    curSelectedOwner: IEditTextDropdownItem;
+    houseInfo: IHouseInfo[];
+    curSelectedOwner: string;
     curOwnerOptions: IEditTextDropdownItem[];
     houseToOwnerMap: {
         [houseName: string]: string;
@@ -298,15 +295,13 @@ export default function YearlyMaintenanceReport() {
         allRawData: [],
         dspYear: '',
         byWorkerByCat: {} as IByWorkerByCat,
-        ownerID: '',
-        curSheetInfo: null,
-        allSheetInfos: [],
+        ownerID: '',        
         exportData: [],
         workerIds:[],
         dspWorkerIds: [],
         progressText: '',
         houseInfo: [],
-        curSelectedOwner: { label: 'NA' },
+        curSelectedOwner: 'NA',
         curOwnerOptions: [],
         houseToOwnerMap: {},
     });
@@ -317,30 +312,12 @@ export default function YearlyMaintenanceReport() {
             progressText,
         }
     })
-    useEffect(() => { 
-        getSheetInfo().then(res => {
-            const opts: IEditTextDropdownItem[] = res.map(r => {
-                return {
-                    label: r.desc,
-                    value: r.sheetId,
-                } as IEditTextDropdownItem
-            })
-            setState(prev => {
-                return {
-                    ...prev,
-                    curSheetInfo: opts[0],
-                    allSheetInfos: opts,
-                }
-            })
-        })                
-    }, []);
 
 
-    async function getData() {
-        if (!state.curSheetInfo) return;
-        if (!state.curSheetInfo.value) return;
-        showProgress('Getting worker Info for ' + state.curSheetInfo.label);
-        const goodWorkers = await getMaintenanceFromSheet(state.curSheetInfo.value, 'Workers Info').then(rows => {
+
+    async function getData() {        
+        showProgress('Getting worker Info for ');
+        const goodWorkers = await getMaintenanceFromSheet().then(rows => {
             const goodWorkers = rows.reduce((acc, r) => {
                 acc[r.workerID] = true;
                 return acc;
@@ -349,10 +326,10 @@ export default function YearlyMaintenanceReport() {
         });
 
         showProgress('Getting house infor');
-        const houssInfoEtc = await getHouseInfoFromSheet(state.curSheetInfo.value).then(houseInfo => {
+        const houssInfoEtc = await getHouseInfo().then(houseInfo => {
             //console.log('houseInfo', houseInfo);
             const owners = houseInfo.reduce((acc, h) => {
-                acc.houseDict[h.houseName] = h.ownerName;
+                acc.houseDict[h.houseID] = h.ownerName;
                 if (!acc.ownerDict[h.ownerName]) {
                     acc.ownerDict[h.ownerName] = true;
                     acc.owners.push(h.ownerName);
@@ -372,13 +349,13 @@ export default function YearlyMaintenanceReport() {
             return {
                 goodWorkers,
                 houseInfo,
-                curSelectedOwner: curOwnerOptions[0] || { label: 'NA' },
+                curSelectedOwner: curOwnerOptions[0].label || 'NA' ,
                 curOwnerOptions,
                 houseToOwnerMap: owners.houseDict,
             }            
         });
-        showProgress('Getting Data for ' + state.curSheetInfo.label);
-        await getMaintenanceFromSheet(state.curSheetInfo.value, 'MaintainessRecord').then(rawRows => {
+        showProgress('Getting Data for ');
+        await getMaintenanceFromSheet().then(rawRows => {
             showProgress('');
             const rows = rawRows.filter(row => {
                 if (!state.showCategories[row.expenseCategoryId]) return false;
@@ -413,12 +390,12 @@ export default function YearlyMaintenanceReport() {
                 }
                 //console.log('setting state after main data', houssInfoEtc.goodWorkers)
                 setState(prev => {
-                    const newState = {
+                    const newState: IYearlyMaintenanceReportState = {
                         ...prev,
-                        minDate,
-                        fromYYYY,
+                        //minDate,
+                        //fromYYYY,
                         dspYear,
-                        ownerID: 'TODOADD',
+                        //ownerName: 'TODOADD',
                         curYearOptions: years.map(y => ({ label: y, value: y })),
                         curYearSelection: { label: dspYear, value: dspYear },
                         allRawData: rows,
@@ -429,15 +406,18 @@ export default function YearlyMaintenanceReport() {
                     return newState;
                 });
             } else {
-                setState(prev => ({
-                    ...prev,                    
-                    ownerID: 'TODOADD',
-                    curYearOptions: [],
-                    curYearSelection: {label:'No year'},
-                    allRawData: [],
-                    showWorkers: {},
-                    ...houssInfoEtc,
-                }));
+                setState(prev => {
+                    const res: IYearlyMaintenanceReportState = ({
+                        ...prev,
+                        //ownerName: 'TODOADD',
+                        curYearOptions: [],
+                        curYearSelection: { label: 'No year' },
+                        allRawData: [],
+                        showWorkers: {},
+                        ...houssInfoEtc,
+                    });
+                    return res;
+                });
             }
         }).catch(err => {
             showProgress(err.message);
@@ -447,18 +427,18 @@ export default function YearlyMaintenanceReport() {
     }
     useEffect(() => {
         getData();
-    }, [state.curSheetInfo]);
+    }, [state.dspYear]);
     useEffect(() => {
         //console.log(`loading data for ${state.dspYear}`, state.goodWorkers)
         getDataForYYYY(state, setState);
-    }, [state.dspYear, state.curSelectedOwner?.label]);
+    }, [state.dspYear, state.curSelectedOwner]);
 
     const curShowWorkers = state.dspWorkerIds.map(w => {
         return `${w}:${!!state.showWorkers[w]}`
     }).join(',');
     useEffect(() => {
         formatData(state, setState);
-    }, [state.curYearSelection?.label, state.curSelectedOwner?.label, state.curSheetInfo?.label,  curShowWorkers]);
+    }, [state.curYearSelection?.label, state.curSelectedOwner,  curShowWorkers]);
 
     
     const [showDetail, setShowDetail] = useState<IShowDetailsData[] | null>(null);        
@@ -467,7 +447,11 @@ export default function YearlyMaintenanceReport() {
     return <div>
         <div className="row">
             <div className="col-sm-3">
-                <EditTextDropdown selected={ state.curYearSelection} items={state.curYearOptions} onSelectionChanged={sel => {
+                <EditTextDropdown items={state.curYearOptions.map(o => ({
+                    ...o,
+                    selected: o.label === state.curYearSelection.label
+                }))} onSelectionChanged={sel => {
+                    //selected={ state.curYearSelection}
                     setState({
                         ...state,
                         dspYear: sel?.value || '',
@@ -476,14 +460,11 @@ export default function YearlyMaintenanceReport() {
                 }} ></EditTextDropdown>
             </div>
             <div className="col-sm-3">
-                <EditTextDropdown selected={state.curSheetInfo} items={state.allSheetInfos} onSelectionChanged={sel => {
-                    setState({
-                        ...state,                        
-                        curSheetInfo: sel,
-                    })
-                }} ></EditTextDropdown></div>
-            <div className="col-sm-3">
-                <EditTextDropdown selected={state.curSelectedOwner} items={state.curOwnerOptions} onSelectionChanged={sel => {
+                <EditTextDropdown items={state.curOwnerOptions.map(o => ({
+                    ...o,
+                    selected: o.label === state.curSelectedOwner
+                }))} onSelectionChanged={sel => {
+                    //selected={state.curSelectedOwner} 
                     setState({
                         ...state,
                         curSelectedOwner: sel,
@@ -581,7 +562,7 @@ function getDataForYYYY(state: IYearlyMaintenanceReportState, setState: React.Di
     const rawData = state.allRawData.filter(d => {
         const ownerID = state.houseToOwnerMap[d.houseID];
         if (ownerID) {
-            if (ownerID !== state.curSelectedOwner.value) return false;
+            if (ownerID !== state.curSelectedOwner) return false;
         }
         return d.date >= startDate && d.date <= endDate;
     });
@@ -645,7 +626,7 @@ function formatData(state: IYearlyMaintenanceReportState, setState: React.Dispat
     const byWorkerByCat = dataRows.reduce((acc, d) => {
         const ownerId = state.houseToOwnerMap[d.houseID];
         if (ownerId) {
-            if (ownerId !== state.curSelectedOwner.value) {
+            if (ownerId !== state.curSelectedOwner) {
                 //console.log(`ignoring due to diff owner ${ownerId}!=${state.curSelectedOwner.value} ${d.date} ${d.amount} ${d.houseID}`)
                 return acc;
             }

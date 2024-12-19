@@ -1,10 +1,9 @@
 import React, { useState, useEffect, useContext } from 'react';
 import moment from 'moment';
 import { orderBy, sortBy, pick, uniqBy, uniq } from 'lodash';
-import { getMaintenanceReport, getPaymnents, getHouseAnchorInfo, getSheetAuthInfo, IGoogleSheetAuthInfo } from '../api';
+import { getMaintenanceReport, getPaymnents, getHouseInfo, getSheetAuthInfo, IGoogleSheetAuthInfo } from '../api';
 
 import { IPagePropsByTable } from '../types'
-import { IEditTextDropdownItem } from '../generic/EditTextDropdown'
 import { useRouter } from 'next/router'
 
 import {
@@ -12,10 +11,10 @@ import {
     IHouseInfo,
     //IPageProps,
     IExpenseData,
-    IHouseAnchorInfo,
     IStringBoolMap,
 } from '../reportTypes';
 import { useRootPageContext } from './RootState';
+import { IEditTextDropdownItem } from '../generic/GenericDropdown';
 
 export const TOTALCOLNAME = 'coltotal';
 export const fMoneyformat = (amt:number)=> {
@@ -68,8 +67,6 @@ export function PaymentExpenseStateWrapper(props: {
         private_key: '',
         private_key_id: '',
     } );
-
-    const [houseAnchorInfo, setHouseAnchorInfo] = useState<IHouseAnchorInfo[]>([]);
 
     //month selection states
     const [monthes, setMonthesOrig] = useState<string[]>([]);
@@ -175,10 +172,7 @@ export function PaymentExpenseStateWrapper(props: {
     
 
 
-    const beginReLoadPaymentData = () => {
-        getHouseAnchorInfo().then(r => {            
-            setHouseAnchorInfo(r);
-        })
+    const beginReLoadPaymentData = () => {        
         return getPaymnents().then(r => {
             r = r.map(r => {
                 return {
@@ -225,7 +219,6 @@ export function PaymentExpenseStateWrapper(props: {
         payments,
         allMonthes,
         allHouses,
-        houseAnchorInfo,
         monthes, setMonthes,
         curMonthSelection, setCurMonthSelection,
         selectedMonths, setSelectedMonths,
@@ -234,7 +227,7 @@ export function PaymentExpenseStateWrapper(props: {
         paymentCalcOpts: {
             isGoodMonth: m => selectedMonths[m],
             isGoodHouseId: id => selectedHouses[id],
-            getHouseShareInfo: () => [...houseAnchorInfo],
+            getHouseShareInfo: () => [...allHouses],
             isGoodWorkerId: workerID => true, //DEBUGREMOVE add check
         }
     };

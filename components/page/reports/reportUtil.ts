@@ -272,7 +272,7 @@ export function getMaintenanceData(maintenanceRecordsRaw: IExpenseData[], opts: 
     const { isGoodMonth, isGoodHouseId, getHouseShareInfo } = opts;
     const houseInfo = getHouseShareInfo();
     const validHouseIds = houseInfo.reduce((acc, h) => {        
-        acc[h.id] = true;
+        acc[h.houseID] = true;
         return acc;
     }, {} as { [id: string]: boolean });
     const calcHouseSpreadShare = (r: IMaintenanceMonthCatAmtRec) => {
@@ -287,7 +287,7 @@ export function getMaintenanceData(maintenanceRecordsRaw: IExpenseData[], opts: 
                         dspAmount: ramount.toFixed(2),
                         house: {
                             ...r,
-                            ownerID: 0, city: '', state: '', zip:''
+                            ownerName: '', city: '', state: '', zip:''
                         },
                         info: `${r.address} ==> ${(ramount).toFixed(2)} of ${r.category}`,
                     } as IHousePartsCalcInfo
@@ -304,21 +304,21 @@ export function getMaintenanceData(maintenanceRecordsRaw: IExpenseData[], opts: 
         const anchorShare = total - (eachShare * (houseInfo.length - 1));
 
         const calcRes = houseInfo.reduce((acc, h) => {
-            if (isGoodHouseId(h.id)) {
-                const amount100 = h.isAnchor ? anchorShare : eachShare;
+            if (isGoodHouseId(h.houseID)) {
+                const amount100 = (acc.amount+anchorShare+0.0001>=total) ? anchorShare : eachShare;
                 const curTotal = acc.amount;
                 acc.amount += amount100;
                 const amount = amount100 / 100.0;
                 const dspAmount = amount.toFixed(2);
                 acc.calcInfo.push({
                     curTotal,
-                    house: { houseID: h.id, address: h.address, ownerID: 0, city: '', state: '', zip:'' },
+                    house: { houseID: h.houseID, address: h.address, ownerName: '', city: '', state: '', zip:'' },
                     amount,
                     dspAmount,
                     info: `${h.address} ${dspAmount} cumulated: ${(acc.amount/100).toFixed(2)} from total ${r.amount.toFixed(2)} of ${r.category}`,
                 });                
             }
-            acc.validHouseIds[h.id] = true;
+            acc.validHouseIds[h.houseID] = true;
             return acc;
         }, {
             validHouseIds: {} as {[id:string]:boolean},
@@ -453,7 +453,7 @@ export function getMaintenanceDataByWorker(maintenanceRecordsRaw: IExpenseData[]
     const { isGoodMonth, getHouseShareInfo, isGoodWorkerId } = opts;
     const houseInfo = getHouseShareInfo();
     const validHouseIds = houseInfo.reduce((acc, h) => {
-        acc[h.id] = true;
+        acc[h.houseID] = true;
         return acc;
     }, {} as { [id: string]: boolean });
    

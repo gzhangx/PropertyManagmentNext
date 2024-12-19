@@ -1,6 +1,6 @@
 import { IPagePropsByTable, IPageState } from './types'
-import {IEditTextDropdownItem} from './generic/EditTextDropdown'
 import { IGoogleSheetAuthInfo } from './api';
+import { IEditTextDropdownItem } from './generic/GenericDropdown';
 export interface IPayment {
     address: string;
     addressId: string;
@@ -43,7 +43,7 @@ export interface IPayment {
 
 export interface IHouseInfo {
     houseID: string;
-    ownerID: number;
+    ownerName: string;
     address: string;
     city: string;
     state: string;
@@ -52,11 +52,13 @@ export interface IHouseInfo {
 
 
 export interface IExpenseData {
+    maintenanceID: string;
     address: string;
     amount: number;
     category: string;
     comment: string;
     date: string;
+    hours: string;
     description: string;
     expenseCategoryName: string;
     expenseCategoryId: string; //this could be the name in the new realm
@@ -89,11 +91,6 @@ export interface IWorkerInfo extends IWorkerInfoShort {
     vdPosControl: string;
 }
 
-export interface IHouseAnchorInfo {
-    address: string;
-    id: string;
-    isAnchor: boolean;
-}
 
 export interface ILeaseInfo {
     'leaseID': string;
@@ -124,7 +121,7 @@ export interface IPaymentCalcOpts {
     isGoodMonth: (mon: string) => boolean;
     isGoodHouseId: (mon: string) => boolean;
     isGoodWorkerId: (workerID: string) => boolean;
-    getHouseShareInfo: () => IHouseAnchorInfo[];
+    getHouseShareInfo: () => IHouseInfo[];
 }
 
 export interface IMaintenanceRawData {
@@ -183,7 +180,6 @@ export interface IIncomeExpensesContextValue {
     payments: IPayment[];
     allMonthes: string[];
     allHouses: IHouseInfo[];
-    houseAnchorInfo: IHouseAnchorInfo[];
     monthes: string[];
     setMonthes: (a: string[]) => void;
     curMonthSelection: any;

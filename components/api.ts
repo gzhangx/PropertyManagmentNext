@@ -1,7 +1,6 @@
 
 import * as httpRequest from '@gzhangx/googleapi/lib/httpRequest'
 import { IGetModelReturn, TableNames, ISqlDeleteResponse } from './types'
-import moment from 'moment';
 
 export interface ISiteConfig {
     baseUrl: string;
@@ -26,7 +25,6 @@ export const emailRegx = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/;
 
 import { ISqlOrderDef, ILoginResponse } from './types'
 import {
-    IHouseAnchorInfo,
     IExpenseData,
     IHouseInfo,
     IPayment,
@@ -227,7 +225,7 @@ export async function getModel(name: TableNames) : Promise<IGetModelReturn> {
 export async function getMaintenanceReport(): Promise<IExpenseData[]> {
     return sqlGet({
         //fields:['month', 'houseID','address', {op:'sum', field:'amount', name:'amount'},'expenseCategoryName','displayOrder'],
-        fields: ['month', 'houseID', 'address', 'amount', 'expenseCategoryName', 'expenseCategoryId', 'displayOrder', 'date', 'comment', 'description', 'workerID', 'workerFirstName', 'workerLastName'],
+        fields: ['maintenanceID', 'month', 'houseID', 'address', 'amount', 'expenseCategoryName', 'expenseCategoryId', 'displayOrder', 'date', 'comment', 'description', 'workerID', 'workerFirstName', 'workerLastName', 'hours'],
         table:'maintenanceRecords',
         //groupByArray: [{ field: 'month' }, { field: 'houseID' }, { field: 'address' }, { field: 'expenseCategoryID' }, { field: 'expenseCategoryName'},{field:'displayOrder'}]
     }).then((r: { rows: IExpenseData[]})=>{
@@ -242,24 +240,9 @@ export async function getMaintenanceReport(): Promise<IExpenseData[]> {
     });    
 }
 
-export async function getHouseAnchorInfo(): Promise<IHouseAnchorInfo[]> {
-    return sqlGet({
-        fields: ['houseID','address'],
-        table: 'houseInfo',      
-    }).then((r: { rows: IHouseInfo[]}) => {
-        return r.rows.map(r => {
-            return {
-                id: r.houseID,
-                address: r.address,
-                isAnchor: r.address.includes('1633'),
-            } as IHouseAnchorInfo;
-        }).filter(x=>x.address);
-    });    
-}
-
 export async function getHouseInfo(): Promise<IHouseInfo[]> {
     return sqlGet({
-        fields: ['houseID','address','city','zip', 'ownerID'],
+        fields: ['houseID','address','city','zip', 'ownerName'],
         table: 'houseInfo',
         //whereArray: [{
             //field: 'ownerID',
@@ -372,76 +355,49 @@ export async function googleSheetRead(id:string, op:string, range:string) : Prom
     })
 }
 
-type MaintenanceRecordSheetName = 'Workers Info' | 'MaintainessRecord';
-export async function getMaintenanceFromSheet(sheetId: string, sheetName: MaintenanceRecordSheetName) : Promise<IMaintenanceRawData[]> {
-    const data = await doPost(`misc/sheet/readMaintenanceRecord?sheetId=${sheetId}&sheetName=${sheetName}`, {}, 'GET');
-    if (!data.values) {
-        return [];
-    }
-    const noHeader = data.values.slice(1);
-    if (sheetName === 'Workers Info') {
-        return noHeader.map(n => {
-            return {
-                workerID: n[1],
-            } as IMaintenanceRawData
-        });
-    }
-    return noHeader.map(row => {
-        if (!row[2]) {
-            console.log('bad row', row);
-            return null;
-        }
-        const amountRow = row[2].replace(/[$,]/g, '').trim();
-        const [matched] = amountRow.matchAll(/\(([0-9.]+?)\)/g);
-        let amount = amountRow;
-        if (matched) {
-            amount = -parseFloat(matched[1]);
-        } else {
-            amount = parseFloat(amountRow);
-        }
-        if (isNaN(amount)) {
-            console.log('bad row nama amont', row);
-            return null;
-        }
-        return {
-            amount,
-            date: moment(row[0]).format('YYYY-MM-DD'),
-            description: (row[1] || '').trim(),
-            houseID: (row[3] || '').trim(),
-            expenseCategoryId: (row[4] || '').trim(),
-            workerID: (row[5] || '').trim(),
-            comment: (row[6] || '').trim(),
-        } as IMaintenanceRawData;
-    }).filter(x => x);
-}
 
-export interface IHouseSheetInfo {
-    houseName: string;
-    ownerName: string;
-}
-export async function getHouseInfoFromSheet(sheetId: string): Promise<IHouseSheetInfo[]> {
-    const data = await doPost(`misc/sheet/readMaintenanceRecord?sheetId=${sheetId}&sheetName=House Info`, {}, 'GET');
-    if (!data.values) return [];
-    const header = data.values[0];
-    const houseInd = header.indexOf('HouseAddress');
-    const ownerInd = header.indexOf('Owner')
-    return data.values.slice(1).map(ary => {
-        return {
-            houseName: ary[houseInd],
-            ownerName: ary[ownerInd],
-        }
-    })
-}
-
-
-
-export interface ISheetInfo {
-    sheetId: string;
-    desc: string;
-}
-export async function getSheetInfo(): Promise<ISheetInfo[]> {
-    const data = await doPost(`misc/sheet/getSheetNames`, {}, 'GET');
-    return data.users as ISheetInfo[];
+export async function getMaintenanceFromSheet(): Promise<IMaintenanceRawData[]> {
+    const rpt = await getMaintenanceReport();
+    return rpt.map(r => r as IMaintenanceRawData);
+    //const data = await doPost(`misc/sheet/readMaintenanceRecord?sheetId=${sheetId}&sheetName=${sheetName}`, {}, 'GET');
+    //if (!data.values) {
+    //    return [];
+    //}
+    // const noHeader = data.values.slice(1);
+    // if (sheetName === 'Workers Info') {
+    //     return noHeader.map(n => {
+    //         return {
+    //             workerID: n[1],
+    //         } as IMaintenanceRawData
+    //     });
+    // }
+    // return noHeader.map(row => {
+    //     if (!row[2]) {
+    //         console.log('bad row', row);
+    //         return null;
+    //     }
+    //     const amountRow = row[2].replace(/[$,]/g, '').trim();
+    //     const [matched] = amountRow.matchAll(/\(([0-9.]+?)\)/g);
+    //     let amount = amountRow;
+    //     if (matched) {
+    //         amount = -parseFloat(matched[1]);
+    //     } else {
+    //         amount = parseFloat(amountRow);
+    //     }
+    //     if (isNaN(amount)) {
+    //         console.log('bad row nama amont', row);
+    //         return null;
+    //     }
+    //     return {
+    //         amount,
+    //         date: moment(row[0]).format('YYYY-MM-DD'),
+    //         description: (row[1] || '').trim(),
+    //         houseID: (row[3] || '').trim(),
+    //         expenseCategoryId: (row[4] || '').trim(),
+    //         workerID: (row[5] || '').trim(),
+    //         comment: (row[6] || '').trim(),
+    //     } as IMaintenanceRawData;
+    // }).filter(x => x);
 }
 
 
