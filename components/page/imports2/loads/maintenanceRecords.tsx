@@ -1,15 +1,13 @@
-import { IDbSaveData, IRowComparer, IStringDict, ISheetRowData, IPageDataDetails, ALLFieldNames, IPageParms, IDbRowMatchData, PageNames } from '../types'
+import { IDbSaveData, IRowComparer, IStringDict, ISheetRowData, IPageDataDetails, ALLFieldNames, IPageParms, IDbRowMatchData, PageNames, IPageInfo } from '../types'
 import { IHouseInfo, IMaintenanceRawData } from '../../../reportTypes';
-import { Promise } from 'bluebird';
-
-import { genericPageLoader } from '../helpers';
 
 import { IPageStates } from '../types';
 import { getRelatedTableByName, ICmpItemByName } from './cmpUtil';
 
 import * as lutil from './util';
 import moment from 'moment';
-import * as api from '../../../api'
+import * as theApi from '../../../api'
+import * as inserter from '../loads/inserter';
 
 import type { JSX } from "react";
 
@@ -131,3 +129,52 @@ export function displayDbExtra(params: IPageParms, state: IPageStates, dbMatch: 
     return dbMatch.dbItemData[field];
 }
 
+
+
+export const maintenceRecordDef: IPageInfo = {
+    pageName: 'MaintainessRecord',
+    range: 'A1:G',
+    fieldMap: [
+        'date',
+        'description',
+        'amount',
+        'maintenanceImportAddress', //rename to prevent default handling
+        'expenseCategoryId',
+        'workerID',
+        'comment'
+    ],
+    displayColumnInfo: [
+        {
+            field: 'date',
+            name: 'Date',
+        },
+        {
+            field: 'description',
+            name: 'Description',
+        },
+        {
+            field: 'amount',
+            name: 'Amount',
+        },
+        {
+            field: 'maintenanceImportAddress',
+            name: 'Address',
+        },
+        {
+            field: 'expenseCategoryId',
+            name: 'ExpenseCategoryId',
+        },
+        {
+            field: 'workerID',
+            name: 'Worker',
+        },
+    ],
+    sheetMustExistField: 'date',
+    rowComparers: maintenanceRowCompare,
+    dbLoader: () => theApi.getMaintenanceReport().then(r => r as any as IDbSaveData[]),
+    extraProcessSheetData: maintenanceExtraProcessSheetData,
+    shouldShowCreateButton: colInfo => colInfo.field === 'maintenanceImportAddress',
+    dbInserter: inserter.getDbInserter('maintenanceRecords'),
+    dbItemIdField: 'maintenanceID',
+    deleteById: id => theApi.deleteById('maintenanceRecords', id),
+};

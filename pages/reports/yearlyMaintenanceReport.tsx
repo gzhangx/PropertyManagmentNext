@@ -5,11 +5,10 @@ import {
     getHouseInfo,
 } from '../../components/api';
 import moment from 'moment';
-//import EditDropdown, {IOptions} from '../paymentMatch/EditDropdown';
 import { EditTextDropdown  } from '../../components/generic/EditTextDropdown';
 import { sortBy, words } from "lodash";
 import {
-    IIncomeExpensesContextValue, IWorkerInfo,
+    IWorkerInfo,
     IMaintenanceRawData,
     IHouseInfo,
 } from '../../components/reportTypes';
@@ -427,7 +426,7 @@ export default function YearlyMaintenanceReport() {
     }
     useEffect(() => {
         getData();
-    }, [state.dspYear]);
+    }, ['once']);
     useEffect(() => {
         //console.log(`loading data for ${state.dspYear}`, state.goodWorkers)
         getDataForYYYY(state, setState);
@@ -474,6 +473,9 @@ export default function YearlyMaintenanceReport() {
                 {
                     state.exportData.length ? <CreateSaveButton content={DoubleAryToCsv(state.exportData)} />:''
                 }
+            </div>
+            <div className="col-sm-2">
+                <button className="btn btn-primary" onClick={()=>getData()} >Reload</button>
             </div>
         </div>
         <div className="row">

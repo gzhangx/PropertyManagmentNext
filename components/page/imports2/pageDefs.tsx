@@ -79,14 +79,7 @@ export function getPageDefs() {
             shouldShowCreateButton: colInfo => colInfo.field === 'fullName',
             dbInserter: inserter.getDbInserter('tenantInfo'),
         },
-        {
-            ...basicDef.maintenceRecords,
-            rowComparers: maintenceRecords.maintenanceRowCompare,
-            dbLoader: () => theApi.getMaintenanceReport().then(r => r as any as IDbSaveData[]),
-            extraProcessSheetData: maintenceRecords.maintenanceExtraProcessSheetData,
-            shouldShowCreateButton: colInfo => colInfo.field === 'maintenanceImportAddress',
-            dbInserter: inserter.getDbInserter('maintenanceRecords'),
-        }
+        maintenceRecords.maintenceRecordDef,
     ];
     return pages;
 }

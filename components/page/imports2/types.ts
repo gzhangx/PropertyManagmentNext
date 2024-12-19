@@ -10,6 +10,7 @@ export type ALLFieldNames = '' | 'address' | 'city' | 'zip' | 'ownerName' | 'rec
     | 'firstName' | 'lastName' | 'fullName' | 'phone' | 'email' | 'date'
     | 'paymentID'
     | 'maintenanceImportAddress' //special processing fields
+    | 'expenseCategoryId' | 'description' | 'workerID' | 'maintenanceID'
     ;
 
 export interface IPaymentWithArg extends IPayment

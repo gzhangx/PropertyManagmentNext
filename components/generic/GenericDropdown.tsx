@@ -2,7 +2,7 @@ import { useState, useEffect, useRef, SetStateAction, Dispatch, type JSX } from 
 
 export interface IEditTextDropdownItem {
     label: string;
-    value?: string; //default to label
+    value?: any; //default to label
     selected?: boolean;    
 }
 export interface IGenericDropdownProps {
