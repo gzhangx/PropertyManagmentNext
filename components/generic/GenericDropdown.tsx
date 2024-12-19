@@ -1,23 +1,13 @@
 import { useState, useEffect, useRef, SetStateAction, Dispatch, type JSX } from "react";
 
 export interface IEditTextDropdownItem {
-    label: any;
-    value?: string;
-    selected?: boolean;
-
-    // move to display class
-    body?: any;
-    header?: any;
-    url?: any;
-    clsColor?: string;
-    clsIcon?: string;
-    className?: string;
-    subject?: string;
+    label: string;
+    value?: string; //default to label
+    selected?: boolean;    
 }
 export interface IGenericDropdownProps {
     children?: any;
     items: IEditTextDropdownItem[];
-    selected?: any;
     onSelectionChanged: (any) => void;
     opts?: IGenericDropdownPropsOptional;
 }
@@ -28,23 +18,23 @@ export interface IGenericDropdownPropsOptional {
     placeHolder?: string;
     //selected?: any;
     //setSelected?: Dispatch<SetStateAction<any>>;
-    dataFormatter?: (any, keyInd: number) => (JSX.Element | string | null);
-    getDropDownControl?: (show: boolean) => JSX.Element;
-    filterItems?: (any) => boolean;
+    dataFormatter?: (item: IEditTextDropdownItem, param: IItemFormatterParams, keyInd: number) => (JSX.Element | string | null);
+    //getDropDownControl?: (show: boolean) => JSX.Element;
+    mapItems?: (param: IItemMapperParams) => (JSX.Element | null)[];
 }
 
 export function GenericDropdown(props: IGenericDropdownProps) {
     const { children, items, } = props;
     const opts = props.opts;
     const { defaultShow, className } = opts;
-    const [show, setShow] = useState(defaultShow || false);
+    const [show, setShow] = useState<boolean>(defaultShow || false);
     //const getSelectedText = () => (props.selected ? props.selected.label || props.selected.value : '');
     const getSelectedText = () => {
         const selectedItem = items.find(itm => itm.selected);
         if (!selectedItem) return '';
         return selectedItem.label;
     }
-    const [curDisplayValue, setCurDisplayValue] = useState(null);
+    const [curDisplayValue, setCurDisplayValue] = useState<string>('');
     const topNode = useRef<HTMLLIElement>(undefined);
     useEffect(() => {
         const clickOutside = (e: MouseEvent) => {
@@ -53,7 +43,7 @@ export function GenericDropdown(props: IGenericDropdownProps) {
                 return;
             }
             setShow(false);
-            setCurDisplayValue(getSelectedText());
+            //setCurDisplayValue(getSelectedText());
         }
 
         document.addEventListener('mousedown', clickOutside);
@@ -66,34 +56,44 @@ export function GenericDropdown(props: IGenericDropdownProps) {
 
     useEffect(() => {
         setCurDisplayValue(getSelectedText());
-    }, [props.selected])
+    }, [true])
     const showClass = `dropdown-list ${className || 'dropdown-menu dropdown-menu-right shadow animated--grow-in'} ${show && 'show'}`;
-
-    const filterItems = opts.filterItems || (itm=>(itm.label || '').toLocaleLowerCase().includes((curDisplayValue || '' ).toLocaleLowerCase()))
+    
+    const dblClickTimer = useRef<NodeJS.Timeout>(null);
     return <li className="nav-item dropdown no-arrow mx-1 navbar-nav" ref={topNode} onClick={e => {
-        //nav-link dropdown-toggle
+        console.log(e.detail, 'detailssssss')
         e.preventDefault();
-        setShow(!show);
+        clearTimeout(dblClickTimer.current);
+        if (e.detail === 1) {
+            dblClickTimer.current = setTimeout(() => {
+                setShow(!show);        
+             }, 200);
+        }
+        if (e.detail === 2) {
+            //double click
+            (e.target as any).select();
+        }        
     }} >
 
         {
-            opts.getDropDownControl ? opts.getDropDownControl(show):
+            //opts.getDropDownControl ? opts.getDropDownControl(show):
             <a className="" href="#"
                 data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                 <div className="input-group">
                         <input type="text" className="form-control bg-light border-0 small" placeholder={opts.placeHolder || '' }
                             aria-label="Search" aria-describedby="basic-addon2"
-                            value={curDisplayValue === null ? getSelectedText(): curDisplayValue}
+                            value={curDisplayValue}
                             onChange={e => {
                                 setCurDisplayValue(e.target.value);
                             }}
                         />
                     <div className="input-group-append">
-                            <button className="btn btn-primary" type="button" onClick={e => {
+                        <button className="btn btn-primary" type="button" onClick={e => {                            
                                 //nav-link dropdown-toggle
                                 e.stopPropagation();
                                 e.preventDefault();
-                                setShow(!show);
+                            setShow(!show);
+                                
                                 //setCurDisplayValue('');
                             }}>
                                 <i className={show ?'far fa-arrow-alt-circle-down':"fas far fa-arrow-alt-circle-right"}></i>
@@ -104,41 +104,22 @@ export function GenericDropdown(props: IGenericDropdownProps) {
         }
         <div className={showClass}>
             {
-                items && (items.length < 5? items: items.filter(filterItems)).map((data, keyInd) => {
-                    if (opts.dataFormatter) {
-                        return opts.dataFormatter(data, keyInd);
-                    }
-                    if (data.body) return data.body;
-                    if (data.header) {
-                        return <h6 className="dropdown-header">
-                            {data.header}
-                        </h6>
-                    }
-                    if (data.url) {
-                        return <a className="dropdown-item text-center small text-gray-500" href="#" key={keyInd}>{data.url}</a>
-                    }
-                    const clrClass = `icon-circle ${data.clsColor || 'bg-primary'}`;
-                    const iconClass = `fas text-white ${data.clsIcon || 'fa-file-alt'}`
-                    //dropdown-item d-flex align-items-center
-                    return <a className={data.className || "dropdown-item d-flex align-items-center"} href="" key={keyInd}
-                        onClick={() => {   
-                            props.onSelectionChanged(data);
-                            setCurDisplayValue(data.label);
-                            setShow(false);
-                        }}
-                    >
-                        {
-                            data.clsIcon && <div className="mr-3">
-                                <div className={clrClass}>
-                                    <i className={iconClass}></i>
-                                </div>
-                            </div>
+                (opts.mapItems ?? defaultItemsMapper)({
+                    items,                    
+                    opts,
+                    curDisplayValue,
+                    itemFormaterParam: {
+                        onSelectionChanged: props.onSelectionChanged,
+                        setCurDisplayValue,                        
+                        setShow,
+                        getDefaultSelectChangesFunc: data => {
+                            return () => {
+                                props.onSelectionChanged(data);
+                                setCurDisplayValue(data.label);
+                                setShow(false);
+                            }
                         }
-                        <div>
-                            {data.subject && <div className="small text-gray-500">{data.subject}</div>}
-                            {data.label || data.value}
-                        </div>
-                    </a>
+                    },                    
                 })
             }
             {
@@ -146,4 +127,77 @@ export function GenericDropdown(props: IGenericDropdownProps) {
             }
         </div>
     </li>
+}
+
+
+interface IItemFormatterParams {
+    onSelectionChanged: (any) => void;
+    setCurDisplayValue: (string) => void;
+    setShow: (boolean) => void;
+    getDefaultSelectChangesFunc: (data: IEditTextDropdownItem) => (()=>void);
+}
+interface IItemMapperParams {
+    curDisplayValue: string;
+    opts: IGenericDropdownPropsOptional;
+    items: IEditTextDropdownItem[];    
+    itemFormaterParam: IItemFormatterParams;
+}
+
+
+export function defaultItemsMapper(prms: IItemMapperParams) {
+    const { curDisplayValue, items:rawItems, opts, itemFormaterParam } = prms;
+    if (!rawItems) return null;    
+    const filterItems = defaultFilterItems(curDisplayValue);    
+    return prms.items.filter(filterItems).map((data, keyInd) => {
+        if (opts.dataFormatter) {
+            return opts.dataFormatter(data, itemFormaterParam, keyInd);
+        }        
+        return <a className={"dropdown-item d-flex align-items-center"} href="" key={keyInd}
+            onClick={itemFormaterParam.getDefaultSelectChangesFunc(data)}
+        >            
+            <div>
+                {data.label || data.value}
+            </div>
+        </a>
+    })
+}
+
+const defaultFilterItems = (curDisplayValue: string)=>((itm: IEditTextDropdownItem) => (itm.label || '').toLocaleLowerCase().includes((curDisplayValue || '').toLocaleLowerCase()))
+
+export function fancyItemsMapper(prms: IItemMapperParams) {
+    const { curDisplayValue, items, opts, itemFormaterParam } = prms;
+    const filterItems = defaultFilterItems(curDisplayValue);
+    return items && (items.length < 5 ? items : items.filter(filterItems)).map((dataStrict, keyInd) => {
+        const data = dataStrict as any;
+        if (opts.dataFormatter) {
+            return opts.dataFormatter(data, itemFormaterParam, keyInd);
+        }
+        if (data.body) return data.body;
+        if (data.header) {
+            return <h6 className="dropdown-header">
+                {data.header}
+            </h6>
+        }
+        if (data.url) {
+            return <a className="dropdown-item text-center small text-gray-500" href="#" key={keyInd}>{data.url}</a>
+        }
+        const clrClass = `icon-circle ${data.clsColor || 'bg-primary'}`;
+        const iconClass = `fas text-white ${data.clsIcon || 'fa-file-alt'}`
+        //dropdown-item d-flex align-items-center
+        return <a className={data.className || "dropdown-item d-flex align-items-center"} href="" key={keyInd}
+            onClick={itemFormaterParam.getDefaultSelectChangesFunc(data)}
+        >
+            {
+                data.clsIcon && <div className="mr-3">
+                    <div className={clrClass}>
+                        <i className={iconClass}></i>
+                    </div>
+                </div>
+            }
+            <div>
+                {data.subject && <div className="small text-gray-500">{data.subject}</div>}
+                {data.label || data.value}
+            </div>
+        </a>
+    })
 }
