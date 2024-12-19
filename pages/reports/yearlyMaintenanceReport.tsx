@@ -20,6 +20,7 @@ import { IEditTextDropdownItem } from "../../components/generic/GenericDropdown"
 interface IShowDetailsData {
     amount: number;
     address: string;
+    houseID: string;
     notes: string;
     date: string;
     debugText?: string;
@@ -93,6 +94,13 @@ function GenerateByCatData(state: IYearlyMaintenanceReportState, setShowDetail: 
             color: 'green'
         } : {}
     }
+    function translateHouseIdToAddress(houseID: string) {
+        const house = state.houseInfo.find(h => h.houseID === houseID);
+        if (house) {
+            return house.address;
+        } 
+        return houseID;
+    }
     return <div>
         <div>
             <table className="table">
@@ -107,12 +115,15 @@ function GenerateByCatData(state: IYearlyMaintenanceReportState, setShowDetail: 
                                     setShowDetail(wkrCat.items.map(itm => {
                                         let date = itm.date;
                                         if (date.length > 10) date = date.substring(0, 10);
-                                        return {
+                                        const detail: IShowDetailsData = {
+                                            houseID: itm.houseID,
                                             address: itm.houseID,
                                             amount: itm.amount,
                                             date,
                                             notes: itm.description,
-                                        } as IShowDetailsData;
+                                        };
+                                        detail.address = translateHouseIdToAddress(itm.houseID);
+                                        return detail;
                                     }))
                                 }
                                 return <th scope="col" key={keyi} style={get1099Color(wkrCat)} onClick={showDetail}>{n}</th>
@@ -134,12 +145,14 @@ function GenerateByCatData(state: IYearlyMaintenanceReportState, setShowDetail: 
                                             setShowDetail(wkrCat.items.map(itm => {
                                                 let date = itm.date;
                                                 if (date.length > 10) date = date.substring(0, 10);
-                                                return {
-                                                    address: itm.houseID,
+                                                const detail: IShowDetailsData = {
+                                                    houseID: itm.houseID,
+                                                    address: translateHouseIdToAddress(itm.houseID),
                                                     amount: itm.amount,
                                                     date,
                                                     notes: itm.description,
-                                                } as IShowDetailsData;
+                                                };
+                                                return detail;
                                             }))
                                         }}>{
                                                 amtDsp(wkrCat?.total)
@@ -171,105 +184,7 @@ function GenerateByCatData(state: IYearlyMaintenanceReportState, setShowDetail: 
 }
 
 
-function GenerateByWorkerByCatDontWantData(state: IYearlyMaintenanceReportState, setShowDetail: React.Dispatch<React.SetStateAction<IShowDetailsData[]>>
-) {   
-    let names: { id: string; name: string; }[] = [];
-    let categoryNames: { id: string; name: string; }[] = [];
-    if (state.dspWorkerIds) {
-        names = state.dspWorkerIds.map(id => {
-            const wi = state.workerInfoMapping[id];
-            if (!wi) {
-                return {
-                    id,
-                    name: id,
-                }
-            } else {
-                return {
-                    id,
-                    name: `${wi.firstName} ${wi.lastName}`
-                }
-            }
-        });
-        names = sortBy(names, 'name') as { id: string; name: string; }[];
 
-        categoryNames = state.byWorkerByCat.catIds.map(id => {
-            const name = state.expenseCategoriesMapping[id] || id;
-            return {
-                id,
-                name,
-            }
-        });
-    }
-    return <table className="table">
-        <thead>
-            <tr>
-                <th scope="col">#</th>
-                {
-                    categoryNames.map((n, keyi) => {
-                        return <th scope="col" key={keyi}>{n.name}</th>
-                    })
-                }
-                <th>Total</th>
-            </tr>
-        </thead>
-        <tbody>
-            {
-                names.map((n, tri) => {
-                    return <tr key={tri}>
-                        <th scope="row">{n.name}</th>
-                        {
-                            categoryNames.map((cat, keyi) => {
-                                return <td scope="col" key={keyi} onClick={() => {
-                                    const wkrCat = state.byWorkerByCat.byWorker[n.id][cat.id];
-                                    if (!wkrCat) return;
-                                    setShowDetail(wkrCat.items.map(itm => {
-                                        let date = itm.date;
-                                        if (date.length > 10) date = date.substring(0, 10);
-                                        return {
-                                            address: itm.houseID,
-                                            amount: itm.amount,
-                                            date,
-                                            notes: itm.description,
-                                        } as IShowDetailsData;
-                                    }))
-                                }}>{
-                                        amtDsp(state.byWorkerByCat.byWorker[n.id][cat.id]?.total)
-                                    }</td>
-                            })
-                        }
-                        <td onClick={() => {
-                            const wkrCat = state.byWorkerByCat.byWorkerTotal[n.id];
-                            if (!wkrCat) return;
-                            setShowDetail(wkrCat.items.map(itm => {
-                                let date = itm.date;
-                                if (date.length > 10) date = date.substring(0, 10);
-                                return {
-                                    address: itm.houseID,
-                                    amount: itm.amount,
-                                    date,
-                                    notes: itm.description,
-                                } as IShowDetailsData;
-                            }))
-                        }}>{amtDsp(state.byWorkerByCat.byWorkerTotal[n.id].total)}</td>
-                    </tr>
-                })
-            }
-            {
-                <tr>
-                    <th>Grand Total:</th>
-                    {
-                        categoryNames.map((cat, keyi) => {
-                            return <td scope="col" key={keyi}>{
-                                amtDsp(state.byWorkerByCat?.byCatTotal[cat.id]?.total)
-                            }</td>
-                        })
-                    }
-                    <td>{amtDsp(state.byWorkerByCat?.total)}</td>
-                </tr>
-            }
-        </tbody>
-    </table>
-}
 export default function YearlyMaintenanceReport() {
     
     const [state, setState] = useState<IYearlyMaintenanceReportState>({
