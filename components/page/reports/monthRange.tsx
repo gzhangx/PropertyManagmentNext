@@ -1,7 +1,8 @@
 
 import React, {useState, useEffect} from 'react';
-import {EditTextDropdown, IEditTextDropdownItem} from '../../generic/EditTextDropdown'
+import {EditTextDropdown} from '../../generic/EditTextDropdown'
 import {IHouseInfo} from '../../reportTypes'
+import { IEditTextDropdownItem } from '../../generic/GenericDropdown';
 export interface IMonthRangeProps {    
     allMonthes: string[];
     allHouses: IHouseInfo[];            

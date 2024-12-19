@@ -1,5 +1,5 @@
+import { IEditTextDropdownItem } from "../generic/GenericDropdown";
 
-import { IEditTextDropdownItem, } from '../generic/EditTextDropdown';
 interface IFK {
     field: string;
     table: string;

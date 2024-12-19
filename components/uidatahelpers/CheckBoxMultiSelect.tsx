@@ -1,7 +1,7 @@
 
 import { useState,  } from 'react';
 import { GenericMultiSelectDropdown, IGenericMultiSelectDropdownProps } from '../generic/GenericMultipleSelectDropdown'
-import { IEditTextDropdownItem} from '../generic/EditTextDropdown'
+import { IEditTextDropdownItem } from '../generic/GenericDropdown';
 
 interface ICheckBoxMultiSelectProps  {
     items: IEditTextDropdownItem[];
