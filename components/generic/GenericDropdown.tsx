@@ -9,7 +9,7 @@ export interface IGenericDropdownProps {
     children?: any;
     items: IEditTextDropdownItem[];
     onSelectionChanged: (any) => void;
-    opts?: IGenericDropdownPropsOptional;
+    opts?: IGenericDropdownPropsOptional;    
 }
 
 export interface IGenericDropdownPropsOptional {    
@@ -28,6 +28,7 @@ export function GenericDropdown(props: IGenericDropdownProps) {
     const opts = props.opts;
     const { defaultShow, className } = opts;
     const [show, setShow] = useState<boolean>(defaultShow || false);
+    const [showByButton, setShowByButton] = useState<boolean>(false);
     //const getSelectedText = () => (props.selected ? props.selected.label || props.selected.value : '');
     const getSelectedText = () => {
         const selectedItem = items.find(itm => itm.selected);
@@ -92,8 +93,8 @@ export function GenericDropdown(props: IGenericDropdownProps) {
                                 //nav-link dropdown-toggle
                                 e.stopPropagation();
                                 e.preventDefault();
-                            setShow(!show);
-                                
+                            setShow(!show);     
+                            setShowByButton(!show);
                                 //setCurDisplayValue('');
                             }}>
                                 <i className={show ?'far fa-arrow-alt-circle-down':"fas far fa-arrow-alt-circle-right"}></i>
@@ -108,6 +109,7 @@ export function GenericDropdown(props: IGenericDropdownProps) {
                     items,                    
                     opts,
                     curDisplayValue,
+                    showByButton,
                     itemFormaterParam: {
                         onSelectionChanged: props.onSelectionChanged,
                         setCurDisplayValue,                        
@@ -134,21 +136,22 @@ interface IItemFormatterParams {
     onSelectionChanged: (any) => void;
     setCurDisplayValue: (string) => void;
     setShow: (boolean) => void;
-    getDefaultSelectChangesFunc: (data: IEditTextDropdownItem) => (()=>void);
+    getDefaultSelectChangesFunc: (data: IEditTextDropdownItem) => (() => void);    
 }
 interface IItemMapperParams {
     curDisplayValue: string;
     opts: IGenericDropdownPropsOptional;
     items: IEditTextDropdownItem[];    
     itemFormaterParam: IItemFormatterParams;
+    showByButton: boolean;
 }
 
 
 export function defaultItemsMapper(prms: IItemMapperParams) {
-    const { curDisplayValue, items:rawItems, opts, itemFormaterParam } = prms;
+    const { curDisplayValue, items:rawItems, opts, itemFormaterParam, showByButton } = prms;
     if (!rawItems) return null;    
     const filterItems = defaultFilterItems(curDisplayValue);    
-    return prms.items.filter(filterItems).map((data, keyInd) => {
+    return (showByButton ? prms.items: prms.items.filter(filterItems)).map((data, keyInd) => {
         if (opts.dataFormatter) {
             return opts.dataFormatter(data, itemFormaterParam, keyInd);
         }        
