@@ -9,8 +9,11 @@ import {
     Title,
     Tooltip,
     Legend,
+    LineController,
+    BarController,
+    PieController,
 } from 'chart.js';
-import { Line, Pie } from 'react-chartjs-2';
+import React from 'react';
 
 
 ChartJS.register(
@@ -49,6 +52,143 @@ function number_format(number, decimals, dec_point, thousands_sep) {
     return s.join(dec);
 }
 
+// all from react-char-js, can't get to install so copied
+function reforwardRef(ref, value) {
+    if (typeof ref === "function") {
+        ref(value);
+    } else if (ref) {
+        ref.current = value;
+    }
+}
+function setOptions(chart, nextOptions) {
+    const options = chart.options;
+    if (options && nextOptions) {
+        Object.assign(options, nextOptions);
+    }
+}
+function setLabels(currentData, nextLabels) {
+    currentData.labels = nextLabels;
+}
+const defaultDatasetIdKey = "label";
+function setDatasets(currentData, nextDatasets) {
+    let datasetIdKey = arguments.length > 2 && arguments[2] !== void 0 ? arguments[2] : defaultDatasetIdKey;
+    const addedDatasets = [];
+    currentData.datasets = nextDatasets.map((nextDataset) => {
+        // given the new set, find it's current match
+        const currentDataset = currentData.datasets.find((dataset) => dataset[datasetIdKey] === nextDataset[datasetIdKey]);
+        // There is no original to update, so simply add new one
+        if (!currentDataset || !nextDataset.data || addedDatasets.includes(currentDataset)) {
+            return {
+                ...nextDataset
+            };
+        }
+        addedDatasets.push(currentDataset);
+        Object.assign(currentDataset, nextDataset);
+        return currentDataset;
+    });
+}
+function cloneData(data) {
+    let datasetIdKey = arguments.length > 1 && arguments[1] !== void 0 ? arguments[1] : defaultDatasetIdKey;
+    const nextData = {
+        labels: [],
+        datasets: []
+    };
+    setLabels(nextData, data.labels);
+    setDatasets(nextData, data.datasets, datasetIdKey);
+    return nextData;
+}
+function ChartComponent(props, ref) {
+    const { height = 150, width = 300, redraw = false, datasetIdKey, type, data, options, plugins = [], fallbackContent, updateMode, ...canvasProps } = props;
+    const canvasRef = React.useRef(null);
+    const chartRef = React.useRef();
+    const renderChart = () => {
+        if (!canvasRef.current) return;
+        chartRef.current = new ChartJS(canvasRef.current, {
+            type,
+            data: cloneData(data, datasetIdKey),
+            options: options && {
+                ...options
+            },
+            plugins
+        });
+        reforwardRef(ref, chartRef.current);
+    };
+    const destroyChart = () => {
+        reforwardRef(ref, null);
+        if (chartRef.current) {
+            chartRef.current.destroy();
+            chartRef.current = null;
+        }
+    };
+    React.useEffect(() => {
+        if (!redraw && chartRef.current && options) {
+            setOptions(chartRef.current, options);
+        }
+    }, [
+        redraw,
+        options
+    ]);
+    React.useEffect(() => {
+        if (!redraw && chartRef.current) {
+            setLabels(chartRef.current.config.data, data.labels);
+        }
+    }, [
+        redraw,
+        data.labels
+    ]);
+    React.useEffect(() => {
+        if (!redraw && chartRef.current && data.datasets) {
+            setDatasets(chartRef.current.config.data, data.datasets, datasetIdKey);
+        }
+    }, [
+        redraw,
+        data.datasets
+    ]);
+    React.useEffect(() => {
+        if (!chartRef.current) return;
+        if (redraw) {
+            destroyChart();
+            setTimeout(renderChart);
+        } else {
+            chartRef.current.update(updateMode);
+        }
+    }, [
+        redraw,
+        options,
+        data.labels,
+        data.datasets,
+        updateMode
+    ]);
+    React.useEffect(() => {
+        if (!chartRef.current) return;
+        destroyChart();
+        setTimeout(renderChart);
+    }, [
+        type
+    ]);
+    React.useEffect(() => {
+        renderChart();
+        return () => destroyChart();
+    }, []);
+    return /*#__PURE__*/ React.createElement("canvas", Object.assign({
+        ref: canvasRef,
+        role: "img",
+        height: height,
+        width: width
+    }, canvasProps), fallbackContent);
+}
+const Chart = /*#__PURE__*/ React.forwardRef(ChartComponent);
+
+function createTypedChart(type, registerables) {
+    ChartJS.register(registerables);
+    return /*#__PURE__*/ React.forwardRef((props, ref) =>/*#__PURE__*/ React.createElement(Chart, Object.assign({}, props, {
+        ref: ref,
+        type: type
+    })));
+}
+const Line = /* #__PURE__ */ createTypedChart("line", LineController);
+const Bar = /* #__PURE__ */ createTypedChart("bar", BarController);
+const Pie = /* #__PURE__ */ createTypedChart("pie", PieController);
 
 export function EarningsGraph() {
     const defData = {
@@ -104,6 +244,7 @@ export function EarningsGraph() {
             }
         }
     };
+    
     return <Line data={defData} options={options}></Line>
 }
 
