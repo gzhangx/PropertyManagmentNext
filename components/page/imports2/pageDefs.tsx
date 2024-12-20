@@ -14,6 +14,7 @@ import * as tenantLoad from './loads/tenants'
 import * as maintenceRecords from './loads/maintenanceRecords'
 import * as houseLoader from './loads/house';
 import * as paymentLoader from './loads/payment';
+import * as workerLoader from './loads/workerInfo';
 
 import * as inserter from './loads/inserter';
 
@@ -78,8 +79,9 @@ export function getPageDefs() {
             extraProcessSheetData: tenantLoad.extraProcessSheetData,
             shouldShowCreateButton: colInfo => colInfo.field === 'fullName',
             dbInserter: inserter.getDbInserter('tenantInfo'),
-        },
+        },        
         maintenceRecords.maintenceRecordDef,
+        workerLoader.workerInfo,
     ];
     return pages;
 }

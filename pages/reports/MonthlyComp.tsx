@@ -102,9 +102,10 @@ export default function MonthlyComp() {
     useEffect(() => {
         if (!curMonth.value) return;
 
+        //TODO: need join
         sqlGet({
             table: 'maintenanceRecords',
-            fields: ['workerID', 'workerFirstName', 'workerLastName'],
+            fields: ['workerID', 'workerName'],
             whereArray: [{
                 field: 'month',
                 op: '=',
@@ -116,8 +117,7 @@ export default function MonthlyComp() {
                 return {
                     workerID: r.workerID,
                     label: r.workerID,
-                    firstName: r.workerFirstName,
-                    lastName: r.workerLastName,
+                    workerName: r.workerName,
                 }
             }), x => x.workerID);
             const workerOpts = Object.keys(workerComps).map((workerID, ind) => {

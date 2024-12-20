@@ -11,6 +11,7 @@ export type ALLFieldNames = '' | 'address' | 'city' | 'zip' | 'ownerName' | 'rec
     | 'paymentID'
     | 'maintenanceImportAddress' //special processing fields
     | 'expenseCategoryId' | 'description' | 'workerID' | 'maintenanceID'
+    | 'workerName' | 'taxName' | 'taxID' | 'state'
     ;
 
 export interface IPaymentWithArg extends IPayment
@@ -43,15 +44,13 @@ export interface IDbInserter {
     createEntity: (data: IDbSaveData) => Promise<{id:string}>;
 }
 
-export type PageNames = 'Tenants Info' | 'Lease Info' | 'PaymentRecord' | 'House Info' | 'MaintainessRecord';
+export type PageNames = 'Tenants Info' | 'Lease Info' | 'PaymentRecord' | 'House Info' | 'MaintainessRecord' | 'Workers Info';
 export interface IPageInfo {
     pageName: PageNames;
     range: string;
 
     fieldMap: ALLFieldNames[];
     displayColumnInfo: IDisplayColumnInfo[];
-
-    shouldNotCheckHouse?: boolean; //only HouseInfo should not check
 
     dbLoader?: () => Promise<IDbSaveData[]>;
     dbItemIdField?: ALLFieldNames;
@@ -66,6 +65,8 @@ export interface IPageInfo {
     displayDbExtra?: (params: IPageParms, state: IPageStates, dbMatch: IDbRowMatchData, field: ALLFieldNames) => JSX.Element | number| string;
     cmpSortField?: ALLFieldNames; //used to show sheet/db rows and sort by, usually date
     reloadEntity?: (prms: IPageParms) => void;
+
+    custProcessSheetData?: (sheetData: ICompRowData[], pageState: IPageStates) => IStringDict[];
 }
 
 

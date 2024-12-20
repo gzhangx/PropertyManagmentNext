@@ -12,7 +12,6 @@ import { genericPageLoader, getDeleteExtraFromDbItems, getDisplayHeaders } from 
 import { getPageDefs } from './pageDefs'
 
 import { useIncomeExpensesContext } from '../../states/PaymentExpenseState'
-import {  useRootPageContext } from '../../states/RootState'
 
 import { sortBy } from 'lodash';
 

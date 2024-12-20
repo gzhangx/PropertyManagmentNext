@@ -138,7 +138,6 @@ function stdDisplayField(fieldNames: ALLFieldNames[], obj: IStringDict, pageStat
 
 export function stdProcessSheetData(sheetData: ICompRowData[], pageState: IPageStates) : IStringDict[] {
     const fieldNames = pageState.curPage.fieldMap.filter(f => f);
-    const shouldNotCheckHouse = pageState.curPage.shouldNotCheckHouse;
     return sheetData.map(sd => {
         const acc = (sd as ISheetRowData).importSheetData || (sd as IDbRowMatchData).dbItemData;
         fieldNames.forEach(fieldName => {
@@ -159,7 +158,7 @@ export function stdProcessSheetData(sheetData: ICompRowData[], pageState: IPageS
                         }
                         break;
                     }
-                    if (!shouldNotCheckHouse) {
+                    if (pageState.curPage.pageName !== 'House Info') {
                         const house = getHouseByAddress(pageState, v as string);
                         if (house) {
                             acc['houseID'] = house.houseID;

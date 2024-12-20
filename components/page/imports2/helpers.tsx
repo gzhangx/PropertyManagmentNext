@@ -68,7 +68,8 @@ export async function genericPageLoader(prms: IPageParms, pageState: IPageStates
     pageState.sheetId = sheetId;
     const sheetDatas = await extraProcessSheetData(pageDetails.dataRows as ISheetRowData[], pageState);
     pageDetails.dataRows = sheetDatas;
-    const displayData = stdProcessSheetData(sheetDatas, {
+    const processSheetData = pageState.curPage.custProcessSheetData ?? stdProcessSheetData;
+    const displayData = processSheetData(sheetDatas, {
         ...pageState,
         ...hi,
     });

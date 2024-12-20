@@ -77,18 +77,17 @@ export interface IExpenseCategory {
 
 export interface IWorkerInfoShort {
     workerID: string;
-    firstName: string;
-    lastName: string;
+    workerName: string;
 }
-export interface IWorkerInfo extends IWorkerInfoShort {
-    //workerID: string;
-    //firstName: string;
-    //lastName: string;
-    email: string;
-    phone: string;
+export interface IWorkerInfo extends IWorkerInfoShort {        
+    taxName: string;
     taxID: string;
     address: string;
-    vdPosControl: string;
+    city: string;
+    state: string;
+    zip: string;
+    email: string;
+    phone: string;
 }
 
 
@@ -139,8 +138,7 @@ export interface IMaintenanceRawData {
 
 export interface IMaintenanceDataResponse extends IMaintenanceRawData {
     address: string;
-    workerFirstName: string;
-    workerLastName: string;
+    workerName: string;
 }
 
 export interface IWorkerComp {
