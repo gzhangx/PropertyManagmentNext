@@ -16,8 +16,7 @@ interface IGenListProps { //copied from gencrud, need combine and refactor later
     displayFields?: IDisplayFieldType;
     loadMapper?: LoadMapperType;
     fkDefs?: IFKDefs;
-    initialPageSize?: number;    
-    treatData?: { [key: string]: (a: any, b: any) => any; }
+    initialPageSize?: number;        
     /*
     paggingInfo: {
         total: number;
@@ -32,7 +31,7 @@ interface IGenListProps { //copied from gencrud, need combine and refactor later
 }
 //props: table and displayFields [fieldNames]
 export function GenList(props: IGenListProps) {
-    const { table, columnInfo, loadMapper, fkDefs, initialPageSize, treatData = {} } = props;
+    const { table, columnInfo, loadMapper, fkDefs, initialPageSize } = props;
     const secCtx = useIncomeExpensesContext();
     const [paggingInfo, setPaggingInfo] = useState({
         PageSize: initialPageSize|| 10,        
@@ -61,15 +60,7 @@ export function GenList(props: IGenListProps) {
         }).then(res => {
             const {rows, total} = res;
             setPaggingInfo({...paggingInfo, total,})
-            setMainData(rows.map(r=>{
-                const minf = helper.getModelFields();
-                return minf.reduce((acc,c)=>{
-                    const tdata = treatData[c.field];
-                    if (tdata)
-                        acc[c.field] = tdata(c.field, r);
-                    return acc;
-                    },r);      
-                }));
+            setMainData(rows);
             setLoading(false);
         });
     }

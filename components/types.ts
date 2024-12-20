@@ -75,5 +75,5 @@ export interface IGetModelReturn {
 }
 
 export function isColumnSecurityField(field: IDBFieldDef) {
-    return field.foreignKey && field.foreignKey.table === 'ownerInfo';
+    return field.foreignKey && field.foreignKey.table === 'userInfo';
 }

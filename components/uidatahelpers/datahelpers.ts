@@ -20,7 +20,7 @@ interface IOpts {
 }
 
 
-type IHelper = {
+export type IHelper = {
     getModelFields: () => IDBFieldDef[];
     loadModel: () => Promise<IGetModelReturn>;
     getOwnerSecFields: () => IDBFieldDef[];

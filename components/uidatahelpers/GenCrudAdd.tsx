@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { createAndLoadHelper, FieldValueType } from './datahelpers';
+import { createAndLoadHelper, FieldValueType, IHelper } from './datahelpers';
 import { get } from 'lodash';
 import { EditTextDropdown, } from '../generic/EditTextDropdown';
 import * as bluebird from 'bluebird';
@@ -73,7 +73,7 @@ export const GenCrudAdd = (props: IGenGrudAddProps) => {
         }
         return acc;
     }, {});
-    const requiredFields = columnInfo.filter(c => c.required && !c.isId).map(c => c.field);
+    const requiredFields = columnInfo.filter(c => c.required && !c.isId && !isColumnSecurityField(c)).map(c => c.field);
     const requiredFieldsMap = requiredFields.reduce((acc, f) => {
         acc[f] = true;
         return acc;
@@ -146,14 +146,19 @@ export const GenCrudAdd = (props: IGenGrudAddProps) => {
     useEffect(() => {
         setData(initData);
     }, [JSON.stringify(initData)])
-    const [columnInfoMaps, setColumnInfoMaps] = useState({});
+    const [columnInfoMaps, setColumnInfoMaps] = useState<{
+        [name: string]: {
+            columnInfo: IColumnInfo[];
+            helper: IHelper;
+        }
+    }>({});
     const loadColumnInfo = async (colInf:IColumnInfo[]) => {
         const hasFks = colInf.filter(c => c.foreignKey).filter(c => c.foreignKey.table);
         await bluebird.Promise.map(hasFks, async fk => {
             const tbl = fk.foreignKey.table;
             const helper = await createAndLoadHelper(tbl, googleSheetId);
             await helper.loadModel();
-            const columnInfo = helper.getModelFields();
+            const columnInfo = helper.getModelFields().map(x=>x as IColumnInfo);
             setColumnInfoMaps(prev => {
                 return {
                     ...prev,
