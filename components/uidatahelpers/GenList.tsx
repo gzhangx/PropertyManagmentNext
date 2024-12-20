@@ -2,7 +2,7 @@ import React,{useState,useEffect} from 'react';
 import { GenCrud, getPageSorts, getPageFilters } from './GenCrud';
 import { IColumnInfo, ItemType } from './GenCrudAdd';
 import { IFKDefs } from './GenCrudTableFkTrans'
-import { createHelper, FieldValueType } from './datahelpers';
+import { createHelper, DataToDbSheetMapping, FieldValueType } from './datahelpers';
 import { getFKDefs } from './GenCrudTableFkTrans';
 
 import { IDBFieldDef, TableNames } from '../types'
@@ -29,6 +29,7 @@ interface IGenListProps { //copied from gencrud, need combine and refactor later
     doAdd: (data: ItemType, id: FieldValueType) => Promise<{ id: string; }>;
 
     dbFieldToColumnInfo?: (db: IDBFieldDef[]) => IColumnInfo[];
+    sheetMapping?: DataToDbSheetMapping;
 }
 //props: table and displayFields [fieldNames]
 export function GenList(props: IGenListProps) {
@@ -40,7 +41,7 @@ export function GenList(props: IGenListProps) {
         total: 0,
         lastPage:0,// added since missing
     });
-    const helper = createHelper(table, secCtx.googleSheetAuthInfo.googleSheetId);
+    const helper = createHelper(table, secCtx.googleSheetAuthInfo.googleSheetId, props.sheetMapping);
     const pageState = secCtx.pageState;
     // [
     //     { field: 'tenantID', desc: 'Id', type: 'uuid', required: true, isId: true },

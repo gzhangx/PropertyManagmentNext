@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { createAndLoadHelper, FieldValueType, IHelper } from './datahelpers';
+import { createAndLoadHelper, DataToDbSheetMapping, FieldValueType, IHelper } from './datahelpers';
 import { get } from 'lodash';
 import { EditTextDropdown, } from '../generic/EditTextDropdown';
 import * as bluebird from 'bluebird';
@@ -32,6 +32,7 @@ export interface IGenGrudAddProps {
     table?: string;
     desc?: string;
     fkDefs?: IFKDefs;
+    sheetMapping?: DataToDbSheetMapping;
 }
 export const GenCrudAdd = (props: IGenGrudAddProps) => {
 
@@ -121,7 +122,7 @@ export const GenCrudAdd = (props: IGenGrudAddProps) => {
 
                     const processForeignKey = getForeignKeyProcessor(optKey);
                     if (processForeignKey && !optsData[optKey]) {
-                        const helper = await createAndLoadHelper(optKey, googleSheetId);
+                        const helper = await createAndLoadHelper(optKey, googleSheetId, props.sheetMapping);
                         //await helper.loadModel();
                         const optDataOrig = await helper.loadData();
                         const optData = optDataOrig.rows;
@@ -151,7 +152,7 @@ export const GenCrudAdd = (props: IGenGrudAddProps) => {
         const hasFks = colInf.filter(c => c.foreignKey).filter(c => c.foreignKey.table);
         await bluebird.Promise.map(hasFks, async fk => {
             const tbl = fk.foreignKey.table;
-            const helper = await createAndLoadHelper(tbl, googleSheetId);
+            const helper = await createAndLoadHelper(tbl, googleSheetId, props.sheetMapping);
             await helper.loadModel();
             const columnInfo = helper.getModelFields().map(x=>x as IColumnInfo);
             setColumnInfoMaps(prev => {

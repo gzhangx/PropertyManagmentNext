@@ -18,6 +18,12 @@ interface IOpts {
     offset:number;
 }
 
+export type DataToDbSheetMapping ={
+    sheetName: string;
+    mapping: string[];
+    formatter: (name: string) => ((v: string)=>string);
+    endCol: string;
+}
 
 export type IHelper = {
     getModelFields: () => IDBFieldDef[];
@@ -29,7 +35,7 @@ export type IHelper = {
     saveData: (data: any, id: FieldValueType) => Promise<any>;
     deleteData: (id: string) => Promise<ISqlDeleteResponse>;
 }
-export function createHelper(table: TableNames, googleSheetId: string): IHelper {
+export function createHelper(table: TableNames, googleSheetId: string, sheetMapping?: DataToDbSheetMapping): IHelper {
     if (!table) return null;
     const accModel = () => mod.models[table];
     const accModelFields = () => get(accModel(), 'fields', [] as IDBFieldDef[]);
@@ -68,7 +74,7 @@ export function createHelper(table: TableNames, googleSheetId: string): IHelper 
             const sqlRes = await sqlAdd(table, submitData, !id);;
             if (!googleSheetId) return sqlRes;
 
-            const sheetMapper = getTableNameToSheetMapping(table);
+            const sheetMapper = getTableNameToSheetMapping(table, sheetMapping);
             if (sheetMapper) {
                 const values = sheetMapper.mapping.map(name => {
                     const val = data[name];
@@ -92,37 +98,20 @@ export function createHelper(table: TableNames, googleSheetId: string): IHelper 
     return helper;
 }
 
-function getTableNameToSheetMapping(tableName: TableNames) {
+function getTableNameToSheetMapping(tableName: TableNames, sheetMapping?: DataToDbSheetMapping) {
+    if (!sheetMapping) return null;
     const charCodeA = 'A'.charCodeAt(0);
     const colNames: string[] = [];
     for (let i = 0; i < 25; i++) {
         colNames.push(String.fromCharCode(charCodeA + i));
     }
-    if (tableName === 'rentPaymentInfo') {
-        const ret = {
-            sheetName: 'testtest',
-            mapping: [
-                'receivedDate',
-                'receivedAmount',
-                'houseID_labelDesc',
-                'paymentTypeName',
-                'notes',
-            ],
-            formatter: (name: string) => {
-                if (name === 'receivedDate') return (v:string) => moment(v).format('YYYY-MM-DD');
-                if (name === 'receivedAmount') return (v: string) => parseFloat(v || '0').toFixed(2);
-                return (v:string) => v;
-            },
-            endCol: 'B',
-        };
-        ret.endCol = colNames[ret.mapping.length - 1];
-        return ret;
-    }
-    return null;
+    
+    sheetMapping.endCol = colNames[sheetMapping.mapping.length - 1];
+    return sheetMapping;
 }
 
-export async function createAndLoadHelper(table: TableNames, googleSheetId: string) {
-    const helper = createHelper(table, googleSheetId);
+export async function createAndLoadHelper(table: TableNames, googleSheetId: string, sheetMapping?: DataToDbSheetMapping) {
+    const helper = createHelper(table, googleSheetId, sheetMapping);
     await helper.loadModel();
     return helper;
 }
