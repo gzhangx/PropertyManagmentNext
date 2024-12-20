@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from "react";
-
+import { PDFDocument } from 'pdf-lib'
 import {
     getMaintenanceFromSheet,    
     getHouseInfo,
+    getWorkerInfo,
+    doPost,
 } from '../../components/api';
 import moment from 'moment';
 import { EditTextDropdown  } from '../../components/generic/EditTextDropdown';
@@ -84,7 +86,16 @@ function DoubleAryToCsv(data: string[][]): string {
         return ss.join(',');
     }).join('\r\n');
 }
-function GenerateByCatData(state: IYearlyMaintenanceReportState, setShowDetail: React.Dispatch<React.SetStateAction<IShowDetailsData[]>>) {    
+
+type IDetailParams = {
+    details: IShowDetailsData[];
+    total: number;
+    export1099: boolean;
+    workerName: string;
+    YYYY: string;
+};
+
+function GenerateByCatData(state: IYearlyMaintenanceReportState, setShowDetail: React.Dispatch<React.SetStateAction<IDetailParams>>) {    
     const workerNames = state.dspWorkerIds || [];
     const catIds = state.byWorkerByCat.catIds || [];
     const dataBy = state.byWorkerByCat.byCats;
@@ -102,6 +113,29 @@ function GenerateByCatData(state: IYearlyMaintenanceReportState, setShowDetail: 
         return houseID;
     }
     const showv1 = true;
+    const showDetail = (wkrCat: IWithTotal, workerName: string) => {
+        if (!wkrCat) return;
+        const details = wkrCat.items.map(itm => {
+            let date = itm.date;
+            if (date.length > 10) date = date.substring(0, 10);
+            const detail: IShowDetailsData = {
+                houseID: itm.houseID,
+                address: itm.houseID,
+                amount: itm.amount,
+                date,
+                notes: itm.description,
+            };
+            detail.address = translateHouseIdToAddress(itm.houseID);
+            return detail;
+        });
+        setShowDetail({
+            details,
+            export1099: !!workerName,
+            workerName,
+            total: wkrCat.total,
+            YYYY: state.curYearSelection.substring(0,4),
+        })
+    }
     return <div>
         <div>
             { !showv1 && <table className="table">
@@ -111,23 +145,7 @@ function GenerateByCatData(state: IYearlyMaintenanceReportState, setShowDetail: 
                         {
                             workerNames.map((n, keyi) => {
                                 const wkrCat = state.byWorkerByCat.byWorkerTotal[n];
-                                const showDetail = () => {
-                                    if (!wkrCat) return;
-                                    setShowDetail(wkrCat.items.map(itm => {
-                                        let date = itm.date;
-                                        if (date.length > 10) date = date.substring(0, 10);
-                                        const detail: IShowDetailsData = {
-                                            houseID: itm.houseID,
-                                            address: itm.houseID,
-                                            amount: itm.amount,
-                                            date,
-                                            notes: itm.description,
-                                        };
-                                        detail.address = translateHouseIdToAddress(itm.houseID);
-                                        return detail;
-                                    }))
-                                }
-                                return <th scope="col" key={keyi} style={get1099Color(wkrCat)} onClick={showDetail}>{n}</th>
+                                return <th scope="col" key={keyi} style={get1099Color(wkrCat)} onClick={()=>showDetail(wkrCat, n)}>{n}</th>
                             })
                         }
                         <th>Total</th>
@@ -141,21 +159,7 @@ function GenerateByCatData(state: IYearlyMaintenanceReportState, setShowDetail: 
                                 {
                                     workerNames.map((workerName, keyi) => {
                                         const wkrCat = dataBy[catId][workerName];
-                                        return <td scope="col" key={keyi} onClick={() => {
-                                            if (!wkrCat) return;
-                                            setShowDetail(wkrCat.items.map(itm => {
-                                                let date = itm.date;
-                                                if (date.length > 10) date = date.substring(0, 10);
-                                                const detail: IShowDetailsData = {
-                                                    houseID: itm.houseID,
-                                                    address: translateHouseIdToAddress(itm.houseID),
-                                                    amount: itm.amount,
-                                                    date,
-                                                    notes: itm.description,
-                                                };
-                                                return detail;
-                                            }))
-                                        }}>{
+                                        return <td scope="col" key={keyi} onClick={() => () => showDetail(wkrCat, '')}>{
                                                 amtDsp(wkrCat?.total)
                                             }</td>
                                     })
@@ -196,30 +200,14 @@ function GenerateByCatData(state: IYearlyMaintenanceReportState, setShowDetail: 
                 <tbody>                    
                     {
                         workerNames.map((workerName, keyi) => {
-                            const wkrCat = state.byWorkerByCat.byWorkerTotal[workerName];
-                            const showDetail = (wkrCat: IWithTotal) => {
-                                if (!wkrCat) return;
-                                setShowDetail(wkrCat.items.map(itm => {
-                                    let date = itm.date;
-                                    if (date.length > 10) date = date.substring(0, 10);
-                                    const detail: IShowDetailsData = {
-                                        houseID: itm.houseID,
-                                        address: itm.houseID,
-                                        amount: itm.amount,
-                                        date,
-                                        notes: itm.description,
-                                    };
-                                    detail.address = translateHouseIdToAddress(itm.houseID);
-                                    return detail;
-                                }))
-                            }
+                            const wkrCat = state.byWorkerByCat.byWorkerTotal[workerName];                            
                             return <tr key={keyi} style={get1099Color(wkrCat)} >
-                                <th scope="row" onClick={() => showDetail(wkrCat)}>{workerName}</th>
+                                <th scope="row" onClick={() => showDetail(wkrCat, workerName)}>{workerName}</th>
                                 <td key={'total'+keyi}>{amtDsp(state.byWorkerByCat.byWorkerTotal[workerName]?.total)}</td>
                                 {
                                     catIds.map((catId, tri) => {                                        
                                         const wkrCat = dataBy[catId][workerName];
-                                        return <td scope="col" key={tri} onClick={()=>showDetail(wkrCat)}>{
+                                        return <td scope="col" key={tri} onClick={()=>showDetail(wkrCat, '')}>{
                                                 amtDsp(wkrCat?.total)
                                         }</td>
                                     })
@@ -247,6 +235,7 @@ function GenerateByCatData(state: IYearlyMaintenanceReportState, setShowDetail: 
         </div>
     </div>
 }
+
 
 
 
@@ -417,7 +406,7 @@ export default function YearlyMaintenanceReport() {
     }, [state.curYearSelection, state.curSelectedOwner,  curShowWorkers]);
 
     
-    const [showDetail, setShowDetail] = useState<IShowDetailsData[] | null>(null);        
+    const [showDetail, setShowDetail] = useState<IDetailParams | null>(null);        
 
     
     return <div>
@@ -519,17 +508,20 @@ export default function YearlyMaintenanceReport() {
             <div className="modal-body">
                 <div>
                     {                    
-                        showDetail ? <CreateSaveButton content={showDetail.map(d => `${d.amount.toFixed(2)},${d.date},${d.address},${d.notes},${d.debugText}`).join('\n')}  />:''
+                        showDetail ? <CreateSaveButton content={showDetail.details.map(d => `${d.amount.toFixed(2)},${d.date},${d.address},${d.notes},${d.debugText}`).join('\n')}  />:''
                     }
                 </div>
             <table>
                 {
-                    sortBy((showDetail || [] as IShowDetailsData[]), 'date').map((d,tri) => {
+                    sortBy((showDetail?.details || [] as IShowDetailsData[]), 'date').map((d,tri) => {
                         return <tr key={tri}><td>{d.amount.toFixed(2)}</td><td>{d.date}</td> <td>{d.address}</td><td> {d.notes}</td> <td>{d.debugText}</td></tr>
                     })
 
                 }
                 </table>
+                {
+                    showDetail?.export1099 && <button className="btn btn-primary" onClick={()=>export1099(showDetail, showProgress)}>Export 1099</button>
+                }
             </div>
         </CloseableDialog>
         <div>
@@ -703,4 +695,131 @@ function formatData(state: IYearlyMaintenanceReportState, setState: React.Dispat
         byWorkerByCat,
         exportData,
     }));
+}
+
+
+async function get1099Content(parms: IDetailParams, showProgress?: (txt: string) => void) {
+    if (!showProgress) showProgress = () => { };
+    showProgress('loading workers');
+    const workers = await getWorkerInfo();
+    const founds = workers.filter(w => w.workerName.toLowerCase().trim() === parms.workerName.toLowerCase().trim());
+    if (founds.length > 1) {
+        showProgress('Found multiple workers '+parms.workerName);
+        return;
+    }
+    if (founds.length === 0) {
+        showProgress('worker not found ' + parms.workerName);
+        return;
+    }
+    const worker = founds[0];
+    showProgress('worker found ' + parms.workerName);
+    const irsfile = await doPost('misc/statement/1099', {}, 'GET');
+    const resultData = write1099PdfFields({
+        otherIncome: parms.total.toFixed(2),
+        calendarYear: parms.YYYY,
+        payer: {
+            tin: 'payerTin',
+            address: 'payerAddress',
+            city: 'payercity',
+            name: 'payerName',
+            phone: 'payerPhone',
+            state: 'state',
+            zip: 'zip',
+        },
+        receipient: {
+            cityStateZip: `${worker.city} ${worker.state} ${worker.zip}`,
+            name: worker.taxName || worker.workerName,
+            street: worker.address,
+            tin: worker.taxID,
+        },
+    }, await irsfile);
+    return resultData;
+}
+
+async function export1099(parms: IDetailParams, showProgress?: (txt: string) => void) {
+    const rawData = await get1099Content(parms, showProgress);
+    const blob = new Blob([rawData], {
+        type: 'application/pdf'
+    });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.setAttribute('download', '1099.pdf');
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+}
+
+
+
+type Form1099Info = {
+    otherIncome: string;
+    calendarYear: string;
+    payer: {
+        tin: string;
+        name: string;
+        address: string;
+        city: string;
+        state: string;
+        zip: string;
+        phone: string;
+    };
+    receipient: {
+        tin: string;
+        name: string;
+        street: string;
+        cityStateZip: string
+    };
+
+}
+async function write1099PdfFields(formData: Form1099Info, existingPdfBytes: ArrayBuffer): Promise<Uint8Array> {
+    const pdfDoc = await PDFDocument.load(existingPdfBytes);
+    const form = pdfDoc.getForm();
+    const fields = form.getFields();
+
+    fields.forEach(field => {
+        const type = field.constructor.name;
+        const name = field.getName();
+        console.log(`${type}: ${name}`);
+        if (type === 'PDFTextField') {
+            const ff = form.getTextField(name);
+            const len = ff.getMaxLength() || 10000;
+            const matched = name.match(/f([0-9]+)_([0-9]+)/);
+            let w = '';
+            if (matched) {
+                const fieldCount = matched[2];
+                switch (fieldCount) {
+                    case '2':
+                        w = `${formData.payer.address}\n${formData.payer.city}\n${formData.payer.state} ${formData.payer.zip}\n${formData.payer.phone}`;
+                        break;
+                    case '3':
+                        w = formData.payer.tin;
+                        break;
+                    case '4':
+                        w = formData.receipient.tin;
+                        break;
+                    case '5':
+                        w = formData.receipient.name;
+                        break;
+                    case '6':
+                        w = formData.receipient.street;
+                        break;
+                    case '7':
+                        w = formData.receipient.cityStateZip;
+                        break;
+                    case '11':
+                        w = formData.otherIncome;
+                        break;
+                    case '1':
+                        w = formData.calendarYear;
+                        break;
+                }
+            }    
+            if (w) {
+                ff.setText(w);
+            }
+        }
+    });
+    const bytes = await pdfDoc.save();
+    return bytes;
 }
