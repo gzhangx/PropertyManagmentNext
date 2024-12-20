@@ -1,4 +1,5 @@
-import React  from 'react';
+import React from 'react';
+import moment from 'moment';
 import {GenList} from '../../uidatahelpers/GenList';
 import { IColumnInfo } from '../../uidatahelpers/GenCrudAdd';
 
@@ -13,8 +14,11 @@ export function RentpaymentInfo(props) {
         ]}
         dbFieldToColumnInfo={
             (dbFields) => {
-                return dbFields.map(f => {
-                    return f as IColumnInfo;
+                return dbFields.map((f:IColumnInfo) => {
+                    if (f.field === 'receivedDate') {
+                        f.defaultNewValue = ()=>moment().format('YYYY-MM-DD');
+                    }
+                    return f;
                 })
             }
         }

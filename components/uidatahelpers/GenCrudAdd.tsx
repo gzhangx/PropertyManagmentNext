@@ -8,17 +8,12 @@ import { IFKDefs } from './GenCrudTableFkTrans'
 import { IDBFieldDef, isColumnSecurityField } from '../types';
 import { IEditTextDropdownItem } from '../generic/GenericDropdown';
 import { useIncomeExpensesContext } from '../states/PaymentExpenseState'
-export interface IColumnInfo extends IDBFieldDef {
-    //field: string;
-    //isId?: boolean;
-    //required?: boolean;
-    //foreignKey?: {
-    //    table: string;
-    //    field: string;
-    //};
-    dontShowOnEdit?: boolean;
-    //desc?: string;
-    dspFunc: (x: string) => string;
+export interface IColumnInfo extends IDBFieldDef {    
+    dontShowOnEdit?: boolean; //liekly not used
+    dspFunc: (x: string) => string; //likely not used
+
+
+    defaultNewValue?: () => string;
 }
 
 
@@ -128,7 +123,7 @@ export const GenCrudAdd = (props: IGenGrudAddProps) => {
                     if (processForeignKey && !optsData[optKey]) {
                         const helper = await createAndLoadHelper(optKey, googleSheetId);
                         //await helper.loadModel();
-                        const optDataOrig = await helper.loadData(null);
+                        const optDataOrig = await helper.loadData();
                         const optData = optDataOrig.rows;
                         cur = Object.assign({}, cur, {
                             [optKey]: processForeignKey(c.foreignKey, optData)
@@ -241,6 +236,7 @@ export const GenCrudAdd = (props: IGenGrudAddProps) => {
                         if (!editItem) {
                             //create
                             if (c.isId) return null;
+                            if (c.defaultNewValue) data[c.field] = c.defaultNewValue();
                         } else {
                             //modify
                             if (c.isId) return <div className='row' key={cind}>{data[c.field] || '' }</div>
