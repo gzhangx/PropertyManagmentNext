@@ -267,7 +267,7 @@ export const GenCrudAdd = (props: IGenGrudAddProps) => {
                                             if (s.value === 'AddNew') {
                                                 setAddNewForField(colField);
                                             } else
-                                                setData({ ...data, [colField]: s.value });    
+                                                setData({ ...data, [colField]: s.value, [colField+'_labelDesc']: s.label });    
                                         }
                                     }                                    
                                 ></EditTextDropdown>

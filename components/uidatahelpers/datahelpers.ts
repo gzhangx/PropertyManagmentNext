@@ -74,16 +74,16 @@ export function createHelper(table: TableNames, googleSheetId: string): IHelper 
             const sqlRes = await sqlAdd(table, submitData, !id);;
             if (!googleSheetId) return sqlRes;
 
-            console.log('saveData and data', data);
             const sheetMapper = getTableNameToSheetMapping(table);
             if (sheetMapper) {
                 const values = sheetMapper.mapping.map(name => {
                     const val = data[name];
-                    if (sheetMapper.formatter[name]) {
-                        return sheetMapper.formatter[name](val);
+                    if (sheetMapper.formatter) {
+                        return sheetMapper.formatter(name)(val);
                     }
                     return val;
                 })
+
                 if (id) {
                     await updateSheet('update', googleSheetId, `'${sheetMapper.sheetName}'!A1`, [values]);
                 } else {
@@ -110,13 +110,14 @@ function getTableNameToSheetMapping(tableName: TableNames) {
             mapping: [
                 'receivedDate',
                 'receivedAmount',
-                'address',
+                'houseID_labelDesc',
                 'paymentTypeName',
                 'notes',
             ],
             formatter: (name: string) => {
-                if (name === 'receivedDate') return v => moment(v).format('YYYY-MM-DD');
-                if (name === 'receivedAmount') return (v: number) => v.toFixed(2);
+                if (name === 'receivedDate') return (v:string) => moment(v).format('YYYY-MM-DD');
+                if (name === 'receivedAmount') return (v: string) => parseFloat(v || '0').toFixed(2);
+                return (v:string) => v;
             },
             endCol: 'B',
         };
