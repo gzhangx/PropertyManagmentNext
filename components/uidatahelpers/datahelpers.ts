@@ -22,7 +22,6 @@ interface IOpts {
 export type IHelper = {
     getModelFields: () => IDBFieldDef[];
     loadModel: () => Promise<IGetModelReturn>;
-    getOwnerSecFields: () => IDBFieldDef[];
     loadData: (opts?: IOpts) => Promise<{
         total: number;
         rows: any[];
@@ -41,10 +40,7 @@ export function createHelper(table: TableNames, googleSheetId: string): IHelper 
                 mod.models[table] = await getModel(table);
             }
             return accModel();
-        },
-        getOwnerSecFields: () => {
-            return accModelFields().filter(f => f.foreignKey && f.foreignKey.table === 'userInfo');
-        },
+        },        
         loadData: async (opts = {} as IOpts) => {
             //fields: array of field names
             const { whereArray, order, rowCount, offset } = opts;
