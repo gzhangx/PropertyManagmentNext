@@ -206,6 +206,7 @@ export async function sqlAdd(table: TableNames, fields: { [key: string]: string 
         table,
         fields,
         doCreate,
+        doUpdate: !doCreate
     })
 }
 
@@ -424,4 +425,9 @@ export async function saveGoodSheetAuthInfo(authInfo: IGoogleSheetAuthInfo) {
     await doPost('misc/sheet/saveSheetAuthData', {
         authInfo,
     });
+}
+
+
+export async function updateSheet(op: 'update' | 'append', id: string, range: string, data: string[][]) {
+    return await doPost(`misc/sheet/${op}/${id}/${range}`, data);
 }

@@ -1,9 +1,10 @@
 import {
     getModel, sqlGet, sqlAdd, sqlDelete, ISqlRequestFieldDef,
-    ISqlRequestWhereItem
+    ISqlRequestWhereItem, updateSheet,
 } from '../api';
 import { ISqlOrderDef, IGetModelReturn, IDBFieldDef, TableNames, ISqlDeleteResponse } from '../types'
 import { get } from 'lodash';
+import moment from 'moment';
 export type FieldValueType = string | number | null;
 const mod = {
     models: {} as {[key:string]:IGetModelReturn}
@@ -30,7 +31,7 @@ type IHelper = {
     saveData: (data: any, id: FieldValueType) => Promise<any>;
     deleteData: (id: string) => Promise<ISqlDeleteResponse>;
 }
-export function createHelper(table: TableNames): IHelper {
+export function createHelper(table: TableNames, googleSheetId: string): IHelper {
     if (!table) return null;
     const accModel = () => mod.models[table];
     const accModelFields = () => get(accModel(), 'fields', [] as IDBFieldDef[]);
@@ -69,15 +70,64 @@ export function createHelper(table: TableNames): IHelper {
                 acc[f.field] = data[f.field];
                 return acc;
             }, {});
-            return sqlAdd(table, submitData, !id);
+
+            const sqlRes = await sqlAdd(table, submitData, !id);;
+            if (!googleSheetId) return sqlRes;
+
+            console.log('saveData and data', data);
+            const sheetMapper = getTableNameToSheetMapping(table);
+            if (sheetMapper) {
+                const values = sheetMapper.mapping.map(name => {
+                    const val = data[name];
+                    if (sheetMapper.formatter[name]) {
+                        return sheetMapper.formatter[name](val);
+                    }
+                    return val;
+                })
+                if (id) {
+                    await updateSheet('update', googleSheetId, `'${sheetMapper.sheetName}'!A1`, [values]);
+                } else {
+                    await updateSheet('append', googleSheetId, `'${sheetMapper.sheetName}'!A1`, [values]);
+                }
+            }
+            
+            return sqlRes;
         },
         deleteData: async id => sqlDelete(table, id),
     }
     return helper;
 }
 
-export async function createAndLoadHelper(table) {
-    const helper = createHelper(table);
+function getTableNameToSheetMapping(tableName: TableNames) {
+    const charCodeA = 'A'.charCodeAt(0);
+    const colNames: string[] = [];
+    for (let i = 0; i < 25; i++) {
+        colNames.push(String.fromCharCode(charCodeA + i));
+    }
+    if (tableName === 'rentPaymentInfo') {
+        const ret = {
+            sheetName: 'testtest',
+            mapping: [
+                'receivedDate',
+                'receivedAmount',
+                'address',
+                'paymentTypeName',
+                'notes',
+            ],
+            formatter: (name: string) => {
+                if (name === 'receivedDate') return v => moment(v).format('YYYY-MM-DD');
+                if (name === 'receivedAmount') return (v: number) => v.toFixed(2);
+            },
+            endCol: 'B',
+        };
+        ret.endCol = colNames[ret.mapping.length - 1];
+        return ret;
+    }
+    return null;
+}
+
+export async function createAndLoadHelper(table: TableNames, googleSheetId: string) {
+    const helper = createHelper(table, googleSheetId);
     await helper.loadModel();
     return helper;
 }

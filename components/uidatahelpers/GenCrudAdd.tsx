@@ -5,8 +5,9 @@ import { EditTextDropdown, } from '../generic/EditTextDropdown';
 import * as bluebird from 'bluebird';
 import {Dialog, createDialogPrms} from '../dialog'
 import { IFKDefs } from './GenCrudTableFkTrans'
-import { IDBFieldDef } from '../types';
+import { IDBFieldDef, isColumnSecurityField } from '../types';
 import { IEditTextDropdownItem } from '../generic/GenericDropdown';
+import { useIncomeExpensesContext } from '../states/PaymentExpenseState'
 export interface IColumnInfo extends IDBFieldDef {
     //field: string;
     //isId?: boolean;
@@ -39,6 +40,8 @@ export interface IGenGrudAddProps {
 }
 export const GenCrudAdd = (props: IGenGrudAddProps) => {
 
+    const mainCtx = useIncomeExpensesContext();
+    const googleSheetId = mainCtx.googleSheetAuthInfo.googleSheetId;
     const { columnInfo, doAdd, onCancel,
         editItem, //only available during edit
         onError,
@@ -123,7 +126,7 @@ export const GenCrudAdd = (props: IGenGrudAddProps) => {
 
                     const processForeignKey = getForeignKeyProcessor(optKey);
                     if (processForeignKey && !optsData[optKey]) {
-                        const helper = await createAndLoadHelper(optKey);
+                        const helper = await createAndLoadHelper(optKey, googleSheetId);
                         //await helper.loadModel();
                         const optDataOrig = await helper.loadData(null);
                         const optData = optDataOrig.rows;
@@ -148,7 +151,7 @@ export const GenCrudAdd = (props: IGenGrudAddProps) => {
         const hasFks = colInf.filter(c => c.foreignKey).filter(c => c.foreignKey.table);
         await bluebird.Promise.map(hasFks, async fk => {
             const tbl = fk.foreignKey.table;
-            const helper = await createAndLoadHelper(tbl);
+            const helper = await createAndLoadHelper(tbl, googleSheetId);
             await helper.loadModel();
             const columnInfo = helper.getModelFields();
             setColumnInfoMaps(prev => {
@@ -164,7 +167,7 @@ export const GenCrudAdd = (props: IGenGrudAddProps) => {
     }
     useEffect(() => {
         loadColumnInfo(columnInfo);
-    }, [columnInfo]);
+    }, ['once']);
     const checkErrorInd = c => {
         if (requiredFieldsMap[c.field] && !data[c.field])
             return "alert-danger";
@@ -235,8 +238,13 @@ export const GenCrudAdd = (props: IGenGrudAddProps) => {
                             if (c.isId) return null;
                         } else {
                             //modify
-                            if (c.isId) return <div className='row' key={cind}>{data[c.field] || 'NNA' }</div>
+                            if (c.isId) return <div className='row' key={cind}>{data[c.field] || '' }</div>
                         }
+                        if (isColumnSecurityField(c)) {
+                            data[c.field] = '';
+                            return null;  
+                        } 
+
                         if (c.dontShowOnEdit) return null;
 
                         const createSelection = (optName:string, colField:string) => {

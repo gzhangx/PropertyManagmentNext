@@ -2,7 +2,7 @@ import React from "react";
 
 //export type TYPEDBTables = 'ownerInfo' | 'rentPaymentInfo' | 'houseInfo';
 
-export type TableNames = 'rentPaymentInfo' | 'houseInfo' | 'maintenanceRecords' | 'ownerInfo' | 'leaseInfo' | 'tenantInfo' | 'workerComp'
+export type TableNames = 'rentPaymentInfo' | 'houseInfo' | 'maintenanceRecords' | 'ownerInfo' | 'leaseInfo' | 'tenantInfo' | 'workerComp' | 'userInfo'
     | 'googleApiCreds';
 export interface ISqlDeleteResponse {
     affectedRows: number;
@@ -62,7 +62,7 @@ export interface IDBFieldDef {
     isOwnerSecurityParentField?: boolean;
     //key?: 'UNI' | 'PRI' | null;    
     foreignKey?: {
-        table: string;
+        table: TableNames;
         field: string;
     };
 }
@@ -72,4 +72,8 @@ export interface IGetModelReturn {
     fieldMap: {
         [key: string]: IDBFieldDef;
     };
+}
+
+export function isColumnSecurityField(field: IDBFieldDef) {
+    return field.foreignKey && field.foreignKey.table === 'ownerInfo';
 }
