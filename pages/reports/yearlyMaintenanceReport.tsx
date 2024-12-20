@@ -101,9 +101,10 @@ function GenerateByCatData(state: IYearlyMaintenanceReportState, setShowDetail: 
         } 
         return houseID;
     }
+    const showv1 = true;
     return <div>
         <div>
-            <table className="table">
+            { !showv1 && <table className="table">
                 <thead>
                     <tr>
                         <th scope="col">#</th>
@@ -140,7 +141,7 @@ function GenerateByCatData(state: IYearlyMaintenanceReportState, setShowDetail: 
                                 {
                                     workerNames.map((workerName, keyi) => {
                                         const wkrCat = dataBy[catId][workerName];
-                                        return <td scope="col" key={keyi} onClick={() => {                                            
+                                        return <td scope="col" key={keyi} onClick={() => {
                                             if (!wkrCat) return;
                                             setShowDetail(wkrCat.items.map(itm => {
                                                 let date = itm.date;
@@ -169,6 +170,70 @@ function GenerateByCatData(state: IYearlyMaintenanceReportState, setShowDetail: 
                                 workerNames.map((workerName, keyi) => {
                                     const wkrCat = state.byWorkerByCat.byWorkerTotal[workerName];
                                     
+                                    return <td scope="col" style={get1099Color(wkrCat)} key={keyi}>{
+                                        amtDsp(wkrCat?.total)
+                                    }</td>
+                                })
+                            }
+                            <td>{amtDsp(state.byWorkerByCat?.total)}</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+            }
+            <table className="table">
+                <thead>
+                    <tr>
+                        <th scope="col">#</th>
+                        <th>Total</th>
+                        {
+                            catIds.map((catId, tri) => {
+                                return <th key={tri}>{catId}</th>
+                            })
+                        }                        
+                    </tr>
+                </thead>
+                <tbody>                    
+                    {
+                        workerNames.map((workerName, keyi) => {
+                            const wkrCat = state.byWorkerByCat.byWorkerTotal[workerName];
+                            const showDetail = (wkrCat: IWithTotal) => {
+                                if (!wkrCat) return;
+                                setShowDetail(wkrCat.items.map(itm => {
+                                    let date = itm.date;
+                                    if (date.length > 10) date = date.substring(0, 10);
+                                    const detail: IShowDetailsData = {
+                                        houseID: itm.houseID,
+                                        address: itm.houseID,
+                                        amount: itm.amount,
+                                        date,
+                                        notes: itm.description,
+                                    };
+                                    detail.address = translateHouseIdToAddress(itm.houseID);
+                                    return detail;
+                                }))
+                            }
+                            return <tr key={keyi} style={get1099Color(wkrCat)} >
+                                <th scope="row" onClick={() => showDetail(wkrCat)}>{workerName}</th>
+                                <td key={'total'+keyi}>{amtDsp(state.byWorkerByCat.byWorkerTotal[workerName]?.total)}</td>
+                                {
+                                    catIds.map((catId, tri) => {                                        
+                                        const wkrCat = dataBy[catId][workerName];
+                                        return <td scope="col" key={tri} onClick={()=>showDetail(wkrCat)}>{
+                                                amtDsp(wkrCat?.total)
+                                        }</td>
+                                    })
+                                }                                
+                            </tr>
+                        })
+                    }
+                    {                        
+                        <tr>
+                            <th>Grand Total:</th>
+                            {
+                                catIds.map((catId, keyi) => {
+                                    const wkrCat = state.byWorkerByCat.byCatTotal[catId];
+
                                     return <td scope="col" style={get1099Color(wkrCat)} key={keyi}>{
                                         amtDsp(wkrCat?.total)
                                     }</td>
