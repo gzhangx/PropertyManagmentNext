@@ -5,7 +5,7 @@ import { IFKDefs } from './GenCrudTableFkTrans'
 import { createHelper, FieldValueType } from './datahelpers';
 import { getFKDefs } from './GenCrudTableFkTrans';
 
-import { TableNames } from '../types'
+import { IDBFieldDef, TableNames } from '../types'
 import { ISqlRequestWhereItem} from '../api'
 import { useIncomeExpensesContext } from '../states/PaymentExpenseState'
 
@@ -27,6 +27,8 @@ interface IGenListProps { //copied from gencrud, need combine and refactor later
     */
     title?: string;
     doAdd: (data: ItemType, id: FieldValueType) => Promise<{ id: string; }>;
+
+    dbFieldToColumnInfo?: (db: IDBFieldDef[]) => IColumnInfo[];
 }
 //props: table and displayFields [fieldNames]
 export function GenList(props: IGenListProps) {
@@ -70,7 +72,8 @@ export function GenList(props: IGenListProps) {
         //if (!helper) return;
         const ld=async () => {                        
             await helper.loadModel();
-            setColumnInf(helper.getModelFields() as IColumnInfo[]);
+            const dbConv = props.dbFieldToColumnInfo ?? ((fields: IDBFieldDef[]) => fields.map(f => f as IColumnInfo));
+            setColumnInf(dbConv(helper.getModelFields()));
             //if(columnInfo) {
             //    setColumnInf(columnInfo);
             //}

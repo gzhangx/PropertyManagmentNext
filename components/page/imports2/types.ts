@@ -21,12 +21,12 @@ export interface IPaymentWithArg extends IPayment
     invalidDesc: string;
 }
 
-export interface IColumnInfo {
+export interface IColumnTypes {
     colType: 'string' | 'number' | 'houseAddress' | 'tenantName' | 'workerName' | 'dateYYYY-MM-DD';
 }
 
 export interface IColumnInfoLookup {
-    [name: string]: IColumnInfo;
+    [name: string]: IColumnTypes;
 }
 
 export interface IDisplayColumnInfo {
