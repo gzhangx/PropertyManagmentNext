@@ -11,7 +11,6 @@ const mod = {
 }
 
 type IFieldType = (ISqlRequestFieldDef | string)[];
-export type LoadMapperType = (what: string, fields: string[]) => IFieldType;
 interface IOpts {
     whereArray: ISqlRequestWhereItem[];
     order: ISqlOrderDef[];
@@ -24,7 +23,7 @@ export type IHelper = {
     getModelFields: () => IDBFieldDef[];
     loadModel: () => Promise<IGetModelReturn>;
     getOwnerSecFields: () => IDBFieldDef[];
-    loadData: (loadMapper?: LoadMapperType, opts?: IOpts) => Promise<{
+    loadData: (opts?: IOpts) => Promise<{
         total: number;
         rows: any[];
     }>;
@@ -46,16 +45,15 @@ export function createHelper(table: TableNames, googleSheetId: string): IHelper 
         getOwnerSecFields: () => {
             return accModelFields().filter(f => f.foreignKey && f.foreignKey.table === 'userInfo');
         },
-        loadData: async (loadMapper: LoadMapperType, opts = {} as IOpts) => {
-            if (!loadMapper) loadMapper = (x, y) => y;
+        loadData: async (opts = {} as IOpts) => {
             //fields: array of field names
             const { whereArray, order, rowCount, offset } = opts;
             const modFields = accModelFields().map(f => f.field);
             const viewFields = get(accModel(), 'view.fields', []).map(f => f.name || f.field);
             return (await sqlGet({
                 table,
-                fields: loadMapper('fields', modFields.concat(viewFields)),
-                joins: loadMapper('joins', null),
+                fields: modFields.concat(viewFields),
+                joins: null,
                 whereArray,
                 order,
                 rowCount, offset,

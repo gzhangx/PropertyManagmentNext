@@ -2,7 +2,7 @@ import React,{useState,useEffect} from 'react';
 import { GenCrud, getPageSorts, getPageFilters } from './GenCrud';
 import { IColumnInfo, ItemType } from './GenCrudAdd';
 import { IFKDefs } from './GenCrudTableFkTrans'
-import { createHelper, FieldValueType, LoadMapperType } from './datahelpers';
+import { createHelper, FieldValueType } from './datahelpers';
 import { getFKDefs } from './GenCrudTableFkTrans';
 
 import { TableNames } from '../types'
@@ -14,7 +14,6 @@ interface IGenListProps { //copied from gencrud, need combine and refactor later
     table: TableNames;
     columnInfo: IColumnInfo[];    
     displayFields?: IDisplayFieldType;
-    loadMapper?: LoadMapperType;
     fkDefs?: IFKDefs;
     initialPageSize?: number;        
     /*
@@ -31,7 +30,7 @@ interface IGenListProps { //copied from gencrud, need combine and refactor later
 }
 //props: table and displayFields [fieldNames]
 export function GenList(props: IGenListProps) {
-    const { table, columnInfo, loadMapper, fkDefs, initialPageSize } = props;
+    const { table, columnInfo, fkDefs, initialPageSize } = props;
     const secCtx = useIncomeExpensesContext();
     const [paggingInfo, setPaggingInfo] = useState({
         PageSize: initialPageSize|| 10,        
@@ -52,7 +51,7 @@ export function GenList(props: IGenListProps) {
         let whereArray = (getPageFilters(pageState, table) as any) as ISqlRequestWhereItem[];
         const order = getPageSorts(pageState, table);
 
-        helper.loadData(loadMapper, {
+        helper.loadData({
             whereArray,
             order,
             rowCount: paggingInfo.PageSize,
