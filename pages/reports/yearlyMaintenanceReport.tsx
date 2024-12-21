@@ -64,7 +64,6 @@ interface IYearlyMaintenanceReportState {
     rawData: IMaintenanceRawData[];
     allRawData: IMaintenanceRawData[];
     byWorkerByCat: IByWorkerByCat;
-    ownerID: string;
     exportData: string[][];
     workerIds: string[];
     dspWorkerIds: string[];
@@ -136,7 +135,7 @@ function GenerateByCatData(state: IYearlyMaintenanceReportState, setShowDetail: 
             workerName,
             total: wkrCat.total,
             YYYY: state.curYearSelection.substring(0, 4),
-            ownerName: state.ownerID,
+            ownerName: state.curSelectedOwner,
         })
     }
     return <div>
@@ -263,8 +262,7 @@ export default function YearlyMaintenanceReport() {
         },
         rawData: [],
         allRawData: [],
-        byWorkerByCat: {} as IByWorkerByCat,
-        ownerID: '',        
+        byWorkerByCat: {} as IByWorkerByCat,     
         exportData: [],
         workerIds:[],
         dspWorkerIds: [],
@@ -523,7 +521,7 @@ export default function YearlyMaintenanceReport() {
                 }
                 </table>
                 {
-                    showDetail?.export1099 && <button className="btn btn-primary" onClick={()=>export1099(showDetail, showProgress)}>Export 1099</button>
+                    showDetail?.export1099 && <button className="btn btn-primary" onClick={() => export1099(showDetail, showProgress).then(() => setShowDetail(null))}>Export 1099</button>
                 }
             </div>
         </CloseableDialog>
@@ -754,6 +752,7 @@ async function get1099Content(parms: IDetailParams, showProgress?: (txt: string)
 
 async function export1099(parms: IDetailParams, showProgress?: (txt: string) => void) {
     const rawData = await get1099Content(parms, showProgress);
+    if (!rawData) return;
     const blob = new Blob([rawData], {
         type: 'application/pdf'
     });
