@@ -42,6 +42,8 @@ export const GenCrudAdd = (props: IGenGrudAddProps) => {
         displayFields,
     }
         = props;
+    
+    const getDisplayFieldDef = (field: string) => displayFields.find(d => field === (d as IComplexDisplayFieldType).field) as IComplexDisplayFieldType;
     const getForeignKeyProcessor = fk => get(fkDefs, [fk, 'processForeignKey']);
     let id:string|number = '';
     let idName = '';
@@ -235,9 +237,12 @@ export const GenCrudAdd = (props: IGenGrudAddProps) => {
                     columnInfo.map((c, cind) => {
                         if (!editItem) {
                             //create
-                            if (c.isId) return null;
-                            const df = displayFields.find(d => c.field === (d as any).field) as IComplexDisplayFieldType;
-                            if (df && df.defaultNewValue) data[c.field] = df.defaultNewValue();
+                            const df = getDisplayFieldDef(c.field);
+                            if (df) {
+                                if (df.defaultNewValue) data[c.field] = df.defaultNewValue();
+                            } else {
+                                if (c.isId) return null;
+                            }
                         } else {
                             //modify
                             if (c.isId) return <div className='row' key={cind}>{data[c.field] || '' }</div>
