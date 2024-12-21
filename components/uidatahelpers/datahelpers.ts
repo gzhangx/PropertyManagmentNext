@@ -5,14 +5,13 @@ import {
 import { ISqlOrderDef, IGetModelReturn, IDBFieldDef, TableNames, ISqlDeleteResponse } from '../types'
 import { get } from 'lodash';
 import { IColumnInfo, ItemType } from './GenCrudAdd';
-import { IDisplayFieldType } from './GenCrud';
 import { IFKDefs } from './GenCrudTableFkTrans';
+import moment from 'moment';
 export type FieldValueType = string | number | null;
 const mod = {
     models: {} as {[key:string]:IGetModelReturn}
 }
 
-type IFieldType = (ISqlRequestFieldDef | string)[];
 interface IOpts {
     whereArray: ISqlRequestWhereItem[];
     order: ISqlOrderDef[];
@@ -23,7 +22,6 @@ interface IOpts {
 export type DataToDbSheetMapping ={
     sheetName: string;
     mapping: string[];
-    formatter: (name: string) => ((v: string)=>string);
     endCol: string;
 }
 
@@ -37,6 +35,9 @@ export type IHelper = {
     saveData: (data: any, id: FieldValueType) => Promise<any>;
     deleteData: (id: string) => Promise<ISqlDeleteResponse>;
 }
+
+export type IComplexDisplayFieldType = { field: string; desc: string; defaultNewValue?: () => string; type?: 'date' | 'number' | 'string' };
+export type IDisplayFieldType = (IComplexDisplayFieldType | string)[];
 
 export interface IGenListProps { //copied from gencrud, need combine and refactor later
     table: TableNames;
@@ -65,6 +66,19 @@ export function createHelper(props: IGenListProps, googleSheetId: string): IHelp
     if (!table) return null;
     const accModel = () => mod.models[table];
     const accModelFields = () => get(accModel(), 'fields', [] as IDBFieldDef[]);
+    function formatFieldValue(fieldName: string, val: string) {
+        if (!props.displayFields) return val;
+        const df = props.displayFields.find(f => (f as IComplexDisplayFieldType).field === fieldName) as IComplexDisplayFieldType;
+        if (!df) return val;
+        switch (df.type) {
+            case 'date':
+                return moment(val).format('YYYY-MM-DD');
+                break;
+            case 'number':
+            default:
+                return val;
+        }
+    }
     const helper: IHelper = {
         getModelFields: accModelFields,
         loadModel: async () => {
@@ -104,10 +118,7 @@ export function createHelper(props: IGenListProps, googleSheetId: string): IHelp
             if (sheetMapper) {
                 const values = sheetMapper.mapping.map(name => {
                     const val = data[name];
-                    if (sheetMapper.formatter) {
-                        return sheetMapper.formatter(name)(val);
-                    }
-                    return val;
+                    return formatFieldValue(name, val);
                 })
 
                 if (id) {

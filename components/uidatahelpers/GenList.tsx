@@ -1,11 +1,9 @@
 import React,{useState,useEffect} from 'react';
 import { GenCrud, getPageSorts, getPageFilters, IDisplayFieldType } from './GenCrud';
 import { IColumnInfo, ItemType } from './GenCrudAdd';
-import { IFKDefs } from './GenCrudTableFkTrans'
-import { createHelper, DataToDbSheetMapping, FieldValueType, IGenListProps } from './datahelpers';
+import { createHelper, FieldValueType, IGenListProps } from './datahelpers';
 import { getFKDefs } from './GenCrudTableFkTrans';
 
-import { IDBFieldDef, TableNames } from '../types'
 import { ISqlRequestWhereItem} from '../api'
 import { useIncomeExpensesContext } from '../states/PaymentExpenseState'
 

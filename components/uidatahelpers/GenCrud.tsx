@@ -25,8 +25,7 @@ export function getPageFilters(pageState: IPageState, table: string): IPageFilte
     return get(pageProps, [table, 'filters'], []);
 }
 
-export type IComplexDisplayFieldType = { field: string; desc: string; defaultNewValue?: () => string; type?: 'date' | 'number' | 'string' };
-export type IDisplayFieldType = (IComplexDisplayFieldType | string)[];
+
 export interface IGenGrudProps {
     columnInfo: IColumnInfo[];
     displayFields: IDisplayFieldType;

@@ -21,12 +21,7 @@ export function RentpaymentInfo(props) {
                 'houseID_labelDesc',
                 'paymentTypeName',
                 'notes',
-            ],
-            formatter: (name: string) => {
-                if (name === 'receivedDate') return (v: string) => moment(v).format('YYYY-MM-DD');
-                if (name === 'receivedAmount') return (v: string) => parseFloat(v || '0').toFixed(2);
-                return (v: string) => v;
-            },
+            ],            
             endCol: 'B',
         }}
     /> 
