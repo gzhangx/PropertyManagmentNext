@@ -4,34 +4,26 @@ import { get } from 'lodash';
 import { EditTextDropdown, } from '../generic/EditTextDropdown';
 import * as bluebird from 'bluebird';
 import {Dialog, createDialogPrms} from '../dialog'
-import { IFKDefs } from './GenCrudTableFkTrans'
 import { IDBFieldDef, isColumnSecurityField } from '../types';
 import { IEditTextDropdownItem } from '../generic/GenericDropdown';
 import { useIncomeExpensesContext } from '../states/PaymentExpenseState'
+import { IComplexDisplayFieldType, IGenGrudProps } from './GenCrud';
 export interface IColumnInfo extends IDBFieldDef {    
     dontShowOnEdit?: boolean; //liekly not used
-    dspFunc: (x: string) => string; //likely not used
-
-
-    defaultNewValue?: () => string;
 }
 
 
 export type ItemType = { [key: string]: FieldValueType; };
-export interface IGenGrudAddProps {
+export interface IGenGrudAddProps extends IGenGrudProps {
     columnInfo: IColumnInfo[];
     editItem?: ItemType;
     doAdd: (data: ItemType, id: FieldValueType) => Promise<{ id: string;}>;
     onOK?: (data?:ItemType) => void;
     onCancel: (data?:ItemType) => void;
     onError?: (err: { message: string; missed: any; }) => void;
-    
-    customSelData?: { [key: string]: IEditTextDropdownItem[]};
-    customFields?: ItemType;
+        
     show: boolean;
-    table?: string;
-    desc?: string;
-    fkDefs?: IFKDefs;
+    desc?: string;    
     sheetMapping?: DataToDbSheetMapping;
 }
 export const GenCrudAdd = (props: IGenGrudAddProps) => {
@@ -47,6 +39,7 @@ export const GenCrudAdd = (props: IGenGrudAddProps) => {
         table,
         desc,
         fkDefs,
+        displayFields,
     }
         = props;
     const getForeignKeyProcessor = fk => get(fkDefs, [fk, 'processForeignKey']);
@@ -228,7 +221,7 @@ export const GenCrudAdd = (props: IGenGrudAddProps) => {
                             })
                             setAddNewForField('');
                         }
-                        return <GenCrudAdd key={cind} columnInfo={columnInfo} doAdd={doAdd} onCancel={addDone} show={addNewForField === c.field}></GenCrudAdd>
+                        return <GenCrudAdd {...props} key={cind} columnInfo={columnInfo} doAdd={doAdd} onCancel={addDone} show={addNewForField === c.field}></GenCrudAdd>
                     }).filter(x => x)
                 }
                 <div className='container-fluid'>
@@ -237,7 +230,8 @@ export const GenCrudAdd = (props: IGenGrudAddProps) => {
                         if (!editItem) {
                             //create
                             if (c.isId) return null;
-                            if (c.defaultNewValue) data[c.field] = c.defaultNewValue();
+                            const df = displayFields.find(d => c.field === (d as any).field) as IComplexDisplayFieldType;
+                            if (df && df.defaultNewValue) data[c.field] = df.defaultNewValue();
                         } else {
                             //modify
                             if (c.isId) return <div className='row' key={cind}>{data[c.field] || '' }</div>
@@ -284,13 +278,12 @@ export const GenCrudAdd = (props: IGenGrudAddProps) => {
                         if (custFieldType === 'custom_select') {
                             foreignSel = createSelection(c.field, c.field);
                         }
-                        const fieldFormatter = c.dspFunc || (x => x);
                         return <div className='row' key={cind}>
                             <div>{c.desc}</div>
                             <div className={checkErrorInd(c)}>
                                 {
                                     foreignSel || <input type="text" className="form-control bg-light border-0 small" placeholder={c.field}                
-                                        value={fieldFormatter(data[c.field])} name={c.field} onChange={handleChange} />
+                                        value={data[c.field]} name={c.field} onChange={handleChange} />
                                 }
                             </div>
                             <div className={checkErrorInd(c)}>{checkErrorInd(c) && '*'}</div>

@@ -3,7 +3,7 @@ import { set, get } from 'lodash';
 import { v1 } from 'uuid';
 import { EditTextDropdown } from '../generic/EditTextDropdown';
 import { GenCrudAdd, IColumnInfo, ItemType } from './GenCrudAdd';
-import { ISqlOrderDef, SortOps, IPageFilter, IPagePropsByTable,IPageState } from '../types'
+import { ISqlOrderDef, SortOps, IPageFilter, IPageState } from '../types'
 import { IFKDefs} from './GenCrudTableFkTrans'
 import { SQLOPS } from '../api';
 import { FieldValueType } from './datahelpers';
@@ -25,9 +25,11 @@ export function getPageFilters(pageState: IPageState, table: string): IPageFilte
     return get(pageProps, [table, 'filters'], []);
 }
 
+export type IComplexDisplayFieldType = { field: string; desc: string; defaultNewValue?: () => string; type?: 'date' | 'number' | 'string' };
+export type IDisplayFieldType = (IComplexDisplayFieldType | string)[];
 export interface IGenGrudProps {
     columnInfo: IColumnInfo[];
-    displayFields: ({ field: string; desc: string;} | string)[];
+    displayFields: IDisplayFieldType;
     rows: any[];
     pageState: IPageState;
     paggingInfo: {
@@ -42,7 +44,7 @@ export interface IGenGrudProps {
     //onCancel: (data?: ItemType) => void;
     //onError?: (err: { message: string; missed: any; }) => void;
 
-    customSelData?: { [key: string]: [IEditTextDropdownItem] };
+    customSelData?: { [key: string]: IEditTextDropdownItem[] };
     customFields?: ItemType;
     //show: boolean;
     table: string;

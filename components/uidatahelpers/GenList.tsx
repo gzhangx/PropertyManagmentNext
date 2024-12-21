@@ -1,5 +1,5 @@
 import React,{useState,useEffect} from 'react';
-import { GenCrud, getPageSorts, getPageFilters } from './GenCrud';
+import { GenCrud, getPageSorts, getPageFilters, IDisplayFieldType } from './GenCrud';
 import { IColumnInfo, ItemType } from './GenCrudAdd';
 import { IFKDefs } from './GenCrudTableFkTrans'
 import { createHelper, DataToDbSheetMapping, FieldValueType } from './datahelpers';
@@ -9,7 +9,7 @@ import { IDBFieldDef, TableNames } from '../types'
 import { ISqlRequestWhereItem} from '../api'
 import { useIncomeExpensesContext } from '../states/PaymentExpenseState'
 
-type IDisplayFieldType = ({ field: string; desc: string; } | string)[];
+
 interface IGenListProps { //copied from gencrud, need combine and refactor later
     table: TableNames;
     columnInfo: IColumnInfo[];    
@@ -28,7 +28,6 @@ interface IGenListProps { //copied from gencrud, need combine and refactor later
     title?: string;
     doAdd: (data: ItemType, id: FieldValueType) => Promise<{ id: string; }>;
 
-    dbFieldToColumnInfo?: (db: IDBFieldDef[]) => IColumnInfo[];
     sheetMapping?: DataToDbSheetMapping;
 }
 //props: table and displayFields [fieldNames]
@@ -73,8 +72,7 @@ export function GenList(props: IGenListProps) {
         //if (!helper) return;
         const ld=async () => {                        
             await helper.loadModel();
-            const dbConv = props.dbFieldToColumnInfo ?? ((fields: IDBFieldDef[]) => fields.map(f => f as IColumnInfo));
-            setColumnInf(dbConv(helper.getModelFields()));
+            setColumnInf(helper.getModelFields() as IColumnInfo[]);
             //if(columnInfo) {
             //    setColumnInf(columnInfo);
             //}
