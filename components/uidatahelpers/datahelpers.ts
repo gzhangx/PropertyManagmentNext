@@ -4,7 +4,9 @@ import {
 } from '../api';
 import { ISqlOrderDef, IGetModelReturn, IDBFieldDef, TableNames, ISqlDeleteResponse } from '../types'
 import { get } from 'lodash';
-import moment from 'moment';
+import { IColumnInfo, ItemType } from './GenCrudAdd';
+import { IDisplayFieldType } from './GenCrud';
+import { IFKDefs } from './GenCrudTableFkTrans';
 export type FieldValueType = string | number | null;
 const mod = {
     models: {} as {[key:string]:IGetModelReturn}
@@ -35,7 +37,31 @@ export type IHelper = {
     saveData: (data: any, id: FieldValueType) => Promise<any>;
     deleteData: (id: string) => Promise<ISqlDeleteResponse>;
 }
-export function createHelper(table: TableNames, googleSheetId: string, sheetMapping?: DataToDbSheetMapping): IHelper {
+
+export interface IGenListProps { //copied from gencrud, need combine and refactor later
+    table: TableNames;
+    columnInfo: IColumnInfo[];    
+    displayFields?: IDisplayFieldType;
+    fkDefs?: IFKDefs;
+    initialPageSize?: number;        
+    /*
+    paggingInfo: {
+        total: number;
+        PageSize: number;
+        lastPage: number;
+        pos: number;
+    };
+    setPaggingInfo: any;
+    */
+    title?: string;
+    doAdd: (data: ItemType, id: FieldValueType) => Promise<{ id: string; }>;
+
+    sheetMapping?: DataToDbSheetMapping;
+}
+
+export function createHelper(props: IGenListProps, googleSheetId: string): IHelper {
+    //sheetMapping?: DataToDbSheetMapping
+    const { table, sheetMapping } = props; 
     if (!table) return null;
     const accModel = () => mod.models[table];
     const accModelFields = () => get(accModel(), 'fields', [] as IDBFieldDef[]);
@@ -110,8 +136,8 @@ function getTableNameToSheetMapping(tableName: TableNames, sheetMapping?: DataTo
     return sheetMapping;
 }
 
-export async function createAndLoadHelper(table: TableNames, googleSheetId: string, sheetMapping?: DataToDbSheetMapping) {
-    const helper = createHelper(table, googleSheetId, sheetMapping);
+export async function createAndLoadHelper(props: IGenListProps, googleSheetId: string) {
+    const helper = createHelper(props, googleSheetId);
     await helper.loadModel();
     return helper;
 }

@@ -2,7 +2,7 @@ import React,{useState,useEffect} from 'react';
 import { GenCrud, getPageSorts, getPageFilters, IDisplayFieldType } from './GenCrud';
 import { IColumnInfo, ItemType } from './GenCrudAdd';
 import { IFKDefs } from './GenCrudTableFkTrans'
-import { createHelper, DataToDbSheetMapping, FieldValueType } from './datahelpers';
+import { createHelper, DataToDbSheetMapping, FieldValueType, IGenListProps } from './datahelpers';
 import { getFKDefs } from './GenCrudTableFkTrans';
 
 import { IDBFieldDef, TableNames } from '../types'
@@ -10,26 +10,7 @@ import { ISqlRequestWhereItem} from '../api'
 import { useIncomeExpensesContext } from '../states/PaymentExpenseState'
 
 
-interface IGenListProps { //copied from gencrud, need combine and refactor later
-    table: TableNames;
-    columnInfo: IColumnInfo[];    
-    displayFields?: IDisplayFieldType;
-    fkDefs?: IFKDefs;
-    initialPageSize?: number;        
-    /*
-    paggingInfo: {
-        total: number;
-        PageSize: number;
-        lastPage: number;
-        pos: number;
-    };
-    setPaggingInfo: any;
-    */
-    title?: string;
-    doAdd: (data: ItemType, id: FieldValueType) => Promise<{ id: string; }>;
 
-    sheetMapping?: DataToDbSheetMapping;
-}
 //props: table and displayFields [fieldNames]
 export function GenList(props: IGenListProps) {
     const { table, columnInfo, fkDefs, initialPageSize } = props;
@@ -40,7 +21,7 @@ export function GenList(props: IGenListProps) {
         total: 0,
         lastPage:0,// added since missing
     });
-    const helper = createHelper(table, secCtx.googleSheetAuthInfo.googleSheetId, props.sheetMapping);
+    const helper = createHelper(props, secCtx.googleSheetAuthInfo.googleSheetId); //props: table, sheetMapping, column
     const pageState = secCtx.pageState;
     // [
     //     { field: 'tenantID', desc: 'Id', type: 'uuid', required: true, isId: true },
