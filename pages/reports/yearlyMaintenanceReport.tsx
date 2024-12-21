@@ -759,7 +759,7 @@ async function export1099(parms: IDetailParams, showProgress?: (txt: string) => 
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.setAttribute('download', '1099.pdf');
+    a.setAttribute('download', `1099-${parms.YYYY}-${parms.ownerName}-${parms.workerName}.pdf`);
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
@@ -795,7 +795,6 @@ async function write1099PdfFields(formData: Form1099Info, existingPdfBytes: Arra
     fields.forEach(field => {
         const type = field.constructor.name;
         const name = field.getName();
-        console.log(`${type}: ${name}`);
         if (type === 'PDFTextField') {
             const ff = form.getTextField(name);
             const len = ff.getMaxLength() || 10000;
