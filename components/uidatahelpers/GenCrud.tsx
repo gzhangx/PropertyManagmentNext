@@ -6,7 +6,7 @@ import { GenCrudAdd, IColumnInfo, ItemType } from './GenCrudAdd';
 import { ISqlOrderDef, SortOps, IPageFilter, IPageState } from '../types'
 import { IFKDefs} from './GenCrudTableFkTrans'
 import { SQLOPS } from '../api';
-import { FieldValueType } from './datahelpers';
+import { FieldValueType, IDisplayFieldType } from './datahelpers';
 import { IEditTextDropdownItem } from '../generic/GenericDropdown';
 
 

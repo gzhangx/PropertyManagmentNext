@@ -1,7 +1,7 @@
 import React,{useState,useEffect} from 'react';
-import { GenCrud, getPageSorts, getPageFilters, IDisplayFieldType } from './GenCrud';
+import { GenCrud, getPageSorts, getPageFilters } from './GenCrud';
 import { IColumnInfo, ItemType } from './GenCrudAdd';
-import { createHelper, FieldValueType, IGenListProps } from './datahelpers';
+import { createHelper, FieldValueType, IDisplayFieldType, IGenListProps } from './datahelpers';
 import { getFKDefs } from './GenCrudTableFkTrans';
 
 import { ISqlRequestWhereItem} from '../api'

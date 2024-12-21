@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { createAndLoadHelper, DataToDbSheetMapping, FieldValueType, IHelper } from './datahelpers';
+import { createAndLoadHelper, DataToDbSheetMapping, FieldValueType, IComplexDisplayFieldType, IHelper } from './datahelpers';
 import { get } from 'lodash';
 import { EditTextDropdown, } from '../generic/EditTextDropdown';
 import * as bluebird from 'bluebird';
@@ -7,7 +7,7 @@ import {Dialog, createDialogPrms} from '../dialog'
 import { IDBFieldDef, isColumnSecurityField } from '../types';
 import { IEditTextDropdownItem } from '../generic/GenericDropdown';
 import { useIncomeExpensesContext } from '../states/PaymentExpenseState'
-import { IComplexDisplayFieldType, IGenGrudProps } from './GenCrud';
+import { IGenGrudProps } from './GenCrud';
 export interface IColumnInfo extends IDBFieldDef {    
     dontShowOnEdit?: boolean; //liekly not used
 }
