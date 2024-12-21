@@ -32,6 +32,7 @@ import {
     ITenantInfo,
     IMaintenanceRawData,
     IWorkerInfo,
+    IOwnerInfo,
 } from './reportTypes';
 
 export async function doPost(path: string, data: object, method: httpRequest.HttpRequestMethod = 'POST', authToken: string = ''): Promise<any> {
@@ -329,6 +330,14 @@ export async function getWorkerInfo(): Promise<IWorkerInfo[]> {
     return sqlGet({
         table: 'workerInfo',
     }).then((r: { rows: IWorkerInfo[] }) => {
+        return r.rows;
+    })
+}
+
+export async function getOwnerInfo(): Promise<IOwnerInfo[]> {
+    return sqlGet({
+        table: 'ownerInfo',
+    }).then((r: { rows: IOwnerInfo[] }) => {
         return r.rows;
     })
 }

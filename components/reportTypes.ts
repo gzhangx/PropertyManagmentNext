@@ -90,6 +90,17 @@ export interface IWorkerInfo extends IWorkerInfoShort {
     phone: string;
 }
 
+export interface IOwnerInfo {
+    ownerName: string;
+    taxName: string;
+    taxID: string;
+    address: string;
+    city: string;
+    state: string;
+    zip: string;
+    email: string;
+    phone: string;
+}
 
 export interface ILeaseInfo {
     'leaseID': string;

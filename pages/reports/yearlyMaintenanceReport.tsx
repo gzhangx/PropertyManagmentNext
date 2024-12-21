@@ -5,6 +5,7 @@ import {
     getHouseInfo,
     getWorkerInfo,
     doPost,
+    getOwnerInfo,
 } from '../../components/api';
 import moment from 'moment';
 import { EditTextDropdown  } from '../../components/generic/EditTextDropdown';
@@ -92,6 +93,7 @@ type IDetailParams = {
     total: number;
     export1099: boolean;
     workerName: string;
+    ownerName: string;
     YYYY: string;
 };
 
@@ -133,7 +135,8 @@ function GenerateByCatData(state: IYearlyMaintenanceReportState, setShowDetail: 
             export1099: !!workerName,
             workerName,
             total: wkrCat.total,
-            YYYY: state.curYearSelection.substring(0,4),
+            YYYY: state.curYearSelection.substring(0, 4),
+            ownerName: state.ownerID,
         })
     }
     return <div>
@@ -711,20 +714,33 @@ async function get1099Content(parms: IDetailParams, showProgress?: (txt: string)
         showProgress('worker not found ' + parms.workerName);
         return;
     }
+
+    const owners = await getOwnerInfo();
+    const ownersFound = owners.filter(w => w.ownerName.toLowerCase().trim() === parms.ownerName.toLowerCase().trim());
+    if (ownersFound.length > 1) {
+        showProgress('Found multiple owners ' + parms.ownerName);
+        return;
+    }
+    if (ownersFound.length === 0) {
+        showProgress('Owner not found ' + parms.ownerName);
+        return;
+    }
+
     const worker = founds[0];
+    const owner = ownersFound[0];
     showProgress('worker found ' + parms.workerName);
     const irsfile = await doPost('misc/statement/1099', {}, 'GET');
     const resultData = write1099PdfFields({
         otherIncome: parms.total.toFixed(2),
         calendarYear: parms.YYYY,
         payer: {
-            tin: 'payerTin',
-            address: 'payerAddress',
-            city: 'payercity',
-            name: 'payerName',
-            phone: 'payerPhone',
-            state: 'state',
-            zip: 'zip',
+            tin: owner.taxID,
+            address: owner.address,
+            city: owner.city,
+            name: owner.taxName || owner.ownerName,
+            phone: owner.phone,
+            state: owner.state,
+            zip: owner.zip,
         },
         receipient: {
             cityStateZip: `${worker.city} ${worker.state} ${worker.zip}`,
