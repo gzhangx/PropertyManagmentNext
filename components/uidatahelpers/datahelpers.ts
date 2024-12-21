@@ -1,5 +1,5 @@
 import {
-    getModel, sqlGet, sqlAdd, sqlDelete, ISqlRequestFieldDef,
+    getModel, sqlGet, sqlAdd, sqlDelete, 
     ISqlRequestWhereItem, updateSheet,
 } from '../api';
 import { ISqlOrderDef, IGetModelReturn, IDBFieldDef, TableNames, ISqlDeleteResponse } from '../types'
@@ -33,7 +33,7 @@ export type IHelper = {
         rows: any[];
     }>;
     saveData: (data: any, id: FieldValueType) => Promise<any>;
-    deleteData: (id: string) => Promise<ISqlDeleteResponse>;
+    deleteData: (ids: string[]) => Promise<ISqlDeleteResponse>;
 }
 
 export type IComplexDisplayFieldType = { field: string; desc: string; defaultNewValue?: () => string; type?: 'date' | 'number' | 'string' };
@@ -130,7 +130,7 @@ export function createHelper(props: IGenListProps, googleSheetId: string): IHelp
             
             return sqlRes;
         },
-        deleteData: async id => sqlDelete(table, id),
+        deleteData: async ids => sqlDelete(table, ids),
     }
     return helper;
 }

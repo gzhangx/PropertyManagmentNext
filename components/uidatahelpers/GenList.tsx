@@ -72,9 +72,9 @@ export function GenList(props: IGenListProps) {
         });
     }
 
-    const doDelete=( field, id ) => {
+    const doDelete=( ids: string[] ) => {
         setLoading(true);
-        helper.deleteData(id).then(() => {
+        helper.deleteData(ids).then(() => {
             reload();
         })
     }

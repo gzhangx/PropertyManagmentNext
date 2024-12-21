@@ -49,7 +49,7 @@ export interface IGenGrudProps {
     table: string;
     //desc?: string;
     fkDefs?: IFKDefs;
-    doDelete: (id: string, data:any) => void;
+    doDelete: (ids: string[]) => void;
     idCol?: { field: string; }
     reload?: () => Promise<void>;
 }
@@ -133,7 +133,7 @@ export const GenCrud = (props: IGenGrudProps) => {
         return f.field;
     });
 
-    const idCol = columnInfo.filter(c => c.isId)[0];
+    const idCols = columnInfo.filter(c => c.isId);
 
     const addNew = () => {
         setDspState('addNew');
@@ -323,14 +323,14 @@ export const GenCrud = (props: IGenGrudProps) => {
                                                 })
                                             }
                                             <td>
-                                                {idCol && <button className="btn btn-primary outline-primary" type="button"  onClick={() => {
+                                                {idCols.length && <button className="btn btn-primary outline-primary" type="button"  onClick={() => {
                                                     setEditItem(row);
                                                     setDspState('edit');
                                                 }}>Edit</button>
                                                 }
                                                 {' ' //className="btn-xs"
                                                 }
-                                                {idCol && <button className="btn btn-primary outline-danger" type="button"  onClick={() => props.doDelete(idCol.field, row[idCol.field])}>Delete</button>}
+                                                {idCols.length && <button className="btn btn-primary outline-danger" type="button"  onClick={() => props.doDelete(idCols.map(c=>row[c.field]))}>Delete</button>}
                                             </td>
                                         </tr>
                                     )

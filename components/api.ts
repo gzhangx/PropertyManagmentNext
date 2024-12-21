@@ -212,9 +212,9 @@ export async function sqlAdd(table: TableNames, fields: { [key: string]: string 
     })
 }
 
-export function sqlDelete(table: TableNames, id: string): Promise<ISqlDeleteResponse>{
+export function sqlDelete(table: TableNames, ids: string[]): Promise<ISqlDeleteResponse>{
     return doPost(`sql/del`, {
-        table, id,
+        table, ids,
     })
 }
 
@@ -343,7 +343,7 @@ export async function getOwnerInfo(): Promise<IOwnerInfo[]> {
 }
 
 export async function deleteLeases(leaseID:string) {
-    return sqlDelete('leaseInfo', leaseID);
+    return sqlDelete('leaseInfo', [leaseID]);
 }
 
 
@@ -361,7 +361,7 @@ export async function getTenants(): Promise<ITenantInfo[]> {
 }
 
 export async function deleteById(tableName: TableNames, id: string) {
-    return sqlDelete(tableName, id);
+    return sqlDelete(tableName, [id]);
 }
 
 
