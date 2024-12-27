@@ -171,7 +171,7 @@ export const maintenceRecordDef: IPageInfo = {
     ],
     sheetMustExistField: 'date',
     rowComparers: maintenanceRowCompare,
-    dbLoader: () => theApi.getMaintenanceReport().then(r => r as any as IDbSaveData[]),
+    dbLoader: () => theApi.getMaintenanceReport().then(r => r.rows as unknown as IDbSaveData[]),
     extraProcessSheetData: maintenanceExtraProcessSheetData,
     shouldShowCreateButton: colInfo => colInfo.field === 'maintenanceImportAddress',
     dbInserter: inserter.getDbInserter('maintenanceRecords'),

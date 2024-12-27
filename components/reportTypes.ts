@@ -1,4 +1,4 @@
-import { IPagePropsByTable, IPageState } from './types'
+import { IGetModelReturn, IPagePropsByTable, IPageState } from './types'
 import { IGoogleSheetAuthInfo } from './api';
 import { IEditTextDropdownItem } from './generic/GenericDropdown';
 export interface IPayment {
@@ -174,6 +174,11 @@ export interface IWorkerCompResponse extends IWorkerComp {
 
 export type IStringBoolMap = { [id: string]: boolean };
 
+export type IModelsDict = { [key: string]: IGetModelReturn };
+export type IModelsProps = {
+    models: IModelsDict;
+    setModels: React.Dispatch<React.SetStateAction<IModelsDict>>;
+}
 export interface IIncomeExpensesContextValue {
     pageState: IPageState;
     //pageProps: IPagePropsByTable;
@@ -199,4 +204,6 @@ export interface IIncomeExpensesContextValue {
     setSelectedHouses: (a: any) => void;
     beginReLoadPaymentData: () => Promise<void>;
     paymentCalcOpts: IPaymentCalcOpts;
+
+    modelsProp: IModelsProps;
 }

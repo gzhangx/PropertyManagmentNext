@@ -6,20 +6,21 @@ import { getFKDefs } from './GenCrudTableFkTrans';
 
 import { ISqlRequestWhereItem} from '../api'
 import { useIncomeExpensesContext } from '../states/PaymentExpenseState'
-
+import * as RootState from '../states/RootState'
 
 
 //props: table and displayFields [fieldNames]
 export function GenList(props: IGenListProps) {
     const { table, columnInfo, fkDefs, initialPageSize } = props;
     const secCtx = useIncomeExpensesContext();
+    const rootCtx = RootState.useRootPageContext();
     const [paggingInfo, setPaggingInfo] = useState({
         PageSize: initialPageSize|| 10,        
         pos: 0,
         total: 0,
         lastPage:0,// added since missing
     });
-    const helper = createHelper(props, secCtx.googleSheetAuthInfo.googleSheetId); //props: table, sheetMapping, column
+    const helper = createHelper(rootCtx, secCtx, props); //props: table, sheetMapping, column
     const pageState = secCtx.pageState;
     // [
     //     { field: 'tenantID', desc: 'Id', type: 'uuid', required: true, isId: true },

@@ -295,7 +295,7 @@ export const GenCrud = (props: IGenGrudProps) => {
                             </tr>
                         </thead>
                         <tbody>
-                            {rows.length > 0 ? (
+                            {rows?.length > 0 ? (
                                 rows.map((row, ind) => {
                                     return (
                                         <tr key={ind}>

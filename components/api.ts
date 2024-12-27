@@ -225,21 +225,25 @@ export async function getModel(name: TableNames) : Promise<IGetModelReturn> {
 
 
 
-export async function getMaintenanceReport(): Promise<IExpenseData[]> {
+export async function getMaintenanceReport(): Promise<{ rows: IExpenseData[], error: string}> {
     return sqlGet({
         //fields:['month', 'houseID','address', {op:'sum', field:'amount', name:'amount'},'expenseCategoryName','displayOrder'],
         fields: ['maintenanceID', 'month', 'houseID', 'address', 'amount', 'expenseCategoryName', 'expenseCategoryId', 'displayOrder', 'date', 'comment', 'description', 'workerID', 'workerFirstName', 'workerLastName', 'hours'],
         table:'maintenanceRecords',
         //groupByArray: [{ field: 'month' }, { field: 'houseID' }, { field: 'address' }, { field: 'expenseCategoryID' }, { field: 'expenseCategoryName'},{field:'displayOrder'}]
-    }).then((r: { rows: IExpenseData[]})=>{
-        return r.rows.map(r => {
-            const expenseCategoryName = r.expenseCategoryName || r.expenseCategoryId;
-            return {
-                ...r,
-                expenseCategoryName,
-                category: expenseCategoryName,
-            }
-        });
+    }).then((r: { rows: IExpenseData[]; error: string }) => {
+        if (!r.rows) return r;
+        return {
+            ...r,
+            rows: r.rows.map(r => {
+                const expenseCategoryName = r.expenseCategoryName || r.expenseCategoryId;
+                return {
+                    ...r,
+                    expenseCategoryName,
+                    category: expenseCategoryName,
+                }
+            }),            
+        };
     });    
 }
 
@@ -305,7 +309,8 @@ export async function getPaymentRecords(): Promise<IPayment[]> {
 export async function getPaymnents() : Promise<IPayment[]> {
     return sqlGet({
         table:'rentPaymentInfo',
-    }).then((r: {rows:IPayment[]})=>{
+    }).then((r: { rows: IPayment[] }) => {
+        if (!r.rows) return null;
         return r.rows.map(r => {
             const paymentTypeName = r.paymentTypeName || r.paymentTypeID;
             return {
@@ -375,9 +380,10 @@ export async function googleSheetRead(id:string, op:string, range:string) : Prom
 }
 
 
-export async function getMaintenanceFromSheet(): Promise<IMaintenanceRawData[]> {
+export async function getMaintenanceFromSheet(): Promise<{ rows:IMaintenanceRawData[]; error:string}> {
     const rpt = await getMaintenanceReport();
-    return rpt.map(r => r as IMaintenanceRawData);
+    return rpt;
+    //return rpt.map(r => r as IMaintenanceRawData);
     //const data = await doPost(`misc/sheet/readMaintenanceRecord?sheetId=${sheetId}&sheetName=${sheetName}`, {}, 'GET');
     //if (!data.values) {
     //    return [];
@@ -434,6 +440,7 @@ export async function getSheetAuthInfo(): Promise<IGoogleSheetAuthInfo> {
     const googleAuthInfos = await sqlGet({
         table: 'googleApiCreds',
     }).then((r: { rows: IGoogleSheetAuthInfo[], error: string }) => {        
+        if (r.error) return r;
         return r.rows;
     });
     return googleAuthInfos[0];

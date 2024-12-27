@@ -8,6 +8,7 @@ import { IDBFieldDef, isColumnSecurityField } from '../types';
 import { IEditTextDropdownItem } from '../generic/GenericDropdown';
 import { useIncomeExpensesContext } from '../states/PaymentExpenseState'
 import { IGenGrudProps } from './GenCrud';
+import * as RootState from '../states/RootState'
 export interface IColumnInfo extends IDBFieldDef {    
     dontShowOnEdit?: boolean; //liekly not used
 }
@@ -29,7 +30,7 @@ export interface IGenGrudAddProps extends IGenGrudProps {
 export const GenCrudAdd = (props: IGenGrudAddProps) => {
 
     const mainCtx = useIncomeExpensesContext();
-    const googleSheetId = mainCtx.googleSheetAuthInfo.googleSheetId;
+    const rootCtx = RootState.useRootPageContext();
     const { columnInfo, doAdd, onCancel,
         editItem, //only available during edit
         onError,
@@ -117,10 +118,10 @@ export const GenCrudAdd = (props: IGenGrudAddProps) => {
 
                     const processForeignKey = getForeignKeyProcessor(optKey);
                     if (processForeignKey && !optsData[optKey]) {
-                        const helper = await createAndLoadHelper({
+                        const helper = await createAndLoadHelper(rootCtx, mainCtx, {
                             ...props,
                             table: optKey,
-                        }, googleSheetId);
+                        });
                         //await helper.loadModel();
                         const optDataOrig = await helper.loadData();
                         const optData = optDataOrig.rows;
@@ -150,10 +151,10 @@ export const GenCrudAdd = (props: IGenGrudAddProps) => {
         const hasFks = colInf.filter(c => c.foreignKey).filter(c => c.foreignKey.table);
         await bluebird.Promise.map(hasFks, async fk => {
             const tbl = fk.foreignKey.table;
-            const helper = await createAndLoadHelper({
+            const helper = await createAndLoadHelper(rootCtx, mainCtx, {
                 ...props,
                 table: tbl,
-            }, googleSheetId);
+            });
             await helper.loadModel();
             const columnInfo = helper.getModelFields().map(x=>x as IColumnInfo);
             setColumnInfoMaps(prev => {

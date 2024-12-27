@@ -12,6 +12,7 @@ import {
     //IPageProps,
     IExpenseData,
     IStringBoolMap,
+    IModelsDict,
 } from '../reportTypes';
 import { useRootPageContext } from './RootState';
 import { IEditTextDropdownItem } from '../generic/GenericDropdown';
@@ -77,6 +78,7 @@ export function PaymentExpenseStateWrapper(props: {
     const [selectedMonths, setSelectedMonths] = useState<IStringBoolMap>({});
     const [selectedHouses, setSelectedHouses] = useState<IStringBoolMap>({});
 
+    const [models, setModels] = useState<IModelsDict>({});
     const router = useRouter();
 
     function addMonths(mons: string[]) {
@@ -115,7 +117,8 @@ export function PaymentExpenseStateWrapper(props: {
 
     useEffect(() => {
         getSheetAuthInfo().then(auth => {
-            setGoogleSheetAuthinfo(auth);
+            if (auth)
+                setGoogleSheetAuthinfo(auth);
         })
     }, ['once']);
     useEffect(() => {
@@ -174,6 +177,7 @@ export function PaymentExpenseStateWrapper(props: {
 
     const beginReLoadPaymentData = () => {        
         return getPaymnents().then(r => {
+            if (!r) return;
             r = r.map(r => {
                 return {
                     ...r,
@@ -195,9 +199,10 @@ export function PaymentExpenseStateWrapper(props: {
 
     useEffect(() => {
         getMaintenanceReport().then(d => {
-            addMonths(uniq(d.map(r => r.month)));
+            if (d.error) return;
+            addMonths(uniq(d.rows.map(r => r.month)));
             addHouses(d as any); //same sig
-            setRawExpenseData(d);
+            setRawExpenseData(d.rows);
         });
         
         beginReLoadPaymentData();
@@ -229,6 +234,10 @@ export function PaymentExpenseStateWrapper(props: {
             isGoodHouseId: id => selectedHouses[id],
             getHouseShareInfo: () => [...allHouses],
             isGoodWorkerId: workerID => true, //DEBUGREMOVE add check
+        },
+        modelsProp: {
+            models,
+            setModels,
         }
     };
     return <IncomeExpensesContext.Provider value={incomExpCtx}>

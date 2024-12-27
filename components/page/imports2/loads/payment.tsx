@@ -9,9 +9,13 @@ import type { JSX } from "react";
 export const PaymentRowCompare: IRowComparer[] = [
     {
         name: 'Payment Row Comparer',
-        getRowKey: (data: IDbSaveData) => {
+        getRowKey: (data: IDbSaveData, soruce:string) => {
             const pmt = data as any as IPayment;            
             const date = YYYYMMDDFormater(pmt.receivedDate);
+            if (!pmt.receivedAmount) {
+                pmt.receivedAmount = 0;
+                console.log('debugremove pmtrec '+soruce, pmt)
+            }
             const amt = pmt.receivedAmount.toFixed(2);
             return `${date}-${amt}-${pmt.houseID}-${(pmt.paymentTypeName || '').trim()}-${(pmt.notes || '').trim()}`;
         },
@@ -21,6 +25,10 @@ export const PaymentRowCompare: IRowComparer[] = [
         getRowKey: (data: IDbSaveData) => {
             const pmt = data as any as IPayment;
             const date = YYYYMMDDFormater(pmt.receivedDate);
+            if (!pmt.receivedAmount) {
+                pmt.receivedAmount = 0;
+                console.log('debugremove pmtrec mp mptes', pmt)
+            }
             const amt = pmt.receivedAmount.toFixed(2);
             return `${date}-${amt}-${pmt.houseID}-${(pmt.paymentTypeName || '').trim()}`;
         },

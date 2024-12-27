@@ -7,10 +7,10 @@ import { get } from 'lodash';
 import { IColumnInfo, ItemType } from './GenCrudAdd';
 import { IFKDefs } from './GenCrudTableFkTrans';
 import moment from 'moment';
+import { IIncomeExpensesContextValue } from '../reportTypes';
 export type FieldValueType = string | number | null;
-const mod = {
-    models: {} as {[key:string]:IGetModelReturn}
-}
+
+import * as RootState from '../states/RootState'
 
 interface IOpts {
     whereArray: ISqlRequestWhereItem[];
@@ -60,11 +60,12 @@ export interface IGenListProps { //copied from gencrud, need combine and refacto
     sheetMapping?: DataToDbSheetMapping;
 }
 
-export function createHelper(props: IGenListProps, googleSheetId: string): IHelper {
+export function createHelper(rootCtx: RootState.IRootPageState, ctx: IIncomeExpensesContextValue, props: IGenListProps): IHelper {
+    const googleSheetId: string = ctx.googleSheetAuthInfo.googleSheetId;
     //sheetMapping?: DataToDbSheetMapping
     const { table, sheetMapping } = props; 
     if (!table) return null;
-    const accModel = () => mod.models[table];
+    const accModel = () => ctx.modelsProp.models[table];
     const accModelFields = () => get(accModel(), 'fields', [] as IDBFieldDef[]);
     function formatFieldValue(fieldName: string, val: string) {
         if (!props.displayFields) return val;
@@ -83,7 +84,13 @@ export function createHelper(props: IGenListProps, googleSheetId: string): IHelp
         getModelFields: accModelFields,
         loadModel: async () => {
             if (!accModel()) {
-                mod.models[table] = await getModel(table);
+                ctx.modelsProp.models[table] = await getModel(table);
+                ctx.modelsProp.setModels(old => {
+                    return {
+                        ...old,
+                        table: ctx.modelsProp.models[table],
+                    }
+                });
             }
             return accModel();
         },        
@@ -92,7 +99,7 @@ export function createHelper(props: IGenListProps, googleSheetId: string): IHelp
             const { whereArray, order, rowCount, offset } = opts;
             const modFields = accModelFields().map(f => f.field);
             const viewFields = get(accModel(), 'view.fields', []).map(f => f.name || f.field);
-            return (await sqlGet({
+            const res = (await sqlGet({
                 table,
                 fields: modFields.concat(viewFields),
                 joins: null,
@@ -103,7 +110,17 @@ export function createHelper(props: IGenListProps, googleSheetId: string): IHelp
             })) as {
                 total: number;
                 rows: any[];
-            };
+                };
+            if ((res as any).error === 'not authorized') {
+                rootCtx.setUserInfo(old => {                    
+                    return {
+                        ...old,
+                        id: '',
+                        token: ''
+                    };
+                })
+            }
+            return res;
         },
         saveData: async (data, id: string) => {
             const submitData = accModelFields().reduce((acc, f) => {
@@ -147,8 +164,8 @@ function getTableNameToSheetMapping(tableName: TableNames, sheetMapping?: DataTo
     return sheetMapping;
 }
 
-export async function createAndLoadHelper(props: IGenListProps, googleSheetId: string) {
-    const helper = createHelper(props, googleSheetId);
+export async function createAndLoadHelper(rootCtx: RootState.IRootPageState, ctx: IIncomeExpensesContextValue, props: IGenListProps) {
+    const helper = createHelper(rootCtx, ctx, props);
     await helper.loadModel();
     return helper;
 }

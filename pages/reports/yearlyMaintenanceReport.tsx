@@ -284,8 +284,8 @@ export default function YearlyMaintenanceReport() {
 
     async function getData() {        
         showProgress('Getting worker Info for ');
-        const goodWorkers = await getMaintenanceFromSheet().then(rows => {
-            const goodWorkers = rows.reduce((acc, r) => {
+        const goodWorkers = await getMaintenanceFromSheet().then(rptW => {
+            const goodWorkers = rptW.rows.reduce((acc, r) => {
                 acc[r.workerID] = true;
                 return acc;
             }, {} as { [name: string]: boolean });            
@@ -324,7 +324,7 @@ export default function YearlyMaintenanceReport() {
         showProgress('Getting Data for ');
         await getMaintenanceFromSheet().then(rawRows => {
             showProgress('');
-            const rows = rawRows.filter(row => {
+            const rows = rawRows.rows.filter(row => {
                 if (!state.showCategories[row.expenseCategoryId]) return false;
                 return true;
             });

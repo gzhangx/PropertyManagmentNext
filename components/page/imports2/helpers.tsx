@@ -48,7 +48,7 @@ export async function createEntity(params: IPageParms, changeRow: ISheetRowData,
 export async function genericPageLoader(prms: IPageParms, pageState: IPageStates) {
     const sheetId = pageState.sheetId;
     const page = pageState.curPage;
-    if (!sheetId) {
+    if (!sheetId || sheetId === 'NA') {
         console.log('no sheet id, return');
         return;
     }
