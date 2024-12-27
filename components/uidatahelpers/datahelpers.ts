@@ -32,17 +32,22 @@ export type IHelper = {
         total: number;
         rows: any[];
     }>;
-    saveData: (data: any, id: FieldValueType) => Promise<any>;
+    saveData: (data: any, id: FieldValueType, saveToSheet: boolean) => Promise<any>;
     deleteData: (ids: string[]) => Promise<ISqlDeleteResponse>;
 }
 
 export type IComplexDisplayFieldType = { field: string; desc: string; defaultNewValue?: () => string; type?: 'date' | 'number' | 'string' };
 export type IDisplayFieldType = (IComplexDisplayFieldType | string)[];
 
-export interface IGenListProps { //copied from gencrud, need combine and refactor later
+interface IHelperProps {
     table: TableNames;
-    columnInfo: IColumnInfo[];    
     displayFields?: IDisplayFieldType;
+    sheetMapping?: DataToDbSheetMapping;  //how googleSheet maps to db
+}
+export interface IGenListProps extends IHelperProps { //copied from gencrud, need combine and refactor later
+    //table: TableNames;
+    columnInfo: IColumnInfo[];    
+    //displayFields?: IDisplayFieldType;
     fkDefs?: IFKDefs;
     initialPageSize?: number;        
     /*
@@ -57,28 +62,36 @@ export interface IGenListProps { //copied from gencrud, need combine and refacto
     title?: string;
     doAdd: (data: ItemType, id: FieldValueType) => Promise<{ id: string; }>;
 
-    sheetMapping?: DataToDbSheetMapping;
+    //sheetMapping?: DataToDbSheetMapping;
 }
 
-export function createHelper(rootCtx: RootState.IRootPageState, ctx: IIncomeExpensesContextValue, props: IGenListProps): IHelper {
+export function createHelper(rootCtx: RootState.IRootPageState, ctx: IIncomeExpensesContextValue, props: IHelperProps): IHelper {
     const googleSheetId: string = ctx.googleSheetAuthInfo.googleSheetId;
     //sheetMapping?: DataToDbSheetMapping
     const { table, sheetMapping } = props; 
     if (!table) return null;
     const accModel = () => ctx.modelsProp.models[table];
     const accModelFields = () => get(accModel(), 'fields', [] as IDBFieldDef[]);
+    const innerState = {
+        dateFields: [] as string[],
+    }
     function formatFieldValue(fieldName: string, val: string) {
         if (!props.displayFields) return val;
-        const df = props.displayFields.find(f => (f as IComplexDisplayFieldType).field === fieldName) as IComplexDisplayFieldType;
-        if (!df) return val;
-        switch (df.type) {
-            case 'date':
-                return moment(val).format('YYYY-MM-DD');
-                break;
-            case 'number':
-            default:
-                return val;
-        }
+        if (innerState.dateFields.includes(fieldName))
+            return moment(val).format('YYYY-MM-DD');
+        return val;        
+        
+        // if (!props.displayFields) return val;
+        // const df = props.displayFields.find(f => (f as IComplexDisplayFieldType).field === fieldName) as IComplexDisplayFieldType;
+        // if (!df) return val;
+        // switch (df.type) {
+        //     case 'date':
+        //         return moment(val).format('YYYY-MM-DD');
+        //         break;
+        //     case 'number':
+        //     default:
+        //         return val;
+        // }
     }
     const helper: IHelper = {
         getModelFields: accModelFields,
@@ -92,7 +105,9 @@ export function createHelper(rootCtx: RootState.IRootPageState, ctx: IIncomeExpe
                     }
                 });
             }
-            return accModel();
+            const model = accModel();
+            innerState.dateFields = model.fields.filter(f => f.type === 'date').map(f => f.field);
+            return model;
         },        
         loadData: async (opts = {} as IOpts) => {
             //fields: array of field names
@@ -122,16 +137,17 @@ export function createHelper(rootCtx: RootState.IRootPageState, ctx: IIncomeExpe
             }
             return res;
         },
-        saveData: async (data, id: string) => {
+        saveData: async (data, id: string, saveToSheet: boolean) => {
             const submitData = accModelFields().reduce((acc, f) => {
                 acc[f.field] = data[f.field];
                 return acc;
             }, {});
 
             const sqlRes = await sqlAdd(table, submitData, !id);;
+            if (!saveToSheet) return sqlRes;
             if (!googleSheetId) return sqlRes;
 
-            const sheetMapper = getTableNameToSheetMapping(table, sheetMapping);
+            const sheetMapper = getTableNameToSheetMapping(sheetMapping);
             if (sheetMapper) {
                 const values = sheetMapper.mapping.map(name => {
                     const val = data[name];
@@ -152,7 +168,7 @@ export function createHelper(rootCtx: RootState.IRootPageState, ctx: IIncomeExpe
     return helper;
 }
 
-function getTableNameToSheetMapping(tableName: TableNames, sheetMapping?: DataToDbSheetMapping) {
+function getTableNameToSheetMapping(sheetMapping?: DataToDbSheetMapping) {
     if (!sheetMapping) return null;
     const charCodeA = 'A'.charCodeAt(0);
     const colNames: string[] = [];

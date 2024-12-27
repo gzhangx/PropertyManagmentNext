@@ -63,7 +63,7 @@ export function GenList(props: IGenListProps) {
     },[table || 'NA', columnInfo, pageState.pageProps.reloadCount, paggingInfo.pos, paggingInfo.total]);
 
     const doAdd = (data: ItemType, id: FieldValueType) => {        
-        return helper.saveData(data,id).then(res => {
+        return helper.saveData(data,id, true).then(res => {
             setLoading(true);            
             reload();
             return res;

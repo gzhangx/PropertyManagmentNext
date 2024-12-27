@@ -202,7 +202,7 @@ export const GenCrudAdd = (props: IGenGrudAddProps) => {
                         if (!processForeignKey) return;
                         const { helper, columnInfo } = columnInfoMaps[thisTbl];
                         const doAdd = (data, id) => {
-                            return helper.saveData(data, id).then(res => {
+                            return helper.saveData(data, id, true).then(res => {
                                 return res;
                             }).catch(err => {
                                 console.log(err);
