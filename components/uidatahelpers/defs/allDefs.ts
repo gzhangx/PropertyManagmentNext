@@ -1,7 +1,8 @@
 import { TableNames } from "../../types";
-import { IHelperProps } from "../datahelpers";
+import { ITableAndSheetMappingInfo } from "../datahelperTypes";
 
-const workerInfoDef: IHelperProps = {
+
+const workerInfoDef: ITableAndSheetMappingInfo = {
     table: 'workerInfo',
     sheetMapping: {
         sheetName: 'Workers Info',
@@ -15,7 +16,7 @@ const workerInfoDef: IHelperProps = {
     }
 }
 
-const paymentInfoDef: IHelperProps = {
+const paymentInfoDef: ITableAndSheetMappingInfo = {
     table: 'rentPaymentInfo',
     sheetMapping: {
         sheetName: 'PaymentRecord',
@@ -23,7 +24,7 @@ const paymentInfoDef: IHelperProps = {
         mapping: [
             'receivedDate',
             'receivedAmount',
-            'address',
+            'houseID',
             'paymentTypeName',
             'notes',
             'paymentProcessor',
@@ -36,7 +37,7 @@ const paymentInfoDef: IHelperProps = {
     }
 };
 
-const houseInfoDef: IHelperProps = {    
+const houseInfoDef: ITableAndSheetMappingInfo = {    
     table: 'houseInfo',
     sheetMapping: {
         sheetName: 'House Info',
@@ -52,7 +53,7 @@ const houseInfoDef: IHelperProps = {
     }
 }
 
-const tenantInfoDef: IHelperProps = {
+const tenantInfoDef: ITableAndSheetMappingInfo = {
     table: 'tenantInfo',
     sheetMapping: {
         sheetName: 'Tenants Info',
@@ -69,7 +70,7 @@ const tenantInfoDef: IHelperProps = {
     }
 }
 
-const maintenanceInfoDef: IHelperProps = {
+const maintenanceInfoDef: ITableAndSheetMappingInfo = {
     table: 'maintenanceRecords',
     sheetMapping: {
         sheetName: 'MaintainessRecord',
@@ -78,7 +79,7 @@ const maintenanceInfoDef: IHelperProps = {
             'date',
             'description',
             'amount',
-            'maintenanceImportAddress', //rename to prevent default handling
+            'houseID', //rename to prevent default handling
             'expenseCategoryId',
             'workerID',
             'comment'
@@ -86,7 +87,7 @@ const maintenanceInfoDef: IHelperProps = {
     }
 }
 
-const ownerInfoDef: IHelperProps = {
+const ownerInfoDef: ITableAndSheetMappingInfo = {
     table: 'ownerInfo'
 }
 
@@ -94,4 +95,4 @@ const ownerInfoDef: IHelperProps = {
 export const tableNameToDefinitions = [tenantInfoDef, houseInfoDef, paymentInfoDef, workerInfoDef, maintenanceInfoDef, ownerInfoDef].reduce((acc, pp) => {
     acc.set(pp.table, pp);
     return acc;
-}, new Map<TableNames, IHelperProps>());
+}, new Map<TableNames, ITableAndSheetMappingInfo>());

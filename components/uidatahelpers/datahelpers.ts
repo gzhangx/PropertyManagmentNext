@@ -10,21 +10,14 @@ import { IIncomeExpensesContextValue } from '../reportTypes';
 export type FieldValueType = string | number | null;
 
 import * as RootState from '../states/RootState'
-import { ALLFieldNames, PageNames } from '../page/imports2/types';
 import { tableNameToDefinitions } from './defs/allDefs';
+import { DataToDbSheetMapping, ITableAndSheetMappingInfo } from './datahelperTypes';
 
 interface IOpts {
     whereArray: ISqlRequestWhereItem[];
     order: ISqlOrderDef[];
     rowCount: number;
     offset:number;
-}
-
-export type DataToDbSheetMapping ={
-    sheetName: PageNames;
-    range: string;
-    mapping: ALLFieldNames[];
-    //endCol: string;
 }
 
 export type IHelper = {
@@ -39,12 +32,8 @@ export type IHelper = {
 }
 
 
-export interface IHelperProps {
-    table: TableNames;
-    displayFields?: IDBFieldDef[];
-    sheetMapping?: DataToDbSheetMapping;  //how googleSheet maps to db, used to save data to sheet
-}
-export interface IGenListProps extends IHelperProps { //copied from gencrud, need combine and refactor later
+
+export interface IGenListProps extends ITableAndSheetMappingInfo { //copied from gencrud, need combine and refactor later
     //table: TableNames;
     //columnInfo: IColumnInfo[];    //auto populated
     //displayFields?: IDisplayFieldType;
@@ -80,7 +69,7 @@ export async function getTableModel(ctx: IIncomeExpensesContextValue, table: Tab
     return mod.fields;
 }
 
-export function createHelper(rootCtx: RootState.IRootPageState, ctx: IIncomeExpensesContextValue, props: IHelperProps): IHelper {
+export function createHelper(rootCtx: RootState.IRootPageState, ctx: IIncomeExpensesContextValue, props: ITableAndSheetMappingInfo): IHelper {
     const googleSheetId: string = ctx.googleSheetAuthInfo.googleSheetId;
     //sheetMapping?: DataToDbSheetMapping
     const { table, sheetMapping } = props; 
@@ -194,7 +183,7 @@ export async function createAndLoadHelper(rootCtx: RootState.IRootPageState, ctx
 }
 
 
-export function getGenListParms(ctx: IIncomeExpensesContextValue, table: TableNames): IHelperProps {
+export function getGenListParms(ctx: IIncomeExpensesContextValue, table: TableNames): ITableAndSheetMappingInfo {
     const def = tableNameToDefinitions.get(table);
     return {
         table,
