@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { createAndLoadHelper, DataToDbSheetMapping, FieldValueType, IComplexDisplayFieldType, IHelper } from './datahelpers';
+import { createAndLoadHelper, FieldValueType, IHelper } from './datahelpers';
 import { get } from 'lodash';
 import { EditTextDropdown, } from '../generic/EditTextDropdown';
 import * as bluebird from 'bluebird';
@@ -10,6 +10,7 @@ import { useIncomeExpensesContext } from '../states/PaymentExpenseState'
 import { IGenGrudProps } from './GenCrud';
 import * as RootState from '../states/RootState'
 import moment from 'moment';
+import { DataToDbSheetMapping } from './datahelperTypes';
 
 
 
@@ -42,8 +43,7 @@ export const GenCrudAdd = (props: IGenGrudAddProps) => {
         displayFields,
     }
         = props;
-    
-    const getDisplayFieldDef = (field: string) => displayFields.find(d => field === (d as IComplexDisplayFieldType).field) as IComplexDisplayFieldType;
+        
     const getForeignKeyProcessor = fk => get(fkDefs, [fk, 'processForeignKey']);
     let id:string|number = '';
     let idName = '';
