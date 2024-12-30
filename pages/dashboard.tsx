@@ -1,21 +1,30 @@
 
 import { useEffect, useState } from 'react';
 import { withRouter } from 'next/router'
-import { useRootPageContext,  getSideBarCurrentSelectedItemName } from "../components/states/RootState"
+import { useRootPageContext, getSideBarCurrentSelectedItemName } from "../components/states/RootState"
+import {  useIncomeExpensesContext } from '../components/states/PaymentExpenseState';
 import {MainSideBar} from '../components/page/sidebar'
 import { TopBar } from '../components/page/topbar'
 import { Footer } from '../components/page/pageFooter'
 
 import { sections, sideBarContentLookup } from '../components/rootContents'
 import { OriginalDashboard } from '../components/demo/origDashboard'
+import { GenList } from '../components/uidatahelpers/GenList';
+import { getGenListParms } from '../components/uidatahelpers/datahelpers';
 
 export default withRouter(function MainDashboard(props) {
   //const { state, setMainState } = props;  
   const rstate = useRootPageContext();
+  const mainCtx = useIncomeExpensesContext();
   //const [pageState, setPageState] = pstate;
   const currentActivePage = getSideBarCurrentSelectedItemName(rstate);
-  return (
-    
+  const sideBarItem = sideBarContentLookup.get(currentActivePage);
+  let page = sideBarItem?.page;
+  if (sideBarItem?.table) {
+    const prms = getGenListParms(mainCtx, sideBarItem?.table);
+    page = <GenList {...prms}></GenList>
+  }
+  return (    
     <div>
       <div id="wrapper">
         <MainSideBar sections={sections}></MainSideBar>        
@@ -23,7 +32,7 @@ export default withRouter(function MainDashboard(props) {
             <div id="content">
               <TopBar />
             {
-              sideBarContentLookup[currentActivePage] || <OriginalDashboard />}
+              page || <OriginalDashboard />}
             </div>
             <Footer />
           </div>        

@@ -1,4 +1,4 @@
-import { IGetModelReturn, IPagePropsByTable, IPageState } from './types'
+import { IGetModelReturn, IPagePropsByTable, IPageState, TableNames } from './types'
 import { IGoogleSheetAuthInfo } from './api';
 import { IEditTextDropdownItem } from './generic/GenericDropdown';
 export interface IPayment {
@@ -174,7 +174,7 @@ export interface IWorkerCompResponse extends IWorkerComp {
 
 export type IStringBoolMap = { [id: string]: boolean };
 
-export type IModelsDict = { [key: string]: IGetModelReturn };
+export type IModelsDict = Map<TableNames, IGetModelReturn>;
 export type IModelsProps = {
     models: IModelsDict;
     setModels: React.Dispatch<React.SetStateAction<IModelsDict>>;

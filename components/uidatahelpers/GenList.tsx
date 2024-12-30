@@ -1,7 +1,7 @@
 import React,{useState,useEffect} from 'react';
 import { GenCrud, getPageSorts, getPageFilters } from './GenCrud';
 import { ItemType } from './GenCrudAdd';
-import { createHelper, FieldValueType, IDisplayFieldType, IGenListProps } from './datahelpers';
+import { createHelper, FieldValueType, IGenListProps } from './datahelpers';
 import { getFKDefs } from './GenCrudTableFkTrans';
 
 import { ISqlRequestWhereItem} from '../api'
@@ -80,7 +80,7 @@ export function GenList(props: IGenListProps) {
             reload();
         })
     }
-    const displayFields=props.displayFields||helper.getModelFields().map(f => f.isId? null:f).filter(x => x) as IDisplayFieldType;
+    const displayFields=props.displayFields||helper.getModelFields().map(f => f.isId? null:f).filter(x => x);
     return <div>
         <p className='subHeader'>{props.title}</p>
         {

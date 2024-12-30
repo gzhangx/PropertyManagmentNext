@@ -78,7 +78,7 @@ export function PaymentExpenseStateWrapper(props: {
     const [selectedMonths, setSelectedMonths] = useState<IStringBoolMap>({});
     const [selectedHouses, setSelectedHouses] = useState<IStringBoolMap>({});
 
-    const [models, setModels] = useState<IModelsDict>({});
+    const [models, setModels] = useState<IModelsDict>(new Map());
     const router = useRouter();
 
     function addMonths(mons: string[]) {
@@ -192,7 +192,7 @@ export function PaymentExpenseStateWrapper(props: {
             
             setPayments(r);
             //addMonths(pm.monthNames);
-            addMonths(uniq(r.map(r=>r.month)))
+            addMonths(uniq(r.map(r => r.month)))
             addHouses(r as any); //same sig
         });        
     }
@@ -201,7 +201,7 @@ export function PaymentExpenseStateWrapper(props: {
         getMaintenanceReport().then(d => {
             if (d.error) return;
             addMonths(uniq(d.rows.map(r => r.month)));
-            addHouses(d as any); //same sig
+            addHouses(d.rows as any); //same sig
             setRawExpenseData(d.rows);
         });
         

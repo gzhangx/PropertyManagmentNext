@@ -10,7 +10,8 @@ import { IIncomeExpensesContextValue } from '../reportTypes';
 export type FieldValueType = string | number | null;
 
 import * as RootState from '../states/RootState'
-import { ALLFieldNames } from '../page/imports2/types';
+import { ALLFieldNames, PageNames } from '../page/imports2/types';
+import { tableNameToDefinitions } from './defs/allDefs';
 
 interface IOpts {
     whereArray: ISqlRequestWhereItem[];
@@ -20,7 +21,7 @@ interface IOpts {
 }
 
 export type DataToDbSheetMapping ={
-    sheetName: string;
+    sheetName: PageNames;
     range: string;
     mapping: ALLFieldNames[];
     //endCol: string;
@@ -37,12 +38,10 @@ export type IHelper = {
     deleteData: (ids: string[]) => Promise<ISqlDeleteResponse>;
 }
 
-export type IComplexDisplayFieldType = { field: string; name?: string;};
-export type IDisplayFieldType = IComplexDisplayFieldType[];
 
 export interface IHelperProps {
     table: TableNames;
-    displayFields?: IDisplayFieldType;
+    displayFields?: IDBFieldDef[];
     sheetMapping?: DataToDbSheetMapping;  //how googleSheet maps to db, used to save data to sheet
 }
 export interface IGenListProps extends IHelperProps { //copied from gencrud, need combine and refactor later
@@ -67,15 +66,15 @@ export interface IGenListProps extends IHelperProps { //copied from gencrud, nee
 }
 
 export async function getTableModel(ctx: IIncomeExpensesContextValue, table: TableNames) :Promise<IDBFieldDef[]> {
-    let mod = ctx.modelsProp.models[table];
+    let mod = ctx.modelsProp.models.get(table);
     if (!mod) {
         mod = await getModel(table);
-        ctx.modelsProp.models[table] = mod;
+        ctx.modelsProp.models.set(table, mod);
         ctx.modelsProp.setModels(old => {
-            return {
+            return new Map([
                 ...old,
-                [table]: mod,
-            }
+                [table, mod],
+            ]);
         });
     }
     return mod.fields;
@@ -86,7 +85,7 @@ export function createHelper(rootCtx: RootState.IRootPageState, ctx: IIncomeExpe
     //sheetMapping?: DataToDbSheetMapping
     const { table, sheetMapping } = props; 
     if (!table) return null;
-    const accModel = () => ctx.modelsProp.models[table];
+    const accModel = () => ctx.modelsProp.models.get(table);
     const accModelFields = () => get(accModel(), 'fields', [] as IDBFieldDef[]);
     const innerState = {
         dateFields: [] as string[],
@@ -192,4 +191,14 @@ export async function createAndLoadHelper(rootCtx: RootState.IRootPageState, ctx
     const helper = createHelper(rootCtx, ctx, props);
     await helper.loadModel();
     return helper;
+}
+
+
+export function getGenListParms(ctx: IIncomeExpensesContextValue, table: TableNames): IHelperProps {
+    const def = tableNameToDefinitions.get(table);
+    return {
+        table,
+        displayFields: ctx.modelsProp.models.get(table).fields,
+        sheetMapping: def.sheetMapping,
+    };
 }

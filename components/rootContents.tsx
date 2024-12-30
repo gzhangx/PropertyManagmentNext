@@ -15,6 +15,36 @@ import { LeaseReport } from './page/reports/lease'
 import MonthlyComp from '../pages/reports/MonthlyComp'
 
 import type { JSX } from "react";
+import { TableNames } from './types'
+
+type LocalPageInfo = {
+    name: string;
+    page: JSX.Element;
+    table?: TableNames;
+}
+
+const inputPages: LocalPageInfo[] = [
+    {
+        name: 'House Info',
+        page: <HouseList />,
+        table: 'houseInfo',
+    },
+    {
+        name: 'Payments',
+        page: <RentpaymentInfo />,
+        table: 'rentPaymentInfo',
+    },
+    {
+        name: 'MaintenanceRecords',
+        page: <MaintenanceRecords />,
+        table: 'maintenanceRecords',
+    },
+    {
+        name: 'Owners',
+        page: <OwnerList />,
+        table: 'ownerInfo'
+    }
+];
 
 const allSections = [
     {
@@ -49,24 +79,7 @@ const allSections = [
     },
     {
         name: 'PM Inputs',
-        pages: [            
-            {
-                name: 'House Info',
-                page: <HouseList />,
-            },
-            {
-                name: 'Payments',
-                page: <RentpaymentInfo/>,
-            },
-            {
-                name: 'MaintenanceRecords',
-                page: <MaintenanceRecords/>,
-            },
-            {
-                name: 'Owners',
-                page: <OwnerList/>,
-            }
-        ]
+        pages: inputPages,
     },
 ]
 
@@ -83,13 +96,14 @@ const { sections, sideBarContentLookup } = allSections.reduce((acc, sec) => {
     acc.sections.push(section);
     acc.sideBarContentLookup = sec.pages.reduce((acc, p) => {
         const pname = getPgName(p);
-        acc[pname] = p.page;
+        acc.set(pname, p);
+        //acc[pname] = p;
         return acc;
     }, acc.sideBarContentLookup);
     return acc;
 }, {
     sections: [] as IMainSideBarSection[],
-    sideBarContentLookup: {} as { [name: string]: JSX.Element },
+    sideBarContentLookup: new Map<string, LocalPageInfo>(),
     sectionsByName: {} as {[name:string]:IMainSideBarSection},
 });
 
