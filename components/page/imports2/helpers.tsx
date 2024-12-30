@@ -160,8 +160,6 @@ export function getDisplayHeaders(params: IPageParms, curPageState: IPageStates)
                         }
                     }
                     //reloadPayments(params);
-                    if (curPageState.curPage.reloadEntity) curPageState.curPage.reloadEntity(params);
-
                     const deleteActions = getDeleteExtraFromDbItems(params, curPageState);
                     for (let i = 0; i < deleteActions.length; i++) {
                         const delAct = deleteActions[i];
@@ -190,19 +188,21 @@ export function getDeleteExtraFromDbItems(pagePrms: IPageParms, curPageState: IP
     if (!curPageState.pageDetails) return emptyRes;
     if (!curPageState.pageDetails.dbMatchData) return emptyRes;
     const deleteById = curPageState.curPage.deleteById;    
+    const idFields = curPageState.curPage.fieldDefs?.filter(f => f.isId).map(f => f.field) || [];
     const dbMatchData: IDbRowMatchData[] = curPageState.pageDetails.dbMatchData.filter(x => x.dataType === 'DB');    
     return dbMatchData.filter(x => !x.matchedToKey).map((dbRow, rowInd) => {
         const deleteFunction = () => {
             if (!deleteById) return;
-            const idField = curPageState.curPage.dbItemIdField;
-            const id = dbRow.dbItemData[idField];
-            return deleteById(id as string).then(r => {
-                console.log(`affected for ${id}`, r.affectedRows);
+            //const idField = curPageState.curPage.dbItemIdField;
+            //const id = dbRow.dbItemData[idField];
+            const ids = idFields.map(f => dbRow.dbItemData[f] as string);
+            return deleteById(ids).then(r => {
+                console.log(`affected for ${ids.join(',')}`, r.affectedRows);
                 pagePrms.dispatchCurPageState(state => ({
                     ...state,
                     pageDetails: {
                         ...state.pageDetails,
-                        dbMatchData: state.pageDetails.dbMatchData.filter(x => x.dbItemData[idField] !== id),
+                        dbMatchData: state.pageDetails.dbMatchData.filter(x => idFields.map(f=>x.dbItemData[f]).join(',') !== ids.join(',')),
                     }
                 }))
             })

@@ -9,17 +9,16 @@ import { IEditTextDropdownItem } from '../generic/GenericDropdown';
 import { useIncomeExpensesContext } from '../states/PaymentExpenseState'
 import { IGenGrudProps } from './GenCrud';
 import * as RootState from '../states/RootState'
-export interface IColumnInfo extends IDBFieldDef {    
-    dontShowOnEdit?: boolean; //liekly not used
-}
+import moment from 'moment';
+
 
 
 export type ItemType = { [key: string]: FieldValueType; };
 export interface IGenGrudAddProps extends IGenGrudProps {
-    columnInfo: IColumnInfo[];
+    columnInfo: IDBFieldDef[];
     editItem?: ItemType;
     doAdd: (data: ItemType, id: FieldValueType) => Promise<{ id: string;}>;
-    onOK?: (data?:ItemType) => void;
+    //onOK?: (data?:ItemType) => void;
     onCancel: (data?:ItemType) => void;
     onError?: (err: { message: string; missed: any; }) => void;
         
@@ -49,7 +48,7 @@ export const GenCrudAdd = (props: IGenGrudAddProps) => {
     let id:string|number = '';
     let idName = '';
     const addUpdateLabel = editItem ? 'Update' : 'Add';
-    const onOK = props.onOK || onCancel;
+    const onOK =  onCancel;
     const internalCancel = () => onOK();
     const initData = columnInfo.reduce((acc, col) => {
         acc[col.field] = '';
@@ -143,11 +142,11 @@ export const GenCrudAdd = (props: IGenGrudAddProps) => {
     }, [JSON.stringify(initData)])
     const [columnInfoMaps, setColumnInfoMaps] = useState<{
         [name: string]: {
-            columnInfo: IColumnInfo[];
+            columnInfo: IDBFieldDef[];
             helper: IHelper;
         }
     }>({});
-    const loadColumnInfo = async (colInf:IColumnInfo[]) => {
+    const loadColumnInfo = async (colInf: IDBFieldDef[]) => {
         const hasFks = colInf.filter(c => c.foreignKey).filter(c => c.foreignKey.table);
         await bluebird.Promise.map(hasFks, async fk => {
             const tbl = fk.foreignKey.table;
@@ -156,7 +155,7 @@ export const GenCrudAdd = (props: IGenGrudAddProps) => {
                 table: tbl,
             });
             await helper.loadModel();
-            const columnInfo = helper.getModelFields().map(x=>x as IColumnInfo);
+            const columnInfo = helper.getModelFields().map(x => x as IDBFieldDef);
             setColumnInfoMaps(prev => {
                 return {
                     ...prev,
@@ -237,10 +236,9 @@ export const GenCrudAdd = (props: IGenGrudAddProps) => {
                 {
                     columnInfo.map((c, cind) => {
                         if (!editItem) {
-                            //create
-                            const df = getDisplayFieldDef(c.field);
-                            if (df) {
-                                if (df.defaultNewValue) data[c.field] = df.defaultNewValue();
+                            //create                            
+                            if (c.type === 'date') {
+                                data[c.field] = moment().format('YYYY-MM-DD');
                             } else {
                                 if (c.isId) return null;
                             }
@@ -253,7 +251,6 @@ export const GenCrudAdd = (props: IGenGrudAddProps) => {
                             return null;  
                         } 
 
-                        if (c.dontShowOnEdit) return null;
 
                         const createSelection = (optName:string, colField:string) => {
                             const selOptions = optsData[optName];

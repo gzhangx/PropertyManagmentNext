@@ -38,6 +38,7 @@ export function getPageDefs() {
     const pages: IPageInfo[] = [
         {
             pageName: 'PaymentRecord',
+            tableName: 'rentPaymentInfo',
             range: 'A1:F',
             fieldMap: paymentFieldMap,
             displayColumnInfo: paymentFieldMap.map(field => ({
@@ -45,21 +46,13 @@ export function getPageDefs() {
                 name: field,
             })),
             dbLoader: () => getPaymentRecords().then(r => r as any as IDbSaveData[]),
-            dbItemIdField: 'paymentID',
+            //dbItemIdField: 'paymentID',
             sheetMustExistField: 'receivedDate',
             rowComparers: paymentLoader.PaymentRowCompare,
             dbInserter: inserter.PaymentDbInserter,
             deleteById: paymentLoader.deleteById,
             displayItem: paymentLoader.displayItem,
             shouldShowCreateButton: colInfo => colInfo.field === 'receivedAmount',
-            reloadEntity: (params: IPageParms) => {
-                params.dispatchCurPageState(state => {
-                    return {
-                        ...state,
-                        reloadPayments: true,
-                    }
-                })
-            }
         },
         houseLoader.housePageInfo,        
         {

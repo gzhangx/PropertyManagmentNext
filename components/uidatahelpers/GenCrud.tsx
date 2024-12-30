@@ -2,11 +2,11 @@ import React, { useState } from 'react';
 import { set, get } from 'lodash';
 import { v1 } from 'uuid';
 import { EditTextDropdown } from '../generic/EditTextDropdown';
-import { GenCrudAdd, IColumnInfo, ItemType } from './GenCrudAdd';
-import { ISqlOrderDef, SortOps, IPageFilter, IPageState } from '../types'
+import { GenCrudAdd, ItemType } from './GenCrudAdd';
+import { ISqlOrderDef, SortOps, IPageFilter, IPageState, IDBFieldDef, TableNames } from '../types'
 import { IFKDefs} from './GenCrudTableFkTrans'
 import { SQLOPS } from '../api';
-import { FieldValueType, IDisplayFieldType } from './datahelpers';
+import { FieldValueType, IComplexDisplayFieldType, IDisplayFieldType } from './datahelpers';
 import { IEditTextDropdownItem } from '../generic/GenericDropdown';
 
 
@@ -27,7 +27,7 @@ export function getPageFilters(pageState: IPageState, table: string): IPageFilte
 
 
 export interface IGenGrudProps {
-    columnInfo: IColumnInfo[];
+    columnInfo: IDBFieldDef[];
     displayFields: IDisplayFieldType;
     rows: any[];
     pageState: IPageState;
@@ -46,7 +46,7 @@ export interface IGenGrudProps {
     customSelData?: { [key: string]: IEditTextDropdownItem[] };
     customFields?: ItemType;
     //show: boolean;
-    table: string;
+    table: TableNames;
     //desc?: string;
     fkDefs?: IFKDefs;
     doDelete: (ids: string[]) => void;
@@ -111,21 +111,21 @@ export const GenCrud = (props: IGenGrudProps) => {
         }
     };
     const paggingCalced = calcPage();
-    const baseColumnMap = columnInfo.reduce((acc, col) => {
+    const baseColumnMap: { [name: string]: IDBFieldDef } = columnInfo.reduce((acc, col) => {
         acc[col.field] = col;
         return acc;
     }, {});
-    const columnMap = displayFields.reduce((acc, col) => {
+    const columnMap: { [name: string]: IDBFieldDef } = displayFields.reduce((acc, col) => {
         let val = col;
         if (typeof col === 'string') {
-            val = baseColumnMap[col] || displayFields[col] || { desc: `****Col ${col} not setup` };
+            val = baseColumnMap[col] || displayFields[col] || { desc: `****Col ${col} not setup` } as IDBFieldDef;
             acc[col] = val;
         } else {            
             acc[col.field] = val;
         }
         
         return acc;
-    }, {});
+    }, {} as { [name: string]: IDBFieldDef });
 
     const displayFieldsStripped = displayFields.map(f => {
         if (typeof f === 'string') return f;
@@ -220,7 +220,7 @@ export const GenCrud = (props: IGenGrudProps) => {
                                                 }
                                                 return {
                                                     value: d.field,
-                                                    label: d.desc,
+                                                    label: d.name,
                                                     selected: fv.field === d.field,
                                                 }
                                             })}                                                
@@ -314,10 +314,6 @@ export const GenCrud = (props: IGenGrudProps) => {
                                                                 dsp = dsp.label;
                                                             }
                                                         }
-                                                    }
-                                                    const dspFunc = columnMap[fn].dspFunc;
-                                                    if (dspFunc) {
-                                                        dsp = dspFunc(val, row);
                                                     }
                                                     return <td key={find}>{dsp}</td>
                                                 })

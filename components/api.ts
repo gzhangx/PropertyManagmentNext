@@ -365,8 +365,8 @@ export async function getTenants(): Promise<ITenantInfo[]> {
     });
 }
 
-export async function deleteById(tableName: TableNames, id: string) {
-    return sqlDelete(tableName, [id]);
+export async function deleteById(tableName: TableNames, ids: string[]) {
+    return sqlDelete(tableName, ids);
 }
 
 

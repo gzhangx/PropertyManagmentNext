@@ -4,13 +4,13 @@ import {
 } from '../api';
 import { ISqlOrderDef, IGetModelReturn, IDBFieldDef, TableNames, ISqlDeleteResponse } from '../types'
 import { get } from 'lodash';
-import { IColumnInfo, ItemType } from './GenCrudAdd';
 import { IFKDefs } from './GenCrudTableFkTrans';
 import moment from 'moment';
 import { IIncomeExpensesContextValue } from '../reportTypes';
 export type FieldValueType = string | number | null;
 
 import * as RootState from '../states/RootState'
+import { ALLFieldNames } from '../page/imports2/types';
 
 interface IOpts {
     whereArray: ISqlRequestWhereItem[];
@@ -21,8 +21,9 @@ interface IOpts {
 
 export type DataToDbSheetMapping ={
     sheetName: string;
-    mapping: string[];
-    endCol: string;
+    range: string;
+    mapping: ALLFieldNames[];
+    //endCol: string;
 }
 
 export type IHelper = {
@@ -36,17 +37,17 @@ export type IHelper = {
     deleteData: (ids: string[]) => Promise<ISqlDeleteResponse>;
 }
 
-export type IComplexDisplayFieldType = { field: string; desc: string; defaultNewValue?: () => string; type?: 'date' | 'number' | 'string' };
-export type IDisplayFieldType = (IComplexDisplayFieldType | string)[];
+export type IComplexDisplayFieldType = { field: string; name?: string;};
+export type IDisplayFieldType = IComplexDisplayFieldType[];
 
-interface IHelperProps {
+export interface IHelperProps {
     table: TableNames;
     displayFields?: IDisplayFieldType;
-    sheetMapping?: DataToDbSheetMapping;  //how googleSheet maps to db
+    sheetMapping?: DataToDbSheetMapping;  //how googleSheet maps to db, used to save data to sheet
 }
 export interface IGenListProps extends IHelperProps { //copied from gencrud, need combine and refactor later
     //table: TableNames;
-    columnInfo: IColumnInfo[];    
+    //columnInfo: IColumnInfo[];    //auto populated
     //displayFields?: IDisplayFieldType;
     fkDefs?: IFKDefs;
     initialPageSize?: number;        
@@ -60,9 +61,24 @@ export interface IGenListProps extends IHelperProps { //copied from gencrud, nee
     setPaggingInfo: any;
     */
     title?: string;
-    doAdd: (data: ItemType, id: FieldValueType) => Promise<{ id: string; }>;
+    //doAdd: (data: ItemType, id: FieldValueType) => Promise<{ id: string; }>;
 
     //sheetMapping?: DataToDbSheetMapping;
+}
+
+export async function getTableModel(ctx: IIncomeExpensesContextValue, table: TableNames) :Promise<IDBFieldDef[]> {
+    let mod = ctx.modelsProp.models[table];
+    if (!mod) {
+        mod = await getModel(table);
+        ctx.modelsProp.models[table] = mod;
+        ctx.modelsProp.setModels(old => {
+            return {
+                ...old,
+                [table]: mod,
+            }
+        });
+    }
+    return mod.fields;
 }
 
 export function createHelper(rootCtx: RootState.IRootPageState, ctx: IIncomeExpensesContextValue, props: IHelperProps): IHelper {
@@ -96,15 +112,7 @@ export function createHelper(rootCtx: RootState.IRootPageState, ctx: IIncomeExpe
     const helper: IHelper = {
         getModelFields: accModelFields,
         loadModel: async () => {
-            if (!accModel()) {
-                ctx.modelsProp.models[table] = await getModel(table);
-                ctx.modelsProp.setModels(old => {
-                    return {
-                        ...old,
-                        table: ctx.modelsProp.models[table],
-                    }
-                });
-            }
+            await getTableModel(ctx, table);
             const model = accModel();
             innerState.dateFields = model.fields.filter(f => f.type === 'date').map(f => f.field);
             return model;
@@ -147,7 +155,7 @@ export function createHelper(rootCtx: RootState.IRootPageState, ctx: IIncomeExpe
             if (!saveToSheet) return sqlRes;
             if (!googleSheetId) return sqlRes;
 
-            const sheetMapper = getTableNameToSheetMapping(sheetMapping);
+            const sheetMapper = (sheetMapping); //getTableNameToSheetMapping
             if (sheetMapper) {
                 const values = sheetMapper.mapping.map(name => {
                     const val = data[name];
@@ -170,13 +178,13 @@ export function createHelper(rootCtx: RootState.IRootPageState, ctx: IIncomeExpe
 
 function getTableNameToSheetMapping(sheetMapping?: DataToDbSheetMapping) {
     if (!sheetMapping) return null;
-    const charCodeA = 'A'.charCodeAt(0);
-    const colNames: string[] = [];
-    for (let i = 0; i < 25; i++) {
-        colNames.push(String.fromCharCode(charCodeA + i));
-    }
+    //const charCodeA = 'A'.charCodeAt(0);
+    //const colNames: string[] = [];
+    //for (let i = 0; i < 25; i++) {
+    //    colNames.push(String.fromCharCode(charCodeA + i));
+    //}
     
-    sheetMapping.endCol = colNames[sheetMapping.mapping.length - 1];
+    //sheetMapping.endCol = colNames[sheetMapping.mapping.length - 1];
     return sheetMapping;
 }
 

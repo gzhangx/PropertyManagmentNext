@@ -1,7 +1,6 @@
 import React from 'react';
 import moment from 'moment';
 import {GenList} from '../../uidatahelpers/GenList';
-import { IColumnInfo } from '../../uidatahelpers/GenCrudAdd';
 
 export function RentpaymentInfo(props) {   
     return <GenList {...props} table={'rentPaymentInfo'} title={'Payments List'}
@@ -22,7 +21,7 @@ export function RentpaymentInfo(props) {
                 'paymentTypeName',
                 'notes',
             ],            
-            endCol: 'B',
+            //endCol: 'B',
         }}
     /> 
 }

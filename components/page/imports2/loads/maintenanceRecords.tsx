@@ -132,6 +132,7 @@ export function displayDbExtra(params: IPageParms, state: IPageStates, dbMatch: 
 
 
 export const maintenceRecordDef: IPageInfo = {
+    tableName: 'maintenanceRecords',
     pageName: 'MaintainessRecord',
     range: 'A1:G',
     fieldMap: [
@@ -175,6 +176,6 @@ export const maintenceRecordDef: IPageInfo = {
     extraProcessSheetData: maintenanceExtraProcessSheetData,
     shouldShowCreateButton: colInfo => colInfo.field === 'maintenanceImportAddress',
     dbInserter: inserter.getDbInserter('maintenanceRecords'),
-    dbItemIdField: 'maintenanceID',
+    //dbItemIdField: 'maintenanceID',
     deleteById: id => theApi.deleteById('maintenanceRecords', id),
 };

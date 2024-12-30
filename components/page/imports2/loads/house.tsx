@@ -17,6 +17,7 @@ const HouseRowCompare: IRowComparer[] = [
 
 export const housePageInfo: IPageInfo = {
     pageName: 'House Info',
+    tableName: 'houseInfo',
     range: 'A1:I',
     fieldMap: [
         '', 'address', 'city', 'zip',

@@ -7,13 +7,15 @@ import { GetInfoDialogHelper } from '../../generic/basedialog';
 import { useRouter } from 'next/router'
 
 import { BaseDialog } from '../../generic/basedialog'
-import { ALLFieldNames, IPageStates, IStringDict, IPageParms, ISheetRowData, IDisplayColumnInfo } from './types'
+import { ALLFieldNames, IPageStates, IStringDict, IPageParms, ISheetRowData, IDisplayColumnInfo, IPageInfo } from './types'
 import { genericPageLoader, getDeleteExtraFromDbItems, getDisplayHeaders } from './helpers'
 import { getPageDefs } from './pageDefs'
 
 import { useIncomeExpensesContext } from '../../states/PaymentExpenseState'
 
 import { sortBy } from 'lodash';
+import { getTableModel } from '../../uidatahelpers/datahelpers';
+import { IDBFieldDef } from '../../types';
 
 function getSheetId(mainCtx: IIncomeExpensesContextValue) : string {
     return mainCtx.googleSheetAuthInfo.googleSheetId;
@@ -88,7 +90,6 @@ export function ImportPage() {
     }, [sheetId, curPageState.curPage, curPageState.stateReloaded])
     //curPageState.payments curPageState.stateReloaded,, curPageState.existingOwnersByName,
         
-
     const pages = getPageDefs();
     console.log(`curPageState.stateReloaded=${curPageState.stateReloaded}`);
 
@@ -121,12 +122,20 @@ export function ImportPage() {
                                         }
                                     })
                                     }
-                                        onSelectionChanged={sel => {
+                                        onSelectionChanged={async sel => {
                                             if (sel) {
+                                                const pg: IPageInfo = sel.value;
+                                                let fieldDefs: IDBFieldDef[] = [];
+                                                if (pg) {
+                                                    fieldDefs = await getTableModel(mainCtx, pg.tableName);
+                                                }
                                                 dispatchCurPageState(state => {
                                                     return {
                                                         ...state,
-                                                        curPage: sel.value,
+                                                        curPage: {
+                                                            ...sel.value,
+                                                            fieldDefs,
+                                                        }
                                                     }
                                                 })
                                             }

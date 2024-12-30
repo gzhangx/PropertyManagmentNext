@@ -1,17 +1,18 @@
 import React,{useState,useEffect} from 'react';
 import { GenCrud, getPageSorts, getPageFilters } from './GenCrud';
-import { IColumnInfo, ItemType } from './GenCrudAdd';
+import { ItemType } from './GenCrudAdd';
 import { createHelper, FieldValueType, IDisplayFieldType, IGenListProps } from './datahelpers';
 import { getFKDefs } from './GenCrudTableFkTrans';
 
 import { ISqlRequestWhereItem} from '../api'
 import { useIncomeExpensesContext } from '../states/PaymentExpenseState'
 import * as RootState from '../states/RootState'
+import { IDBFieldDef } from '../types';
 
 
 //props: table and displayFields [fieldNames]
 export function GenList(props: IGenListProps) {
-    const { table, columnInfo, fkDefs, initialPageSize } = props;
+    const { table, fkDefs, initialPageSize } = props;
     const secCtx = useIncomeExpensesContext();
     const rootCtx = RootState.useRootPageContext();
     const [paggingInfo, setPaggingInfo] = useState({
@@ -28,7 +29,7 @@ export function GenList(props: IGenListProps) {
     // ];
     const [mainDataRows,setMainData]=useState([]);
     const [loading,setLoading]=useState(true);
-    const [columnInf,setColumnInf]=useState(columnInfo || []);
+    const [columnInf, setColumnInf] = useState<IDBFieldDef[]>([]);
     const reload = async () => {
         let whereArray = (getPageFilters(pageState, table) as any) as ISqlRequestWhereItem[];
         const order = getPageSorts(pageState, table);
@@ -52,7 +53,7 @@ export function GenList(props: IGenListProps) {
         //if (!helper) return;
         const ld=async () => {                        
             await helper.loadModel();
-            setColumnInf(helper.getModelFields() as IColumnInfo[]);
+            setColumnInf(helper.getModelFields() as IDBFieldDef[]);
             //if(columnInfo) {
             //    setColumnInf(columnInfo);
             //}
@@ -60,7 +61,7 @@ export function GenList(props: IGenListProps) {
         }
         
         ld();        
-    },[table || 'NA', columnInfo, pageState.pageProps.reloadCount, paggingInfo.pos, paggingInfo.total]);
+    },[table || 'NA', pageState.pageProps.reloadCount, paggingInfo.pos, paggingInfo.total]);
 
     const doAdd = (data: ItemType, id: FieldValueType) => {        
         return helper.saveData(data,id, true).then(res => {

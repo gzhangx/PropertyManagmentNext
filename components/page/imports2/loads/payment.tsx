@@ -72,6 +72,6 @@ export function displayItem(params: IPageParms, state: IPageStates, sheetRow: IS
 
 
 
-export async function deleteById(id: string) {
+export async function deleteById(id: string[]) {
     return api.deleteById('rentPaymentInfo', id);
 }

@@ -1,7 +1,7 @@
 
 import { IHouseInfo, IPayment, ITenantInfo } from '../../reportTypes';
 import moment from 'moment';
-import { ISqlDeleteResponse } from '../../types';
+import { IDBFieldDef, ISqlDeleteResponse, TableNames } from '../../types';
 
 import type { JSX } from "react";
 
@@ -48,23 +48,25 @@ export type PageNames = 'Tenants Info' | 'Lease Info' | 'PaymentRecord' | 'House
 export interface IPageInfo {
     pageName: PageNames;
     range: string;
+    tableName: TableNames;
+
+    fieldDefs?: IDBFieldDef[];
 
     fieldMap: ALLFieldNames[];
     displayColumnInfo: IDisplayColumnInfo[];
 
     dbLoader?: () => Promise<IDbSaveData[]>;
-    dbItemIdField?: ALLFieldNames;
+    //dbItemIdField?: ALLFieldNames;
     extraProcessSheetData?: (pageData: ISheetRowData[], pageState: IPageStates) => Promise<ISheetRowData[]>;
     sheetMustExistField?: ALLFieldNames;
 
     rowComparers?: IRowComparer[];
     dbInserter?: IDbInserter;
-    deleteById?: (id: string) => Promise<ISqlDeleteResponse>;
+    deleteById?: (ids: string[]) => Promise<ISqlDeleteResponse>;
     shouldShowCreateButton?: (colInfo: IDisplayColumnInfo) => boolean;
     displayItem?: (params: IPageParms, state: IPageStates, sheetRow: ISheetRowData, field: ALLFieldNames) => JSX.Element;
     displayDbExtra?: (params: IPageParms, state: IPageStates, dbMatch: IDbRowMatchData, field: ALLFieldNames) => JSX.Element | number| string;
     cmpSortField?: ALLFieldNames; //used to show sheet/db rows and sort by, usually date
-    reloadEntity?: (prms: IPageParms) => void;
 
     custProcessSheetData?: (sheetData: ICompRowData[], pageState: IPageStates) => IStringDict[];
 }
@@ -101,7 +103,7 @@ export type ICompRowData = ISheetRowData | IDbRowMatchData;
 
 export interface IPageDataDetails {
     dataRows: ISheetRowData[];
-    colNames: IStringDict;
+    //colNames: IStringDict;
     dbMatchData?: IDbRowMatchData[];
     customData?: any; //used by lease to track tenant address etc
 }
@@ -121,8 +123,6 @@ export interface IPageStates {
     tenantByName: { [fname: string]: ITenantInfo };
     //paymentsByDateEct: { [key: string]: IPaymentWithArg[] };
     stateReloaded: number;
-
-    reloadPayments: boolean;
     showMatchedItems: boolean;
 }
 

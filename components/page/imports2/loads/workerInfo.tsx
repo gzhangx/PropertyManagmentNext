@@ -79,6 +79,7 @@ const fieldMap: ALLFieldNames[]=[
 export const workerInfo: IPageInfo = {
     pageName: 'Workers Info',
     range: 'A1:K',
+    tableName: 'workerInfo',
     fieldMap,
     dbLoader: () => getWorkerInfo().then(r => r as any as IDbSaveData[]),
     rowComparers: WorkerRowCompare,

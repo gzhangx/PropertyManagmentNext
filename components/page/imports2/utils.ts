@@ -13,6 +13,9 @@ import {getHouseInfo, googleSheetRead,} from '../../api'
 import moment from "moment/moment";
 import {keyBy} from "lodash";
 import * as lutil from "./loads/util";
+import { IRootPageState } from '../../states/RootState';
+import { IIncomeExpensesContextValue } from '../../reportTypes';
+import { IHelperProps } from '../../uidatahelpers/datahelpers';
 
 
 export async function loadPageSheetDataRaw(sheetId: string, curPage: IPageInfo): Promise<IPageDataDetails> {
@@ -229,4 +232,9 @@ export async function getHouseState() {
         housesByAddress: keyBy(hi, h => lutil.getStdLowerName(h.address)),
         housesById: keyBy(hi, h => h.houseID),
     }
+}
+
+
+export async function populateIPageInfo(pageInfo: IPageInfo,rootCtx: IRootPageState, ctx: IIncomeExpensesContextValue, props: IHelperProps) {
+
 }
