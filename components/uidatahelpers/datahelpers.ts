@@ -198,7 +198,17 @@ export function getGenListParms(ctx: IIncomeExpensesContextValue, table: TableNa
     const def = tableNameToDefinitions.get(table);
     return {
         table,
-        displayFields: ctx.modelsProp.models.get(table).fields,
+        displayFields: ctx.modelsProp.models.get(table).fields.map(f => {
+            if (f.foreignKey && f.foreignKey.field === 'houseID') {
+                return {
+                    ...f,
+                    field: 'address',
+                    name: 'House',                    
+                }
+            }
+            if (f.isId) return null;
+            return f;
+        }).filter(x=>x),
         sheetMapping: def.sheetMapping,
     };
 }

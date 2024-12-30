@@ -6,7 +6,7 @@ import { GenCrudAdd, ItemType } from './GenCrudAdd';
 import { ISqlOrderDef, SortOps, IPageFilter, IPageState, IDBFieldDef, TableNames } from '../types'
 import { IFKDefs} from './GenCrudTableFkTrans'
 import { SQLOPS } from '../api';
-import { FieldValueType, IComplexDisplayFieldType, IDisplayFieldType } from './datahelpers';
+import { FieldValueType } from './datahelpers';
 import { IEditTextDropdownItem } from '../generic/GenericDropdown';
 
 
@@ -28,7 +28,7 @@ export function getPageFilters(pageState: IPageState, table: string): IPageFilte
 
 export interface IGenGrudProps {
     columnInfo: IDBFieldDef[];
-    displayFields: IDisplayFieldType;
+    displayFields: IDBFieldDef[];
     rows: any[];
     pageState: IPageState;
     paggingInfo: {
