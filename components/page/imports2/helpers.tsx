@@ -157,7 +157,7 @@ export function getDisplayHeaders(params: IPageParms, curPageState: IPageStates)
     }
     const dbInserter: IDbInserter = inserter.getDbInserter(table);
     const requiredFields = curPageState.curPage.allFields.filter(f => {
-        return !f.isId && f.required;
+        return !f.isId && f.required && !f.userSecurityField;
     });
     const validRow = (importSheetData: IStringDict) => {
         const missingFields:string[] = [];

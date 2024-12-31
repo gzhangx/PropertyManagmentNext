@@ -29,6 +29,6 @@ export const housePageInfo: IPageInfo = {
             name: 'Owner'
         },
     ],
-    sheetMustExistField: 'address',
+    sheetMustExistField: 'houseID',
     //dbInserter: inserter.getDbInserter('houseInfo'),
 };

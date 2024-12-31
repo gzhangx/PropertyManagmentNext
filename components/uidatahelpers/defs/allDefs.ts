@@ -59,7 +59,7 @@ export const tenantInfoDef: ITableAndSheetMappingInfo = {
         sheetName: 'Tenants Info',
         range: 'A1:G',
         mapping: [
-            '',
+            'tenantID',
             'firstName',
             'lastName',
             'fullName',
