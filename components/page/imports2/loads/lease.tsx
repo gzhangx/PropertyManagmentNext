@@ -1,6 +1,4 @@
-import { IDbSaveData, IRowComparer, IStringDict, ISheetRowData, IPageDataDetails, IPageParms, IDbRowMatchData } from '../types'
-import { ILeaseInfo } from '../../../reportTypes';
-import { Promise } from 'bluebird';
+import {  ISheetRowData, IPageParms, IDbRowMatchData } from '../types'
 
 import { genericPageLoader  } from '../helpers';
 import * as pageDefs from '../pageDefs'
@@ -12,28 +10,23 @@ import moment from 'moment';
 import * as api from '../../../api'
 
 import type { JSX } from "react";
-import * as allDefs from '../../../uidatahelpers/defs/allDefs';
 import { ALLFieldNames } from '../../../uidatahelpers/datahelperTypes';
-function fixDates(date: string): string {
-    const mnt = moment(date);
-    if (mnt.isValid()) return mnt.format('YYYY-MM-DD');
-    return date;
-}
-export const LeaseRowCompare: IRowComparer[] = [
-    {
-        name: 'Lease Row Comparer',
-        getRowKey: (data: IDbSaveData) => {
-            const le = data as any as ILeaseInfo;
-            return `${le.ownerID}:${le.houseID}:${le.tenantID}:${fixDates(le.startDate)}:${fixDates(le.endDate)}`;
-        },
-        checkRowValid(data) {
-            const le = data as any as ILeaseInfo;
-            if (!le.houseID) return 'House not saved';
-            if (!le.tenantID) return 'Tenant Not Saved'
-            return null;
-        },
-    }
-];
+
+// export const LeaseRowCompare: IRowComparer[] = [
+//     {
+//         name: 'Lease Row Comparer',
+//         getRowKey: (data: IDbSaveData) => {
+//             const le = data as any as ILeaseInfo;
+//             return `${le.ownerID}:${le.houseID}:${le.tenantID}:${fixDates(le.startDate)}:${fixDates(le.endDate)}`;
+//         },
+//         // checkRowValid(data) {
+//         //     const le = data as any as ILeaseInfo;
+//         //     if (!le.houseID) return 'House not saved';
+//         //     if (!le.tenantID) return 'Tenant Not Saved'
+//         //     return null;
+//         // },
+//     }
+// ];
 
 //change to ICmpItemByName later
 interface ILeaseItemByName { [key: string]: ISheetRowData; }

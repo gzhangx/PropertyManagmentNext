@@ -50,6 +50,17 @@ export async function createEntity(params: IPageParms, changeRow: ISheetRowData,
 }
 
 
+export async function reloadHouses(prms: IPageParms, pageState: IPageStates) {
+    const hi = await getHouseState();
+    const res = { ...pageState, ...hi };
+    prms.dispatchCurPageState(state => {
+        return {
+            ...state,            
+            ...hi,
+        }
+    });
+    return res;
+}
 
 
 export async function genericPageLoader(prms: IPageParms, pageState: IPageStates) {
@@ -114,14 +125,7 @@ export async function genericPageLoader(prms: IPageParms, pageState: IPageStates
             } as IDbRowMatchData;
         });
         //page.rowComparers.forEach(cmp => {
-            matchItems(sheetDatas, dbMatchData, rowComparer);
-            sheetDatas.forEach(dd => {
-                if (!rowComparer.checkRowValid) return;
-                const err = rowComparer.checkRowValid(dd.importSheetData);
-                if (!dd.invalid && err) {
-                    dd.invalid = err;
-                }
-            })
+            matchItems(sheetDatas, dbMatchData, rowComparer);            
         //});
     
     pageDetails.dbMatchData = dbMatchData;

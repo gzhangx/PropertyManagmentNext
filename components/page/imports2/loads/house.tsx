@@ -1,18 +1,7 @@
 
 import { getHouseInfo } from '../../../api';
-import { IHouseInfo } from '../../../reportTypes';
-import { IDbSaveData, IPageInfo, IRowComparer, } from '../types'
+import { IDbSaveData, IPageInfo, } from '../types'
 import * as allDefs from '../../../uidatahelpers/defs/allDefs';
-const HouseRowCompare: IRowComparer[] = [
-    {
-        name: 'House Row Comparer',
-        getRowKey: (data: IDbSaveData) => { 
-            const hi = data as any as IHouseInfo;
-            return (hi.address || '').toLowerCase().trim();
-        },
-    }
-];
-
 
 export const housePageInfo: IPageInfo = {
     ...allDefs.houseInfoDef,

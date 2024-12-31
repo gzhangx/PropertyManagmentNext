@@ -7,6 +7,7 @@ import {
     IRowComparer,
     IPageStates,
     ICompRowData, getHouseByAddress,
+    SheetIdFieldNames,
 } from './types'
 import {getHouseInfo, googleSheetRead,} from '../../api'
 import moment from "moment/moment";
@@ -17,7 +18,16 @@ import { ALLFieldNames } from '../../uidatahelpers/datahelperTypes';
 
 export async function loadPageSheetDataRaw(sheetId: string, pageState: IPageStates): Promise<IPageDataDetails> {
     const curPage: IPageInfo = pageState.curPage;
-    if (!curPage) return;    
+    if (!curPage) return;
+    let sheetIdField: SheetIdFieldNames = '';
+    const allFields = pageState.curPage.allFields || [];
+    {
+        const allIdFields = allFields.filter(f => f.isId);
+        const sheetIdFieldDef = allIdFields.find(f => !f.userSecurityField && f.foreignKey);
+        if (sheetIdFieldDef) {
+            sheetIdField = sheetIdFieldDef.field as SheetIdFieldNames;
+        }
+    }
     return googleSheetRead(sheetId, 'read', `'${curPage.sheetMapping.sheetName}'!${curPage.sheetMapping.range}`).then((r) => {
         if (!r || !r.values || !r.values.length) {
             console.log(`no data for ${curPage.sheetMapping.sheetName}`);
@@ -25,8 +35,8 @@ export async function loadPageSheetDataRaw(sheetId: string, pageState: IPageStat
         }
 
         const specialFields: Map<string, (data: any) => void> = new Map();
-        curPage.allFields.forEach(f => {
-            if (f.foreignKey && f.foreignKey.table === 'houseInfo') {
+        allFields.forEach(f => {
+            if (f.field === 'houseID' && f.foreignKey && f.foreignKey.table === 'houseInfo') {
                 specialFields.set(f.field, (data) => {
                     const houseInfo = getHouseByAddress(pageState, data[f.field])
                     if (houseInfo) {
@@ -35,14 +45,9 @@ export async function loadPageSheetDataRaw(sheetId: string, pageState: IPageStat
                     }
                 });
             }
-        })
-        const colNames: IStringDict = curPage.sheetMapping.mapping.reduce((acc, f, ind) => {
-            if (f) {
-                acc[f] = r.values[0][ind];                
-            }
-            return acc;
-        }, {});
+        })        
         const dataRows: ISheetRowData[] = r.values.slice(1).map(rr => {
+            let matchedById = '';
             const importSheetData = curPage.sheetMapping.mapping.reduce((acc, f, ind) => {
                 if (f) {
                     acc[f] = rr[ind];
@@ -62,12 +67,28 @@ export async function loadPageSheetDataRaw(sheetId: string, pageState: IPageStat
                 matched: null,
                 matcherName: '',
                 displayData: {},
+                sheetIdField,
+                matchedById,
             } as ISheetRowData;
         }).filter(x => x.importSheetData[curPage.sheetMustExistField]);
-        return {
-            colNames,
+        if (sheetIdField) {
+            const duplicateIds = new Map<string, number>();
+            dataRows.forEach(r => {
+                const id = (r[sheetIdField] || '').trim();
+                if (id) {
+                    duplicateIds.set(id, (duplicateIds.get(id) || 0) + 1);
+                    const cnt = duplicateIds.get(id);
+                    if (cnt > 1) {
+                        r.invalid = `duplicate id for ${sheetIdField} found for ${id} cnt=${cnt}`;
+                    }
+                }
+            })
+        }
+        const ret: IPageDataDetails = {
             dataRows,
-        } as IPageDataDetails;
+            sheetIdField,
+        };
+        return ret;
     }).catch(err => {
         console.log(err);
         throw err;

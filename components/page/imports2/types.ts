@@ -65,6 +65,7 @@ export interface IStringDict {
 
 export type ROWDataType = 'DB' | 'Sheet';
 
+export type SheetIdFieldNames = '' | 'workerID' | 'tenantID';
 export interface ISheetRowData {
     importSheetData: IStringDict;    
     //saveData: IDbSaveData;
@@ -74,7 +75,10 @@ export interface ISheetRowData {
     matchToKey: string;
     matched: IDbSaveData;
     matcherName: string;
-    displayData: IStringDict;   
+    displayData: IStringDict;
+    sheetIdField: SheetIdFieldNames;
+
+    matchedById: SheetIdFieldNames; //when it is matched by Id for items that has an id on sheet
 }
 
 export interface IDbRowMatchData {
@@ -89,6 +93,7 @@ export interface IDbRowMatchData {
 export type ICompRowData = ISheetRowData | IDbRowMatchData;
 
 export interface IPageDataDetails {
+    sheetIdField: SheetIdFieldNames;
     dataRows: ISheetRowData[];
     //colNames: IStringDict;
     dbMatchData?: IDbRowMatchData[];
@@ -131,7 +136,7 @@ export interface IPageParms {
 export interface IRowComparer {
     name: string;
     getRowKey: (data: IDbSaveData, source:'DB'|'Sheet') => string;
-    checkRowValid?: (data: IDbSaveData) => string | null;
+    //checkRowValid?: (data: IDbSaveData) => string | null;
 }
 
 export function YYYYMMDDFormater(date: string) : string {

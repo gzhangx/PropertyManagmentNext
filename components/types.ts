@@ -58,8 +58,7 @@ export interface IDBFieldDef {
     unique?: boolean;
     ident?: boolean;
     dontUpdate?: boolean;
-    isOwnerSecurityField?: boolean;
-    isOwnerSecurityParentField?: boolean;
+    userSecurityField: boolean; //not in api, filled by model controller    
     //key?: 'UNI' | 'PRI' | null;    
     foreignKey?: {
         table: TableNames;
