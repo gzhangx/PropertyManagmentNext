@@ -8,6 +8,7 @@ import {
     IPageStates,
     ICompRowData, getHouseByAddress,
     SheetIdFieldNames,
+    IDbSaveData,
 } from './types'
 import {getHouseInfo, googleSheetRead,} from '../../api'
 import moment from "moment/moment";
@@ -96,7 +97,16 @@ export async function loadPageSheetDataRaw(sheetId: string, pageState: IPageStat
 }
 
 //return true if not totally fixed
-export function matchItems(sheetData: ISheetRowData[], dbMatchData: IDbRowMatchData[], cmp: IRowComparer): boolean {
+export function matchItems(pageDetails: IPageDataDetails, dbData: IDbSaveData[], cmp: IRowComparer): IDbRowMatchData[] {
+    const sheetData: ISheetRowData[] = pageDetails.dataRows;
+    const dbMatchData: IDbRowMatchData[] = dbData.map(dbItemData => {
+        return {
+            dbItemData,
+            dataType: 'DB',
+            matchedToKey: null,
+        } as IDbRowMatchData;
+    });
+    pageDetails.dbMatchData = dbMatchData;
     const dbDataKeyed = dbMatchData.reduce((acc, d) => {
         const key = cmp.getRowKey(d.dbItemData, 'DB');
         let cont = acc[key];
@@ -126,7 +136,7 @@ export function matchItems(sheetData: ISheetRowData[], dbMatchData: IDbRowMatchD
         }
         return sd;
     });
-    return !!sheetData.find(d => !d.matched);
+    return dbMatchData;
 }
 
 

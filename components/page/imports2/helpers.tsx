@@ -89,15 +89,12 @@ export async function genericPageLoader(prms: IPageParms, pageState: IPageStates
     
     //let extraProcessSheetData: (pg: ISheetRowData[], pageState: IPageStates) => Promise<ISheetRowData[]> = pageState.curPage.extraProcessSheetData || ((x, _) => Promise.resolve(x));
     pageState.sheetId = sheetId;
-    const sheetDatas = pageDetails.dataRows as ISheetRowData[]; //, pageState);
-    pageDetails.dataRows = sheetDatas;
-    const processSheetData = stdProcessSheetData; //pageState.curPage.custProcessSheetData ?? 
-    const displayData = processSheetData(sheetDatas, {
+      
+    stdProcessSheetData(pageDetails.dataRows, {
         ...pageState,
         ...hi,
     });
 
-    let dbMatchData: IDbRowMatchData[] = null;
     const rowComparer: IRowComparer =
     {
         name: 'Payment Row Comparer',
@@ -117,18 +114,11 @@ export async function genericPageLoader(prms: IPageParms, pageState: IPageStates
         },
     };
     
-        dbMatchData = dbData.map(dbItemData => {
-            return {
-                dbItemData,
-                dataType: 'DB',
-                matchedToKey: null,
-            } as IDbRowMatchData;
-        });
         //page.rowComparers.forEach(cmp => {
-            matchItems(sheetDatas, dbMatchData, rowComparer);            
+    const dbMatchData = matchItems(pageDetails, dbData, rowComparer);
         //});
     
-    pageDetails.dbMatchData = dbMatchData;
+    //pageDetails.dbMatchData = dbMatchData;
     stdProcessSheetData(dbMatchData, {
         ...pageState,
         ...hi,
