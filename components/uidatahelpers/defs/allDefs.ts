@@ -2,7 +2,7 @@ import { TableNames } from "../../types";
 import { ITableAndSheetMappingInfo } from "../datahelperTypes";
 
 
-const workerInfoDef: ITableAndSheetMappingInfo = {
+export const workerInfoDef: ITableAndSheetMappingInfo = {
     table: 'workerInfo',
     sheetMapping: {
         sheetName: 'Workers Info',
@@ -16,7 +16,7 @@ const workerInfoDef: ITableAndSheetMappingInfo = {
     }
 }
 
-const paymentInfoDef: ITableAndSheetMappingInfo = {
+export const paymentInfoDef: ITableAndSheetMappingInfo = {
     table: 'rentPaymentInfo',
     sheetMapping: {
         sheetName: 'PaymentRecord',
@@ -37,7 +37,7 @@ const paymentInfoDef: ITableAndSheetMappingInfo = {
     }
 };
 
-const houseInfoDef: ITableAndSheetMappingInfo = {    
+export const houseInfoDef: ITableAndSheetMappingInfo = {    
     table: 'houseInfo',
     sheetMapping: {
         sheetName: 'House Info',
@@ -53,7 +53,7 @@ const houseInfoDef: ITableAndSheetMappingInfo = {
     }
 }
 
-const tenantInfoDef: ITableAndSheetMappingInfo = {
+export const tenantInfoDef: ITableAndSheetMappingInfo = {
     table: 'tenantInfo',
     sheetMapping: {
         sheetName: 'Tenants Info',
@@ -70,7 +70,7 @@ const tenantInfoDef: ITableAndSheetMappingInfo = {
     }
 }
 
-const maintenanceInfoDef: ITableAndSheetMappingInfo = {
+export const maintenanceInfoDef: ITableAndSheetMappingInfo = {
     table: 'maintenanceRecords',
     sheetMapping: {
         sheetName: 'MaintainessRecord',

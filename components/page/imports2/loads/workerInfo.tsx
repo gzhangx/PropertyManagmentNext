@@ -1,9 +1,9 @@
 
 import { getWorkerInfo } from '../../../api';
-import { ALLFieldNames, ICompRowData, IDbRowMatchData, IDbSaveData, IDisplayColumnInfo, IPageInfo, IPageStates, IRowComparer, ISheetRowData, IStringDict, } from '../types'
-import * as inserter from '../loads/inserter';
+import {  ICompRowData, IDbRowMatchData, IDbSaveData, IDisplayColumnInfo, IPageInfo, IPageStates, IRowComparer, ISheetRowData, IStringDict, } from '../types'
 import { IWorkerInfo } from '../../../reportTypes';
-
+import { ALLFieldNames } from '../../../uidatahelpers/datahelperTypes';
+import * as allDefs from '../../../uidatahelpers/defs/allDefs';
 const workerFields = ['workerID', 'workerName',
 ]
 
@@ -18,26 +18,6 @@ const WorkerRowCompare: IRowComparer[] = [
     }
 ];
 
-function custProcessSheetData(sheetData: ICompRowData[], pageState: IPageStates): IStringDict[] {
-    const fieldNames = pageState.curPage.fieldMap.filter(f => f);
-    return sheetData.map(sd => {
-        const acc = (sd as ISheetRowData).importSheetData || (sd as IDbRowMatchData).dbItemData;
-        const displayData = fieldNames.reduce((acc, fieldName) => {
-                let dsp = acc[fieldName];
-                if (dsp === 0) {
-                    acc[fieldName] = dsp;
-                    return acc;
-                }
-                if (!dsp) {
-                    acc[fieldName] = '';
-                    return acc;
-                }                                
-                return acc;
-            }, {...acc});
-        sd.displayData = displayData;
-        return displayData;
-    });
-}
 
 const displayColumnInfo: IDisplayColumnInfo[] = [
     {
@@ -77,15 +57,16 @@ const fieldMap: ALLFieldNames[]=[
     'phone',
 ]
 export const workerInfo: IPageInfo = {
-    pageName: 'Workers Info',
-    range: 'A1:K',
-    tableName: 'workerInfo',
-    fieldMap,
+    ...allDefs.workerInfoDef,
+    //pageName: 'Workers Info',
+    //range: 'A1:K',
+    //tableName: 'workerInfo',
+    //fieldMap,
     dbLoader: () => getWorkerInfo().then(r => r as any as IDbSaveData[]),
-    rowComparers: WorkerRowCompare,
-    shouldShowCreateButton: colInfo => colInfo.field === 'workerName',
+    //rowComparers: WorkerRowCompare,
+    showCreateButtonColumn: 'workerName',
     displayColumnInfo,
     sheetMustExistField: 'workerName',
-    dbInserter: inserter.getDbInserter('workerInfo'),
-    custProcessSheetData,
+    //dbInserter: inserter.getDbInserter('workerInfo'),
+    //custProcessSheetData,
 };

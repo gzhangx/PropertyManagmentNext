@@ -4,15 +4,8 @@ import moment from 'moment';
 import { IDBFieldDef, ISqlDeleteResponse, TableNames } from '../../types';
 
 import type { JSX } from "react";
+import { ALLFieldNames, ITableAndSheetMappingInfo, PageNames } from '../../uidatahelpers/datahelperTypes';
 
-export type ALLFieldNames = '' | 'address' | 'city' | 'zip' | 'ownerName' | 'receivedDate' | 'receivedAmount' | 'amount' | 'houseID' | 'paymentTypeName' | 'paymentProcessor' | 'notes'
-    | 'startDate' | 'endDate' | 'monthlyRent' | 'deposit' | 'petDeposit' | 'otherDeposit' | 'comment' | 'tenant1' | 'tenant2' | 'tenant3' | 'tenant4' | 'tenant'
-    | 'firstName' | 'lastName' | 'fullName' | 'phone' | 'email' | 'date'
-    | 'paymentID'
-    | 'maintenanceImportAddress' //special processing fields
-    | 'expenseCategoryId' | 'description' | 'workerID' | 'maintenanceID'
-    | 'workerName' | 'taxName' | 'taxID' | 'state'
-    ;
 
 export interface IPaymentWithArg extends IPayment
 {
@@ -33,6 +26,7 @@ export interface IColumnInfoLookup {
 export interface IDisplayColumnInfo {
     field: ALLFieldNames;
     name: string;
+    type?: string;
 }
 
 export interface IDbSaveData {
@@ -44,31 +38,24 @@ export interface IDbInserter {
     createEntity: (data: IDbSaveData) => Promise<{id:string}>;
 }
 
-export type PageNames = 'Tenants Info' | 'Lease Info' | 'PaymentRecord' | 'House Info' | 'MaintainessRecord' | 'Workers Info';
-export interface IPageInfo {
-    pageName: PageNames;
-    range: string;
-    tableName: TableNames;
 
-    fieldDefs?: IDBFieldDef[];
-
-    fieldMap: ALLFieldNames[];
-    displayColumnInfo: IDisplayColumnInfo[];
-
+export interface IPageInfo extends ITableAndSheetMappingInfo {    
+    displayColumnInfo?: IDisplayColumnInfo[];
     dbLoader?: () => Promise<IDbSaveData[]>;
     //dbItemIdField?: ALLFieldNames;
-    extraProcessSheetData?: (pageData: ISheetRowData[], pageState: IPageStates) => Promise<ISheetRowData[]>;
+    //extraProcessSheetData?: (pageData: ISheetRowData[], pageState: IPageStates) => Promise<ISheetRowData[]>;
     sheetMustExistField?: ALLFieldNames;
-
-    rowComparers?: IRowComparer[];
-    dbInserter?: IDbInserter;
+    showCreateButtonColumn?: ALLFieldNames;
+    //dbInserter?: IDbInserter;
     deleteById?: (ids: string[]) => Promise<ISqlDeleteResponse>;
-    shouldShowCreateButton?: (colInfo: IDisplayColumnInfo) => boolean;
+    
     displayItem?: (params: IPageParms, state: IPageStates, sheetRow: ISheetRowData, field: ALLFieldNames) => JSX.Element;
     displayDbExtra?: (params: IPageParms, state: IPageStates, dbMatch: IDbRowMatchData, field: ALLFieldNames) => JSX.Element | number| string;
     cmpSortField?: ALLFieldNames; //used to show sheet/db rows and sort by, usually date
 
     custProcessSheetData?: (sheetData: ICompRowData[], pageState: IPageStates) => IStringDict[];
+
+    rowComparer?: IRowComparer;
 }
 
 
@@ -128,7 +115,8 @@ export interface IPageStates {
 
 
 
-export function getHouseByAddress(state: IPageStates, addr:string) {
+export function getHouseByAddress(state: IPageStates, addr: string) {
+    if (!addr) return null;
     return state.housesByAddress[addr.toLowerCase().trim()]
 }
 

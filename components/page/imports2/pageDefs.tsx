@@ -1,23 +1,23 @@
 
 
 import { IPageInfo, IPageStates, IPageParms, IDbSaveData } from './types'
-import { sqlAdd, getHouseInfo, getPaymentRecords } from '../../api'
+import { sqlAdd, getPaymentRecords } from '../../api'
 import * as theApi from '../../api'
 import {mapValues} from 'lodash'
 import React from 'react';
 
-import { getBasicPageDefs } from './loads/basicPageInfo'
-import { ALLFieldNames } from './types';
+//import { getBasicPageDefs } from './loads/basicPageInfo'
 
 import * as lease from './loads/lease'
 import * as tenantLoad from './loads/tenants'
 import * as maintenceRecords from './loads/maintenanceRecords'
 import * as houseLoader from './loads/house';
-import * as paymentLoader from './loads/payment';
+//import * as paymentLoader from './loads/payment';
 import * as workerLoader from './loads/workerInfo';
 
-import * as inserter from './loads/inserter';
+import { ALLFieldNames } from '../../uidatahelpers/datahelperTypes';
 
+import * as allDefs from '../../uidatahelpers/defs/allDefs';
 
 export function getPageDefs() {
 
@@ -34,44 +34,62 @@ export function getPageDefs() {
                 //'month',                
                 //'ownerID',
             ];
-    const basicDef = getBasicPageDefs();
+    //const basicDef = getBasicPageDefs();
     const pages: IPageInfo[] = [
         {
-            pageName: 'PaymentRecord',
-            tableName: 'rentPaymentInfo',
-            range: 'A1:F',
-            fieldMap: paymentFieldMap,
-            displayColumnInfo: paymentFieldMap.map(field => ({
-                field,
-                name: field,
-            })),
+            ...allDefs.paymentInfoDef,            
             dbLoader: () => getPaymentRecords().then(r => r as any as IDbSaveData[]),
             //dbItemIdField: 'paymentID',
             sheetMustExistField: 'receivedDate',
-            rowComparers: paymentLoader.PaymentRowCompare,
-            dbInserter: inserter.PaymentDbInserter,
-            deleteById: paymentLoader.deleteById,
-            displayItem: paymentLoader.displayItem,
-            shouldShowCreateButton: colInfo => colInfo.field === 'receivedAmount',
+            //rowComparers: paymentLoader.PaymentRowCompare,
+            //dbInserter: inserter.PaymentDbInserter,
+            //deleteById: paymentLoader.deleteById,
+            //displayItem: paymentLoader.displayItem,
+            showCreateButtonColumn: 'receivedAmount',
         },
         houseLoader.housePageInfo,        
         {
-            ...basicDef.lease,
-            rowComparers: lease.LeaseRowCompare,
+            //...basicDef.lease,
+            table: 'leaseInfo',
+            sheetMapping: {                
+                sheetName: 'Lease Info',
+                range: 'A1:M',
+                mapping: [
+                    '',
+                    'address',
+                    'startDate',
+                    'endDate',
+                    'monthlyRent',
+                    'deposit',
+                    'petDeposit',
+                    'otherDeposit',
+                    'comment',
+                    'reasonOfTermination',
+                    'terminationDate',
+                    'terminationComments',
+                    'tenant1',
+                    'tenant2',
+                    'tenant3',
+                    'tenant4',
+                    'tenant', //not here, added to force mapping
+                ],
+            },
+            //rowComparers: lease.LeaseRowCompare,
             dbLoader: () => theApi.getLeases().then(r => r as any as IDbSaveData[]),
-            extraProcessSheetData: lease.leaseExtraProcessSheetData,
-            shouldShowCreateButton: colInfo => colInfo.field === 'startDate',
-            dbInserter: inserter.getDbInserter('leaseInfo'),
+            //extraProcessSheetData: lease.leaseExtraProcessSheetData,
+            showCreateButtonColumn: 'address',
+            //dbInserter: inserter.getDbInserter('leaseInfo'),
             displayItem: lease.displayItem,
             displayDbExtra: lease.displayDbExtra,
         },
         {
-            ...basicDef.tenant,
-            rowComparers: tenantLoad.TenantRowCompare,
+            //...basicDef.tenant,
+            ...allDefs.tenantInfoDef,
+            //rowComparers: tenantLoad.TenantRowCompare,
             dbLoader: () => theApi.getTenants().then(r => r as any as IDbSaveData[]),
-            extraProcessSheetData: tenantLoad.extraProcessSheetData,
-            shouldShowCreateButton: colInfo => colInfo.field === 'fullName',
-            dbInserter: inserter.getDbInserter('tenantInfo'),
+            //extraProcessSheetData: tenantLoad.extraProcessSheetData,
+            showCreateButtonColumn: 'firstName',
+            //dbInserter: inserter.getDbInserter('tenantInfo'),
         },        
         maintenceRecords.maintenceRecordDef,
         workerLoader.workerInfo,

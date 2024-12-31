@@ -1,4 +1,4 @@
-import { IDbSaveData, IRowComparer, IStringDict, ISheetRowData, IPageDataDetails, ALLFieldNames, IPageParms, IDbRowMatchData } from '../types'
+import { IDbSaveData, IRowComparer, IStringDict, ISheetRowData, IPageDataDetails, IPageParms, IDbRowMatchData } from '../types'
 import { ILeaseInfo } from '../../../reportTypes';
 import { Promise } from 'bluebird';
 
@@ -12,7 +12,8 @@ import moment from 'moment';
 import * as api from '../../../api'
 
 import type { JSX } from "react";
-
+import * as allDefs from '../../../uidatahelpers/defs/allDefs';
+import { ALLFieldNames } from '../../../uidatahelpers/datahelperTypes';
 function fixDates(date: string): string {
     const mnt = moment(date);
     if (mnt.isValid()) return mnt.format('YYYY-MM-DD');
@@ -57,7 +58,7 @@ function fixLeaseData(dataInput: ISheetRowData, pageState: IPageStates)
 }
 export async function leaseExtraProcessSheetData(datasInput: ISheetRowData[], pageState: IPageStates): Promise<ISheetRowData[]> {
 
-    const leasePageInfo = pageDefs.getPageDefs().find(p => p.pageName === 'Tenants Info');
+    const leasePageInfo = pageDefs.getPageDefs().find(p => p.sheetMapping.sheetName === 'Tenants Info');
     const tenantsRowSheet = await genericPageLoader(null, {
         ...pageState,
         curPage: leasePageInfo,
@@ -67,7 +68,7 @@ export async function leaseExtraProcessSheetData(datasInput: ISheetRowData[], pa
         return acc;
     }, {} as ILeaseItemByName);
 
-    const housePageInfo = pageDefs.getPageDefs().find(p => p.pageName === 'House Info');
+    const housePageInfo = pageDefs.getPageDefs().find(p => p.sheetMapping.sheetName === 'House Info');
     const houseRowSheet = await genericPageLoader(null, {
         ...pageState,
         curPage: housePageInfo,

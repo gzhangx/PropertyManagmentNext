@@ -1,5 +1,5 @@
-import { IDbSaveData, IRowComparer, IStringDict, ISheetRowData, IPageDataDetails, ALLFieldNames, IPageParms, IDbRowMatchData, PageNames, IPageInfo } from '../types'
-import { IHouseInfo, IMaintenanceRawData } from '../../../reportTypes';
+import { IDbSaveData, IRowComparer,  ISheetRowData, IPageParms, IDbRowMatchData, IPageInfo } from '../types'
+import { IMaintenanceRawData } from '../../../reportTypes';
 
 import { IPageStates } from '../types';
 import { getRelatedTableByName, ICmpItemByName } from './cmpUtil';
@@ -7,10 +7,11 @@ import { getRelatedTableByName, ICmpItemByName } from './cmpUtil';
 import * as lutil from './util';
 import moment from 'moment';
 import * as theApi from '../../../api'
-import * as inserter from '../loads/inserter';
+
 
 import type { JSX } from "react";
-
+import { ALLFieldNames } from '../../../uidatahelpers/datahelperTypes';
+import * as allDefs from '../../../uidatahelpers/defs/allDefs';
 function fixDates(date: string): string {
     const mnt = moment(date);
     if (mnt.isValid()) return mnt.format('YYYY-MM-DD');
@@ -132,18 +133,11 @@ export function displayDbExtra(params: IPageParms, state: IPageStates, dbMatch: 
 
 
 export const maintenceRecordDef: IPageInfo = {
-    tableName: 'maintenanceRecords',
-    pageName: 'MaintainessRecord',
-    range: 'A1:G',
-    fieldMap: [
-        'date',
-        'description',
-        'amount',
-        'maintenanceImportAddress', //rename to prevent default handling
-        'expenseCategoryId',
-        'workerID',
-        'comment'
-    ],
+    //tableName: 'maintenanceRecords',
+    //pageName: 'MaintainessRecord',
+    //range: 'A1:G',
+    ...allDefs.maintenanceInfoDef,    
+    /*
     displayColumnInfo: [
         {
             field: 'date',
@@ -158,7 +152,7 @@ export const maintenceRecordDef: IPageInfo = {
             name: 'Amount',
         },
         {
-            field: 'maintenanceImportAddress',
+            field: 'houseID',
             name: 'Address',
         },
         {
@@ -169,13 +163,18 @@ export const maintenceRecordDef: IPageInfo = {
             field: 'workerID',
             name: 'Worker',
         },
+        {
+            field: 'comment',
+            name: 'Comment',
+        },
     ],
+    */
     sheetMustExistField: 'date',
-    rowComparers: maintenanceRowCompare,
+    //rowComparers: maintenanceRowCompare,
     dbLoader: () => theApi.getMaintenanceReport().then(r => r.rows as unknown as IDbSaveData[]),
-    extraProcessSheetData: maintenanceExtraProcessSheetData,
-    shouldShowCreateButton: colInfo => colInfo.field === 'maintenanceImportAddress',
-    dbInserter: inserter.getDbInserter('maintenanceRecords'),
+    //extraProcessSheetData: maintenanceExtraProcessSheetData,
+    showCreateButtonColumn: 'houseID',
+    //dbInserter: inserter.getDbInserter('maintenanceRecords'),
     //dbItemIdField: 'maintenanceID',
     deleteById: id => theApi.deleteById('maintenanceRecords', id),
 };

@@ -1,4 +1,5 @@
 
+/*
 import { IPayment } from '../../../reportTypes';
 import { IDbSaveData, IRowComparer, YYYYMMDDFormater, IPageStates, ISheetRowData, ALLFieldNames, IPageParms } from '../types'
 
@@ -75,3 +76,4 @@ export function displayItem(params: IPageParms, state: IPageStates, sheetRow: IS
 export async function deleteById(id: string[]) {
     return api.deleteById('rentPaymentInfo', id);
 }
+*/

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useReducer, type JSX } from 'react';
-import { getTenants, saveGoodSheetAuthInfo } from '../../api'
+import { getTenants, saveGoodSheetAuthInfo, deleteById } from '../../api'
 import { EditTextDropdown } from '../../generic/EditTextDropdown'
 import { IIncomeExpensesContextValue } from '../../reportTypes';
 import { keyBy,  } from 'lodash'
@@ -7,7 +7,7 @@ import { GetInfoDialogHelper } from '../../generic/basedialog';
 import { useRouter } from 'next/router'
 
 import { BaseDialog } from '../../generic/basedialog'
-import { ALLFieldNames, IPageStates, IStringDict, IPageParms, ISheetRowData, IDisplayColumnInfo, IPageInfo } from './types'
+import {  IPageStates, IStringDict, IPageParms, ISheetRowData, IDisplayColumnInfo, IPageInfo, IDbInserter } from './types'
 import { genericPageLoader, getDeleteExtraFromDbItems, getDisplayHeaders } from './helpers'
 import { getPageDefs } from './pageDefs'
 
@@ -16,6 +16,8 @@ import { useIncomeExpensesContext } from '../../states/PaymentExpenseState'
 import { sortBy } from 'lodash';
 import { getTableModel } from '../../uidatahelpers/datahelpers';
 import { IDBFieldDef } from '../../types';
+import * as inserter from './loads/inserter';
+import { ALLFieldNames } from '../../uidatahelpers/datahelperTypes';
 
 function getSheetId(mainCtx: IIncomeExpensesContextValue) : string {
     return mainCtx.googleSheetAuthInfo.googleSheetId;
@@ -116,9 +118,9 @@ export function ImportPage() {
                                 <div className="h5 mb-0 font-weight-bold text-gray-800">
                                     <EditTextDropdown items={pages.map(p => {
                                         return {
-                                            label: p.pageName,
+                                            label: p.sheetMapping.sheetName,
                                             value: p,
-                                            selected: p.pageName === 'House Info'
+                                            selected: p.sheetMapping.sheetName === 'House Info'
                                         }
                                     })
                                     }
@@ -126,15 +128,33 @@ export function ImportPage() {
                                             if (sel) {
                                                 const pg: IPageInfo = sel.value;
                                                 let fieldDefs: IDBFieldDef[] = [];
+                                                let curPage: IPageInfo = {
+                                                    ...sel.value,
+                                                }
                                                 if (pg) {
-                                                    fieldDefs = await getTableModel(mainCtx, pg.tableName);
+                                                    fieldDefs = await getTableModel(mainCtx, pg.table);
+                                                    curPage.allFields = fieldDefs;
+                                                    if (!curPage.displayColumnInfo) {
+                                                        curPage.displayColumnInfo = curPage.sheetMapping.mapping.map(mapName => {
+                                                            const found = fieldDefs.find(f => f.field === mapName);
+                                                            if (!found) {
+                                                                console.log(`Cant find column ${mapName}`);
+                                                            }
+                                                            return found;
+                                                        }).filter(x=>x).map(f => {
+                                                            return {
+                                                                ...f,
+                                                                field: f.field as ALLFieldNames,
+                                                                name: f.name || '',
+                                                            };
+                                                        })
+                                                    }
                                                 }
                                                 dispatchCurPageState(state => {
                                                     return {
                                                         ...state,
                                                         curPage: {
-                                                            ...sel.value,
-                                                            fieldDefs,
+                                                            ...curPage
                                                         }
                                                     }
                                                 })
@@ -268,17 +288,21 @@ function stdTryDisplayItemForCreate(params: IPageParms, state: IPageStates, shee
     belongsToOwnerCheck: (data:IStringDict)=>boolean
 ): JSX.Element {
     const field: ALLFieldNames = dc.field;
-    const showCreateBtn = state.curPage.shouldShowCreateButton && state.curPage.shouldShowCreateButton(dc);
+    const showCreateBtn = state.curPage.showCreateButtonColumn === dc.field;
     
+    const dbInserter: IDbInserter = inserter.getDbInserter(state.curPage.table);
     const belongsToOwner = belongsToOwnerCheck(sheetRow.importSheetData);
-    if (state.curPage.dbInserter && showCreateBtn && !sheetRow.invalid && belongsToOwner) {
+    if (dbInserter && showCreateBtn && !sheetRow.invalid && belongsToOwner) {
         const itemVal = sheetRow.displayData[field];
+        let invalidInfo = '';
+        if (!sheetRow.needUpdate) invalidInfo = 'No Need to update ';
+        if (sheetRow.invalid) invalidInfo += ' Invalid: ' + sheetRow.invalid; 
         return <button disabled={!sheetRow.needUpdate || !!sheetRow.invalid} onClick={async () => {
             //setProgressStr('processing')
             if (sheetRow.invalid || !sheetRow.needUpdate) return;
             params.showProgress('processing');
             try {
-                await state.curPage.dbInserter.createEntity(sheetRow.importSheetData);
+                await dbInserter.createEntity(sheetRow.importSheetData);
                 sheetRow.needUpdate = false;
                 params.dispatchCurPageState(state => ({
                     ...state,
@@ -293,7 +317,7 @@ function stdTryDisplayItemForCreate(params: IPageParms, state: IPageStates, shee
             }
             //setDlgContent(createPaymentFunc(state, all, rowInd))
 
-        }}> Click to create (${itemVal})</button>
+        }}> Click to create (${itemVal}) ${ invalidInfo }</button>
     }
     if (sheetRow.invalid) {
         if (showCreateBtn) {
@@ -306,6 +330,7 @@ function stdTryDisplayItemForCreate(params: IPageParms, state: IPageStates, shee
 
 function displayItems(pagePrms: IPageParms, curPageState: IPageStates) {
     if (!curPageState.pageDetails) return;
+    
     const dspCi = curPageState.curPage.displayColumnInfo;
 
     
@@ -322,13 +347,7 @@ function displayItems(pagePrms: IPageParms, curPageState: IPageStates) {
         .map((sheetRow, ind) => {
             const showItem = (dc: IDisplayColumnInfo) => {
                 const field = dc.field;
-                let dspRes = null;
-                if (curPageState.curPage.displayItem)
-                    dspRes = (curPageState.curPage.displayItem(pagePrms, curPageState, sheetRow, field));
-                    
-                if (!dspRes) {
-                    dspRes = (stdTryDisplayItemForCreate(pagePrms, curPageState, sheetRow, dc, belongsToOwner) || sheetRow.displayData[field]);
-                }
+                const dspRes = (stdTryDisplayItemForCreate(pagePrms, curPageState, sheetRow, dc, belongsToOwner) || sheetRow.displayData[field]);
                 return dspRes;
             }
             return {
@@ -350,18 +369,12 @@ function displayItems(pagePrms: IPageParms, curPageState: IPageStates) {
 function displayExtraDbItems(pagePrms: IPageParms, curPageState: IPageStates) {
     if (!curPageState.pageDetails) return;
     if (!curPageState.pageDetails.dbMatchData) return;
+
     const dspCi = curPageState.curPage.displayColumnInfo;
 
 
     const cmpSortField = curPageState.curPage.cmpSortField;
     
-    const belongsToOwner = (data: IStringDict) => {
-        const dataOwner = data['ownerID'];
-        if (dataOwner) {
-            return true; //TODO: add filtering
-        }
-        return true;
-    }
 
     const deleteFuncs = getDeleteExtraFromDbItems(pagePrms, curPageState);
     const dbDsp = deleteFuncs.map(({
@@ -376,14 +389,14 @@ function displayExtraDbItems(pagePrms: IPageParms, curPageState: IPageStates) {
                         if (curPageState.curPage.displayDbExtra) {
                             dspVal = curPageState.curPage.displayDbExtra(pagePrms, curPageState, dbRow, dc.field);
                         }
-                        if (curPageState.curPage.deleteById) {
+                        //if (curPageState.curPage.deleteById) {                            
                             if (dc.field === curPageState.curPage.sheetMustExistField) {
                                 dspVal = <div>
                                     <div>{dspVal}</div>
                                     <button onClick={deleteFunction}>Delete</button>
                                 </div>
                             }
-                        }
+                        //}
                         return <td key={ck}>{
                             dspVal
                         }</td>

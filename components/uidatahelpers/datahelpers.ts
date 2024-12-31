@@ -185,9 +185,11 @@ export async function createAndLoadHelper(rootCtx: RootState.IRootPageState, ctx
 
 export function getGenListParms(ctx: IIncomeExpensesContextValue, table: TableNames): ITableAndSheetMappingInfo {
     const def = tableNameToDefinitions.get(table);
+    const allFields = ctx.modelsProp.models.get(table).fields;
     return {
         table,
-        displayFields: ctx.modelsProp.models.get(table).fields.map(f => {
+        allFields,
+        displayFields: allFields.map(f => {
             if (f.foreignKey && f.foreignKey.field === 'houseID') {
                 return {
                     ...f,
