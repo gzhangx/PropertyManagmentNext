@@ -386,9 +386,6 @@ function displayExtraDbItems(pagePrms: IPageParms, curPageState: IPageStates) {
                 sort: dbRow.dbItemData[cmpSortField], dsp: <tr key={rowInd}>{                    
                     dspCi.map((dc, ck) => {
                         let dspVal: string | number | JSX.Element = 'DB-'+dbRow.dbItemData[dc.field];
-                        if (curPageState.curPage.displayDbExtra) {
-                            dspVal = curPageState.curPage.displayDbExtra(pagePrms, curPageState, dbRow, dc.field);
-                        }
                         //if (curPageState.curPage.deleteById) {                            
                             if (dc.field === curPageState.curPage.sheetMustExistField) {
                                 dspVal = <div>

@@ -9,7 +9,6 @@ import React from 'react';
 //import { getBasicPageDefs } from './loads/basicPageInfo'
 
 import * as lease from './loads/lease'
-import * as tenantLoad from './loads/tenants'
 import * as maintenceRecords from './loads/maintenanceRecords'
 import * as houseLoader from './loads/house';
 //import * as paymentLoader from './loads/payment';
@@ -20,20 +19,6 @@ import { ALLFieldNames } from '../../uidatahelpers/datahelperTypes';
 import * as allDefs from '../../uidatahelpers/defs/allDefs';
 
 export function getPageDefs() {
-
-    const paymentFieldMap: ALLFieldNames[] = [
-                'receivedDate',
-        'receivedAmount',
-        'address',
-        'paymentTypeName',
-        'notes',
-        'paymentProcessor',
-        //'paidBy',        
-                //'created',
-                //'modified',                
-                //'month',                
-                //'ownerID',
-            ];
     //const basicDef = getBasicPageDefs();
     const pages: IPageInfo[] = [
         {
@@ -49,7 +34,7 @@ export function getPageDefs() {
         },
         houseLoader.housePageInfo,        
         {
-            //...basicDef.lease,
+            //...allDefs.lease,
             table: 'leaseInfo',
             sheetMapping: {                
                 sheetName: 'Lease Info',
@@ -79,8 +64,8 @@ export function getPageDefs() {
             //extraProcessSheetData: lease.leaseExtraProcessSheetData,
             showCreateButtonColumn: 'address',
             //dbInserter: inserter.getDbInserter('leaseInfo'),
-            displayItem: lease.displayItem,
-            displayDbExtra: lease.displayDbExtra,
+            //displayItem: lease.displayItem,
+            //displayDbExtra: lease.displayDbExtra,
         },
         {
             //...basicDef.tenant,

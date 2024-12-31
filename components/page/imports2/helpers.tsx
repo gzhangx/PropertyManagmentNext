@@ -3,7 +3,8 @@ import {
     IPageStates, IPageParms, IDbSaveData, ISheetRowData, IDbRowMatchData, IRowComparer,
     IDbInserter,
     YYYYMMDDFormater,
-    IDisplayColumnInfo} from './types'
+    IDisplayColumnInfo,
+    IStringDict} from './types'
 
 import { matchItems, loadPageSheetDataRaw, stdProcessSheetData, getHouseState } from './utils'
 //const sheetId = '1UU9EYL7ZYpfHV6Jmd2CvVb6oBuQ6ekTR7AWXIlMvNCg';
@@ -159,6 +160,22 @@ export function getDisplayHeaders(params: IPageParms, curPageState: IPageStates)
         })
     }
     const dbInserter: IDbInserter = inserter.getDbInserter(table);
+    const requiredFields = curPageState.curPage.allFields.filter(f => {
+        return !f.isId && f.required;
+    });
+    const validRow = (importSheetData: IStringDict) => {
+        const missingFields:string[] = [];
+        requiredFields.forEach(f => {
+            const v = importSheetData[f.field];
+            if (!v) {
+                if (v !== 0) missingFields.push(f.field);
+            }
+        });
+        if (missingFields.length) {
+            return `missing fields: ${missingFields.join(',')}`;
+        }
+        return '';
+    }
     return  curPageState.curPage.displayColumnInfo.map((colInfo, key) => {
         const fieldName = colInfo.field;
         let dspVal = colInfo.name;
@@ -178,14 +195,8 @@ export function getDisplayHeaders(params: IPageParms, curPageState: IPageStates)
                             }
                             updatedCount++;
                             try {       
-                                let err = null;
-                                if (curPageState.curPage.rowComparer) {
-                                    const rc = curPageState.curPage.rowComparer;
-                                    {
-                                        if (!rc.checkRowValid) return;
-                                        err = err || rc.checkRowValid(sheetRow.importSheetData);
-                                    }
-                                }
+                                const err = validRow(sheetRow.importSheetData);
+                                                                
                                 if (!err)
                                     await createEntity(params, sheetRow, dbInserter);
                                 else {

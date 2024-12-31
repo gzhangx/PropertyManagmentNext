@@ -47,15 +47,15 @@ export interface IPageInfo extends ITableAndSheetMappingInfo {
     sheetMustExistField?: ALLFieldNames;
     showCreateButtonColumn?: ALLFieldNames;
     //dbInserter?: IDbInserter;
-    deleteById?: (ids: string[]) => Promise<ISqlDeleteResponse>;
+    //deleteById?: (ids: string[]) => Promise<ISqlDeleteResponse>;
     
-    displayItem?: (params: IPageParms, state: IPageStates, sheetRow: ISheetRowData, field: ALLFieldNames) => JSX.Element;
-    displayDbExtra?: (params: IPageParms, state: IPageStates, dbMatch: IDbRowMatchData, field: ALLFieldNames) => JSX.Element | number| string;
+    //displayItem?: (params: IPageParms, state: IPageStates, sheetRow: ISheetRowData, field: ALLFieldNames) => JSX.Element;
+    //displayDbExtra?: (params: IPageParms, state: IPageStates, dbMatch: IDbRowMatchData, field: ALLFieldNames) => JSX.Element | number| string;
     cmpSortField?: ALLFieldNames; //used to show sheet/db rows and sort by, usually date
 
-    custProcessSheetData?: (sheetData: ICompRowData[], pageState: IPageStates) => IStringDict[];
+    //custProcessSheetData?: (sheetData: ICompRowData[], pageState: IPageStates) => IStringDict[];
 
-    rowComparer?: IRowComparer;
+    //rowComparer?: IRowComparer;
 }
 
 

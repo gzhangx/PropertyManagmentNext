@@ -176,5 +176,5 @@ export const maintenceRecordDef: IPageInfo = {
     showCreateButtonColumn: 'houseID',
     //dbInserter: inserter.getDbInserter('maintenanceRecords'),
     //dbItemIdField: 'maintenanceID',
-    deleteById: id => theApi.deleteById('maintenanceRecords', id),
+    //deleteById: id => theApi.deleteById('maintenanceRecords', id),
 };
