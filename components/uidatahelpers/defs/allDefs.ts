@@ -43,7 +43,7 @@ export const houseInfoDef: ITableAndSheetMappingInfo = {
         sheetName: 'House Info',
         range: 'A1:I',
         mapping: [
-            '', 'address', 'city', 'zip',
+            'houseID', 'address', 'city', 'zip',
             '', //type
             '', //beds
             '', //rooms

@@ -107,8 +107,16 @@ export function matchItems(pageDetails: IPageDataDetails, dbData: IDbSaveData[],
         } as IDbRowMatchData;
     });
     pageDetails.dbMatchData = dbMatchData;
+    const sheetIdField = pageDetails.sheetIdField;
+    const dbIds: Map<string,IDbRowMatchData> = new Map();
     const dbDataKeyed = dbMatchData.reduce((acc, d) => {
         const key = cmp.getRowKey(d.dbItemData, 'DB');
+        if (sheetIdField) {
+            const id = d.dbItemData[sheetIdField] as string;
+            if (id) {
+                dbIds.set(id, d);
+            }
+        }
         let cont = acc[key];
         if (!cont) {
             cont = [];
@@ -122,6 +130,14 @@ export function matchItems(pageDetails: IPageDataDetails, dbData: IDbSaveData[],
 
     sheetData.map(sd => {
         if (sd.matchToKey) return;
+        if (sheetIdField) {
+            const id: string = sd.importSheetData[sheetIdField] as string;
+            const matchedItemById = dbIds.get(id);
+            if (matchedItemById) {
+                sd.matchedById = sheetIdField;
+                sd.matched = matchedItemById.dbItemData;
+            }
+        }
         const key = cmp.getRowKey(sd.importSheetData, 'Sheet');
         const matchedAll = dbDataKeyed[key];
         if (matchedAll && matchedAll.length) {

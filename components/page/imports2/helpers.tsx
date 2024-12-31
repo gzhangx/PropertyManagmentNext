@@ -11,7 +11,6 @@ import { matchItems, loadPageSheetDataRaw, stdProcessSheetData, getHouseState } 
 
 import * as inserter from './loads/inserter';
 import { deleteById } from '../../api';
-import { ALLFieldNames } from '../../uidatahelpers/datahelperTypes';
 
 export async function createEntity(params: IPageParms, changeRow: ISheetRowData, inserter: IDbInserter) {
     //const state = curPageState;
@@ -95,11 +94,14 @@ export async function genericPageLoader(prms: IPageParms, pageState: IPageStates
         ...hi,
     });
 
+    const mappingColumnInfo = pageState.curPage.sheetMapping.mapping.map(name => {
+        return pageState.curPage.allFields.find(f => f.field === name);
+    }).filter(x=>x);
     const rowComparer: IRowComparer =
     {
         name: 'Payment Row Comparer',
         getRowKey: (data: IDbSaveData, soruce: string) => {
-            const parts = pageState.curPage.displayColumnInfo.map(fd => {
+            const parts = mappingColumnInfo.map(fd => {
                 switch (fd.type) {
                     case 'date':
                     case 'datetime':
