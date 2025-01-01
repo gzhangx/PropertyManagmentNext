@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useReducer, type JSX } from 'react';
-import { getTenants, saveGoodSheetAuthInfo, } from '../../api'
+import { getSheetAuthInfo, getTenants, saveGoodSheetAuthInfo, } from '../../api'
 import { EditTextDropdown } from '../../generic/EditTextDropdown'
 import { IIncomeExpensesContextValue } from '../../reportTypes';
 import { keyBy,  } from 'lodash'
@@ -193,7 +193,7 @@ export function ImportPage() {
                                 <div className="col col-xl-2">
                                       GSheet Id
                                 </div>
-                                <div className="col col-xl-6">aaa
+                                <div className="col col-xl-6">
                                     <input type='text' value={googleSheetAuthInfo.googleSheetId || 'NA'} style={{ width: '420px' }}
                                         onChange={e => {
                                             console.log(e.target.value);
@@ -252,6 +252,14 @@ export function ImportPage() {
                                         await saveGoodSheetAuthInfo(googleSheetAuthInfo);
                                     }} >Save</button>
                                 </div>                                
+                                <div className="col col-xl-2">
+                                    <button className='btn btn-primary' onClick={async () => {
+                                        getSheetAuthInfo().then(auth => {
+                                                    if (auth)
+                                                        setGoogleSheetAuthinfo(auth);
+                                                })
+                                    }} >Load</button>
+                                </div>
                             </div>
                         </div>
                     </div>
