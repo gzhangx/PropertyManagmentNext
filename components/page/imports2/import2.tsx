@@ -344,7 +344,7 @@ function displayItems(pagePrms: IPageParms, curPageState: IPageStates) {
         return true;
     }
     const sheetDsp = curPageState.pageDetails.dataRows
-        .filter(x => (!x.matched || curPageState.showMatchedItems) && belongsToOwner(x.importSheetData))
+        .filter(x => (!x.matched || x.needUpdate || curPageState.showMatchedItems) && belongsToOwner(x.importSheetData))
         .map((sheetRow, ind) => {
             const showItem = (dc: IDisplayColumnInfo) => {
                 const field = dc.field;
