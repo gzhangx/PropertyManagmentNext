@@ -117,6 +117,7 @@ export function CashFlowReport(props) {
                                         <tr>
                                             <td><button type="button" className="btn btn-secondary" onClick={() => saveCsvGS(true)}>CSV</button></td>
                                             <td><button type="button" className="btn btn-secondary" onClick={() => saveCsvGS(false)}>Sheet</button></td>
+                                            <td><button type="button" className="btn btn-secondary" onClick={() => ctx.forceReload()}>Reload</button></td>
                                         </tr>
                                     </tbody>
                                 </table>
