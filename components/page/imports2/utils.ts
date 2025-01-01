@@ -24,7 +24,7 @@ export async function loadPageSheetDataRaw(sheetId: string, pageState: IPageStat
     const allFields = pageState.curPage.allFields || [];
     {
         const allIdFields = allFields.filter(f => f.isId);
-        const sheetIdFieldDef = allIdFields.find(f => !f.userSecurityField && f.foreignKey);
+        const sheetIdFieldDef = allIdFields.find(f => !f.userSecurityField && f.isId);
         if (sheetIdFieldDef) {
             sheetIdField = sheetIdFieldDef.field as SheetIdFieldNames;
         }
@@ -130,14 +130,7 @@ export function matchItems(pageDetails: IPageDataDetails, dbData: IDbSaveData[],
 
     sheetData.map(sd => {
         if (sd.matchToKey) return;
-        if (sheetIdField) {
-            const id: string = sd.importSheetData[sheetIdField] as string;
-            const matchedItemById = dbIds.get(id);
-            if (matchedItemById) {
-                sd.matchedById = sheetIdField;
-                sd.matched = matchedItemById.dbItemData;
-            }
-        }
+        
         const key = cmp.getRowKey(sd.importSheetData, 'Sheet');
         const matchedAll = dbDataKeyed[key];
         if (matchedAll && matchedAll.length) {
@@ -148,6 +141,16 @@ export function matchItems(pageDetails: IPageDataDetails, dbData: IDbSaveData[],
                 sd.matcherName = cmp.name;
                 sd.needUpdate = false;
                 matched.matchedToKey = key;
+            }
+        } else {
+            if (sheetIdField) {
+                const id: string = sd.importSheetData[sheetIdField] as string;
+                const matchedItemById = dbIds.get(id);
+                if (matchedItemById) {
+                    sd.matchedById = sheetIdField;
+                    sd.matched = matchedItemById.dbItemData;
+                    matchedItemById.dbExtraNotDeleteButUpdate = sd;
+                }
             }
         }
         return sd;

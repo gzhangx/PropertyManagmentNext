@@ -88,6 +88,8 @@ export interface IDbRowMatchData {
     displayData?: IStringDict;
 
     invalid?: string; //not used, matching ISheetRowData
+
+    dbExtraNotDeleteButUpdate?: ISheetRowData;
 }
 
 export type ICompRowData = ISheetRowData | IDbRowMatchData;

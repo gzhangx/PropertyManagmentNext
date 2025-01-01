@@ -8,7 +8,7 @@ import { useRouter } from 'next/router'
 
 import { BaseDialog } from '../../generic/basedialog'
 import {  IPageStates, IStringDict, IPageParms, ISheetRowData, IDisplayColumnInfo, IPageInfo, IDbInserter } from './types'
-import { genericPageLoader, getDeleteExtraFromDbItems, getDisplayHeaders } from './helpers'
+import { genericPageLoader, getDeleteExtraFromDbItems, getDisplayHeaders, getMappingColumnInfo, updateRowData } from './helpers'
 import { getPageDefs } from './pageDefs'
 
 import { useIncomeExpensesContext } from '../../states/PaymentExpenseState'
@@ -290,9 +290,9 @@ function stdTryDisplayItemForCreate(params: IPageParms, state: IPageStates, shee
     const field: ALLFieldNames = dc.field;
     const showCreateBtn = state.curPage.showCreateButtonColumn === dc.field;
     
-    const dbInserter: IDbInserter = inserter.getDbInserter(state.curPage.table);
+    //const dbInserter: IDbInserter = inserter.getDbInserter(state.curPage.table, true);
     const belongsToOwner = belongsToOwnerCheck(sheetRow.importSheetData);
-    if (dbInserter && showCreateBtn && !sheetRow.invalid && belongsToOwner) {
+    if (showCreateBtn && !sheetRow.invalid && belongsToOwner) {
         const itemVal = sheetRow.displayData[field];
         let invalidInfo = '';
         if (!sheetRow.needUpdate) invalidInfo = 'No Need to update ';
@@ -300,21 +300,22 @@ function stdTryDisplayItemForCreate(params: IPageParms, state: IPageStates, shee
         return <button disabled={!sheetRow.needUpdate || !!sheetRow.invalid} onClick={async () => {
             //setProgressStr('processing')
             if (sheetRow.invalid || !sheetRow.needUpdate) return;
-            params.showProgress('processing');
-            try {
-                await dbInserter.createEntity(sheetRow.importSheetData);
-                sheetRow.needUpdate = false;
-                params.dispatchCurPageState(state => ({
-                    ...state,
-                }));
-                params.showProgress('');
-            } catch (err) {
-                const errStr = `Error create payment ${err.message}`;
-                console.log(errStr);
-                console.log(err);
-                params.showProgress('');
-                params.setErrorStr(errStr);
-            }
+            params.showProgress('processing');            
+            await updateRowData(params, state.curPage.table, sheetRow, sheetRow.matchedById?false:true)
+            // try {
+            //     await dbInserter.createEntity(sheetRow.importSheetData);
+            //     sheetRow.needUpdate = false;
+            //     params.dispatchCurPageState(state => ({
+            //         ...state,
+            //     }));
+            //     params.showProgress('');
+            // } catch (err) {
+            //     const errStr = `Error create payment ${err.message}`;
+            //     console.log(errStr);
+            //     console.log(err);
+            //     params.showProgress('');
+            //     params.setErrorStr(errStr);
+            // }
             //setDlgContent(createPaymentFunc(state, all, rowInd))
 
         }}> Click to create (${itemVal}) ${ invalidInfo }</button>
@@ -370,7 +371,7 @@ function displayExtraDbItems(pagePrms: IPageParms, curPageState: IPageStates) {
     if (!curPageState.pageDetails) return;
     if (!curPageState.pageDetails.dbMatchData) return;
 
-    const dspCi = curPageState.curPage.displayColumnInfo;
+    const dspCi = getMappingColumnInfo(curPageState.curPage);//curPageState.curPage.displayColumnInfo;
 
 
     const cmpSortField = curPageState.curPage.cmpSortField;
