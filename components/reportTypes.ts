@@ -206,4 +206,6 @@ export interface IIncomeExpensesContextValue {
     paymentCalcOpts: IPaymentCalcOpts;
 
     modelsProp: IModelsProps;
+
+    forceReload: () => void;
 }

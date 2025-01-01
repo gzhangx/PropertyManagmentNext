@@ -52,6 +52,7 @@ export function PaymentExpenseStateWrapper(props: {
     children: any
 }) {
     const rootCtx = useRootPageContext();
+    const [reloadCounter, setReloadCounter] = useState<number>(1);
     const [loginError, setLoginError] = useState<string>('');
     const [pageProps, setPageProps] = useState<IPagePropsByTable>({
         pagePropsTableInfo: {},
@@ -209,7 +210,7 @@ export function PaymentExpenseStateWrapper(props: {
         });
         
         beginReLoadPaymentData();
-    }, [rootCtx.userInfo.id]);
+    }, [rootCtx.userInfo.id, reloadCounter]);
 
 
 
@@ -241,7 +242,8 @@ export function PaymentExpenseStateWrapper(props: {
         modelsProp: {
             models,
             setModels,
-        }
+        },
+        forceReload: () => setReloadCounter(v => v + 1),
     };
     return <IncomeExpensesContext.Provider value={incomExpCtx}>
         { props.children}
