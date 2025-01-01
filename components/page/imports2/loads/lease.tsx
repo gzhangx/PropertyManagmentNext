@@ -112,7 +112,7 @@ export function displayItem(params: IPageParms, state: IPageStates, sheetRow: IS
                 //return <div>{displayStrValue} (!!Not DB Value)</div>;        
                 return <div><button className='btn btn-primary' onClick={() => {
                     console.log('on create tenant, sheetRow is', sheetRow, tnt);
-                    const ins = inserters.getDbInserter('tenantInfo');
+                    const ins = inserters.getDbInserter('tenantInfo', true);
                     tnt.importSheetData['ownerID'] = sheetRow.importSheetData['ownerID'];
                     ins.createEntity(tnt.importSheetData).then(res => {
                         console.log(res);
