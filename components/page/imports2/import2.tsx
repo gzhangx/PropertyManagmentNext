@@ -255,9 +255,12 @@ export function ImportPage() {
                                 <div className="col col-xl-2">
                                     <button className='btn btn-primary' onClick={async () => {
                                         getSheetAuthInfo().then(auth => {
-                                                    if (auth)
-                                                        setGoogleSheetAuthinfo(auth);
-                                                })
+                                            if (auth)
+                                                setGoogleSheetAuthinfo(auth);
+                                            else {
+                                                console.log('error laod gssheet ids ', auth);
+                                            }
+                                        })
                                     }} >Load</button>
                                 </div>
                             </div>

@@ -119,6 +119,9 @@ export function PaymentExpenseStateWrapper(props: {
         getSheetAuthInfo().then(auth => {
             if (auth)
                 setGoogleSheetAuthinfo(auth);
+            else {
+                console.log('error laod gssheet ids ', auth);
+            }
         })
     }, ['once']);
     useEffect(() => {
