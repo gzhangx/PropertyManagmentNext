@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useReducer, type JSX } from 'react';
-import { getSheetAuthInfo, getTenants, saveGoodSheetAuthInfo, } from '../../api'
+import { getTenants, saveGoodSheetAuthInfo, } from '../../api'
 import { EditTextDropdown } from '../../generic/EditTextDropdown'
 import { IIncomeExpensesContextValue } from '../../reportTypes';
 import { keyBy,  } from 'lodash'
@@ -16,7 +16,6 @@ import { useIncomeExpensesContext } from '../../states/PaymentExpenseState'
 import { sortBy } from 'lodash';
 import { getTableModel } from '../../uidatahelpers/datahelpers';
 import { IDBFieldDef } from '../../types';
-import * as inserter from './loads/inserter';
 import { ALLFieldNames } from '../../uidatahelpers/datahelperTypes';
 
 function getSheetId(mainCtx: IIncomeExpensesContextValue) : string {
@@ -42,7 +41,7 @@ export function ImportPage() {
     } as IPageStates);
     
     const mainCtx = useIncomeExpensesContext();
-    const {  googleSheetAuthInfo, setGoogleSheetAuthinfo} = mainCtx;
+    const { googleSheetAuthInfo, setGoogleSheetAuthinfo, reloadGoogleSheetAuthInfo } = mainCtx;
     const sheetId = getSheetId(mainCtx);
 
     //rootCtx.userInfo.
@@ -254,13 +253,7 @@ export function ImportPage() {
                                 </div>                                
                                 <div className="col col-xl-2">
                                     <button className='btn btn-primary' onClick={async () => {
-                                        getSheetAuthInfo().then(auth => {
-                                            if (auth)
-                                                setGoogleSheetAuthinfo(auth);
-                                            else {
-                                                console.log('error laod gssheet ids ', auth);
-                                            }
-                                        })
+                                        reloadGoogleSheetAuthInfo();
                                     }} >Load</button>
                                 </div>
                             </div>

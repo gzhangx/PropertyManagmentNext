@@ -187,6 +187,7 @@ export interface IIncomeExpensesContextValue {
     //setSelectedOwners: (a: IOwnerInfo[]) => void;
     googleSheetAuthInfo: IGoogleSheetAuthInfo;  
     setGoogleSheetAuthinfo: (auth: IGoogleSheetAuthInfo) => void;
+    reloadGoogleSheetAuthInfo: () => Promise<IGoogleSheetAuthInfo>;
     loginError: string;
     setLoginError: (s: string) => void;
     //allOwners: IOwnerInfo[];

@@ -116,14 +116,18 @@ export function PaymentExpenseStateWrapper(props: {
         });
     }
 
-    useEffect(() => {
-        getSheetAuthInfo().then(auth => {
+    function reloadGoogleSheetAuthInfo() {
+        return getSheetAuthInfo().then(auth => {
             if (auth)
                 setGoogleSheetAuthinfo(auth);
             else {
                 console.log('error laod gssheet ids ', auth);
             }
+            return auth;
         })
+    }
+    useEffect(() => {
+        reloadGoogleSheetAuthInfo();
     }, ['once']);
     useEffect(() => {
         setMonthes(allMonthes);
@@ -222,6 +226,7 @@ export function PaymentExpenseStateWrapper(props: {
         },
         googleSheetAuthInfo,
         setGoogleSheetAuthinfo,
+        reloadGoogleSheetAuthInfo,
         loginError,
         setLoginError,
         rawExpenseData,
