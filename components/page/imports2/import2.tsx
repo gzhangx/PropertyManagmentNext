@@ -28,7 +28,7 @@ export function ImportPage() {
     const router = useRouter();
     const [reloads, setReloads] = useState({
         reloadUsers: 0,
-    });    
+    });
     //const [progressStr, setProgressStr] = useState('');
     const errorDlg = GetInfoDialogHelper();
     const progressDlg = GetInfoDialogHelper();

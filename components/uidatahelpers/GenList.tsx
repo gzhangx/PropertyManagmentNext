@@ -20,7 +20,7 @@ export function GenList(props: IGenListProps) {
         pos: 0,
         total: 0,
         lastPage:0,// added since missing
-    });
+    });    
     const helper = createHelper(rootCtx, secCtx, props); //props: table, sheetMapping, column
     const pageState = secCtx.pageState;
     // [
@@ -30,6 +30,10 @@ export function GenList(props: IGenListProps) {
     const [mainDataRows,setMainData]=useState([]);
     const [loading,setLoading]=useState(true);
     const [columnInf, setColumnInf] = useState<IDBFieldDef[]>([]);
+
+    if (!secCtx.googleSheetAuthInfo.googleSheetId || secCtx.googleSheetAuthInfo.googleSheetId === 'NA') {
+        secCtx.reloadGoogleSheetAuthInfo();
+    }
     const reload = async () => {
         let whereArray = (getPageFilters(pageState, table) as any) as ISqlRequestWhereItem[];
         const order = getPageSorts(pageState, table);
@@ -61,7 +65,7 @@ export function GenList(props: IGenListProps) {
         }
         
         ld();        
-    },[table || 'NA', pageState.pageProps.reloadCount, paggingInfo.pos, paggingInfo.total]);
+    },[table || 'NA', pageState.pageProps.reloadCount, paggingInfo.pos, paggingInfo.total, secCtx.googleSheetAuthInfo.googleSheetId]);
 
     const doAdd = (data: ItemType, id: FieldValueType) => {        
         return helper.saveData(data,id, true).then(res => {
