@@ -141,7 +141,7 @@ export function createHelper(rootCtx: RootState.IRootPageState, ctx: IIncomeExpe
 
             const sqlRes = await sqlAdd(table, submitData, !id);;
             if (!saveToSheet) return sqlRes;
-            if (!googleSheetId) return sqlRes;
+            if (!googleSheetId || googleSheetId === 'NA') return sqlRes;
 
             const sheetMapper = (sheetMapping); //getTableNameToSheetMapping
             if (sheetMapper) {
