@@ -12,6 +12,7 @@ export type FieldValueType = string | number | null;
 import * as RootState from '../states/RootState'
 import { tableNameToDefinitions } from './defs/allDefs';
 import { DataToDbSheetMapping, ITableAndSheetMappingInfo } from './datahelperTypes';
+import { checkLoginExpired } from '../states/RootState';
 
 interface IOpts {
     whereArray: ISqlRequestWhereItem[];
@@ -121,16 +122,9 @@ export function createHelper(rootCtx: RootState.IRootPageState, ctx: IIncomeExpe
             })) as {
                 total: number;
                 rows: any[];
+                error?: string;
                 };
-            if ((res as any).error === 'not authorized') {
-                rootCtx.setUserInfo(old => {                    
-                    return {
-                        ...old,
-                        id: '',
-                        token: ''
-                    };
-                })
-            }
+            checkLoginExpired(rootCtx, res);
             return res;
         },
         saveData: async (data, id: string, saveToSheet: boolean) => {

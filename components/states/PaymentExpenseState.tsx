@@ -14,7 +14,7 @@ import {
     IStringBoolMap,
     IModelsDict,
 } from '../reportTypes';
-import { useRootPageContext } from './RootState';
+import { checkLoginExpired, useRootPageContext } from './RootState';
 import { IEditTextDropdownItem } from '../generic/GenericDropdown';
 
 export const TOTALCOLNAME = 'coltotal';
@@ -118,10 +118,10 @@ export function PaymentExpenseStateWrapper(props: {
 
     function reloadGoogleSheetAuthInfo() {
         return getSheetAuthInfo().then(auth => {
-            if (auth)
+            if (auth.error) {
+                checkLoginExpired(rootCtx, auth);
+            } else {            
                 setGoogleSheetAuthinfo(auth);
-            else {
-                console.log('error laod gssheet ids ', auth);
             }
             return auth;
         })

@@ -144,15 +144,7 @@ export function removeLoginToken() {
 }
 
 
-export function getLoginInfo(): ILoginResponse {
-    if (typeof window == 'undefined') {
-        //runnng on server
-        return null;
-    }
-    const infoStr = localStorage.getItem('login.info');
-    if (!infoStr) return null;
-    return JSON.parse(infoStr) as ILoginResponse;
-}
+
 
 export async function registerUser({ username, firstName, lastName }) {
     console.log('in register')
@@ -434,16 +426,17 @@ interface IGoogleAuthInfo {
 
 export type IGoogleSheetAuthInfo = {
     googleSheetId: string;
+    error?: string;
 } & IGoogleAuthInfo;
 
 export async function getSheetAuthInfo(): Promise<IGoogleSheetAuthInfo> {
     const googleAuthInfos = await sqlGet({
         table: 'googleApiCreds',
     }).then((r: { rows: IGoogleSheetAuthInfo[], error: string }) => {        
-        if (r.error) return r;
-        return r.rows;
+        if (r.error) return r as unknown as IGoogleSheetAuthInfo;
+        return r.rows[0];
     });
-    return googleAuthInfos[0];
+    return googleAuthInfos;
 }
 
 export async function saveGoodSheetAuthInfo(authInfo: IGoogleSheetAuthInfo) {

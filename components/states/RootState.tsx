@@ -1,6 +1,6 @@
 import { createContext, SetStateAction, useContext, useState, Dispatch } from 'react';
 //import {IPageState} from '../types'
-import { getLoginInfo } from '../api'
+
 import { ILoginResponse } from '../types';
 
 export interface IRootPageState {
@@ -39,6 +39,16 @@ export const getSideBarCurrentSelectedItemName = (ctx:IRootPageState)=>{
     return null;
 }
 
+export function getLoginInfo(): ILoginResponse {
+    if (typeof window == 'undefined') {
+        //runnng on server
+        return null;
+    }
+    const infoStr = localStorage.getItem('login.info');
+    if (!infoStr) return null;
+    return JSON.parse(infoStr) as ILoginResponse;
+}
+
 export function RootPageStateWrapper({ children }) {
     const [sideBarStates, setSideBarStates] = useState({});
     //const [pageProps, setPageProps] = useState({});
@@ -62,4 +72,17 @@ export function RootPageStateWrapper({ children }) {
 
 export function useRootPageContext(): IRootPageState {
     return useContext(PageNavContext);
+}
+
+
+export function checkLoginExpired(rootCtx: IRootPageState, res: {error?: string}) {
+    if (res.error === 'not authorized') {
+        rootCtx.setUserInfo(old => {
+            return {
+                ...old,
+                id: '',
+                token: ''
+            };
+        })
+    }
 }
