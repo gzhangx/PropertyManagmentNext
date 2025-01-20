@@ -128,26 +128,46 @@ export function createHelper(rootCtx: RootState.IRootPageState, ctx: IIncomeExpe
             return res;
         },
         saveData: async (data, id: string, saveToSheet: boolean) => {
+            let idField: string = '';
             const submitData = accModelFields().reduce((acc, f) => {
                 acc[f.field] = data[f.field];
+                if (f.isId && !f.userSecurityField) {
+                    idField = f.field;
+                }
                 return acc;
             }, {});
 
             const sqlRes = await sqlAdd(table, submitData, !id);;
             if (!saveToSheet) return sqlRes;
             if (!googleSheetId || googleSheetId === 'NA') return sqlRes;
+            const newId = sqlRes.id;
+            if (!id && !newId) {
+                return sqlRes;
+            }
 
             const sheetMapper = (sheetMapping); //getTableNameToSheetMapping
             if (sheetMapper) {
+                let sheetIdField: string = '';
                 const values = sheetMapper.mapping.map(name => {
-                    const val = data[name];
+                    let val: string = data[name];
+                    if (idField  === name) {
+                        sheetIdField = name;
+                        if (!val) {
+                            val = newId;
+                        }
+                    }                    
                     return formatFieldValue(name, val);
                 })
 
                 if (id) {
-                    await updateSheet('update', googleSheetId, `'${sheetMapper.sheetName}'!A1`, [values]);
+                    if (sheetIdField) {
+                        await updateSheet('update', googleSheetId, `'${sheetMapper.sheetName}'!A1`, [values]);
+                    } else {
+
+                    }
                 } else {
-                    await updateSheet('append', googleSheetId, `'${sheetMapper.sheetName}'!A1`, [values]);
+                    //`'${sheetMapper.sheetName}'!A1`
+                    await updateSheet('append', googleSheetId, sheetMapper.sheetName, [values]);
                 }
             }
             
