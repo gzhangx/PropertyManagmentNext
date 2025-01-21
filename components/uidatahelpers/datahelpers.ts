@@ -1,6 +1,7 @@
 import {
     getModel, sqlGet, sqlAdd, sqlDelete, 
     ISqlRequestWhereItem, updateSheet,
+    googleSheetRead,
 } from '../api';
 import { ISqlOrderDef, IGetModelReturn, IDBFieldDef, TableNames, ISqlDeleteResponse } from '../types'
 import { get } from 'lodash';
@@ -11,7 +12,7 @@ export type FieldValueType = string | number | null;
 
 import * as RootState from '../states/RootState'
 import { tableNameToDefinitions } from './defs/allDefs';
-import { DataToDbSheetMapping, ITableAndSheetMappingInfo } from './datahelperTypes';
+import { ALLFieldNames, DataToDbSheetMapping, ITableAndSheetMappingInfo } from './datahelperTypes';
 import { checkLoginExpired } from '../states/RootState';
 
 interface IOpts {
@@ -147,7 +148,7 @@ export function createHelper(rootCtx: RootState.IRootPageState, ctx: IIncomeExpe
 
             const sheetMapper = (sheetMapping); //getTableNameToSheetMapping
             if (sheetMapper) {
-                let sheetIdField: string = '';
+                let sheetIdField: ALLFieldNames = '';
                 const values = sheetMapper.mapping.map(name => {
                     let val: string = data[name];
                     if (idField  === name) {
@@ -161,13 +162,33 @@ export function createHelper(rootCtx: RootState.IRootPageState, ctx: IIncomeExpe
 
                 if (id) {
                     if (sheetIdField) {
-                        await updateSheet('update', googleSheetId, `'${sheetMapper.sheetName}'!A1`, [values]);
+                        const sheetData = await loadSheetData(googleSheetId, sheetMapper);
+                        const idPos = sheetMapper.mapping.indexOf(sheetIdField);
+                        if (idPos >= 0) {
+                            let foundRow = -1;
+                            for (let row = 0; row < sheetData.values.length; row++) {
+                                if (sheetData.values[row][idPos] === id) {
+                                    foundRow = row;
+                                    break;
+                                }
+                            }
+                            console.log(`sheetData printout idPos=${idPos} found=${foundRow} newId=${newId} id=${id}`, foundRow, sheetData, sqlRes)
+                            if (foundRow >= 0) {
+                                await updateSheet('update', googleSheetId, sheetMapper.sheetName, {
+                                    row: foundRow,
+                                    values: [values]
+                                });
+                            }
+                        }
                     } else {
 
                     }
                 } else {
                     //`'${sheetMapper.sheetName}'!A1`
-                    await updateSheet('append', googleSheetId, sheetMapper.sheetName, [values]);
+                    await updateSheet('append', googleSheetId, sheetMapper.sheetName, {
+                        row: 0,
+                        values: [values]
+                    });
                 }
             }
             
@@ -176,6 +197,11 @@ export function createHelper(rootCtx: RootState.IRootPageState, ctx: IIncomeExpe
         deleteData: async ids => sqlDelete(table, ids),
     }
     return helper;
+}
+
+async function loadSheetData(sheetId: string, sheetMapper: DataToDbSheetMapping) {
+    const res = await googleSheetRead(sheetId, 'read', `'${sheetMapper.sheetName}'!${sheetMapper.range}`);
+    return res;
 }
 
 function getTableNameToSheetMapping(sheetMapping?: DataToDbSheetMapping) {

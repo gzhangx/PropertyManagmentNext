@@ -363,7 +363,9 @@ export async function deleteById(tableName: TableNames, ids: string[]) {
 
 
 
-export async function googleSheetRead(id:string, op:string, range:string) : Promise<{
+export async function googleSheetRead(id: string, op: string, range: string): Promise<{
+    range: string;
+    message: string;
     values: string[][];
 }>{
     return doPost(`misc/sheet/${op}/${id}/${range}`, {}).then(r => {
@@ -446,6 +448,9 @@ export async function saveGoodSheetAuthInfo(authInfo: IGoogleSheetAuthInfo) {
 }
 
 
-export async function updateSheet(op: 'update' | 'append', id: string, range: string, data: string[][]) {
+export async function updateSheet(op: 'update' | 'append', id: string, range: string, data: {
+    row: number;
+    values: string[][];
+}) {
     return await doPost(`misc/sheet/${op}/${id}/${range}`, data);
 }
