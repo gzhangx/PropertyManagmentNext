@@ -99,12 +99,22 @@ export function createHelper(rootCtx: RootState.IRootPageState, ctx: IIncomeExpe
         //         return val;
         // }
     }
+    const helperState = {
+        idField: '' as ALLFieldNames,
+        sheetIdPos: -1,
+    };
     const helper: IHelper = {
         getModelFields: accModelFields,
         loadModel: async () => {
             await getTableModel(ctx, table);
             const model = accModel();
             innerState.dateFields = model.fields.filter(f => f.type === 'date').map(f => f.field);
+            accModelFields().forEach(f => {                
+                if (f.isId && !f.userSecurityField) {
+                    helperState.idField = f.field as ALLFieldNames;
+                    helperState.sheetIdPos = sheetMapping.mapping.indexOf(helperState.idField);
+                }
+            });
             return model;
         },        
         loadData: async (opts = {} as IOpts) => {
@@ -128,13 +138,9 @@ export function createHelper(rootCtx: RootState.IRootPageState, ctx: IIncomeExpe
             checkLoginExpired(rootCtx, res);
             return res;
         },
-        saveData: async (data, id: string, saveToSheet: boolean) => {
-            let idField: string = '';
+        saveData: async (data: any, id: string, saveToSheet: boolean) => {
             const submitData = accModelFields().reduce((acc, f) => {
                 acc[f.field] = data[f.field];
-                if (f.isId && !f.userSecurityField) {
-                    idField = f.field;
-                }
                 return acc;
             }, {});
 
@@ -148,11 +154,9 @@ export function createHelper(rootCtx: RootState.IRootPageState, ctx: IIncomeExpe
 
             const sheetMapper = (sheetMapping); //getTableNameToSheetMapping
             if (sheetMapper) {
-                let sheetIdField: ALLFieldNames = '';
                 const values = sheetMapper.mapping.map(name => {
                     let val: string = data[name];
-                    if (idField  === name) {
-                        sheetIdField = name;
+                    if (helperState.idField  === name) {
                         if (!val) {
                             val = newId;
                         }
@@ -161,18 +165,17 @@ export function createHelper(rootCtx: RootState.IRootPageState, ctx: IIncomeExpe
                 })
 
                 if (id) {
-                    if (sheetIdField) {
-                        const sheetData = await loadSheetData(googleSheetId, sheetMapper);
-                        const idPos = sheetMapper.mapping.indexOf(sheetIdField);
-                        if (idPos >= 0) {
+                    if (helperState.idField) {
+                        const sheetData = await loadSheetData(googleSheetId, sheetMapper);                        
+                        if (helperState.sheetIdPos >= 0) {
                             let foundRow = -1;
                             for (let row = 0; row < sheetData.values.length; row++) {
-                                if (sheetData.values[row][idPos] === id) {
+                                if (sheetData.values[row][helperState.sheetIdPos] === id) {
                                     foundRow = row;
                                     break;
                                 }
                             }
-                            console.log(`sheetData printout idPos=${idPos} found=${foundRow} newId=${newId} id=${id}`, foundRow, sheetData, sqlRes)
+                            console.log(`sheetData printout idPos=${helperState.sheetIdPos} found=${foundRow} newId=${newId} id=${id}`, foundRow, sheetData, sqlRes)
                             if (foundRow >= 0) {
                                 await updateSheet('update', googleSheetId, sheetMapper.sheetName, {
                                     row: foundRow,
@@ -181,7 +184,7 @@ export function createHelper(rootCtx: RootState.IRootPageState, ctx: IIncomeExpe
                             }
                         }
                     } else {
-
+                        //no sheet id, must match against old data
                     }
                 } else {
                     //`'${sheetMapper.sheetName}'!A1`

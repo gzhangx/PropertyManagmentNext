@@ -10,11 +10,12 @@ import { useIncomeExpensesContext } from '../states/PaymentExpenseState'
 import { IGenGrudProps } from './GenCrud';
 import * as RootState from '../states/RootState'
 import moment from 'moment';
-import { DataToDbSheetMapping } from './datahelperTypes';
+import { ALLFieldNames, DataToDbSheetMapping } from './datahelperTypes';
 
 
 
-export type ItemType = { [key: string]: FieldValueType; };
+type ItemTypeDict = { [p in ALLFieldNames]?: FieldValueType; };
+export type ItemType = ItemTypeDict & { _vdOriginalRecord: ItemTypeDict; }; //{ [key: string]: FieldValueType; };
 export interface IGenGrudAddProps extends IGenGrudProps {
     columnInfo: IDBFieldDef[];
     editItem?: ItemType;
@@ -63,7 +64,7 @@ export const GenCrudAdd = (props: IGenGrudAddProps) => {
             idName = col.field;
         }
         return acc;
-    }, {});
+    }, {} as ItemType);
     const requiredFields = columnInfo.filter(c => c.required && !c.isId && !isColumnSecurityField(c)).map(c => c.field);
     const requiredFieldsMap = requiredFields.reduce((acc, f) => {
         acc[f] = true;

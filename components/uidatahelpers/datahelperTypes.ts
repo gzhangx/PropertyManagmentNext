@@ -10,6 +10,7 @@ export type ALLFieldNames = '' | 'address' | 'city' | 'zip' | 'ownerName' | 'rec
     | 'expenseCategoryId' | 'description' | 'workerID' | 'maintenanceID'
     | 'workerName' | 'taxName' | 'taxID' | 'state'
     | 'reasonOfTermination' | 'terminationDate' | 'terminationComments'
+    | 'id'
     ;
 
 
