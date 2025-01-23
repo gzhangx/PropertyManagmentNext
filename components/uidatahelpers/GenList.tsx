@@ -12,7 +12,7 @@ import { IDBFieldDef } from '../types';
 
 //props: table and displayFields [fieldNames]
 export function GenList(props: IGenListProps) {
-    const { table, fkDefs, initialPageSize } = props;
+    const { table, initialPageSize } = props;
     const secCtx = useIncomeExpensesContext();
     const rootCtx = RootState.useRootPageContext();
     const [paggingInfo, setPaggingInfo] = useState({
@@ -91,7 +91,7 @@ export function GenList(props: IGenListProps) {
             (loading||!columnInf)? <p>Loading</p>:
                 <div>
                     <GenCrud
-                        fkDefs={fkDefs || getFKDefs()}
+                        fkDefs={getFKDefs()}
                     paggingInfo={paggingInfo} setPaggingInfo={setPaggingInfo}
                     reload = {reload}
                     pageState = {pageState}

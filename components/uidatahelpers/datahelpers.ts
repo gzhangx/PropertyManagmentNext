@@ -14,6 +14,7 @@ import * as RootState from '../states/RootState'
 import { tableNameToDefinitions } from './defs/allDefs';
 import { ALLFieldNames, DataToDbSheetMapping, ITableAndSheetMappingInfo } from './datahelperTypes';
 import { checkLoginExpired } from '../states/RootState';
+import { ItemType } from './GenCrudAdd';
 
 interface IOpts {
     whereArray: ISqlRequestWhereItem[];
@@ -39,7 +40,6 @@ export interface IGenListProps extends ITableAndSheetMappingInfo { //copied from
     //table: TableNames;
     //columnInfo: IColumnInfo[];    //auto populated
     //displayFields?: IDisplayFieldType;
-    fkDefs?: IFKDefs;
     initialPageSize?: number;        
     /*
     paggingInfo: {
@@ -71,6 +71,53 @@ export async function getTableModel(ctx: IIncomeExpensesContextValue, table: Tab
     return mod.fields;
 }
 
+
+export function stdFormatValue(def: IDBFieldDef, v: string | number, fieldName?: string): { error?: string; v: string | number; } {
+    if (def.type === 'decimal') {
+        if (v === null || v === undefined) {
+            //acc[fieldName] = 'invalid(null)';
+            //sd.invalid = fieldName;
+            //acc.invalidDesc = `${fieldName} Invalid(null)`;
+            return {
+                error: 'invalid(null)',
+                v,
+            }
+        }
+        if (typeof v === 'string') {
+            v = v.replace(/[\$, ]/g, '').trim();
+            const neg = v.match(/\(([0-9]+(.[0-9]*){0,1}){1}\)/);
+            if (neg) {
+                v = '-' + neg[1];
+            }
+            v = parseFloat(v);
+        }
+        if (Number.isNaN(v) || !v) v = 0;
+        return {
+            v,
+        }
+    }
+    
+    if (def.type === 'date' || def.type === 'datetime') {
+        const mt = moment(v);
+        if (!mt.isValid()) {
+            //sd.invalid = fieldName;
+            //acc.invalidDesc = `bad date ${fieldName}:${v}`;
+            return {
+                error: `bad date ${fieldName}:${v}`,
+                v,
+            }
+        } else {
+            const dateStr = mt.format('YYYY-MM-DD');
+            //acc[fieldName] = dateStr;
+            return {
+                v: dateStr,
+            }
+        }
+    }
+    return {
+        v,
+    }
+}
 export function createHelper(rootCtx: RootState.IRootPageState, ctx: IIncomeExpensesContextValue, props: ITableAndSheetMappingInfo): IHelper {
     const googleSheetId: string = ctx.googleSheetAuthInfo.googleSheetId;
     //sheetMapping?: DataToDbSheetMapping
@@ -138,9 +185,11 @@ export function createHelper(rootCtx: RootState.IRootPageState, ctx: IIncomeExpe
             checkLoginExpired(rootCtx, res);
             return res;
         },
-        saveData: async (data: any, id: string, saveToSheet: boolean) => {
+        saveData: async (data: ItemType, id: string, saveToSheet: boolean) => {
+            const fieldTypeMapping: Map<string, IDBFieldDef> = new Map();
             const submitData = accModelFields().reduce((acc, f) => {
-                acc[f.field] = data[f.field];
+                acc[f.field] = data[f.field];                
+                fieldTypeMapping.set(f.field, f);                
                 return acc;
             }, {});
 
@@ -155,18 +204,18 @@ export function createHelper(rootCtx: RootState.IRootPageState, ctx: IIncomeExpe
             const sheetMapper = (sheetMapping); //getTableNameToSheetMapping
             if (sheetMapper) {
                 const values = sheetMapper.mapping.map(name => {
-                    let val: string = data[name];
+                    let val = data[name];
                     if (helperState.idField  === name) {
                         if (!val) {
                             val = newId;
                         }
                     }                    
-                    return formatFieldValue(name, val);
+                    return formatFieldValue(name, val as string);
                 })
 
                 if (id) {
-                    if (helperState.idField) {
-                        const sheetData = await loadSheetData(googleSheetId, sheetMapper);                        
+                    const sheetData = await loadSheetData(googleSheetId, sheetMapper);                        
+                    if (helperState.idField) {                            
                         if (helperState.sheetIdPos >= 0) {
                             let foundRow = -1;
                             for (let row = 0; row < sheetData.values.length; row++) {
@@ -185,6 +234,46 @@ export function createHelper(rootCtx: RootState.IRootPageState, ctx: IIncomeExpe
                         }
                     } else {
                         //no sheet id, must match against old data
+                        const original = data._vdOriginalRecord;
+                        let foundRow = -1;
+                        function matchToLower(val: string, fieldName: string) {
+                            if (!val) {
+                                if (val === undefined) return '';
+                                if (val === null) return '';
+                                return val;
+                            }
+                            val = val.toString().trim();
+                            const def = fieldTypeMapping.get(fieldName);
+                            if (!def) return val;
+                            return stdFormatValue(def, val, fieldName).v;
+                        }
+                        for (let row = 0; row < sheetData.values.length; row++) {
+                            const rowData = sheetData.values[row];
+                            let ok = true;
+                            let pos = 0;
+                            let debugKeepMatching = false;
+                            for (const fielName of sheetMapper.mapping) {
+                                if (!fielName) continue;
+                                //console.log('matching row', row, fielName, 'rowData', rowData[pos], 'f=', matchToLower(rowData[pos], fielName), `data '${data[fielName]}'`, 'f=',matchToLower(data[fielName] as string, fielName))
+                                if (matchToLower(rowData[pos], fielName) !== matchToLower(data[fielName] as string, fielName)) {
+                                    ok = false;
+                                    if (debugKeepMatching) {
+                                        console.log('!! not matching row', row, fielName, 'rowData', rowData[pos], 'f=', matchToLower(rowData[pos], fielName), `data '${data[fielName]}'`, 'f=', matchToLower(data[fielName] as string, fielName))    
+                                    }
+                                    if (!debugKeepMatching)break;
+                                } else {
+                                    console.log('matched ', row, fielName, rowData[pos],'row=',row)
+                                    console.log('matching row', row, fielName, 'rowData', rowData[pos], 'f=', matchToLower(rowData[pos], fielName), `data '${data[fielName]}'`, 'f=', matchToLower(data[fielName] as string, fielName))
+                                    debugKeepMatching = true;
+                                }
+                                pos++;
+                            }
+                            if (ok) {
+                                foundRow = row;
+                                break;
+                            }
+                            console.log(`mathching row ${foundRow}`, row);
+                        }
                     }
                 } else {
                     //`'${sheetMapper.sheetName}'!A1`

@@ -43,8 +43,6 @@ export interface IGenGrudProps {
     //onCancel: (data?: ItemType) => void;
     //onError?: (err: { message: string; missed: any; }) => void;
 
-    customSelData?: { [key: string]: IEditTextDropdownItem[] };
-    customFields?: ItemType;
     //show: boolean;
     table: TableNames;
     //desc?: string;
@@ -59,8 +57,6 @@ export const GenCrud = (props: IGenGrudProps) => {
         columnInfo,
         displayFields,
         rows,
-        customSelData,
-        customFields = {},
         pageState,
         table,
         paggingInfo, setPaggingInfo,
@@ -301,20 +297,8 @@ export const GenCrud = (props: IGenGrudProps) => {
                                         <tr key={ind}>
                                             {
                                                 displayFieldsStripped.map((fn, find) => {
-                                                    const custFieldType = customFields[fn];
                                                     let val = row[fn]
                                                     let dsp = val;
-                                                    if (custFieldType === 'custom_select') {
-                                                        dsp = customSelData[fn];
-                                                        if (!dsp || !dsp.filter) dsp = `***** unmapped field ${fn}`;
-                                                        else {
-                                                            dsp = dsp.filter(d => d.value === val)[0];
-                                                            if (!dsp) dsp = `**** field ${fn} value ${val} not mapped`;
-                                                            else {
-                                                                dsp = dsp.label;
-                                                            }
-                                                        }
-                                                    }
                                                     return <td key={find}>{dsp}</td>
                                                 })
                                             }

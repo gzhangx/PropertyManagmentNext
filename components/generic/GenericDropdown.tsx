@@ -76,7 +76,7 @@ export function GenericDropdown(props: IGenericDropdownProps) {
 
     useEffect(() => {
         setCurDisplayValue(getSelectedText());
-    }, [true])
+    }, [getSelectedText()])
     const showClass = `dropdown-list ${className || 'dropdown-menu dropdown-menu-right shadow animated--grow-in'} ${show && 'show'}`;
     
     const dblClickTimer = useRef<NodeJS.Timeout>(null);

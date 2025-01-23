@@ -35,13 +35,10 @@ export const GenCrudAdd = (props: IGenGrudAddProps) => {
     const { columnInfo, doAdd, onCancel,
         editItem, //only available during edit
         onError,
-        customSelData,
-        customFields = {},
         show,
         table,
         desc,
         fkDefs,
-        displayFields,
     }
         = props;
         
@@ -71,10 +68,13 @@ export const GenCrudAdd = (props: IGenGrudAddProps) => {
         return acc;
     }, {});
 
-    const [data, setData] = useState(initData);
+    const [data, setData] = useState<ItemType>({
+        ...initData,
+        _vdOriginalRecord: initData,
+     });
     //const [errorText, setErrorText] = useState('');
     const [addNewForField, setAddNewForField] = useState('');
-    const [optsData, setOptsData] = useState(customSelData || {});
+    const [optsData, setOptsData] = useState<{[keyName:string]:IEditTextDropdownItem[]}>({});
     const handleChange = e => {
         const { name, value } = e.target;
         setData({ ...data, [name]: value });
@@ -127,7 +127,7 @@ export const GenCrudAdd = (props: IGenGrudAddProps) => {
                         const optData = optDataOrig.rows;
                         cur = Object.assign({}, cur, {
                             [optKey]: processForeignKey(c.foreignKey, optData)
-                        });
+                        });                        
                     }
                 }
             }
@@ -253,7 +253,7 @@ export const GenCrudAdd = (props: IGenGrudAddProps) => {
                         } 
 
 
-                        const createSelection = (optName:string, colField:string) => {
+                        const createSelection = (optName: string, colField: string) => {                            
                             const selOptions = optsData[optName];
                             if (!selOptions) return null;
                             const options = selOptions.map(s=>({...s, selected: false,})).concat({
@@ -275,7 +275,7 @@ export const GenCrudAdd = (props: IGenGrudAddProps) => {
                                             } else
                                                 setData({ ...data, [colField]: s.value, [colField+'_labelDesc']: s.label });    
                                         }
-                                    }                                    
+                                    }
                                 ></EditTextDropdown>
                             </>
                         };
@@ -284,10 +284,7 @@ export const GenCrudAdd = (props: IGenGrudAddProps) => {
                             const optKey = c.foreignKey.table;
                             foreignSel = createSelection(optKey, c.field);
                         }
-                        const custFieldType = customFields[c.field];
-                        if (custFieldType === 'custom_select') {
-                            foreignSel = createSelection(c.field, c.field);
-                        }
+
                         return <div className='row' key={cind}>
                             <div>{c.desc}</div>
                             <div className={checkErrorInd(c)}>

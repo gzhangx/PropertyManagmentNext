@@ -15,6 +15,7 @@ import moment from "moment/moment";
 import {get, keyBy} from "lodash";
 import * as lutil from "./loads/util";
 import { ALLFieldNames } from '../../uidatahelpers/datahelperTypes';
+import { stdFormatValue } from '../../uidatahelpers/datahelpers';
 
 
 export async function loadPageSheetDataRaw(sheetId: string, pageState: IPageStates): Promise<IPageDataDetails> {
@@ -237,34 +238,49 @@ export function stdProcessSheetData(sheetData: ICompRowData[], pageState: IPageS
                         }                    
                     break;
                 default:                
-                    if (def.type === 'decimal') {
-                        if (v === null || v === undefined) {
-                            acc[fieldName] = 'invalid(null)';
-                            sd.invalid = fieldName;
-                            acc.invalidDesc = `${fieldName} Invalid(null)`;
-                        }
-                        if (typeof v === 'string') {
-                            v = v.replace(/[\$, ]/g, '').trim();
-                            const neg = v.match(/\(([0-9]+(.[0-9]*){0,1}){1}\)/);
-                            if (neg) {
-                                v = '-' + neg[1];
+                    switch (def.type) {
+                        case 'date':
+                        case 'datetime': 
+                        case 'decimal':
+                            const fmted = stdFormatValue(def, v, fieldName);
+                            if (fmted.error) {
+                                acc[fieldName] = fmted.error;
+                                sd.invalid = fieldName;
+                                acc.invalidDesc = `${fieldName}::=>${v} ${fmted.error}`;    
                             }
-                            v = parseFloat(v);
-                        }
-                        if (Number.isNaN(v) || !v) v = 0;
-                        acc[fieldName] = v;
-                    } else if (def.type === 'date') {
-                        const mt = moment(v);
-                        if (!mt.isValid()) {
-                            sd.invalid = fieldName;
-                            acc.invalidDesc = `bad date ${fieldName}:${v}`;
-                        } else {
-                            const dateStr = mt.format('YYYY-MM-DD');
-                            acc[fieldName] = dateStr;
-                        }
-                    } else {
-                        acc[fieldName] = v || '';
+                            acc[fieldName] = v;    
+                            break;
+                        default:
+                            acc[fieldName] = v || '';
                     }
+                    // if (def.type === 'decimal') {
+                    //     if (v === null || v === undefined) {
+                    //         acc[fieldName] = 'invalid(null)';
+                    //         sd.invalid = fieldName;
+                    //         acc.invalidDesc = `${fieldName} Invalid(null)`;
+                    //     }
+                    //     if (typeof v === 'string') {
+                    //         v = v.replace(/[\$, ]/g, '').trim();
+                    //         const neg = v.match(/\(([0-9]+(.[0-9]*){0,1}){1}\)/);
+                    //         if (neg) {
+                    //             v = '-' + neg[1];
+                    //         }
+                    //         v = parseFloat(v);
+                    //     }
+                    //     if (Number.isNaN(v) || !v) v = 0;
+                    //     acc[fieldName] = v;
+                    // } else if (def.type === 'date') {
+                    //     const mt = moment(v);
+                    //     if (!mt.isValid()) {
+                    //         sd.invalid = fieldName;
+                    //         acc.invalidDesc = `bad date ${fieldName}:${v}`;
+                    //     } else {
+                    //         const dateStr = mt.format('YYYY-MM-DD');
+                    //         acc[fieldName] = dateStr;
+                    //     }
+                    // } else {
+                    //     acc[fieldName] = v || '';
+                    // }
                     break;                
             }
         });
