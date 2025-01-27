@@ -13,6 +13,7 @@ import { matchItems, loadPageSheetDataRaw, stdProcessSheetData, getHouseState } 
 import * as inserter from './loads/inserter';
 import { deleteById } from '../../api';
 import { IDBFieldDef, TableNames } from '../../types';
+import { stdFormatValue } from '../../uidatahelpers/datahelpers';
 
 export async function createEntity(params: IPageParms, changeRow: ISheetRowData, inserter: IDbInserter) {
     //const state = curPageState;
@@ -110,9 +111,10 @@ export async function genericPageLoader(prms: IPageParms, pageState: IPageStates
                 switch (fd.type) {
                     case 'date':
                     case 'datetime':
-                        return YYYYMMDDFormater(data[fd.field] as string)
+                        //return YYYYMMDDFormater(data[fd.field] as string)
                     case 'decimal':
-                        return parseFloat(data[fd.field] as string).toFixed(2);
+                        //return parseFloat(data[fd.field] as string).toFixed(2);
+                        return stdFormatValue(fd, data[fd.field], fd.field).v;
                     default:
                         return (data[fd.field] as string || '').toString().trim();
                 }
