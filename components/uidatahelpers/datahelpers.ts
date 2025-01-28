@@ -71,10 +71,9 @@ export async function getTableModel(ctx: IIncomeExpensesContextValue, table: Tab
     return mod.fields;
 }
 
-
 export function stdFormatValue(def: IDBFieldDef, v: string | number, fieldName?: string): { error?: string; v: string | number; } {
     if (def.type === 'decimal') {
-        if (v === null || v === undefined) {
+        if (v === null || v === undefined || v === '') {
             //acc[fieldName] = 'invalid(null)';
             //sd.invalid = fieldName;
             //acc.invalidDesc = `${fieldName} Invalid(null)`;
@@ -91,7 +90,13 @@ export function stdFormatValue(def: IDBFieldDef, v: string | number, fieldName?:
             }
             v = parseFloat(v);
         }
-        if (Number.isNaN(v) || !v) v = 0;
+        if (Number.isNaN(v)) {
+            return {
+                error: `NAN=>${v}`,
+                v,
+            }
+        }
+        if (!v) v = 0;
         return {
             v,
         }

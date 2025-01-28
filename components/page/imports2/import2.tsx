@@ -301,6 +301,7 @@ function stdTryDisplayItemForCreate(params: IPageParms, state: IPageStates, shee
         let invalidInfo = '';
         if (!sheetRow.needUpdate) invalidInfo = 'No Need to update ';
         if (sheetRow.invalid) invalidInfo += ' Invalid: ' + sheetRow.invalid; 
+        if (sheetRow.sheetDataInvalidDontShowReason) invalidInfo += sheetRow.sheetDataInvalidDontShowReason;
         return <button disabled={!sheetRow.needUpdate || !!sheetRow.invalid} onClick={async () => {
             //setProgressStr('processing')
             if (sheetRow.invalid || !sheetRow.needUpdate) return;
@@ -322,7 +323,7 @@ function stdTryDisplayItemForCreate(params: IPageParms, state: IPageStates, shee
             // }
             //setDlgContent(createPaymentFunc(state, all, rowInd))
 
-        }}> Click to create (${itemVal}) ${ invalidInfo }</button>
+        }}> Click to create (field={ field} val={itemVal}) {invalidInfo} {sheetRow.sheetDataInvalidDontShowReason}</button>
     }
     if (sheetRow.invalid) {
         if (showCreateBtn) {
@@ -348,7 +349,7 @@ function displayItems(pagePrms: IPageParms, curPageState: IPageStates) {
         return true;
     }
     const sheetDsp = curPageState.pageDetails.dataRows
-        .filter(x => (!x.matched || x.needUpdate || curPageState.showMatchedItems) && belongsToOwner(x.importSheetData))
+        .filter(x => (!x.sheetDataInvalidDontShowReason &&  (!x.matched || x.needUpdate || curPageState.showMatchedItems)) && belongsToOwner(x.importSheetData))
         .map((sheetRow, ind) => {
             const showItem = (dc: IDisplayColumnInfo) => {
                 const field = dc.field;

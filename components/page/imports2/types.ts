@@ -77,6 +77,7 @@ export interface ISheetRowData {
     matcherName: string;
     displayData: IStringDict;
     sheetIdField: SheetIdFieldNames;
+    sheetDataInvalidDontShowReason?: string;
 
     matchedById: SheetIdFieldNames; //when it is matched by Id for items that has an id on sheet
 }
@@ -137,7 +138,9 @@ export interface IPageParms {
 
 export interface IRowComparer {
     name: string;
-    getRowKey: (data: IDbSaveData, source:'DB'|'Sheet') => string;
+    getRowKey: (data: IDbSaveData, source: 'DB' | 'Sheet') => string;
+    getRowKeys: (data: IDbSaveData) => string[];
+    getSheetInvalidValues: (data: IDbSaveData) => string;
     //checkRowValid?: (data: IDbSaveData) => string | null;
 }
 

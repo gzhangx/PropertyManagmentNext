@@ -109,9 +109,11 @@ export function matchItems(pageDetails: IPageDataDetails, dbData: IDbSaveData[],
     });
     pageDetails.dbMatchData = dbMatchData;
     const sheetIdField = pageDetails.sheetIdField;
-    const dbIds: Map<string,IDbRowMatchData> = new Map();
+    const dbIds: Map<string, IDbRowMatchData> = new Map();
+    let debugItems: string[][] = [];
     const dbDataKeyed = dbMatchData.reduce((acc, d) => {
         const key = cmp.getRowKey(d.dbItemData, 'DB');
+        debugItems.push(cmp.getRowKeys(d.dbItemData));
         if (sheetIdField) {
             const id = d.dbItemData[sheetIdField] as string;
             if (id) {
@@ -132,6 +134,12 @@ export function matchItems(pageDetails: IPageDataDetails, dbData: IDbSaveData[],
     sheetData.map(sd => {
         if (sd.matchToKey) return;
         
+        const errors = cmp.getSheetInvalidValues(sd.importSheetData);
+        if (errors) {
+            sd.needUpdate = false;
+            sd.sheetDataInvalidDontShowReason = errors;
+            return;
+        }
         const key = cmp.getRowKey(sd.importSheetData, 'Sheet');
         const matchedAll = dbDataKeyed[key];
         if (matchedAll && matchedAll.length) {
@@ -144,6 +152,21 @@ export function matchItems(pageDetails: IPageDataDetails, dbData: IDbSaveData[],
                 matched.matchedToKey = key;
             }
         } else {
+            {
+                const dkeys = cmp.getRowKeys(sd.importSheetData);
+                //debug starts
+                let curFiltered = debugItems;
+                for (let d = 0; d < dkeys.length; d++) {
+                    const filtered = curFiltered.filter(di => {
+                        if (di[d] === '2020-11-17') {
+                            //console.log(`di cmp ${di[d]} ${dkeys[d]} equal=${di[d] === dkeys[d]}`)
+                        }                        
+                        return di[d] === dkeys[d];
+                    });
+                    if (filtered.length === 0) break;
+                    curFiltered = filtered;
+                }
+            }
             if (sheetIdField) {
                 const id: string = sd.importSheetData[sheetIdField] as string;
                 const matchedItemById = dbIds.get(id);
@@ -248,7 +271,7 @@ export function stdProcessSheetData(sheetData: ICompRowData[], pageState: IPageS
                                 sd.invalid = fieldName;
                                 acc.invalidDesc = `${fieldName}::=>${v} ${fmted.error}`;    
                             }
-                            acc[fieldName] = v;    
+                            acc[fieldName] = fmted.v;
                             break;
                         default:
                             acc[fieldName] = v || '';

@@ -121,6 +121,38 @@ export async function genericPageLoader(prms: IPageParms, pageState: IPageStates
             })                        
             return parts.join('-');
         },
+        getRowKeys: (data: IDbSaveData) => {
+            const parts = mappingColumnInfo.map(fd => {
+                switch (fd.type) {
+                    case 'date':
+                    case 'datetime':
+                    //return YYYYMMDDFormater(data[fd.field] as string)
+                    case 'decimal':
+                        //return parseFloat(data[fd.field] as string).toFixed(2);
+                        return (stdFormatValue(fd, data[fd.field], fd.field).v || '').toString();
+                    default:
+                        return (data[fd.field] as string || '').toString().trim();
+                }
+            })
+            return parts;
+        },
+        getSheetInvalidValues: (data: IDbSaveData) => {
+            const invalids: string[] = [];
+            mappingColumnInfo.forEach(fd => {
+                switch (fd.type) {
+                    case 'date':
+                    case 'datetime':
+                    //return YYYYMMDDFormater(data[fd.field] as string)
+                    case 'decimal':
+                        //return parseFloat(data[fd.field] as string).toFixed(2);
+                        const res = stdFormatValue(fd, data[fd.field], fd.field);
+                        if (res.error) {
+                            invalids.push(`${fd.field} '${data[fd.field]}' ${res.error}`)
+                        }
+                }
+            })
+            return invalids.join(',');
+        }
     };
     
         //page.rowComparers.forEach(cmp => {
