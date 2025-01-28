@@ -41,20 +41,7 @@ export interface IGenListProps extends ITableAndSheetMappingInfo { //copied from
     //sheetMapping?: DataToDbSheetMapping;
 }
 
-export async function getTableModel(ctx: IPageRelatedState, table: TableNames) :Promise<IDBFieldDef[]> {
-    let mod = ctx.modelsProp.models.get(table);
-    if (!mod) {
-        mod = await getModel(table);
-        ctx.modelsProp.models.set(table, mod);
-        ctx.modelsProp.setModels(old => {
-            return new Map([
-                ...old,
-                [table, mod],
-            ]);
-        });
-    }
-    return mod.fields;
-}
+
 
 export function stdFormatValue(def: IDBFieldDef, v: string | number, fieldName?: string): { error?: string; v: string | number; } {
     if (def.type === 'decimal') {
@@ -112,7 +99,7 @@ export function createHelper(rootCtx: RootState.IRootPageState, ctx: IPageRelate
     const googleSheetId: string = ctx.googleSheetAuthInfo.googleSheetId;
     //sheetMapping?: DataToDbSheetMapping
     const { table, sheetMapping } = props; 
-    if (!table) return null;
+    if (!table) return null;    
     const accModel = () => ctx.modelsProp.models.get(table);
     const accModelFields = () => get(accModel(), 'fields', [] as IDBFieldDef[]);
     const innerState = {
@@ -143,7 +130,7 @@ export function createHelper(rootCtx: RootState.IRootPageState, ctx: IPageRelate
     const helper: IHelper = {
         getModelFields: accModelFields,
         loadModel: async () => {
-            await getTableModel(ctx, table);
+            await ctx.modelsProp.getTableModel(table);
             const model = accModel();
             innerState.dateFields = model.fields.filter(f => f.type === 'date').map(f => f.field);
             accModelFields().forEach(f => {                
@@ -278,6 +265,7 @@ export function createHelper(rootCtx: RootState.IRootPageState, ctx: IPageRelate
         },
         deleteData: async ids => sqlDelete(table, ids),
     }
+
     return helper;
 }
 

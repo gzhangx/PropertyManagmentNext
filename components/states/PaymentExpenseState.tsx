@@ -199,7 +199,6 @@ export function PaymentExpenseStateWrapper(props: {
         rawExpenseData,
         payments,
         allMonthes,
-        setAllHouses,
         allHouses,
         monthes, setMonthes,
         curMonthSelection, setCurMonthSelection,

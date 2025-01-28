@@ -1,13 +1,16 @@
 import React, { useState, useEffect, useContext } from 'react';
-import { getHouseInfo, getSheetAuthInfo, IGoogleSheetAuthInfo } from '../api';
+import { getHouseInfo, getModel, getSheetAuthInfo, IGoogleSheetAuthInfo, sqlGet } from '../api';
 
-import { IPagePropsByTable } from '../types'
+import { IDBFieldDef, IPagePropsByTable, TableNames } from '../types'
 
 import {    
-    IHouseInfo,
+    IForeignKeyCombo,
+    IForeignKeyIdDesc,
+    IForeignKeyLookupMap,
+    IForeignKeyParsedRow,
     IModelsDict,
     IPageRelatedState,
-    TableNameToHelper,
+    IWorkerInfo,
 } from '../reportTypes';
 import { checkLoginExpired, useRootPageContext } from './RootState';
 
@@ -36,11 +39,10 @@ export function PageRelatedContextWrapper(props: {
 
     //month selection states    
 
-    const [models, setModels] = useState<IModelsDict>(new Map());   
-    const [allHouses, setAllHouses] = useState<IHouseInfo[]>([]); //{houseID, address}
-    
-    
-    const [tableToHelperMap, setTableTohelperMap] = useState<TableNameToHelper>(new Map());
+    const [models, setModels] = useState<IModelsDict>(new Map());
+
+
+    const [foreignKeyLoopkup, setForeignKeyLookup] = useState<IForeignKeyLookupMap>(new Map());
 
     function reloadGoogleSheetAuthInfo() {
         return getSheetAuthInfo().then(auth => {
@@ -57,10 +59,85 @@ export function PageRelatedContextWrapper(props: {
     }, [reloadCounter]);
 
 
-    useEffect(() => {
-        getHouseInfo().then(hs => setAllHouses(hs));
-    }, [reloadCounter]);
+    async function getTableModel(table: TableNames) :Promise<IDBFieldDef[]> {
+        let mod = models.get(table);
+        if (!mod) {
+            mod = await getModel(table);
+            models.set(table, mod);
+            setModels(old => {
+                return new Map([
+                    ...old,
+                    [table, mod],
+                ]);
+            });
+        }
+        return mod.fields;
+    }
 
+    async function loadForeignKeyLookup(table: TableNames, forceReload?: boolean): Promise<IForeignKeyCombo> {
+        if (!forceReload) {
+            const lookup = foreignKeyLoopkup.get(table);
+            if (lookup) return lookup;
+        }
+        const fields = await getTableModel(table);
+
+        const modFields = fields.map(f => f.field);
+        const sqlRes = (await sqlGet({
+            table,
+            fields: modFields,
+            joins: null,
+            //whereArray,
+            //order,
+            //rowCount, offset,
+            groupByArray: null,
+        })) as {
+            total: number;
+            rows: any[];
+            error?: string;
+        };
+        checkLoginExpired(rootCtx, sqlRes);
+        const map: IForeignKeyIdDesc = new Map();
+        const idField = fields.filter(f => f.isId && !f.userSecurityField)[0].field;
+        const parser = {
+            idGetter: a => a[idField],
+            descGetter: a => a.desc,
+        } as {
+            idGetter: (obj: any) => string;
+            descGetter: (obj: any) => string;
+        }
+        if (table === 'houseInfo') {
+            parser.descGetter = obj => obj.address;
+        } else if (table === 'workerInfo') {
+            parser.descGetter = (obj: IWorkerInfo )=>obj.workerName
+        }
+        const rows: IForeignKeyParsedRow[] = sqlRes.rows.map(r => {
+            return {
+                ...r,
+                id: parser.idGetter(r),
+                desc: parser.descGetter(r),
+            };
+        })
+        rows.forEach(r => {
+            map.set(r.id, r);
+        })
+        const res: IForeignKeyCombo = {
+            rows,
+            idDesc: map,
+        };
+        foreignKeyLoopkup.set(table, res);
+        setForeignKeyLookup(new Map(foreignKeyLoopkup));
+        return res;
+    }
+
+    async function checkLoadForeignKeyForTable(table: TableNames): Promise<IDBFieldDef[]> {
+        const fields = await getTableModel(table);
+        for (const field of fields) {
+            if (field.foreignKey && field.foreignKey.table) {
+                await loadForeignKeyLookup(field.foreignKey.table);
+            }
+        }
+        return fields;
+    }
 
     const pageCtx: IPageRelatedState = {
         //pageProps, setPageProps,
@@ -73,13 +150,14 @@ export function PageRelatedContextWrapper(props: {
         reloadGoogleSheetAuthInfo,
         loginError,
         setLoginError,
-        setAllHouses,
-        allHouses,
         modelsProp: {
             models,
-            setModels,
+            getTableModel,
         },
         reloadCounter,
+        //tableToHelperMap, setTableTohelperMap,
+        foreignKeyLoopkup, loadForeignKeyLookup,
+        checkLoadForeignKeyForTable,
         forceReload: () => setReloadCounter(v => v + 1),
     };
     return <PageRelatedContext.Provider value={pageCtx}>

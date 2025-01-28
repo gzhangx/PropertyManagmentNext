@@ -177,7 +177,7 @@ export type IStringBoolMap = { [id: string]: boolean };
 export type IModelsDict = Map<TableNames, IGetModelReturn>;
 export type IModelsProps = {
     models: IModelsDict;
-    setModels: React.Dispatch<React.SetStateAction<IModelsDict>>;
+    getTableModel: (table: TableNames)=>Promise<IDBFieldDef[]>;
 }
 
 export interface IHelperOpts {
@@ -200,6 +200,17 @@ export type IHelper = {
 
 export type TableNameToHelper = Map<TableNames, IHelper>;
 
+export type IForeignKeyParsedRow = {
+    id: string;
+    desc: string;
+}
+export type IForeignKeyIdDesc = Map<string, IForeignKeyParsedRow>;
+export type IForeignKeyCombo = {
+    idDesc: IForeignKeyIdDesc;
+    rows: IForeignKeyParsedRow[];
+}
+export type IForeignKeyLookupMap = Map<TableNames, IForeignKeyCombo>; //tablename -> id:desc map
+
 export interface IPageRelatedState {
     pageState: IPageState;    
     googleSheetAuthInfo: IGoogleSheetAuthInfo;
@@ -207,11 +218,15 @@ export interface IPageRelatedState {
     reloadGoogleSheetAuthInfo: () => Promise<IGoogleSheetAuthInfo>;
     loginError: string;
     setLoginError: (s: string) => void;    
-
-    setAllHouses: (hs: IHouseInfo[]) => void;
-    allHouses: IHouseInfo[];
+    
     modelsProp: IModelsProps;
     reloadCounter: number;
+
+    //tableToHelperMap: TableNameToHelper;
+    //setTableTohelperMap: React.Dispatch<React.SetStateAction<TableNameToHelper>>;
+    foreignKeyLoopkup: IForeignKeyLookupMap;
+    loadForeignKeyLookup: (t: TableNames, forceReload?: boolean) => Promise<IForeignKeyCombo>;
+    checkLoadForeignKeyForTable: (table: TableNames) => Promise<IDBFieldDef[]>;
     forceReload: () => void;
 }
 
@@ -225,8 +240,8 @@ export interface IIncomeExpensesContextValue extends IPageRelatedState {
     //allOwners: IOwnerInfo[];
     rawExpenseData: IExpenseData[];
     payments: IPayment[];
-    allMonthes: string[];
-    //allHouses: IHouseInfo[];
+    allMonthes: string[];    
+    allHouses: IHouseInfo[];
     monthes: string[];
     setMonthes: (a: string[]) => void;
     curMonthSelection: any;

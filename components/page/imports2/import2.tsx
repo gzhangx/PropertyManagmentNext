@@ -11,10 +11,8 @@ import {  IPageStates, IStringDict, IPageParms, ISheetRowData, IDisplayColumnInf
 import { genericPageLoader, getDeleteExtraFromDbItems, getDisplayHeaders, getMappingColumnInfo, updateRowData } from './helpers'
 import { getPageDefs } from './pageDefs'
 
-import { useIncomeExpensesContext } from '../../states/PaymentExpenseState'
 
 import { sortBy } from 'lodash';
-import { getTableModel } from '../../uidatahelpers/datahelpers';
 import { IDBFieldDef } from '../../types';
 import { ALLFieldNames } from '../../uidatahelpers/datahelperTypes';
 import { usePageRelatedContext } from '../../states/PageRelatedState';
@@ -132,7 +130,7 @@ export function ImportPage() {
                                                     ...sel.value,
                                                 }
                                                 if (pg) {
-                                                    fieldDefs = await getTableModel(mainCtx, pg.table);
+                                                    fieldDefs = await mainCtx.modelsProp.getTableModel(pg.table);
                                                     curPage.allFields = fieldDefs;
                                                     if (!curPage.displayColumnInfo) {
                                                         curPage.displayColumnInfo = curPage.sheetMapping.mapping.map(mapName => {

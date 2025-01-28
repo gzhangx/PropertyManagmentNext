@@ -4,7 +4,7 @@ import { get } from 'lodash';
 import { EditTextDropdown, } from '../generic/EditTextDropdown';
 import * as bluebird from 'bluebird';
 import {Dialog, createDialogPrms} from '../dialog'
-import { IDBFieldDef, isColumnSecurityField } from '../types';
+import { IDBFieldDef, isColumnSecurityField, TableNames } from '../types';
 import { IEditTextDropdownItem } from '../generic/GenericDropdown';
 import { IGenGrudProps } from './GenCrud';
 import * as RootState from '../states/RootState'
@@ -75,7 +75,7 @@ export const GenCrudAdd = (props: IGenGrudAddProps) => {
      });
     //const [errorText, setErrorText] = useState('');
     const [addNewForField, setAddNewForField] = useState('');
-    const [optsData, setOptsData] = useState<{[keyName:string]:IEditTextDropdownItem[]}>({});
+    //const [optsData, setOptsData] = useState<{[keyName:string]:IEditTextDropdownItem[]}>({});
     const handleChange = e => {
         const { name, value } = e.target;
         setData({ ...data, [name]: value });
@@ -109,37 +109,38 @@ export const GenCrudAdd = (props: IGenGrudAddProps) => {
 
     }
 
+    // useEffect(() => {
+    //     async function doLoads() {
+    //         let cur = optsData;;
+    //         for (let i = 0; i < columnInfo.length; i++) {
+    //             const c = columnInfo[i];
+    //             if (c.foreignKey) {
+    //                 const optKey = c.foreignKey.table;
+
+    //                 const processForeignKey = getForeignKeyProcessor(optKey);
+    //                 if (processForeignKey && !optsData[optKey]) {
+    //                     const helper = await createAndLoadHelper(rootCtx, mainCtx, {
+    //                         ...props,
+    //                         table: optKey,
+    //                     });
+    //                     //await helper.loadModel();
+    //                     const optDataOrig = await helper.loadData();
+    //                     const optData = optDataOrig.rows;
+    //                     cur = Object.assign({}, cur, {
+    //                         [optKey]: processForeignKey(c.foreignKey, optData)
+    //                     });                        
+    //                 }
+    //             }
+    //         }
+
+    //         setOptsData(cur);
+
+    //     }
+    //     doLoads();
+    // }, [table, columnInfo]);
+
     useEffect(() => {
-        async function doLoads() {
-            let cur = optsData;;
-            for (let i = 0; i < columnInfo.length; i++) {
-                const c = columnInfo[i];
-                if (c.foreignKey) {
-                    const optKey = c.foreignKey.table;
-
-                    const processForeignKey = getForeignKeyProcessor(optKey);
-                    if (processForeignKey && !optsData[optKey]) {
-                        const helper = await createAndLoadHelper(rootCtx, mainCtx, {
-                            ...props,
-                            table: optKey,
-                        });
-                        //await helper.loadModel();
-                        const optDataOrig = await helper.loadData();
-                        const optData = optDataOrig.rows;
-                        cur = Object.assign({}, cur, {
-                            [optKey]: processForeignKey(c.foreignKey, optData)
-                        });                        
-                    }
-                }
-            }
-
-            setOptsData(cur);
-
-        }
-        doLoads();
-    }, [table, columnInfo]);
-
-    useEffect(() => {
+        mainCtx.checkLoadForeignKeyForTable(table);
         setData(initData);
     }, [JSON.stringify(initData)])
     const [columnInfoMaps, setColumnInfoMaps] = useState<{
@@ -215,14 +216,14 @@ export const GenCrudAdd = (props: IGenGrudAddProps) => {
                                 setAddNewForField('');
                                 return setErrorText('Cancelled');
                             }
-                            const optDataOrig = await columnInfoMaps[thisTbl].helper.loadData();
-                            const optData = optDataOrig.rows;
-                            setOptsData(prev => {
-                                return {
-                                    ...prev,
-                                    [thisTbl]: processForeignKey(c.foreignKey, optData)
-                                }
-                            });
+                            //const optDataOrig = await columnInfoMaps[thisTbl].helper.loadData();
+                            //const optData = optDataOrig.rows;
+                            // setOptsData(prev => {
+                            //     return {
+                            //         ...prev,
+                            //         [thisTbl]: processForeignKey(c.foreignKey, optData)
+                            //     }
+                            // });
                             setData(prev => {
                                 return {
                                     ...prev,
@@ -254,8 +255,16 @@ export const GenCrudAdd = (props: IGenGrudAddProps) => {
                         } 
 
 
-                        const createSelection = (optName: string, colField: string) => {                            
-                            const selOptions = optsData[optName];
+                        const createSelection = (optName: TableNames, colField: string) => {                            
+                            const fops = mainCtx.foreignKeyLoopkup.get(optName);
+                            if (!fops) return null;
+                            const selOptions = fops.rows.map(r => {
+                                return {
+                                    label: r.desc,
+                                    value: r.id,
+                                    selected: false,
+                                }
+                            }) // optsData[optName];
                             if (!selOptions) return null;
                             const options = selOptions.map(s=>({...s, selected: false,})).concat({
                                 label: 'Add New',

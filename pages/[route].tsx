@@ -9,7 +9,6 @@ import {
 import { sideBarContentLookup} from '../components/rootContents'
 import { useEffect } from 'react'
 import { NAVPrefix } from '../components/nav/consts'
-import { getTableModel } from '../components/uidatahelpers/datahelpers'
 import { usePageRelatedContext } from '../components/states/PageRelatedState'
 export default function () {
     const router = useRouter()    
@@ -22,7 +21,7 @@ export default function () {
             const curSel = sideBarContentLookup.get(currentPath);
             if (curSel) {
                 if (curSel.table) {
-                    await getTableModel(mainCtx, curSel.table);
+                    await mainCtx.modelsProp.getTableModel(curSel.table);
                 }
                 activeSideBarItem(rs, currentPath);
             }
