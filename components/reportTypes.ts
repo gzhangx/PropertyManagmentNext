@@ -197,21 +197,17 @@ export interface IPageRelatedState {
 }
 
 export interface IIncomeExpensesContextValue extends IPageRelatedState {
-    pageState: IPageState;
-    //pageProps: IPagePropsByTable;
-    //setPageProps: (a: IPagePropsByTable) => void;
-    //selectedOwners: IOwnerInfo[];
-    //setSelectedOwners: (a: IOwnerInfo[]) => void;
-    googleSheetAuthInfo: IGoogleSheetAuthInfo;  
-    setGoogleSheetAuthinfo: (auth: IGoogleSheetAuthInfo) => void;
-    reloadGoogleSheetAuthInfo: () => Promise<IGoogleSheetAuthInfo>;
-    loginError: string;
-    setLoginError: (s: string) => void;
+    //pageState: IPageState;    
+    //googleSheetAuthInfo: IGoogleSheetAuthInfo;  
+    //setGoogleSheetAuthinfo: (auth: IGoogleSheetAuthInfo) => void;
+    //reloadGoogleSheetAuthInfo: () => Promise<IGoogleSheetAuthInfo>;
+    //loginError: string;
+    //setLoginError: (s: string) => void;
     //allOwners: IOwnerInfo[];
     rawExpenseData: IExpenseData[];
     payments: IPayment[];
     allMonthes: string[];
-    allHouses: IHouseInfo[];
+    //allHouses: IHouseInfo[];
     monthes: string[];
     setMonthes: (a: string[]) => void;
     curMonthSelection: any;
@@ -223,7 +219,7 @@ export interface IIncomeExpensesContextValue extends IPageRelatedState {
     beginReLoadPaymentData: () => Promise<void>;
     paymentCalcOpts: IPaymentCalcOpts;
 
-    modelsProp: IModelsProps;
+    //modelsProp: IModelsProps;
 
-    forceReload: () => void;
+    //forceReload: () => void;
 }
