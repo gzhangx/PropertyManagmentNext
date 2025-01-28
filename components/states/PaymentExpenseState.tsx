@@ -16,6 +16,7 @@ import {
 } from '../reportTypes';
 import { checkLoginExpired, useRootPageContext } from './RootState';
 import { IEditTextDropdownItem } from '../generic/GenericDropdown';
+import { usePageRelatedContext } from './PageRelatedState';
 
 export const TOTALCOLNAME = 'coltotal';
 export const fMoneyformat = (amt:number)=> {
@@ -52,23 +53,13 @@ export function PaymentExpenseStateWrapper(props: {
     children: any
 }) {
     const rootCtx = useRootPageContext();
-    const [reloadCounter, setReloadCounter] = useState<number>(1);
-    const [loginError, setLoginError] = useState<string>('');
-    const [pageProps, setPageProps] = useState<IPagePropsByTable>({
-        pagePropsTableInfo: {},
-        reloadCount: 0,
-    } as IPagePropsByTable);    
+    const pageCtx = usePageRelatedContext();
+    
     const [rawExpenseData, setRawExpenseData] = useState([] as IExpenseData[]);
     const [payments, setPayments] = useState<IPayment[]>([]);
     
     const [allMonthes, setAllMonths] = useState<string[]>([]);
-    const [allHouses, setAllHouses] = useState<IHouseInfo[]>([]); //{houseID, address}
-    const [googleSheetAuthInfo, setGoogleSheetAuthinfo] = useState<IGoogleSheetAuthInfo>({
-        client_email: 'NA',
-        googleSheetId: 'NA',
-        private_key: '',
-        private_key_id: '',
-    } );
+    const [allHouses, setAllHouses] = useState<IHouseInfo[]>([]); //{houseID, address}    
 
     //month selection states
     const [monthes, setMonthesOrig] = useState<string[]>([]);
@@ -77,10 +68,7 @@ export function PaymentExpenseStateWrapper(props: {
     };
     const [curMonthSelection, setCurMonthSelection] = useState<IEditTextDropdownItem>({ label: '', value: '' });    
     const [selectedMonths, setSelectedMonths] = useState<IStringBoolMap>({});
-    const [selectedHouses, setSelectedHouses] = useState<IStringBoolMap>({});
-
-    const [models, setModels] = useState<IModelsDict>(new Map());
-    const router = useRouter();
+    const [selectedHouses, setSelectedHouses] = useState<IStringBoolMap>({});    
 
     function addMonths(mons: string[]) {
         setAllMonths(orig => {
@@ -116,19 +104,6 @@ export function PaymentExpenseStateWrapper(props: {
         });
     }
 
-    function reloadGoogleSheetAuthInfo() {
-        return getSheetAuthInfo().then(auth => {
-            if (auth.error) {
-                checkLoginExpired(rootCtx, auth);
-            } else {            
-                setGoogleSheetAuthinfo(auth);
-            }
-            return auth;
-        })
-    }
-    useEffect(() => {
-        reloadGoogleSheetAuthInfo();
-    }, ['once']);
     useEffect(() => {
         setMonthes(allMonthes);
 
@@ -214,24 +189,17 @@ export function PaymentExpenseStateWrapper(props: {
         });
         
         beginReLoadPaymentData();
-    }, [rootCtx.userInfo.id, reloadCounter]);
+    }, [rootCtx.userInfo.id, pageCtx.reloadCounter]);
 
 
 
     const incomExpCtx: IIncomeExpensesContextValue = {
         //pageProps, setPageProps,
-        pageState: {
-            pageProps,
-            setPageProps,
-        },
-        googleSheetAuthInfo,
-        setGoogleSheetAuthinfo,
-        reloadGoogleSheetAuthInfo,
-        loginError,
-        setLoginError,
+        ...pageCtx,
         rawExpenseData,
         payments,
         allMonthes,
+        setAllHouses,
         allHouses,
         monthes, setMonthes,
         curMonthSelection, setCurMonthSelection,
@@ -243,12 +211,7 @@ export function PaymentExpenseStateWrapper(props: {
             isGoodHouseId: id => selectedHouses[id],
             getHouseShareInfo: () => [...allHouses],
             isGoodWorkerId: workerID => true, //DEBUGREMOVE add check
-        },
-        modelsProp: {
-            models,
-            setModels,
-        },
-        forceReload: () => setReloadCounter(v => v + 1),
+        },        
     };
     return <IncomeExpensesContext.Provider value={incomExpCtx}>
         { props.children}

@@ -179,7 +179,24 @@ export type IModelsProps = {
     models: IModelsDict;
     setModels: React.Dispatch<React.SetStateAction<IModelsDict>>;
 }
-export interface IIncomeExpensesContextValue {
+
+
+export interface IPageRelatedState {
+    pageState: IPageState;    
+    googleSheetAuthInfo: IGoogleSheetAuthInfo;
+    setGoogleSheetAuthinfo: (auth: IGoogleSheetAuthInfo) => void;
+    reloadGoogleSheetAuthInfo: () => Promise<IGoogleSheetAuthInfo>;
+    loginError: string;
+    setLoginError: (s: string) => void;    
+
+    setAllHouses: (hs: IHouseInfo[]) => void;
+    allHouses: IHouseInfo[];
+    modelsProp: IModelsProps;
+    reloadCounter: number;
+    forceReload: () => void;
+}
+
+export interface IIncomeExpensesContextValue extends IPageRelatedState {
     pageState: IPageState;
     //pageProps: IPagePropsByTable;
     //setPageProps: (a: IPagePropsByTable) => void;
