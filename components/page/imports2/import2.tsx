@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useReducer, type JSX } from 'react';
 import { getTenants, saveGoodSheetAuthInfo, } from '../../api'
 import { EditTextDropdown } from '../../generic/EditTextDropdown'
-import { IIncomeExpensesContextValue } from '../../reportTypes';
+import { IIncomeExpensesContextValue, IPageRelatedState } from '../../reportTypes';
 import { keyBy,  } from 'lodash'
 import { GetInfoDialogHelper } from '../../generic/basedialog';
 import { useRouter } from 'next/router'
@@ -17,8 +17,9 @@ import { sortBy } from 'lodash';
 import { getTableModel } from '../../uidatahelpers/datahelpers';
 import { IDBFieldDef } from '../../types';
 import { ALLFieldNames } from '../../uidatahelpers/datahelperTypes';
+import { usePageRelatedContext } from '../../states/PageRelatedState';
 
-function getSheetId(mainCtx: IIncomeExpensesContextValue) : string {
+function getSheetId(mainCtx: IPageRelatedState) : string {
     return mainCtx.googleSheetAuthInfo.googleSheetId;
 }
 
@@ -40,7 +41,7 @@ export function ImportPage() {
         showMatchedItems: false,
     } as IPageStates);
     
-    const mainCtx = useIncomeExpensesContext();
+    const mainCtx = usePageRelatedContext();
     const { googleSheetAuthInfo, setGoogleSheetAuthinfo, reloadGoogleSheetAuthInfo } = mainCtx;
     const sheetId = getSheetId(mainCtx);
 

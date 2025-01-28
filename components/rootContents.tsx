@@ -16,6 +16,7 @@ import MonthlyComp from '../pages/reports/MonthlyComp'
 
 import type { JSX } from "react";
 import { TableNames } from './types'
+import { PaymentExpenseStateWrapper } from './states/PaymentExpenseState'
 
 type LocalPageInfo = {
     name: string;
@@ -23,6 +24,13 @@ type LocalPageInfo = {
     table?: TableNames;
 }
 
+function doWrap(ele: JSX.Element) {
+    return <PaymentExpenseStateWrapper>
+        {
+            ele
+        }
+    </PaymentExpenseStateWrapper>
+}
 const inputPages: LocalPageInfo[] = [
     {
         name: 'House Info',
@@ -52,15 +60,15 @@ const allSections = [
         pages: [
             {
                 name: 'Cash Flow',
-                page: <CashFlowReport />,
+                page: doWrap(<CashFlowReport />),
             },
             {
                 name: 'Lease Report',
-                page: <LeaseReport/>,
+                page: doWrap(<LeaseReport/>),
             },
             {
                 name: 'Comp Report',
-                page: <MonthlyComp/>,
+                page: doWrap(<MonthlyComp/>),
             },
             {
                 name: '1099 Report',

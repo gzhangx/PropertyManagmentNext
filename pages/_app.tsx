@@ -4,14 +4,13 @@ import '../styles/sb-admin-2.css'
 
 import * as RootState from '../components/states/RootState'
 import { PageRelatedContextWrapper } from '../components/states/PageRelatedState'
-import { PaymentExpenseStateWrapper} from '../components/states/PaymentExpenseState'
+//import { PaymentExpenseStateWrapper} from '../components/states/PaymentExpenseState'
 
+//<!-- PaymentExpenseStateWrapper -->
 export default function App({ Component, pageProps }) {
     return <RootState.RootPageStateWrapper>
-        <PageRelatedContextWrapper>
-            <PaymentExpenseStateWrapper>
-                <Component {...pageProps} />
-            </PaymentExpenseStateWrapper>
+        <PageRelatedContextWrapper>            
+                <Component {...pageProps} />            
         </PageRelatedContextWrapper>
     </RootState.RootPageStateWrapper>
 }

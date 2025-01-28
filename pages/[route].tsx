@@ -6,16 +6,15 @@ import {
     activeSideBarItem,
 } from "../components/states/RootState"
 
-import { useIncomeExpensesContext } from '../components/states/PaymentExpenseState'
-
 import { sideBarContentLookup} from '../components/rootContents'
 import { useEffect } from 'react'
 import { NAVPrefix } from '../components/nav/consts'
 import { getTableModel } from '../components/uidatahelpers/datahelpers'
+import { usePageRelatedContext } from '../components/states/PageRelatedState'
 export default function () {
     const router = useRouter()    
     const rs = useRootPageContext();
-    const mainCtx = useIncomeExpensesContext();
+    const mainCtx = usePageRelatedContext();
     const path = (new RegExp(`${NAVPrefix}\/(.*)$`).exec(router.asPath) || [])[1];
     const currentPath = path || router.query.route;
     const onLoad = async () => {

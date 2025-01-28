@@ -1,12 +1,10 @@
 import TinyIconNotify from './tinyIconNotify'
 import { useRootPageContext } from '../states/RootState'
-import { useIncomeExpensesContext } from '../states/PaymentExpenseState'
 
 import { CheckBoxMultiSelect } from '../uidatahelpers/CheckBoxMultiSelect'
 export function TopBar(props) {
 
     const rootContext = useRootPageContext();
-    const paymentCtx = useIncomeExpensesContext();
     const loginInfo = rootContext.userInfo; //getLoginInfo();
         
     const ownerSels: {

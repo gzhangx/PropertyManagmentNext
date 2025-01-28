@@ -7,7 +7,7 @@ import { ISqlOrderDef, IGetModelReturn, IDBFieldDef, TableNames, ISqlDeleteRespo
 import { get } from 'lodash';
 import { IFKDefs } from './GenCrudTableFkTrans';
 import moment from 'moment';
-import { IIncomeExpensesContextValue } from '../reportTypes';
+import { IIncomeExpensesContextValue, IPageRelatedState } from '../reportTypes';
 export type FieldValueType = string | number | null;
 
 import * as RootState from '../states/RootState'
@@ -56,7 +56,7 @@ export interface IGenListProps extends ITableAndSheetMappingInfo { //copied from
     //sheetMapping?: DataToDbSheetMapping;
 }
 
-export async function getTableModel(ctx: IIncomeExpensesContextValue, table: TableNames) :Promise<IDBFieldDef[]> {
+export async function getTableModel(ctx: IPageRelatedState, table: TableNames) :Promise<IDBFieldDef[]> {
     let mod = ctx.modelsProp.models.get(table);
     if (!mod) {
         mod = await getModel(table);
@@ -123,7 +123,7 @@ export function stdFormatValue(def: IDBFieldDef, v: string | number, fieldName?:
         v,
     }
 }
-export function createHelper(rootCtx: RootState.IRootPageState, ctx: IIncomeExpensesContextValue, props: ITableAndSheetMappingInfo): IHelper {
+export function createHelper(rootCtx: RootState.IRootPageState, ctx: IPageRelatedState, props: ITableAndSheetMappingInfo): IHelper {
     const googleSheetId: string = ctx.googleSheetAuthInfo.googleSheetId;
     //sheetMapping?: DataToDbSheetMapping
     const { table, sheetMapping } = props; 
@@ -313,14 +313,14 @@ function getTableNameToSheetMapping(sheetMapping?: DataToDbSheetMapping) {
     return sheetMapping;
 }
 
-export async function createAndLoadHelper(rootCtx: RootState.IRootPageState, ctx: IIncomeExpensesContextValue, props: IGenListProps) {
+export async function createAndLoadHelper(rootCtx: RootState.IRootPageState, ctx: IPageRelatedState, props: IGenListProps) {
     const helper = createHelper(rootCtx, ctx, props);
     await helper.loadModel();
     return helper;
 }
 
 
-export function getGenListParms(ctx: IIncomeExpensesContextValue, table: TableNames): ITableAndSheetMappingInfo {
+export function getGenListParms(ctx: IPageRelatedState, table: TableNames): ITableAndSheetMappingInfo {
     const def = tableNameToDefinitions.get(table);
     const allFields = ctx.modelsProp.models.get(table).fields;
     return {

@@ -2,7 +2,6 @@
 import { useEffect, useState } from 'react';
 import { withRouter } from 'next/router'
 import { useRootPageContext, getSideBarCurrentSelectedItemName } from "../components/states/RootState"
-import {  useIncomeExpensesContext } from '../components/states/PaymentExpenseState';
 import {MainSideBar} from '../components/page/sidebar'
 import { TopBar } from '../components/page/topbar'
 import { Footer } from '../components/page/pageFooter'
@@ -11,11 +10,12 @@ import { sections, sideBarContentLookup } from '../components/rootContents'
 import { OriginalDashboard } from '../components/demo/origDashboard'
 import { GenList } from '../components/uidatahelpers/GenList';
 import { getGenListParms } from '../components/uidatahelpers/datahelpers';
+import { usePageRelatedContext } from '../components/states/PageRelatedState';
 
 export default withRouter(function MainDashboard(props) {
   //const { state, setMainState } = props;  
   const rstate = useRootPageContext();
-  const mainCtx = useIncomeExpensesContext();
+  const mainCtx = usePageRelatedContext();
   //const [pageState, setPageState] = pstate;
   const currentActivePage = getSideBarCurrentSelectedItemName(rstate);
   const sideBarItem = sideBarContentLookup.get(currentActivePage);

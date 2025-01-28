@@ -5,15 +5,15 @@ import { createHelper, FieldValueType, IGenListProps } from './datahelpers';
 import { getFKDefs } from './GenCrudTableFkTrans';
 
 import { ISqlRequestWhereItem} from '../api'
-import { useIncomeExpensesContext } from '../states/PaymentExpenseState'
 import * as RootState from '../states/RootState'
 import { IDBFieldDef } from '../types';
+import { usePageRelatedContext } from '../states/PageRelatedState';
 
 
 //props: table and displayFields [fieldNames]
 export function GenList(props: IGenListProps) {
     const { table, initialPageSize } = props;
-    const secCtx = useIncomeExpensesContext();
+    const secCtx = usePageRelatedContext();
     const rootCtx = RootState.useRootPageContext();
     const [paggingInfo, setPaggingInfo] = useState({
         PageSize: initialPageSize|| 10,        

@@ -6,11 +6,11 @@ import * as bluebird from 'bluebird';
 import {Dialog, createDialogPrms} from '../dialog'
 import { IDBFieldDef, isColumnSecurityField } from '../types';
 import { IEditTextDropdownItem } from '../generic/GenericDropdown';
-import { useIncomeExpensesContext } from '../states/PaymentExpenseState'
 import { IGenGrudProps } from './GenCrud';
 import * as RootState from '../states/RootState'
 import moment from 'moment';
 import { ALLFieldNames, DataToDbSheetMapping } from './datahelperTypes';
+import { usePageRelatedContext } from '../states/PageRelatedState';
 
 
 
@@ -30,7 +30,7 @@ export interface IGenGrudAddProps extends IGenGrudProps {
 }
 export const GenCrudAdd = (props: IGenGrudAddProps) => {
 
-    const mainCtx = useIncomeExpensesContext();
+    const mainCtx = usePageRelatedContext();
     const rootCtx = RootState.useRootPageContext();
     const { columnInfo, doAdd, onCancel,
         editItem, //only available during edit
