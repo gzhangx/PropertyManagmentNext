@@ -1,4 +1,4 @@
-import { IGetModelReturn, IPagePropsByTable, IPageState, TableNames } from './types'
+import { IDBFieldDef, IGetModelReturn, IPageState, ISqlDeleteResponse, ISqlOrderDef, ISqlRequestWhereItem, TableNames } from './types'
 import { IGoogleSheetAuthInfo } from './api';
 import { IEditTextDropdownItem } from './generic/GenericDropdown';
 export interface IPayment {
@@ -180,6 +180,25 @@ export type IModelsProps = {
     setModels: React.Dispatch<React.SetStateAction<IModelsDict>>;
 }
 
+export interface IHelperOpts {
+    whereArray: ISqlRequestWhereItem[];
+    order: ISqlOrderDef[];
+    rowCount: number;
+    offset: number;
+}
+export type FieldValueType = string | number | null;
+export type IHelper = {
+    getModelFields: () => IDBFieldDef[];
+    loadModel: () => Promise<IGetModelReturn>;
+    loadData: (opts?: IHelperOpts) => Promise<{
+        total: number;
+        rows: any[];
+    }>;
+    saveData: (data: any, id: FieldValueType, saveToSheet: boolean) => Promise<any>;
+    deleteData: (ids: string[]) => Promise<ISqlDeleteResponse>;
+}
+
+export type TableNameToHelper = Map<TableNames, IHelper>;
 
 export interface IPageRelatedState {
     pageState: IPageState;    

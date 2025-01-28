@@ -7,6 +7,7 @@ import {
     IHouseInfo,
     IModelsDict,
     IPageRelatedState,
+    TableNameToHelper,
 } from '../reportTypes';
 import { checkLoginExpired, useRootPageContext } from './RootState';
 
@@ -37,6 +38,9 @@ export function PageRelatedContextWrapper(props: {
 
     const [models, setModels] = useState<IModelsDict>(new Map());   
     const [allHouses, setAllHouses] = useState<IHouseInfo[]>([]); //{houseID, address}
+    
+    
+    const [tableToHelperMap, setTableTohelperMap] = useState<TableNameToHelper>(new Map());
 
     function reloadGoogleSheetAuthInfo() {
         return getSheetAuthInfo().then(auth => {
@@ -56,7 +60,6 @@ export function PageRelatedContextWrapper(props: {
     useEffect(() => {
         getHouseInfo().then(hs => setAllHouses(hs));
     }, [reloadCounter]);
-
 
 
     const pageCtx: IPageRelatedState = {

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { createAndLoadHelper, FieldValueType, IHelper } from './datahelpers';
+import { createAndLoadHelper } from './datahelpers';
 import { get } from 'lodash';
 import { EditTextDropdown, } from '../generic/EditTextDropdown';
 import * as bluebird from 'bluebird';
@@ -11,6 +11,7 @@ import * as RootState from '../states/RootState'
 import moment from 'moment';
 import { ALLFieldNames, DataToDbSheetMapping } from './datahelperTypes';
 import { usePageRelatedContext } from '../states/PageRelatedState';
+import { FieldValueType, IHelper } from '../reportTypes';
 
 
 

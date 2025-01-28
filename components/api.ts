@@ -1,6 +1,6 @@
 
 import * as httpRequest from '@gzhangx/googleapi/lib/httpRequest'
-import { IGetModelReturn, TableNames, ISqlDeleteResponse } from './types'
+import { IGetModelReturn, TableNames, ISqlDeleteResponse, ISqlRequestFieldDef, ISqlRequestWhereItem } from './types'
 
 export interface ISiteConfig {
     baseUrl: string;
@@ -158,19 +158,7 @@ export async function resetPassword({ username }) {
 
 }
 
-export type SQLOPS = '>' | '>=' | '=' | '<' | '<=' | '!=' | '<>' | 'in';
-//copied from sql.ts
-export interface ISqlRequestFieldDef {
-    field: string;
-    op: string;
-    name: string;
-}
 
-export interface ISqlRequestWhereItem {
-    field: string;
-    op: SQLOPS;
-    val: string | number | (string | number)[];
-}
 
 //export type TableNames = 'rentPaymentInfo' | 'houseInfo' | 'maintenanceRecords' | 'ownerInfo' | 'leaseInfo' | 'tenantInfo' | 'workerComp';
 export interface ISqlRequest {

@@ -1,14 +1,13 @@
 import {
     getModel, sqlGet, sqlAdd, sqlDelete, 
-    ISqlRequestWhereItem, updateSheet,
+     updateSheet,
     googleSheetRead,
 } from '../api';
-import { ISqlOrderDef, IGetModelReturn, IDBFieldDef, TableNames, ISqlDeleteResponse } from '../types'
+import { IDBFieldDef, TableNames } from '../types'
 import { get } from 'lodash';
-import { IFKDefs } from './GenCrudTableFkTrans';
 import moment from 'moment';
-import { IIncomeExpensesContextValue, IPageRelatedState } from '../reportTypes';
-export type FieldValueType = string | number | null;
+import { IHelper, IHelperOpts, IPageRelatedState } from '../reportTypes';
+
 
 import * as RootState from '../states/RootState'
 import { tableNameToDefinitions } from './defs/allDefs';
@@ -16,23 +15,9 @@ import { ALLFieldNames, DataToDbSheetMapping, ITableAndSheetMappingInfo } from '
 import { checkLoginExpired } from '../states/RootState';
 import { ItemType } from './GenCrudAdd';
 
-interface IOpts {
-    whereArray: ISqlRequestWhereItem[];
-    order: ISqlOrderDef[];
-    rowCount: number;
-    offset:number;
-}
 
-export type IHelper = {
-    getModelFields: () => IDBFieldDef[];
-    loadModel: () => Promise<IGetModelReturn>;
-    loadData: (opts?: IOpts) => Promise<{
-        total: number;
-        rows: any[];
-    }>;
-    saveData: (data: any, id: FieldValueType, saveToSheet: boolean) => Promise<any>;
-    deleteData: (ids: string[]) => Promise<ISqlDeleteResponse>;
-}
+
+
 
 
 
@@ -169,7 +154,7 @@ export function createHelper(rootCtx: RootState.IRootPageState, ctx: IPageRelate
             });
             return model;
         },        
-        loadData: async (opts = {} as IOpts) => {
+        loadData: async (opts = {} as IHelperOpts) => {
             //fields: array of field names
             const { whereArray, order, rowCount, offset } = opts;
             const modFields = accModelFields().map(f => f.field);

@@ -14,6 +14,21 @@ export interface ISqlOrderDef {
     shortDesc: string;
 }
 
+export type SQLOPS = '>' | '>=' | '=' | '<' | '<=' | '!=' | '<>' | 'in';
+//copied from sql.ts
+export interface ISqlRequestFieldDef {
+    field: string;
+    op: string;
+    name: string;
+}
+
+export interface ISqlRequestWhereItem {
+    field: string;
+    op: SQLOPS;
+    val: string | number | (string | number)[];
+}
+
+
 export interface IPageFilter {
     id: string;
     table: string;

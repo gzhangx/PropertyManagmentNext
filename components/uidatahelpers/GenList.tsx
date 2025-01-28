@@ -1,13 +1,13 @@
 import React,{useState,useEffect} from 'react';
 import { GenCrud, getPageSorts, getPageFilters } from './GenCrud';
 import { ItemType } from './GenCrudAdd';
-import { createHelper, FieldValueType, IGenListProps } from './datahelpers';
+import { createHelper, IGenListProps } from './datahelpers';
 import { getFKDefs } from './GenCrudTableFkTrans';
 
-import { ISqlRequestWhereItem} from '../api'
 import * as RootState from '../states/RootState'
-import { IDBFieldDef } from '../types';
+import { IDBFieldDef, ISqlRequestWhereItem } from '../types';
 import { usePageRelatedContext } from '../states/PageRelatedState';
+import { FieldValueType } from '../reportTypes';
 
 
 //props: table and displayFields [fieldNames]

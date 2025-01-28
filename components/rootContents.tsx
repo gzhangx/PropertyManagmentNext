@@ -72,7 +72,7 @@ const allSections = [
             },
             {
                 name: '1099 Report',
-                page: <ExpenseByWorkerReport />,
+                page: doWrap(<ExpenseByWorkerReport />),
             },
             {
                 name: 'Yearly 1099 Report',
