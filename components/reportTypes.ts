@@ -217,7 +217,7 @@ export interface IPageRelatedState {
     setGoogleSheetAuthinfo: (auth: IGoogleSheetAuthInfo) => void;
     reloadGoogleSheetAuthInfo: () => Promise<IGoogleSheetAuthInfo>;
     loginError: string;
-    setLoginError: (s: string) => void;    
+    setLoginError: (s: string) => void;
     
     modelsProp: IModelsProps;
     reloadCounter: number;
@@ -227,6 +227,7 @@ export interface IPageRelatedState {
     foreignKeyLoopkup: IForeignKeyLookupMap;
     loadForeignKeyLookup: (t: TableNames, forceReload?: boolean) => Promise<IForeignKeyCombo>;
     checkLoadForeignKeyForTable: (table: TableNames) => Promise<IDBFieldDef[]>;
+    translateForeignLeuColumn: (def: IDBFieldDef, dataDict: any) => string;
     forceReload: () => void;
 }
 

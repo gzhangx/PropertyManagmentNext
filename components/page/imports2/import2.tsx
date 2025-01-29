@@ -72,21 +72,26 @@ export function ImportPage() {
         setDlgContent,
         setErrorStr: errorDlg.setDialogText,
         showProgress: msg => progressDlg.setDialogText(msg),
+        pageCtx: mainCtx,
     };
     
-    useEffect(() => {
+    const initLoad = async () => {
         if (!curPageState.curPage) return;
         console.log("genericPageLoader loading", sheetId)
         curPageState.sheetId = sheetId;
-        genericPageLoader(pagePrms, curPageState).catch(err => {
+        await mainCtx.checkLoadForeignKeyForTable(curPageState.curPage.table)
+        await genericPageLoader(pagePrms, curPageState).catch(err => {
             const errStr = err.error || err.message;
-            console.log('genericPageLoaderError',err)
+            console.log('genericPageLoaderError', err)
             errorDlg.setDialogAction(errStr, () => {
                 if (errStr && errStr.indexOf('authorization') >= 0) {
                     router.push('/Login')
                 }
             })
         })
+    };
+    useEffect(() => {
+        initLoad();
     }, [sheetId, curPageState.curPage, curPageState.stateReloaded])
     //curPageState.payments curPageState.stateReloaded,, curPageState.existingOwnersByName,
         
@@ -390,7 +395,11 @@ function displayExtraDbItems(pagePrms: IPageParms, curPageState: IPageStates) {
             return {
                 sort: dbRow.dbItemData[cmpSortField], dsp: <tr key={rowInd}>{                    
                     dspCi.map((dc, ck) => {
-                        let dspVal: string | number | JSX.Element = 'DB-'+dbRow.dbItemData[dc.field];
+                        let dspVal: string | number | JSX.Element = 'DB-' + pagePrms.pageCtx.translateForeignLeuColumn(dc, dbRow.dbItemData);
+                        //let dspVal: string | number | JSX.Element = 'DB-' +  dbRow.dbItemData[dc.field];
+                        //if (dc.foreignKey?.field === 'houseID') {
+                        //    dspVal += '-tr-' + curPageState.housesById[dbRow.dbItemData[dc.field]]?.address;
+                        //}
                         //if (curPageState.curPage.deleteById) {                            
                             if (dc.field === curPageState.curPage.sheetMustExistField) {
                                 dspVal = <div>

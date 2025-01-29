@@ -1,5 +1,5 @@
 
-import { IHouseInfo, IPayment, ITenantInfo } from '../../reportTypes';
+import { IHouseInfo, IPageRelatedState, IPayment, ITenantInfo } from '../../reportTypes';
 import moment from 'moment';
 import { IDBFieldDef, ISqlDeleteResponse, TableNames } from '../../types';
 
@@ -134,6 +134,7 @@ export interface IPageParms {
     setDlgContent: React.Dispatch<React.SetStateAction<JSX.Element>>;
     setErrorStr: (text: string) => void;
     showProgress: (msg: any) => void;
+    pageCtx: IPageRelatedState;
 }
 
 export interface IRowComparer {

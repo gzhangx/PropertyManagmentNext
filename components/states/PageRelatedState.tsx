@@ -139,6 +139,19 @@ export function PageRelatedContextWrapper(props: {
         return fields;
     }
 
+    function translateForeignLeuColumn(def: IDBFieldDef, data: any): string {
+        const etb = def.foreignKey?.table;
+        const val = data[def.field] as string; 
+        if (!etb) {
+            return val;
+        }
+        const lookup = foreignKeyLoopkup.get(etb);
+        if (!lookup) {
+            return val; //not loaded yet
+        }
+        return lookup.idDesc.get(val)?.desc || 'Failed Lookup: '+val;        
+    }
+
     const pageCtx: IPageRelatedState = {
         //pageProps, setPageProps,
         pageState: {
@@ -158,6 +171,7 @@ export function PageRelatedContextWrapper(props: {
         //tableToHelperMap, setTableTohelperMap,
         foreignKeyLoopkup, loadForeignKeyLookup,
         checkLoadForeignKeyForTable,
+        translateForeignLeuColumn,
         forceReload: () => setReloadCounter(v => v + 1),
     };
     return <PageRelatedContext.Provider value={pageCtx}>
