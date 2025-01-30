@@ -136,7 +136,9 @@ export function createHelper(rootCtx: RootState.IRootPageState, ctx: IPageRelate
             accModelFields().forEach(f => {                
                 if (f.isId && !f.userSecurityField) {
                     helperState.idField = f.field as ALLFieldNames;
-                    helperState.sheetIdPos = sheetMapping.mapping.indexOf(helperState.idField);
+                    if (sheetMapping) {
+                        helperState.sheetIdPos = sheetMapping.mapping.indexOf(helperState.idField);
+                    }
                 }
             });
             return model;
