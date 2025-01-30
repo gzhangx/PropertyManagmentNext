@@ -795,7 +795,9 @@ async function write1099PdfFields(formData: Form1099Info, existingPdfBytes: Arra
     fields.forEach(field => {
         const type = field.constructor.name;
         const name = field.getName();
-        if (type === 'PDFTextField') {
+        //if (type === 'PDFTextField')
+        try
+        {
             const ff = form.getTextField(name);
             const len = ff.getMaxLength() || 10000;
             const matched = name.match(/f([0-9]+)_([0-9]+)/);
@@ -832,6 +834,8 @@ async function write1099PdfFields(formData: Form1099Info, existingPdfBytes: Arra
             if (w) {
                 ff.setText(w);
             }
+        } catch (err) {
+            console.log('PDFTextField err due to next minify', err.message);
         }
     });
     const bytes = await pdfDoc.save();
