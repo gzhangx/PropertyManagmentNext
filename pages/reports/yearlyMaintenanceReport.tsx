@@ -614,12 +614,12 @@ function formatData(state: IYearlyMaintenanceReportState, setState: React.Dispat
 
     const byWorkerByCat = dataRows.reduce((acc, d) => {
         const ownerId = state.houseToOwnerMap[d.houseID];
-        if (ownerId) {
+        //if (ownerId) {
             if (ownerId !== state.curSelectedOwner) {
                 //console.log(`ignoring due to diff owner ${ownerId}!=${state.curSelectedOwner.value} ${d.date} ${d.amount} ${d.houseID}`)
                 return acc;
             }
-        }
+        //}
         if (!state.showWorkers[d.workerID]) {
             return acc;
         }
