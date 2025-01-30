@@ -806,7 +806,7 @@ async function write1099PdfFields(formData: Form1099Info, existingPdfBytes: Arra
                 const fieldCount = matched[2];
                 switch (fieldCount) {
                     case '2':
-                        w = `${formData.payer.address}\n${formData.payer.city}\n${formData.payer.state} ${formData.payer.zip}\n${formData.payer.phone}`;
+                        w = `${formData.payer.name}\n${formData.payer.address}\n${formData.payer.city}\n${formData.payer.state} ${formData.payer.zip}\n${formData.payer.phone}`;
                         break;
                     case '3':
                         w = formData.payer.tin;
