@@ -461,7 +461,7 @@ export default function YearlyMaintenanceReport() {
             <div className="col-sm-2">
                 <button className="btn btn-primary" onClick={async () => {
                     const allDetails = getAll1099Details(state);
-                    await exportMultiple1099(allDetails, showProgress);
+                    await exportMultiple1099(allDetails, 'pdf', showProgress);
                 }} >Export 1099 all</button>
             </div>
             <div className="col-sm-2">
@@ -527,7 +527,7 @@ export default function YearlyMaintenanceReport() {
                 }
                 </table>
                 {
-                    showDetail?.export1099 && <button className="btn btn-primary" onClick={() => exportOne1099(showDetail, showProgress).then(() => setShowDetail(null))}>Export 1099</button>
+                    showDetail?.export1099 && <button className="btn btn-primary" onClick={() => exportOne1099(showDetail, 'pdf', showProgress).then(() => setShowDetail(null))}>Export 1099</button>
                 }
             </div>
         </CloseableDialog>

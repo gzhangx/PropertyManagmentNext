@@ -17,7 +17,8 @@ export type I1099Info = {
 };
 
 
-async function get1099Content(parms: I1099Info, showProgress?: (txt: string) => void) {
+export type GenerationType = 'pdf' | 'p1220';
+async function get1099Content(parms: I1099Info, type: GenerationType, showProgress?: (txt: string) => void) {
     if (!showProgress) showProgress = () => { };
     showProgress('loading workers');
     const workers = await getWorkerInfo();
@@ -45,8 +46,7 @@ async function get1099Content(parms: I1099Info, showProgress?: (txt: string) => 
     const worker = founds[0];
     const owner = ownersFound[0];
     showProgress('worker found ' + parms.workerName);
-    const irsfile = await doPost('misc/statement/1099', {}, 'GET');
-    const resultData = write1099PdfFields({
+    const formData: Form1099Info = {
         otherIncome: parms.total.toFixed(2),
         calendarYear: parms.YYYY,
         payer: {
@@ -64,7 +64,12 @@ async function get1099Content(parms: I1099Info, showProgress?: (txt: string) => 
             street: worker.address,
             tin: worker.taxID,
         },
-    }, await irsfile);
+    }
+    if (type === 'p1220') {
+        return generateP1220(formData);
+    }
+    const irsfile = await doPost('misc/statement/1099', {}, 'GET');
+    const resultData = write1099PdfFields(formData, await irsfile);
     return resultData;
 }
 
@@ -145,8 +150,8 @@ async function write1099PdfFields(formData: Form1099Info, existingPdfBytes: Arra
 }
 
 
-export async function exportOne1099(parms: I1099Info, showProgress?: (txt: string) => void) {
-    const rawData = await get1099Content(parms, showProgress);
+export async function exportOne1099(parms: I1099Info, type: GenerationType, showProgress?: (txt: string) => void) {
+    const rawData = await get1099Content(parms, type, showProgress);
     if (!rawData) return;
     const blob = new Blob([rawData], {
         type: 'application/pdf'
@@ -160,10 +165,10 @@ export async function exportOne1099(parms: I1099Info, showProgress?: (txt: strin
     document.body.removeChild(a);
 }
 
-export async function exportMultiple1099(parms: I1099Info[], showProgress?: (txt: string) => void) {
+export async function exportMultiple1099(parms: I1099Info[], type: GenerationType, showProgress?: (txt: string) => void) {
     const zip = new JSzip();
     for (const param of parms) {
-        const rawData = await get1099Content(param, showProgress);
+        const rawData = await get1099Content(param, type, showProgress);
         if (!rawData) continue;
         
         const fileName = `1099-${param.YYYY}-${param.ownerName}-${param.workerName}.pdf`;
@@ -185,4 +190,10 @@ export async function exportMultiple1099(parms: I1099Info[], showProgress?: (txt
         a.click();
         document.body.removeChild(a);
     })
+}
+
+
+function generateP1220(data: Form1099Info): string {
+    const TRec = `T${data.calendarYear} `
+    return '';
 }
