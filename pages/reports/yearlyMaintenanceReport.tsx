@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from "react";
-import { PDFDocument } from 'pdf-lib'
 import {
     getMaintenanceFromSheet,    
     getHouseInfo,
@@ -19,6 +18,7 @@ import {
 import { CloseableDialog } from '../../components/generic/basedialog'
 import { CreateSaveButton} from '../../components/generic/SaveFile'
 import { IEditTextDropdownItem } from "../../components/generic/GenericDropdown";
+import { exportMultiple1099, exportOne1099, I1099Info } from "./util/1099";
 
 interface IShowDetailsData {
     amount: number;
@@ -459,6 +459,12 @@ export default function YearlyMaintenanceReport() {
                 }
             </div>
             <div className="col-sm-2">
+                <button className="btn btn-primary" onClick={async () => {
+                    const allDetails = getAll1099Details(state);
+                    await exportMultiple1099(allDetails, showProgress);
+                }} >Export 1099 all</button>
+            </div>
+            <div className="col-sm-2">
                 <button className="btn btn-primary" onClick={()=>getData()} >Reload</button>
             </div>
         </div>
@@ -521,7 +527,7 @@ export default function YearlyMaintenanceReport() {
                 }
                 </table>
                 {
-                    showDetail?.export1099 && <button className="btn btn-primary" onClick={() => export1099(showDetail, showProgress).then(() => setShowDetail(null))}>Export 1099</button>
+                    showDetail?.export1099 && <button className="btn btn-primary" onClick={() => exportOne1099(showDetail, showProgress).then(() => setShowDetail(null))}>Export 1099</button>
                 }
             </div>
         </CloseableDialog>
@@ -699,145 +705,21 @@ function formatData(state: IYearlyMaintenanceReportState, setState: React.Dispat
 }
 
 
-async function get1099Content(parms: IDetailParams, showProgress?: (txt: string) => void) {
-    if (!showProgress) showProgress = () => { };
-    showProgress('loading workers');
-    const workers = await getWorkerInfo();
-    const founds = workers.filter(w => w.workerName.toLowerCase().trim() === parms.workerName.toLowerCase().trim());
-    if (founds.length > 1) {
-        showProgress('Found multiple workers '+parms.workerName);
-        return;
-    }
-    if (founds.length === 0) {
-        showProgress('worker not found ' + parms.workerName);
-        return;
-    }
-
-    const owners = await getOwnerInfo();
-    const ownersFound = owners.filter(w => w.ownerName.toLowerCase().trim() === parms.ownerName.toLowerCase().trim());
-    if (ownersFound.length > 1) {
-        showProgress('Found multiple owners ' + parms.ownerName);
-        return;
-    }
-    if (ownersFound.length === 0) {
-        showProgress('Owner not found ' + parms.ownerName);
-        return;
-    }
-
-    const worker = founds[0];
-    const owner = ownersFound[0];
-    showProgress('worker found ' + parms.workerName);
-    const irsfile = await doPost('misc/statement/1099', {}, 'GET');
-    const resultData = write1099PdfFields({
-        otherIncome: parms.total.toFixed(2),
-        calendarYear: parms.YYYY,
-        payer: {
-            tin: owner.taxID,
-            address: owner.address,
-            city: owner.city,
-            name: owner.taxName || owner.ownerName,
-            phone: owner.phone,
-            state: owner.state,
-            zip: owner.zip,
-        },
-        receipient: {
-            cityStateZip: `${worker.city}, ${worker.state} ${worker.zip}`,
-            name: worker.taxName || worker.workerName,
-            street: worker.address,
-            tin: worker.taxID,
-        },
-    }, await irsfile);
-    return resultData;
-}
-
-async function export1099(parms: IDetailParams, showProgress?: (txt: string) => void) {
-    const rawData = await get1099Content(parms, showProgress);
-    if (!rawData) return;
-    const blob = new Blob([rawData], {
-        type: 'application/pdf'
-    });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.setAttribute('download', `1099-${parms.YYYY}-${parms.ownerName}-${parms.workerName}.pdf`);
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-}
 
 
-
-type Form1099Info = {
-    otherIncome: string;
-    calendarYear: string;
-    payer: {
-        tin: string;
-        name: string;
-        address: string;
-        city: string;
-        state: string;
-        zip: string;
-        phone: string;
+function fromByWokrerTotalTo1099Info(state: IYearlyMaintenanceReportState, workerName: string) {
+    const wkrCat = state.byWorkerByCat.byWorkerTotal[workerName];
+    const inf: I1099Info = {
+        workerName,
+        total: wkrCat.total,
+        YYYY: state.curYearSelection.substring(0, 4),
+        ownerName: state.curSelectedOwner,
     };
-    receipient: {
-        tin: string;
-        name: string;
-        street: string;
-        cityStateZip: string
-    };
-
+    return inf;
 }
-async function write1099PdfFields(formData: Form1099Info, existingPdfBytes: ArrayBuffer): Promise<Uint8Array> {
-    const pdfDoc = await PDFDocument.load(existingPdfBytes);
-    const form = pdfDoc.getForm();
-    const fields = form.getFields();
 
-    fields.forEach(field => {
-        const type = field.constructor.name;
-        const name = field.getName();
-        //if (type === 'PDFTextField')
-        try
-        {
-            const ff = form.getTextField(name);
-            const len = ff.getMaxLength() || 10000;
-            const matched = name.match(/f([0-9]+)_([0-9]+)/);
-            let w = '';
-            if (matched) {
-                const fieldCount = matched[2];
-                switch (fieldCount) {
-                    case '2':
-                        w = `${formData.payer.name}\n${formData.payer.address}\n${formData.payer.city}, ${formData.payer.state} ${formData.payer.zip}\n${formData.payer.phone}`;
-                        break;
-                    case '3':
-                        w = formData.payer.tin;
-                        break;
-                    case '4':
-                        w = formData.receipient.tin;
-                        break;
-                    case '5':
-                        w = formData.receipient.name;
-                        break;
-                    case '6':
-                        w = formData.receipient.street;
-                        break;
-                    case '7':
-                        w = formData.receipient.cityStateZip;
-                        break;
-                    case '11':
-                        w = formData.otherIncome;
-                        break;
-                    case '1':
-                        w = formData.calendarYear;
-                        break;
-                }
-            }    
-            if (w) {
-                ff.setText(w);
-            }
-        } catch (err) {
-            console.log('PDFTextField err due to next minify', err.message);
-        }
-    });
-    const bytes = await pdfDoc.save();
-    return bytes;
+function getAll1099Details(state: IYearlyMaintenanceReportState) {
+    const workerNames = state.dspWorkerIds || [];
+    const details = workerNames.map(workerName => fromByWokrerTotalTo1099Info(state, workerName));
+    return details;
 }
