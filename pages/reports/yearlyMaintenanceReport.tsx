@@ -741,7 +741,7 @@ async function get1099Content(parms: IDetailParams, showProgress?: (txt: string)
             zip: owner.zip,
         },
         receipient: {
-            cityStateZip: `${worker.city} ${worker.state} ${worker.zip}`,
+            cityStateZip: `${worker.city}, ${worker.state} ${worker.zip}`,
             name: worker.taxName || worker.workerName,
             street: worker.address,
             tin: worker.taxID,
