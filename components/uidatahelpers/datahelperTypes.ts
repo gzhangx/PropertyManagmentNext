@@ -1,5 +1,5 @@
 
-import { IDBFieldDef, TableNames } from "../types";
+import { FieldValueType, IDBFieldDef, TableNames } from "../types";
 
 export type PageNames = 'Tenants Info' | 'Lease Info' | 'PaymentRecord' | 'House Info' | 'MaintainessRecord' | 'Workers Info';
 export type ALLFieldNames = '' | 'address' | 'city' | 'zip' | 'ownerName' | 'receivedDate' | 'receivedAmount' | 'amount' | 'houseID' | 'paymentTypeName' | 'paymentProcessor' | 'notes'
@@ -28,3 +28,5 @@ export interface ITableAndSheetMappingInfo {
     displayFields?: IDBFieldDef[];
     sheetMapping?: DataToDbSheetMapping;  //how googleSheet maps to db, used to save data to sheet
 }
+
+export type ItemTypeDict = { [p in ALLFieldNames]?: FieldValueType; };

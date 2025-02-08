@@ -4,18 +4,18 @@ import { get } from 'lodash';
 import { EditTextDropdown, } from '../generic/EditTextDropdown';
 import * as bluebird from 'bluebird';
 import {Dialog, createDialogPrms} from '../dialog'
-import { IDBFieldDef, isColumnSecurityField, TableNames } from '../types';
+import { FieldValueType, IDBFieldDef, isColumnSecurityField, TableNames } from '../types';
 import { IEditTextDropdownItem } from '../generic/GenericDropdown';
 import { IGenGrudProps } from './GenCrud';
 import * as RootState from '../states/RootState'
 import moment from 'moment';
-import { ALLFieldNames, DataToDbSheetMapping } from './datahelperTypes';
+import { ALLFieldNames, DataToDbSheetMapping, ItemTypeDict } from './datahelperTypes';
 import { usePageRelatedContext } from '../states/PageRelatedState';
-import { FieldValueType, IHelper } from '../reportTypes';
+import { IHelper } from '../reportTypes';
 
 
 
-type ItemTypeDict = { [p in ALLFieldNames]?: FieldValueType; };
+
 export type ItemType = ItemTypeDict & { _vdOriginalRecord: ItemTypeDict; }; //{ [key: string]: FieldValueType; };
 export interface IGenGrudAddProps extends IGenGrudProps {
     columnInfo: IDBFieldDef[];

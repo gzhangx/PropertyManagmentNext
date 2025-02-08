@@ -91,3 +91,5 @@ export interface IGetModelReturn {
 export function isColumnSecurityField(field: IDBFieldDef) {
     return field.foreignKey && field.foreignKey.table === 'userInfo';
 }
+
+export type FieldValueType = string | number | null;

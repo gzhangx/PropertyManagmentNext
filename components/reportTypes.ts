@@ -1,4 +1,4 @@
-import { IDBFieldDef, IGetModelReturn, IPageState, ISqlDeleteResponse, ISqlOrderDef, ISqlRequestWhereItem, TableNames } from './types'
+import { FieldValueType, IDBFieldDef, IGetModelReturn, IPageState, ISqlDeleteResponse, ISqlOrderDef, ISqlRequestWhereItem, TableNames } from './types'
 import { IGoogleSheetAuthInfo } from './api';
 import { IEditTextDropdownItem } from './generic/GenericDropdown';
 export interface IPayment {
@@ -186,7 +186,7 @@ export interface IHelperOpts {
     rowCount: number;
     offset: number;
 }
-export type FieldValueType = string | number | null;
+
 
 export type IForeignKeyLookupMap = Map<TableNames, IForeignKeyCombo>; //tablename -> id:desc map
 export type IHelper = {

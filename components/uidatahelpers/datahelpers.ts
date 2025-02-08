@@ -3,10 +3,10 @@ import {
      updateSheet,
     googleSheetRead,
 } from '../api';
-import { IDBFieldDef, TableNames } from '../types'
+import { FieldValueType, IDBFieldDef, TableNames } from '../types'
 import { get } from 'lodash';
 import moment from 'moment';
-import { FieldValueType, IForeignKeyCombo, IForeignKeyLookupMap, IHelper, IHelperOpts, IPageRelatedState } from '../reportTypes';
+import { IForeignKeyCombo, IForeignKeyLookupMap, IHelper, IHelperOpts, IPageRelatedState } from '../reportTypes';
 
 
 import * as RootState from '../states/RootState'

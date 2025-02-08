@@ -5,9 +5,8 @@ import { createHelper, IGenListProps } from './datahelpers';
 import { getFKDefs } from './GenCrudTableFkTrans';
 
 import * as RootState from '../states/RootState'
-import { IDBFieldDef, ISqlRequestWhereItem } from '../types';
+import { FieldValueType, IDBFieldDef, ISqlRequestWhereItem } from '../types';
 import { usePageRelatedContext } from '../states/PageRelatedState';
-import { FieldValueType } from '../reportTypes';
 
 
 //props: table and displayFields [fieldNames]
