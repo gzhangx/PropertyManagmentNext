@@ -96,14 +96,12 @@ export function stdFormatValue(def: IDBFieldDef, v: string | number, fieldName?:
     }
 }
 
-const helperCache = new Map<TableNames, IHelper>();
+
 export function createHelper(rootCtx: RootState.IRootPageState, ctx: IPageRelatedState, props: ITableAndSheetMappingInfo): IHelper {
     const googleSheetId: string = ctx.googleSheetAuthInfo.googleSheetId;    
     //sheetMapping?: DataToDbSheetMapping
     const { table, sheetMapping } = props; 
-    if (!table) return null;    
-    const existing = helperCache.get(table);
-    if (existing) return existing;
+    if (!table) return null;
 
     const accModel = () => ctx.modelsProp.models.get(table);
     const accModelFields = () => get(accModel(), 'fields', [] as IDBFieldDef[]);
@@ -132,20 +130,26 @@ export function createHelper(rootCtx: RootState.IRootPageState, ctx: IPageRelate
         idField: '' as ALLFieldNames,
         sheetIdPos: -1,
     };
+
+    function populateState() {
+        const fields = ctx.modelsProp.getTableModelSync(table);
+        fields.forEach(f => {
+            if (f.isId && !f.userSecurityField) {
+                helperState.idField = f.field as ALLFieldNames;
+                if (sheetMapping) {
+                    helperState.sheetIdPos = sheetMapping.mapping.indexOf(helperState.idField);
+                }
+            }
+        });
+    }
+    populateState();
     const helper: IHelper = {
         getModelFields: accModelFields,
         loadModel: async () => {
             await ctx.modelsProp.getTableModel(table);
             const model = accModel();
             innerState.dateFields = model.fields.filter(f => f.type === 'date').map(f => f.field);
-            accModelFields().forEach(f => {                
-                if (f.isId && !f.userSecurityField) {
-                    helperState.idField = f.field as ALLFieldNames;
-                    if (sheetMapping) {
-                        helperState.sheetIdPos = sheetMapping.mapping.indexOf(helperState.idField);
-                    }
-                }
-            });
+            populateState();
             return model;
         },        
         loadData: async (opts = {} as IHelperOpts) => {
@@ -223,7 +227,28 @@ export function createHelper(rootCtx: RootState.IRootPageState, ctx: IPageRelate
                 const originalValues = data._vdOriginalRecord? getSheetValuesFromData(data._vdOriginalRecord): null;
 
                 if (id) {
-                    const sheetData = await loadSheetData(googleSheetId, sheetMapper);                        
+                    const foundRow = await findItemOnSheet(data, googleSheetId, sheetMapper, accModelFields(), helperState, id);
+                    if (foundRow === 'NOT FOUND') {
+
+                    } else {
+                        if (helperState.sheetIdPos >= 0) {                            
+                            await updateSheet('update', googleSheetId, sheetMapper.sheetName, {
+                                row: foundRow,
+                                values: [values]
+                            });
+                        } else {
+                            await updateSheet('update', googleSheetId, sheetMapper.sheetName, {
+                                row: foundRow,
+                                values: [values]
+                            });
+                        }
+                    }
+                    /*
+                    const sheetData = await loadSheetData(googleSheetId, sheetMapper); 
+                    const fieldTypeMapping: Map<string, IDBFieldDef> = accModelFields().reduce((acc, f) => {
+                        acc.set(f.field, f);
+                        return acc;
+                    }, new Map());
                     if (helperState.idField) {                            
                         if (helperState.sheetIdPos >= 0) {
                             let foundRow = -1;
@@ -288,6 +313,7 @@ export function createHelper(rootCtx: RootState.IRootPageState, ctx: IPageRelate
                             }                            
                         }
                     }
+                    */
                 } else {
                     //`'${sheetMapper.sheetName}'!A1`
                     await updateSheet('append', googleSheetId, sheetMapper.sheetName, {
@@ -302,9 +328,78 @@ export function createHelper(rootCtx: RootState.IRootPageState, ctx: IPageRelate
         deleteData: async ids => sqlDelete(table, ids),
     }
 
-    helperCache.set(table, helper);
-
     return helper;
+}
+
+
+async function findItemOnSheet(data: ItemType, googleSheetId: string, sheetMapper: DataToDbSheetMapping, modelFields: IDBFieldDef[], helperState: {
+    idField: string;
+    sheetIdPos: number;
+}, id: string) {
+    const sheetData = await loadSheetData(googleSheetId, sheetMapper);
+    const fieldTypeMapping: Map<string, IDBFieldDef> = modelFields.reduce((acc, f) => {
+        acc.set(f.field, f);
+        return acc;
+    }, new Map());
+    if (helperState.idField) {
+        if (helperState.sheetIdPos >= 0) {
+            let foundRow = -1;
+            for (let row = 0; row < sheetData.values.length; row++) {
+                if (sheetData.values[row][helperState.sheetIdPos] === id) {
+                    foundRow = row;
+                    break;
+                }
+            }
+            //console.log(`sheetData printout idPos=${helperState.sheetIdPos} found=${foundRow} newId=${newId} id=${id}`, foundRow, sheetData, sqlRes)
+            if (foundRow >= 0) {
+                return foundRow;
+            }            
+        }
+    } else {
+        //no sheet id, must match against old data
+        let foundRow = -1;
+        function matchToLower(val: string, fieldName: string) {
+            if (!val) {
+                if (val === undefined) return '';
+                if (val === null) return '';
+                return val;
+            }
+            val = val.toString().trim();
+            const def = fieldTypeMapping.get(fieldName);
+            if (!def) return val;
+            return stdFormatValue(def, val, fieldName).v;
+        }
+        const originalValues = data._vdOriginalRecord;
+        for (let row = 0; row < sheetData.values.length; row++) {
+            const rowData = sheetData.values[row];
+            let ok = true;
+            let pos = 0;
+            let debugKeepMatching = false;
+            for (const fielName of sheetMapper.mapping) {
+                if (!fielName) continue;
+                //console.log('matching row', row, fielName, 'rowData', rowData[pos], 'f=', matchToLower(rowData[pos], fielName), `data '${data[fielName]}'`, 'f=',matchToLower(data[fielName] as string, fielName))
+                if (matchToLower(rowData[pos], fielName) !== matchToLower(originalValues[pos], fielName)) {
+                    ok = false;
+                    if (debugKeepMatching) {
+                        console.log('!! not matching row', row, fielName, 'rowData', rowData[pos], 'f=', matchToLower(rowData[pos], fielName), ` original ${originalValues[pos]} data '${data[fielName]}'`, 'f=', matchToLower(data[fielName] as string, fielName))
+                    }
+                    if (!debugKeepMatching) break;
+                } else {
+                    console.log('matched ', row, fielName, rowData[pos], 'row=', row)
+                    console.log('matching row', row, fielName, 'rowData', rowData[pos], 'f=', matchToLower(rowData[pos], fielName), `data '${data[fielName]}'`, 'f=', matchToLower(data[fielName] as string, fielName))
+                    debugKeepMatching = true;
+                }
+                pos++;
+                if (!ok) break;
+            }
+            if (ok) {
+                foundRow = row;
+                console.log(`matched row ${foundRow}`, row);
+                return row + 1;                
+            }
+        }
+    }
+    return 'NOT FOUND';
 }
 
 async function loadSheetData(sheetId: string, sheetMapper: DataToDbSheetMapping) {

@@ -166,6 +166,11 @@ export function PageRelatedContextWrapper(props: {
         modelsProp: {
             models,
             getTableModel,
+            getTableModelSync: table => {                
+                const mod = models.get(table);
+                if (!mod) return [];
+                return mod.fields;
+            }
         },
         reloadCounter,
         //tableToHelperMap, setTableTohelperMap,

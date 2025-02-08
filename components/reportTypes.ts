@@ -177,7 +177,8 @@ export type IStringBoolMap = { [id: string]: boolean };
 export type IModelsDict = Map<TableNames, IGetModelReturn>;
 export type IModelsProps = {
     models: IModelsDict;
-    getTableModel: (table: TableNames)=>Promise<IDBFieldDef[]>;
+    getTableModel: (table: TableNames) => Promise<IDBFieldDef[]>;
+    getTableModelSync: (table: TableNames) => IDBFieldDef[];
 }
 
 export interface IHelperOpts {
