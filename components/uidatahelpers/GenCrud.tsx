@@ -5,6 +5,7 @@ import { EditTextDropdown } from '../generic/EditTextDropdown';
 import { GenCrudAdd, ItemType } from './GenCrudAdd';
 import { ISqlOrderDef, SortOps, IPageFilter, IPageState, IDBFieldDef, TableNames, SQLOPS, FieldValueType } from '../types'
 import { IFKDefs} from './GenCrudTableFkTrans'
+import { ItemTypeDict } from './datahelperTypes';
 
 
 
@@ -59,11 +60,14 @@ export const GenCrud = (props: IGenGrudProps) => {
         paggingInfo, setPaggingInfo,
     } = props;
 
-    const [dspState, setDspState] = useState('dsp');
-    const [editItem, setEditItem] = useState(null);
+    const [dspState, setDspState] = useState<'Add' | 'Update' | 'dsp'>('dsp');
+    const [editItem, setEditItem] = useState<ItemType>({
+        _vdOriginalRecord: null,
+    });
     const [showFilter, setShowFilter] = useState(false);
     const [filterVals, setFilterVals] = useState<IPageFilter[]>([]);
     const { pageProps, setPageProps } = pageState;
+
     const PageLookRangeMax = 3;
     const calcPage = () => {
         let changed = false;
@@ -129,7 +133,7 @@ export const GenCrud = (props: IGenGrudProps) => {
     const idCols = columnInfo.filter(c => c.isId);
 
     const addNew = () => {
-        setDspState('addNew');
+        setDspState('Add');
     }
 
     const forceUpdatePageProps = () => {
@@ -301,8 +305,11 @@ export const GenCrud = (props: IGenGrudProps) => {
                                             }
                                             <td>
                                                 {idCols.length && <button className="btn btn-primary outline-primary" type="button"  onClick={() => {
-                                                    setEditItem(row);
-                                                    setDspState('edit');
+                                                    setEditItem({
+                                                        ...row,
+                                                        _vdOriginalRecord: row,
+                                                    });
+                                                    setDspState('Update');
                                                 }}>Edit</button>
                                                 }
                                                 {' ' //className="btn-xs"
@@ -324,10 +331,12 @@ export const GenCrud = (props: IGenGrudProps) => {
                 </div>
             }
 
-            <GenCrudAdd {...props} show={dspState === 'addNew'} onCancel={r => {
+            {
+                (dspState === 'Add' || dspState === 'Update') &&
+            <GenCrudAdd {...props} show={true} operation={dspState} editItem={editItem} setEditItem={setEditItem}  onCancel={r => {
                 setDspState('dsp')
-            }}></GenCrudAdd>
-            <GenCrudAdd {...props} show={dspState === 'edit'} editItem={editItem}  onCancel={() => setDspState('dsp')}></GenCrudAdd>
+            }}></GenCrudAdd>            
+            }
         </div>
     )
 }

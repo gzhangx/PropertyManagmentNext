@@ -20,11 +20,13 @@ export type ItemType = ItemTypeDict & { _vdOriginalRecord: ItemTypeDict; }; //{ 
 export interface IGenGrudAddProps extends IGenGrudProps {
     columnInfo: IDBFieldDef[];
     editItem?: ItemType;
+    setEditItem: React.Dispatch<React.SetStateAction<ItemType>>;
     doAdd: (data: ItemType, id: FieldValueType) => Promise<{ id: string;}>;
     //onOK?: (data?:ItemType) => void;
     onCancel: (data?:ItemType) => void;
     onError?: (err: { message: string; missed: any; }) => void;
         
+    operation: 'Add' | 'Update';
     show: boolean;
     desc?: string;    
     sheetMapping?: DataToDbSheetMapping;
@@ -35,6 +37,7 @@ export const GenCrudAdd = (props: IGenGrudAddProps) => {
     const rootCtx = RootState.useRootPageContext();
     const { columnInfo, doAdd, onCancel,
         editItem, //only available during edit
+        setEditItem,
         onError,
         show,
         table,
@@ -44,46 +47,42 @@ export const GenCrudAdd = (props: IGenGrudAddProps) => {
         = props;
         
     const getForeignKeyProcessor = fk => get(fkDefs, [fk, 'processForeignKey']);
-    let id:string|number = '';
-    let idName = '';
-    const addUpdateLabel = editItem ? 'Update' : 'Add';
-    const onOK =  onCancel;
-    const internalCancel = () => onOK();
-    const initData = columnInfo.reduce((acc, col) => {
-        acc[col.field] = '';
-        if (editItem) {
-            const val = editItem[col.field];
-            acc[col.field] = val === 0 ? 0 : val || '';
-            if (col.isId) {
-                id = val;
-            }
-        }
-        if (col.isId) {
-            idName = col.field;
+    //let id:string|number = '';
+    const { idName, id } = columnInfo.reduce((acc, col) => {
+        if (col.isId && !col.userSecurityField) {
+            return {
+                idName: col.field,
+                id: editItem[col.field],
+            };
         }
         return acc;
-    }, {} as ItemType);
+    }, {
+        idName: '',
+        id: '',
+    });
+    const addUpdateLabel = props.operation;
+    const onOK =  onCancel;
+    const internalCancel = () => onOK();
+
     const requiredFields = columnInfo.filter(c => c.required && !c.isId && !isColumnSecurityField(c)).map(c => c.field);
     const requiredFieldsMap = requiredFields.reduce((acc, f) => {
         acc[f] = true;
         return acc;
     }, {});
 
-    const [data, setData] = useState<ItemType>({
-        ...initData,
-        _vdOriginalRecord: initData,
-     });
+
     //const [errorText, setErrorText] = useState('');
     const [addNewForField, setAddNewForField] = useState('');
     //const [optsData, setOptsData] = useState<{[keyName:string]:IEditTextDropdownItem[]}>({});
     const handleChange = e => {
         const { name, value } = e.target;
-        setData({ ...data, [name]: value });
+        setEditItem({ ...editItem, [name]: value });
     }
 
     const handleSubmit = async e => {
         e.preventDefault();
 
+        const data = editItem;
         const missed = requiredFields.filter(r => !data[r]);
         if (missed.length === 0) {
             const ret = await doAdd(data, id);
@@ -140,9 +139,8 @@ export const GenCrudAdd = (props: IGenGrudAddProps) => {
     // }, [table, columnInfo]);
 
     useEffect(() => {
-        mainCtx.checkLoadForeignKeyForTable(table);
-        setData(initData);
-    }, [JSON.stringify(initData)])
+        mainCtx.checkLoadForeignKeyForTable(table);        
+    }, [JSON.stringify(editItem)])
     const [columnInfoMaps, setColumnInfoMaps] = useState<{
         [name: string]: {
             columnInfo: IDBFieldDef[];
@@ -172,9 +170,9 @@ export const GenCrudAdd = (props: IGenGrudAddProps) => {
     }
     useEffect(() => {
         loadColumnInfo(columnInfo);
-    }, ['once']);
+    }, [columnInfo]);
     const checkErrorInd = c => {
-        if (requiredFieldsMap[c.field] && !data[c.field])
+        if (requiredFieldsMap[c.field] && !editItem[c.field])
             return "alert-danger";
         return '';
     }
@@ -224,7 +222,7 @@ export const GenCrudAdd = (props: IGenGrudAddProps) => {
                             //         [thisTbl]: processForeignKey(c.foreignKey, optData)
                             //     }
                             // });
-                            setData(prev => {
+                            setEditItem(prev => {
                                 return {
                                     ...prev,
                                     [c.field]: added.id,
@@ -241,16 +239,16 @@ export const GenCrudAdd = (props: IGenGrudAddProps) => {
                         if (!editItem) {
                             //create                            
                             if (c.type === 'date') {
-                                data[c.field] = moment().format('YYYY-MM-DD');
+                                editItem[c.field] = moment().format('YYYY-MM-DD');
                             } else {
                                 if (c.isId) return null;
                             }
                         } else {
                             //modify
-                            if (c.isId) return <div className='row' key={cind}>{data[c.field] || '' }</div>
+                            if (c.isId) return <div className='row' key={cind}>{editItem[c.field] || '' }</div>
                         }
                         if (isColumnSecurityField(c)) {
-                            data[c.field] = '';
+                            editItem[c.field] = '';
                             return null;  
                         } 
 
@@ -271,7 +269,7 @@ export const GenCrudAdd = (props: IGenGrudAddProps) => {
                                 value: 'AddNew',
                                 selected: false,
                             })
-                            const curSelection = options.filter(o => o.value === get(data, colField))[0];
+                            const curSelection = options.filter(o => o.value === get(editItem, colField))[0];
                             if (curSelection) {
                                 curSelection.selected = true;
                             }                            
@@ -283,7 +281,7 @@ export const GenCrudAdd = (props: IGenGrudAddProps) => {
                                             if (s.value === 'AddNew') {
                                                 setAddNewForField(colField);
                                             } else
-                                                setData({ ...data, [colField]: s.value, [colField+'_labelDesc']: s.label });    
+                                                setEditItem({ ...editItem, [colField]: s.value, [colField+'_labelDesc']: s.label });    
                                         }
                                     }
                                 ></EditTextDropdown>
@@ -300,7 +298,7 @@ export const GenCrudAdd = (props: IGenGrudAddProps) => {
                             <div className={checkErrorInd(c)}>
                                 {
                                     foreignSel || <input type="text" className="form-control bg-light border-0 small" placeholder={c.field}                
-                                        value={data[c.field]} name={c.field} onChange={handleChange} />
+                                        value={editItem[c.field]} name={c.field} onChange={handleChange} />
                                 }
                             </div>
                             <div className={checkErrorInd(c)}>{checkErrorInd(c) && '*'}</div>

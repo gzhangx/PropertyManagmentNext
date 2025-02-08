@@ -11,7 +11,7 @@ import { IForeignKeyCombo, IForeignKeyLookupMap, IHelper, IHelperOpts, IPageRela
 
 import * as RootState from '../states/RootState'
 import { tableNameToDefinitions } from './defs/allDefs';
-import { ALLFieldNames, DataToDbSheetMapping, ITableAndSheetMappingInfo } from './datahelperTypes';
+import { ALLFieldNames, DataToDbSheetMapping, ITableAndSheetMappingInfo, ItemTypeDict } from './datahelperTypes';
 import { checkLoginExpired } from '../states/RootState';
 import { ItemType } from './GenCrudAdd';
 
@@ -187,28 +187,35 @@ export function createHelper(rootCtx: RootState.IRootPageState, ctx: IPageRelate
                         acc.set(f.field as ALLFieldNames, foreignKeyLookup.get(f.foreignKey.table));
                     }
                     return acc;
-                }, new Map() as Map<ALLFieldNames, IForeignKeyCombo> );
-                const values = sheetMapper.mapping.map(name => {
-                    let val = data[name];                    
-                    if (helperState.idField  === name) {
-                        if (!val) {
-                            val = newId;
-                        }
-                    } else {
-                        const fkCombo = fieldNameToForeignkeyCombo.get(name);
-                        if (fkCombo) {
-                            console.log(`Translating for field ${name} value ${val}`);
-                            const origVal = val;
-                            val = fkCombo.idDesc.get(val as string)?.desc as FieldValueType;
+                }, new Map() as Map<ALLFieldNames, IForeignKeyCombo>);
+                
+                function getSheetValuesFromData(data: ItemTypeDict) {
+                    const values = sheetMapper.mapping.map(name => {
+                        let val = data[name];
+                        if (helperState.idField === name) {
                             if (!val) {
-                                const message = `Error, foreign key lookup for ${name} failed for val ${origVal}`;
-                                console.log(message);
-                                throw new Error(message);
+                                val = newId;
+                            }
+                        } else {
+                            const fkCombo = fieldNameToForeignkeyCombo.get(name);
+                            if (fkCombo) {
+                                console.log(`Translating for field ${name} value ${val}`);
+                                const origVal = val;
+                                val = fkCombo.idDesc.get(val as string)?.desc as FieldValueType;
+                                if (!val) {
+                                    const message = `Error, foreign key lookup for ${name} failed for val ${origVal}`;
+                                    console.log(message);
+                                    throw new Error(message);
+                                }
                             }
                         }
-                    }
-                    return formatFieldValue(name, val as string);
-                })
+                        return formatFieldValue(name, val as string);
+                    });
+                    return values;
+                }
+                const values = getSheetValuesFromData(data);
+                console.log('debu8gremove _vdOriginalRecord', data._vdOriginalRecord);
+                const originalValues = data._vdOriginalRecord? getSheetValuesFromData(data._vdOriginalRecord): null;
 
                 if (id) {
                     const sheetData = await loadSheetData(googleSheetId, sheetMapper);                        
@@ -231,7 +238,6 @@ export function createHelper(rootCtx: RootState.IRootPageState, ctx: IPageRelate
                         }
                     } else {
                         //no sheet id, must match against old data
-                        const original = data._vdOriginalRecord;
                         let foundRow = -1;
                         function matchToLower(val: string, fieldName: string) {
                             if (!val) {
@@ -252,10 +258,10 @@ export function createHelper(rootCtx: RootState.IRootPageState, ctx: IPageRelate
                             for (const fielName of sheetMapper.mapping) {
                                 if (!fielName) continue;
                                 //console.log('matching row', row, fielName, 'rowData', rowData[pos], 'f=', matchToLower(rowData[pos], fielName), `data '${data[fielName]}'`, 'f=',matchToLower(data[fielName] as string, fielName))
-                                if (matchToLower(rowData[pos], fielName) !== matchToLower(data[fielName] as string, fielName)) {
+                                if (matchToLower(rowData[pos], fielName) !== matchToLower(originalValues[pos], fielName)) {
                                     ok = false;
                                     if (debugKeepMatching) {
-                                        console.log('!! not matching row', row, fielName, 'rowData', rowData[pos], 'f=', matchToLower(rowData[pos], fielName), `data '${data[fielName]}'`, 'f=', matchToLower(data[fielName] as string, fielName))    
+                                        console.log('!! not matching row', row, fielName, 'rowData', rowData[pos], 'f=', matchToLower(rowData[pos], fielName), ` original ${originalValues[pos]} data '${data[fielName]}'`, 'f=', matchToLower(data[fielName] as string, fielName))    
                                     }
                                     if (!debugKeepMatching)break;
                                 } else {
@@ -264,12 +270,17 @@ export function createHelper(rootCtx: RootState.IRootPageState, ctx: IPageRelate
                                     debugKeepMatching = true;
                                 }
                                 pos++;
+                                if (!ok) break;
                             }
                             if (ok) {
                                 foundRow = row;
+                                console.log(`matched row ${foundRow}`, row);
+                                await updateSheet('update', googleSheetId, sheetMapper.sheetName, {
+                                    row: row + 1,
+                                    values: [values]
+                                });
                                 break;
-                            }
-                            console.log(`mathching row ${foundRow}`, row);
+                            }                            
                         }
                     }
                 } else {
