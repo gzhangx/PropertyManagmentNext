@@ -95,11 +95,16 @@ export function stdFormatValue(def: IDBFieldDef, v: string | number, fieldName?:
         v,
     }
 }
+
+const helperCache = new Map<TableNames, IHelper>();
 export function createHelper(rootCtx: RootState.IRootPageState, ctx: IPageRelatedState, props: ITableAndSheetMappingInfo): IHelper {
-    const googleSheetId: string = ctx.googleSheetAuthInfo.googleSheetId;
+    const googleSheetId: string = ctx.googleSheetAuthInfo.googleSheetId;    
     //sheetMapping?: DataToDbSheetMapping
     const { table, sheetMapping } = props; 
     if (!table) return null;    
+    const existing = helperCache.get(table);
+    if (existing) return existing;
+
     const accModel = () => ctx.modelsProp.models.get(table);
     const accModelFields = () => get(accModel(), 'fields', [] as IDBFieldDef[]);
     const innerState = {
@@ -296,6 +301,8 @@ export function createHelper(rootCtx: RootState.IRootPageState, ctx: IPageRelate
         },
         deleteData: async ids => sqlDelete(table, ids),
     }
+
+    helperCache.set(table, helper);
 
     return helper;
 }
