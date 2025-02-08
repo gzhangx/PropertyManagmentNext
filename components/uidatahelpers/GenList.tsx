@@ -68,7 +68,7 @@ export function GenList(props: IGenListProps) {
     },[table || 'NA', pageState.pageProps.reloadCount, paggingInfo.pos, paggingInfo.total, secCtx.googleSheetAuthInfo.googleSheetId]);
 
     const doAdd = (data: ItemType, id: FieldValueType) => {        
-        return helper.saveData(data,id, true).then(res => {
+        return helper.saveData(data,id, true, secCtx.foreignKeyLoopkup).then(res => {
             setLoading(true);            
             reload();
             return res;

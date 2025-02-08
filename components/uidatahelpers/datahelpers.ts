@@ -6,7 +6,7 @@ import {
 import { IDBFieldDef, TableNames } from '../types'
 import { get } from 'lodash';
 import moment from 'moment';
-import { IHelper, IHelperOpts, IPageRelatedState } from '../reportTypes';
+import { FieldValueType, IForeignKeyCombo, IForeignKeyLookupMap, IHelper, IHelperOpts, IPageRelatedState } from '../reportTypes';
 
 
 import * as RootState from '../states/RootState'
@@ -164,7 +164,7 @@ export function createHelper(rootCtx: RootState.IRootPageState, ctx: IPageRelate
             checkLoginExpired(rootCtx, res);
             return res;
         },
-        saveData: async (data: ItemType, id: string, saveToSheet: boolean) => {
+        saveData: async (data: ItemType, id: string, saveToSheet: boolean, foreignKeyLookup: IForeignKeyLookupMap) => {
             const fieldTypeMapping: Map<string, IDBFieldDef> = new Map();
             const submitData = accModelFields().reduce((acc, f) => {
                 acc[f.field] = data[f.field];                
@@ -182,13 +182,31 @@ export function createHelper(rootCtx: RootState.IRootPageState, ctx: IPageRelate
 
             const sheetMapper = (sheetMapping); //getTableNameToSheetMapping
             if (sheetMapper) {
+                const fieldNameToForeignkeyCombo = accModelFields().reduce((acc, f) => {
+                    if (f.foreignKey && f.foreignKey.table) {
+                        acc.set(f.field as ALLFieldNames, foreignKeyLookup.get(f.foreignKey.table));
+                    }
+                    return acc;
+                }, new Map() as Map<ALLFieldNames, IForeignKeyCombo> );
                 const values = sheetMapper.mapping.map(name => {
-                    let val = data[name];
+                    let val = data[name];                    
                     if (helperState.idField  === name) {
                         if (!val) {
                             val = newId;
                         }
-                    }                    
+                    } else {
+                        const fkCombo = fieldNameToForeignkeyCombo.get(name);
+                        if (fkCombo) {
+                            console.log(`Translating for field ${name} value ${val}`);
+                            const origVal = val;
+                            val = fkCombo.idDesc.get(val as string)?.desc as FieldValueType;
+                            if (!val) {
+                                const message = `Error, foreign key lookup for ${name} failed for val ${origVal}`;
+                                console.log(message);
+                                throw new Error(message);
+                            }
+                        }
+                    }
                     return formatFieldValue(name, val as string);
                 })
 

@@ -187,6 +187,8 @@ export interface IHelperOpts {
     offset: number;
 }
 export type FieldValueType = string | number | null;
+
+export type IForeignKeyLookupMap = Map<TableNames, IForeignKeyCombo>; //tablename -> id:desc map
 export type IHelper = {
     getModelFields: () => IDBFieldDef[];
     loadModel: () => Promise<IGetModelReturn>;
@@ -194,7 +196,7 @@ export type IHelper = {
         total: number;
         rows: any[];
     }>;
-    saveData: (data: any, id: FieldValueType, saveToSheet: boolean) => Promise<any>;
+    saveData: (data: any, id: FieldValueType, saveToSheet: boolean, foreignKeyLookup: IForeignKeyLookupMap) => Promise<any>;
     deleteData: (ids: string[]) => Promise<ISqlDeleteResponse>;
 }
 
@@ -209,7 +211,7 @@ export type IForeignKeyCombo = {
     idDesc: IForeignKeyIdDesc;
     rows: IForeignKeyParsedRow[];
 }
-export type IForeignKeyLookupMap = Map<TableNames, IForeignKeyCombo>; //tablename -> id:desc map
+
 
 export interface IPageRelatedState {
     pageState: IPageState;    
