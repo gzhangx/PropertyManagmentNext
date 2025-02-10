@@ -1,6 +1,8 @@
 import Dashboard from './dashboard'
 import { useRouter } from 'next/router'
 
+
+
 import {
     useRootPageContext,
     activeSideBarItem,
@@ -29,7 +31,7 @@ export default function () {
     };
     useEffect(() => {
         onLoad();
-    }, [currentPath]);
+    }, [currentPath]);    
 
     return <div>
         <Dashboard/>

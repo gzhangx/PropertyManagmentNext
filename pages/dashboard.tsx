@@ -11,11 +11,21 @@ import { OriginalDashboard } from '../components/demo/origDashboard'
 import { GenList } from '../components/uidatahelpers/GenList';
 import { getGenListParms } from '../components/uidatahelpers/datahelpers';
 import { usePageRelatedContext } from '../components/states/PageRelatedState';
-
+import Login from './Login'
 export default withRouter(function MainDashboard(props) {
   //const { state, setMainState } = props;  
   const rstate = useRootPageContext();
   const mainCtx = usePageRelatedContext();
+
+  const [isClient, setIsClient] = useState(false)
+  useEffect(() => {
+    setIsClient(true)
+  }, [])
+  if (!isClient) return <div>pre rendered</div>
+
+  console.log('-----------> logged in is ', rstate.isLoggedIn())
+  if (!rstate.isLoggedIn()) return <Login></Login>
+
   //const [pageState, setPageState] = pstate;
   const currentActivePage = getSideBarCurrentSelectedItemName(rstate);
   const sideBarItem = sideBarContentLookup.get(currentActivePage);
@@ -24,7 +34,7 @@ export default withRouter(function MainDashboard(props) {
     const prms = getGenListParms(mainCtx, sideBarItem?.table);
     page = <GenList {...prms}></GenList>
   }
-  return (    
+  return (
     <div>
       <div id="wrapper">
         <MainSideBar sections={sections}></MainSideBar>        

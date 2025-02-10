@@ -1,12 +1,12 @@
 import react, {useState} from 'react';
 import { useRouter } from 'next/router'
 import * as api from '../components/api';
-import { Dialog, IDialogInfo, createDialogPrms } from '../components/dialog';
+import { Dialog, createDialogPrms } from '../components/dialog';
 import { useRootPageContext } from "../components/states/RootState"
 import Link from 'next/link';
 import { usePageRelatedContext } from '../components/states/PageRelatedState';
 
-export default function Login(props) {    
+export default function Login() {    
     const router = useRouter();
 
     const mainCtx = usePageRelatedContext();
