@@ -46,7 +46,11 @@ export function getLoginInfo(): ILoginResponse {
     }
     const infoStr = localStorage.getItem('login.info');
     if (!infoStr) return null;
-    return JSON.parse(infoStr) as ILoginResponse;
+    const res = JSON.parse(infoStr) as ILoginResponse;
+    if (!res.name) {
+        res.name = localStorage.getItem('login.name');
+    }
+    return res;
 }
 
 export function RootPageStateWrapper({ children }) {

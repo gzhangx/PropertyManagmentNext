@@ -113,7 +113,8 @@ export async function loginUserSetToken(username: string, password: string): Pro
     }).then(async (r: ILoginResponse) => {
         if (r.error) return r;
         localStorage.setItem('login.token', r.token);
-        localStorage.setItem('login.info', JSON.stringify(r));        
+        localStorage.setItem('login.info', JSON.stringify(r));
+        localStorage.setItem('login.name', username);
         return r;
     });
 }

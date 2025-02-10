@@ -15,7 +15,7 @@ export function TopBar() {
         label: string;
         value: string;
     }[] = [];
-    return <nav className="navbar navbar-expand navbar-light bg-white topbar mb-4 static-top shadow">
+    return <nav className="navbar navbar-expand navbar-light bg-white topbar mb-4 static-top shadow" suppressHydrationWarning >
 
         <button id="sidebarToggleTop" className="btn btn-link d-md-none rounded-circle mr-3">
             <i className="fa fa-bars"></i>
@@ -152,14 +152,14 @@ export function TopBar() {
 
             <div className="topbar-divider d-none d-sm-block"></div>
 
-            <li className="nav-item dropdown no-arrow">
+            <li className="nav-item dropdown no-arrow" >
                 <a className="nav-link dropdown-toggle" href="#" id="userDropdown" role="button"
                     data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"
                     onClick={() => {
                         setUserProfileClicked(!userProfileClicked);
                     }}
                 >
-                    <span className="mr-2 d-none d-lg-inline text-gray-600 small">{rootContext.userInfo.name}</span>
+                    <span className="mr-2 d-none d-lg-inline text-gray-600 small" suppressHydrationWarning >{rootContext.userInfo.name}</span>
                     <img className="img-profile rounded-circle"
                         src="img/undraw_profile.svg" />
                 </a>
@@ -180,7 +180,7 @@ export function TopBar() {
                     <div className="dropdown-divider"></div>
                     <a className="dropdown-item" href="#" data-toggle="modal" data-target="#logoutModal"
                         onClick={() => {
-                            localStorage.clear();
+                            localStorage.removeItem('login.token');
                             router.push('/Login');
                     }}>
                         <i className="fas fa-sign-out-alt fa-sm fa-fw mr-2 text-gray-400"></i>
