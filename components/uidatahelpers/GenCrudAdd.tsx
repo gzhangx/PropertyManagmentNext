@@ -43,6 +43,7 @@ export const GenCrudAdd = (props: IGenGrudAddProps) => {
         table,
         desc,
         fkDefs,
+        operation,
     }
         = props;
         
@@ -236,7 +237,7 @@ export const GenCrudAdd = (props: IGenGrudAddProps) => {
                 <div className='container-fluid'>
                 {
                     columnInfo.map((c, cind) => {
-                        if (!editItem) {
+                        if (operation === 'Add') { //  !editItem
                             //create                            
                             if (c.type === 'date') {
                                 editItem[c.field] = moment().format('YYYY-MM-DD');

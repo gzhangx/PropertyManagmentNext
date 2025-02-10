@@ -7,6 +7,7 @@ import { ISqlOrderDef, SortOps, IPageFilter, IPageState, IDBFieldDef, TableNames
 import { IFKDefs} from './GenCrudTableFkTrans'
 import { ItemTypeDict } from './datahelperTypes';
 import { usePageRelatedContext } from '../states/PageRelatedState';
+import moment from 'moment';
 
 
 
@@ -138,6 +139,14 @@ export const GenCrud = (props: IGenGrudProps) => {
     const idCols = columnInfo.filter(c => c.isId);
 
     const addNew = () => {
+        columnInfo.map((c, cind) => {
+            if (c.type === 'date' || c.type === 'datetime') {
+                editItem[c.field] = moment().format('YYYY-MM-DD');
+            }
+        });
+        setEditItem({
+            ...editItem,
+        })
         setDspState('Add');
     }
 
