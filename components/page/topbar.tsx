@@ -2,11 +2,15 @@ import TinyIconNotify from './tinyIconNotify'
 import { useRootPageContext } from '../states/RootState'
 
 import { CheckBoxMultiSelect } from '../uidatahelpers/CheckBoxMultiSelect'
-export function TopBar(props) {
+import { useState } from 'react';
+import { useRouter } from 'next/router';
+export function TopBar() {
 
     const rootContext = useRootPageContext();
     const loginInfo = rootContext.userInfo; //getLoginInfo();
         
+    const router = useRouter();
+    const [userProfileClicked, setUserProfileClicked] = useState(false);
     const ownerSels: {
         label: string;
         value: string;
@@ -150,12 +154,16 @@ export function TopBar(props) {
 
             <li className="nav-item dropdown no-arrow">
                 <a className="nav-link dropdown-toggle" href="#" id="userDropdown" role="button"
-                    data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                    data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"
+                    onClick={() => {
+                        setUserProfileClicked(!userProfileClicked);
+                    }}
+                >
                     <span className="mr-2 d-none d-lg-inline text-gray-600 small">{rootContext.userInfo.name}</span>
                     <img className="img-profile rounded-circle"
                         src="img/undraw_profile.svg" />
                 </a>
-                <div className="dropdown-menu dropdown-menu-right shadow animated--grow-in"
+                <div className={`dropdown-menu dropdown-menu-right shadow animated--grow-in ${userProfileClicked?'show':''}`}
                     aria-labelledby="userDropdown">
                     <a className="dropdown-item" href="#">
                         <i className="fas fa-user fa-sm fa-fw mr-2 text-gray-400"></i>
@@ -170,7 +178,11 @@ export function TopBar(props) {
                         Activity Log
                     </a>
                     <div className="dropdown-divider"></div>
-                    <a className="dropdown-item" href="#" data-toggle="modal" data-target="#logoutModal">
+                    <a className="dropdown-item" href="#" data-toggle="modal" data-target="#logoutModal"
+                        onClick={() => {
+                            localStorage.clear();
+                            router.push('/Login');
+                    }}>
                         <i className="fas fa-sign-out-alt fa-sm fa-fw mr-2 text-gray-400"></i>
                         Logout
                     </a>

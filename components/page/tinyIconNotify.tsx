@@ -1,5 +1,19 @@
-import { useState } from "react";
-export default function TinyIconNotify(props) {
+import { JSX, useState } from "react";
+export default function TinyIconNotify(props: {
+    icon?: string;
+    count: string;
+    children?: JSX.Element[];
+    items?: {
+        data?: any;
+        header?: any;
+        body?: any;
+        url?: any;
+        clsColor?: string;
+        clsIcon?: string;
+        subject?: string;
+        text?: string | JSX.Element;
+    }[];
+}) {
     const { icon, count, children, items } = props;
     const [show, setShow] = useState(false);
     const iconClass = `fas fa-fw ${icon || 'fa-bell'}`;
