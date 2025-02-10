@@ -56,7 +56,7 @@ export function PageRelatedContextWrapper(props: {
     }
     useEffect(() => {
         reloadGoogleSheetAuthInfo();
-    }, [reloadCounter]);
+    }, [reloadCounter, rootCtx.userInfo?.token]);
 
 
     async function getTableModel(table: TableNames) :Promise<IDBFieldDef[]> {

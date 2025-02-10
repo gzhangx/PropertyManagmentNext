@@ -4,9 +4,12 @@ import * as api from '../components/api';
 import { Dialog, IDialogInfo, createDialogPrms } from '../components/dialog';
 import { useRootPageContext } from "../components/states/RootState"
 import Link from 'next/link';
+import { usePageRelatedContext } from '../components/states/PageRelatedState';
 
-export default function Login(props) {
+export default function Login(props) {    
     const router = useRouter();
+
+    const mainCtx = usePageRelatedContext();
 
     //const [dialogInfo, setDialogInfo] = useState <IDialogInfo>({
     //    show: false,
@@ -25,13 +28,14 @@ export default function Login(props) {
 
     const dlgPrm = createDialogPrms();
     const rState = useRootPageContext();
-    const doLogin = () => {
+    const doLogin = () => {        
         console.log('doLogin')
         return api.loginUserSetToken(state.username, state.password).then(res => {
             if (!res.error) {
                 if (!res.name) res.name = state.username;
                 console.log(`login set state`, res);
                 rState.setUserInfo(res);
+                mainCtx.reloadGoogleSheetAuthInfo();
                 router.push('/dashboard');
             } else {
                 dlgPrm.setDialogInfo({
@@ -131,6 +135,15 @@ export default function Login(props) {
                                         <div className="text-center">
                                             <Link href="register" legacyBehavior>
                                                 <a className="small" href="#">Create an Account!</a>
+                                            </Link>
+                                        </div>
+                                        <div className="text-center">
+                                            <Link href="register" legacyBehavior>
+                                                <a className="small" href="#" onClick={e => {
+                                                    localStorage.removeItem('login.token');    
+                                                    localStorage.clear();
+                                                    e.preventDefault();
+                                                }}>Clear</a>
                                             </Link>
                                         </div>
                                     </div>
