@@ -7,8 +7,7 @@ import { useRouter } from 'next/router';
 export function TopBar() {
 
     const rootContext = useRootPageContext();
-    const loginInfo = rootContext.userInfo; //getLoginInfo();
-        
+            
     const router = useRouter();
     const [userProfileClicked, setUserProfileClicked] = useState(false);
     const ownerSels: {
@@ -179,9 +178,8 @@ export function TopBar() {
                     </a>
                     <div className="dropdown-divider"></div>
                     <a className="dropdown-item" href="#" data-toggle="modal" data-target="#logoutModal"
-                        onClick={() => {
-                            localStorage.removeItem('login.token');
-                            router.push('/Login');
+                        onClick={() => {                            
+                            rootContext.doLogout();
                     }}>
                         <i className="fas fa-sign-out-alt fa-sm fa-fw mr-2 text-gray-400"></i>
                         Logout

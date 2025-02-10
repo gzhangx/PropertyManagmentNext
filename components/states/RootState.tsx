@@ -9,6 +9,8 @@ export interface IRootPageState {
     //pageState: IPageState;         
     userInfo: ILoginResponse;
     setUserInfo: Dispatch<SetStateAction<ILoginResponse>>;
+    isLoggedIn: () => boolean;
+    doLogout: () => void;
 }
 
 
@@ -66,6 +68,17 @@ export function RootPageStateWrapper({ children }) {
         //},
         userInfo,
         setUserInfo,
+        isLoggedIn: () => {
+            return !!(userInfo.id && userInfo.token);
+        },
+        doLogout: () => {
+            setUserInfo({
+                ...userInfo,
+                id: '',
+                token: '',
+            });
+            localStorage.removeItem('login.token')
+        }
     }
     return (
         <PageNavContext.Provider value= { defVal } >
