@@ -72,12 +72,12 @@ export function RootPageStateWrapper({ children }) {
             return !!(userInfo.id && userInfo.token);
         },
         doLogout: () => {
+            localStorage.removeItem('login.token')
             setUserInfo({
                 ...userInfo,
                 id: '',
                 token: '',
-            });
-            localStorage.removeItem('login.token')
+            });            
         }
     }
     return (

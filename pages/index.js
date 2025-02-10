@@ -16,7 +16,7 @@ export default function Home1() {
     const rs = RootState.useRootPageContext();
     useEffect(() => {
         setIsLoggedIn(rs?.isLoggedIn());
-    }, [rs?.isLoggedIn()]);
+    }, [rs?.isLoggedIn()?'true':'false']);
     if (isLoggedIn) {
         console.log('has login', rs.userInfo)
         //static page hack https://www.alpeaudio.com/post/hosting-a-next-js-app-with-routing-on-aws-s3/    

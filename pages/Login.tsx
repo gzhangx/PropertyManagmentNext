@@ -16,8 +16,8 @@ export default function Login(props) {
     //    title:'',body:'',
     //});
     const [state, setMainState] = useState({
-            username: '',
-            password:'',
+            username: api.localStorageGetItem('login.name') || '',
+            password: api.localStorageGetItem('login.password') || '',
     });
 
     const updateUser = () => {
@@ -86,6 +86,7 @@ export default function Login(props) {
                                                     value={state.username}
                                                     onChange={e => {
                                                         state.username = e.target.value;
+                                                        api.localStorageSetItem('login.name', state.username);
                                                         updateUser();
                                                     }}
                                                 />
@@ -96,6 +97,7 @@ export default function Login(props) {
                                                     value={state.password}
                                                     onChange={e => {
                                                         state.password = e.target.value;
+                                                        api.localStorageSetItem('login.password', state.password);
                                                         updateUser();
                                                     }}
                                                 />

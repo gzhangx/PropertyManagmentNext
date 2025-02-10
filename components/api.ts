@@ -120,19 +120,29 @@ export async function loginUserSetToken(username: string, password: string): Pro
 }
 
 
-const fakeLocalStorage: {[name:string]:string} = {};
-export function setFakeLocalStorage(name: string, val:string) {
-    fakeLocalStorage[name] = val;
+
+
+export function localStorageGetItem(name: string): string {
+    if (typeof window == 'undefined') {
+        //runnng on server
+        return '';
+    }
+    return localStorage.getItem(name);
 }
+
+export function localStorageSetItem(name: string, value: string) {
+    if (typeof window == 'undefined') {
+        //runnng on server
+        return;
+    }
+    localStorage.setItem(name, value);
+}
+
 
 export function getLoginToken() : string|null {
     //const rState = useRootPageContext();
-    //if (rState.userInfo.token) return rState.userInfo.token;
-    if (typeof window == 'undefined') {
-        //runnng on server
-        return fakeLocalStorage['login.token'];
-    }
-    const token = localStorage.getItem('login.token');    
+    //if (rState.userInfo.token) return rState.userInfo.token;    
+    const token = localStorageGetItem('login.token');    
     if (!token) {
         console.log(`get debugremove login.token got '${token}' typeof token=${typeof token} token=='null'=${token == 'null'} return null`)
         return null;
