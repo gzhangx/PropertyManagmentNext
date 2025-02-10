@@ -3,12 +3,10 @@ import { useRootPageContext } from '../states/RootState'
 
 import { CheckBoxMultiSelect } from '../uidatahelpers/CheckBoxMultiSelect'
 import { useState } from 'react';
-import { useRouter } from 'next/router';
 export function TopBar() {
 
     const rootContext = useRootPageContext();
-            
-    const router = useRouter();
+                
     const [userProfileClicked, setUserProfileClicked] = useState(false);
     const ownerSels: {
         label: string;
