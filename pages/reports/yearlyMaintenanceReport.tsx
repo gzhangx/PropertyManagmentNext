@@ -18,7 +18,7 @@ import {
 import { CloseableDialog } from '../../components/generic/basedialog'
 import { CreateSaveButton} from '../../components/generic/SaveFile'
 import { IEditTextDropdownItem } from "../../components/generic/GenericDropdown";
-import { exportMultiple1099, exportOne1099, I1099Info } from "./util/1099";
+import { exportMultiple1099, exportOne1099, I1099Info } from "../../components/report/util/1099";
 
 interface IShowDetailsData {
     amount: number;

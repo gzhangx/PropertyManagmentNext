@@ -5,7 +5,7 @@ import {
     getWorkerInfo,
     doPost,
     getOwnerInfo,
-} from '../../../components/api';
+} from '../../api';
 
 
 
