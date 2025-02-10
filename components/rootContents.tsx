@@ -79,7 +79,7 @@ const allSections = [
                 page: <YearlyMaintenanceReport/>,
             },
             {
-                name: 'Develop 2',
+                name: 'Google Sheet Imports 2',
                 page: <dev2.DevelopPage />,
                 selected: true,
             },
