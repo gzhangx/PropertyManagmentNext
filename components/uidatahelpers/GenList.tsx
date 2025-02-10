@@ -7,6 +7,7 @@ import { getFKDefs } from './GenCrudTableFkTrans';
 import * as RootState from '../states/RootState'
 import { FieldValueType, IDBFieldDef, ISqlRequestWhereItem } from '../types';
 import { usePageRelatedContext } from '../states/PageRelatedState';
+import { ItemTypeDict } from './datahelperTypes';
 
 
 //props: table and displayFields [fieldNames]
@@ -77,9 +78,9 @@ export function GenList(props: IGenListProps) {
         });
     }
 
-    const doDelete=( ids: string[] ) => {
+    const doDelete=( ids: string[], data: ItemTypeDict ) => {
         setLoading(true);
-        helper.deleteData(ids).then(() => {
+        helper.deleteData(ids, secCtx.foreignKeyLoopkup, data).then(() => {
             reload();
         })
     }

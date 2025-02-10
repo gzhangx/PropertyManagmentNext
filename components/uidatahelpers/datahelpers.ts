@@ -2,6 +2,7 @@ import {
     getModel, sqlGet, sqlAdd, sqlDelete, 
      updateSheet,
     googleSheetRead,
+    deleteSheetRow,
 } from '../api';
 import { FieldValueType, IDBFieldDef, TableNames } from '../types'
 import { get } from 'lodash';
@@ -20,8 +21,12 @@ import { ItemType } from './GenCrudAdd';
 
 
 
+//extends ITableAndSheetMappingInfo
+export interface IGenListProps  { //copied from gencrud, need combine and refactor later
+    table: TableNames;
 
-export interface IGenListProps extends ITableAndSheetMappingInfo { //copied from gencrud, need combine and refactor later
+    displayFields?: IDBFieldDef[];
+
     //table: TableNames;
     //columnInfo: IColumnInfo[];    //auto populated
     //displayFields?: IDisplayFieldType;
@@ -105,51 +110,14 @@ export function createHelper(rootCtx: RootState.IRootPageState, ctx: IPageRelate
 
     const accModel = () => ctx.modelsProp.models.get(table);
     const accModelFields = () => get(accModel(), 'fields', [] as IDBFieldDef[]);
-    const innerState = {
-        dateFields: [] as string[],
-    }
-    function formatFieldValue(fieldName: string, val: string) {
-        if (!props.displayFields) return val;
-        if (innerState.dateFields.includes(fieldName))
-            return moment(val).format('YYYY-MM-DD');
-        return val;        
         
-        // if (!props.displayFields) return val;
-        // const df = props.displayFields.find(f => (f as IComplexDisplayFieldType).field === fieldName) as IComplexDisplayFieldType;
-        // if (!df) return val;
-        // switch (df.type) {
-        //     case 'date':
-        //         return moment(val).format('YYYY-MM-DD');
-        //         break;
-        //     case 'number':
-        //     default:
-        //         return val;
-        // }
-    }
-    const helperState = {
-        idField: '' as ALLFieldNames,
-        sheetIdPos: -1,
-    };
-
-    function populateState() {
-        const fields = ctx.modelsProp.getTableModelSync(table);
-        fields.forEach(f => {
-            if (f.isId && !f.userSecurityField) {
-                helperState.idField = f.field as ALLFieldNames;
-                if (sheetMapping) {
-                    helperState.sheetIdPos = sheetMapping.mapping.indexOf(helperState.idField);
-                }
-            }
-        });
-    }
-    populateState();
     const helper: IHelper = {
         getModelFields: accModelFields,
         loadModel: async () => {
             await ctx.modelsProp.getTableModel(table);
             const model = accModel();
-            innerState.dateFields = model.fields.filter(f => f.type === 'date').map(f => f.field);
-            populateState();
+            //innerState.dateFields = model.fields.filter(f => f.type === 'date').map(f => f.field);
+            //populateState();
             return model;
         },        
         loadData: async (opts = {} as IHelperOpts) => {
@@ -189,55 +157,27 @@ export function createHelper(rootCtx: RootState.IRootPageState, ctx: IPageRelate
                 return sqlRes;
             }
 
-            const sheetMapper = (sheetMapping); //getTableNameToSheetMapping
-            if (sheetMapper) {
-                const fieldNameToForeignkeyCombo = accModelFields().reduce((acc, f) => {
-                    if (f.foreignKey && f.foreignKey.table) {
-                        acc.set(f.field as ALLFieldNames, foreignKeyLookup.get(f.foreignKey.table));
-                    }
-                    return acc;
-                }, new Map() as Map<ALLFieldNames, IForeignKeyCombo>);
+            if (sheetMapping) {
                 
-                function getSheetValuesFromData(data: ItemTypeDict) {
-                    const values = sheetMapper.mapping.map(name => {
-                        let val = data[name];
-                        if (helperState.idField === name) {
-                            if (!val) {
-                                val = newId;
-                            }
-                        } else {
-                            const fkCombo = fieldNameToForeignkeyCombo.get(name);
-                            if (fkCombo) {
-                                console.log(`Translating for field ${name} value ${val}`);
-                                const origVal = val;
-                                val = fkCombo.idDesc.get(val as string)?.desc as FieldValueType;
-                                if (!val) {
-                                    const message = `Error, foreign key lookup for ${name} failed for val ${origVal}`;
-                                    console.log(message);
-                                    throw new Error(message);
-                                }
-                            }
-                        }
-                        return formatFieldValue(name, val as string);
-                    });
-                    return values;
-                }
-                const values = getSheetValuesFromData(data);
+                const mapFuns = getSheetMappingFuncs(accModelFields(), sheetMapping, foreignKeyLookup, newId);
+                
+                
+                const values = mapFuns.getSheetValuesFromData(data);
                 console.log('debu8gremove _vdOriginalRecord', data._vdOriginalRecord);
-                const originalValues = data._vdOriginalRecord? getSheetValuesFromData(data._vdOriginalRecord): null;
+                //const originalValues = data._vdOriginalRecord ? mapFuns.getSheetValuesFromData(data._vdOriginalRecord): null;
 
                 if (id) {
-                    const foundRow = await findItemOnSheet(data, googleSheetId, sheetMapper, accModelFields(), helperState, id);
+                    const foundRow = await mapFuns.findItemOnSheet(data, googleSheetId, id);
                     if (foundRow === 'NOT FOUND') {
 
                     } else {
-                        if (helperState.sheetIdPos >= 0) {                            
-                            await updateSheet('update', googleSheetId, sheetMapper.sheetName, {
+                        if (mapFuns.hasSheetId) {  //update by id                            
+                            await updateSheet('update', googleSheetId, sheetMapping.sheetName, {
                                 row: foundRow,
                                 values: [values]
                             });
                         } else {
-                            await updateSheet('update', googleSheetId, sheetMapper.sheetName, {
+                            await updateSheet('update', googleSheetId, sheetMapping.sheetName, {
                                 row: foundRow,
                                 values: [values]
                             });
@@ -316,7 +256,7 @@ export function createHelper(rootCtx: RootState.IRootPageState, ctx: IPageRelate
                     */
                 } else {
                     //`'${sheetMapper.sheetName}'!A1`
-                    await updateSheet('append', googleSheetId, sheetMapper.sheetName, {
+                    await updateSheet('append', googleSheetId, sheetMapping.sheetName, {
                         row: 0,
                         values: [values]
                     });
@@ -325,82 +265,160 @@ export function createHelper(rootCtx: RootState.IRootPageState, ctx: IPageRelate
             
             return sqlRes;
         },
-        deleteData: async ids => sqlDelete(table, ids),
+        deleteData: async (ids, foreignKeyLookup: IForeignKeyLookupMap, data) => {
+            const deleteRes = await sqlDelete(table, ids);
+            if (sheetMapping) {
+                const mapFuns = getSheetMappingFuncs(accModelFields(), sheetMapping, foreignKeyLookup, '');
+                const foundRow = await mapFuns.findItemOnSheet({
+                    ...data,
+                    _vdOriginalRecord: data,
+                }, googleSheetId, ids[0]); //TODO: fix this
+                if (foundRow === 'NOT FOUND') {
+                } else {
+                    await deleteSheetRow(googleSheetId, sheetMapping.sheetName, foundRow);
+                }
+            }
+            return deleteRes;
+        },
     }
 
     return helper;
 }
 
 
-async function findItemOnSheet(data: ItemType, googleSheetId: string, sheetMapper: DataToDbSheetMapping, modelFields: IDBFieldDef[], helperState: {
-    idField: string;
-    sheetIdPos: number;
-}, id: string) {
-    const sheetData = await loadSheetData(googleSheetId, sheetMapper);
-    const fieldTypeMapping: Map<string, IDBFieldDef> = modelFields.reduce((acc, f) => {
-        acc.set(f.field, f);
-        return acc;
-    }, new Map());
-    if (helperState.idField) {
-        if (helperState.sheetIdPos >= 0) {
-            let foundRow = -1;
-            for (let row = 0; row < sheetData.values.length; row++) {
-                if (sheetData.values[row][helperState.sheetIdPos] === id) {
-                    foundRow = row;
-                    break;
-                }
-            }
-            //console.log(`sheetData printout idPos=${helperState.sheetIdPos} found=${foundRow} newId=${newId} id=${id}`, foundRow, sheetData, sqlRes)
-            if (foundRow >= 0) {
-                return foundRow;
-            }            
-        }
-    } else {
-        //no sheet id, must match against old data
-        let foundRow = -1;
-        function matchToLower(val: string, fieldName: string) {
-            if (!val) {
-                if (val === undefined) return '';
-                if (val === null) return '';
-                return val;
-            }
-            val = val.toString().trim();
-            const def = fieldTypeMapping.get(fieldName);
-            if (!def) return val;
-            return stdFormatValue(def, val, fieldName).v;
-        }
-        const originalValues = data._vdOriginalRecord;
-        for (let row = 0; row < sheetData.values.length; row++) {
-            const rowData = sheetData.values[row];
-            let ok = true;
-            let pos = 0;
-            let debugKeepMatching = false;
-            for (const fielName of sheetMapper.mapping) {
-                if (!fielName) continue;
-                //console.log('matching row', row, fielName, 'rowData', rowData[pos], 'f=', matchToLower(rowData[pos], fielName), `data '${data[fielName]}'`, 'f=',matchToLower(data[fielName] as string, fielName))
-                if (matchToLower(rowData[pos], fielName) !== matchToLower(originalValues[pos], fielName)) {
-                    ok = false;
-                    if (debugKeepMatching) {
-                        console.log('!! not matching row', row, fielName, 'rowData', rowData[pos], 'f=', matchToLower(rowData[pos], fielName), ` original ${originalValues[pos]} data '${data[fielName]}'`, 'f=', matchToLower(data[fielName] as string, fielName))
-                    }
-                    if (!debugKeepMatching) break;
-                } else {
-                    console.log('matched ', row, fielName, rowData[pos], 'row=', row)
-                    console.log('matching row', row, fielName, 'rowData', rowData[pos], 'f=', matchToLower(rowData[pos], fielName), `data '${data[fielName]}'`, 'f=', matchToLower(data[fielName] as string, fielName))
-                    debugKeepMatching = true;
-                }
-                pos++;
-                if (!ok) break;
-            }
-            if (ok) {
-                foundRow = row;
-                console.log(`matched row ${foundRow}`, row);
-                return row + 1;                
+function getSheetMappingFuncs(fields: IDBFieldDef[], sheetMapping: DataToDbSheetMapping, foreignKeyLookup: IForeignKeyLookupMap,
+    //id: string, //id of object, might be null for new one
+    sqlSaveId: string //after save, if it is new item, will return an id
+) {
+    const helperState = {
+        dateFields: [] as string[],
+        idField: '' as ALLFieldNames,
+        sheetIdPos: -1,
+    };
+    
+    fields.forEach(f => {
+        if (f.isId && !f.userSecurityField) {
+            helperState.idField = f.field as ALLFieldNames;
+            if (sheetMapping) {
+                helperState.sheetIdPos = sheetMapping.mapping.indexOf(helperState.idField);
             }
         }
+        if (f.type === 'date') {
+            helperState.dateFields.push(f.field);
+        }
+    });
+    
+    function formatFieldValue(fieldName: string, val: string) {
+        if (helperState.dateFields.includes(fieldName))
+            return moment(val).format('YYYY-MM-DD');
+        return val;
     }
-    return 'NOT FOUND';
+    function getSheetValuesFromData(data: ItemTypeDict) {
+        const fieldNameToForeignkeyCombo = fields.reduce((acc, f) => {
+            if (f.foreignKey && f.foreignKey.table) {
+                acc.set(f.field as ALLFieldNames, foreignKeyLookup.get(f.foreignKey.table));
+            }
+            return acc;
+        }, new Map() as Map<ALLFieldNames, IForeignKeyCombo>);
+        const values = sheetMapping.mapping.map(name => {
+            let val = data[name];
+            if (helperState.idField === name) {
+                if (!val) {
+                    val = sqlSaveId;
+                }
+            } else {
+                const fkCombo = fieldNameToForeignkeyCombo.get(name);
+                if (fkCombo) {
+                    console.log(`Translating for field ${name} value ${val}`);
+                    const origVal = val;
+                    val = fkCombo.idDesc.get(val as string)?.desc as FieldValueType;
+                    if (!val) {
+                        const message = `Error, foreign key lookup for ${name} failed for val ${origVal}`;
+                        console.log(message);
+                        throw new Error(message);
+                    }
+                }
+            }
+            return formatFieldValue(name, val as string);
+        });
+        return values;
+    }
+
+    async function findItemOnSheet(data: ItemType, googleSheetId: string, id: string) {
+        const sheetData = await loadSheetData(googleSheetId, sheetMapping);
+        const fieldTypeMapping: Map<string, IDBFieldDef> = fields.reduce((acc, f) => {
+            acc.set(f.field, f);
+            return acc;
+        }, new Map());
+        const sheetIdField = sheetMapping.mapping.find(name => name === helperState.idField) ? helperState.idField : null;
+        if (sheetIdField) {
+            if (helperState.sheetIdPos >= 0) {
+                let foundRow = -1;
+                for (let row = 0; row < sheetData.values.length; row++) {
+                    if (sheetData.values[row][helperState.sheetIdPos] === id) {
+                        foundRow = row;
+                        break;
+                    }
+                }
+                //console.log(`sheetData printout idPos=${helperState.sheetIdPos} found=${foundRow} newId=${newId} id=${id}`, foundRow, sheetData, sqlRes)
+                if (foundRow >= 0) {
+                    return foundRow;
+                }
+            }
+        } else {
+            //no sheet id, must match against old data
+            let foundRow = -1;
+            function matchToLower(val: string, fieldName: string) {
+                if (!val) {
+                    if (val === undefined) return '';
+                    if (val === null) return '';
+                    return val;
+                }
+                val = val.toString().trim();
+                const def = fieldTypeMapping.get(fieldName);
+                if (!def) return val;
+                return stdFormatValue(def, val, fieldName).v;
+            }
+            const originalValues = getSheetValuesFromData(data._vdOriginalRecord);
+            for (let row = 0; row < sheetData.values.length; row++) {
+                const rowData = sheetData.values[row];
+                let ok = true;
+                let pos = 0;
+                let debugKeepMatching = false;
+                for (const fielName of sheetMapping.mapping) {
+                    if (!fielName) continue;
+                    //console.log('matching row', row, fielName, 'rowData', rowData[pos], 'f=', matchToLower(rowData[pos], fielName), `data '${data[fielName]}'`, 'f=',matchToLower(data[fielName] as string, fielName))
+                    if (matchToLower(rowData[pos], fielName) !== matchToLower(originalValues[pos], fielName)) {
+                        ok = false;
+                        if (debugKeepMatching) {
+                            console.log('!! not matching row', row, fielName, `rowData= '${rowData[pos]}' matchToLowerRowData='${matchToLower(rowData[pos], fielName)}'`, ` original ${originalValues[pos]} data '${data[fielName]}'`, 'f=', matchToLower(data[fielName] as string, fielName))
+                        }
+                        if (!debugKeepMatching) break;
+                    } else {
+                        console.log('matched ', row, fielName, rowData[pos], 'row=', row)
+                        console.log('matching row', row, fielName, 'rowData', rowData[pos], 'f=', matchToLower(rowData[pos], fielName), `data '${data[fielName]}'`, 'f=', matchToLower(data[fielName] as string, fielName))
+                        debugKeepMatching = true;
+                    }
+                    pos++;
+                    if (!ok) break;
+                }
+                if (ok) {
+                    foundRow = row;
+                    console.log(`matched row ${foundRow}`, row);
+                    return row;
+                }
+            }
+        }
+        return 'NOT FOUND';
+    }
+
+    return {
+        hasSheetId: helperState.sheetIdPos >= 0,
+        getSheetValuesFromData,
+        findItemOnSheet,
+    }
 }
+
 
 async function loadSheetData(sheetId: string, sheetMapper: DataToDbSheetMapping) {
     const res = await googleSheetRead(sheetId, 'read', `'${sheetMapper.sheetName}'!${sheetMapper.range}`);

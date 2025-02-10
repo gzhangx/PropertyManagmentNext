@@ -24,7 +24,7 @@ export type DataToDbSheetMapping ={
 
 export interface ITableAndSheetMappingInfo {
     table: TableNames;
-    allFields?: IDBFieldDef[];
+    allFields?: IDBFieldDef[];  //TODO: check who is using this
     displayFields?: IDBFieldDef[];
     sheetMapping?: DataToDbSheetMapping;  //how googleSheet maps to db, used to save data to sheet
 }

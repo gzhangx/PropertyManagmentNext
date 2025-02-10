@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { set, get } from 'lodash';
 import { v1 } from 'uuid';
 import { EditTextDropdown } from '../generic/EditTextDropdown';
@@ -6,6 +6,7 @@ import { GenCrudAdd, ItemType } from './GenCrudAdd';
 import { ISqlOrderDef, SortOps, IPageFilter, IPageState, IDBFieldDef, TableNames, SQLOPS, FieldValueType } from '../types'
 import { IFKDefs} from './GenCrudTableFkTrans'
 import { ItemTypeDict } from './datahelperTypes';
+import { usePageRelatedContext } from '../states/PageRelatedState';
 
 
 
@@ -45,7 +46,7 @@ export interface IGenGrudProps {
     table: TableNames;
     //desc?: string;
     fkDefs?: IFKDefs;
-    doDelete: (ids: string[]) => void;
+    doDelete: (ids: string[], data: ItemTypeDict) => void;
     idCol?: { field: string; }
     reload?: () => Promise<void>;
 }
@@ -67,7 +68,11 @@ export const GenCrud = (props: IGenGrudProps) => {
     const [showFilter, setShowFilter] = useState(false);
     const [filterVals, setFilterVals] = useState<IPageFilter[]>([]);
     const { pageProps, setPageProps } = pageState;
-
+    const mainCtx = usePageRelatedContext();
+    useEffect(() => {
+            mainCtx.checkLoadForeignKeyForTable(table);        
+    }, [JSON.stringify(editItem)])
+    
     const PageLookRangeMax = 3;
     const calcPage = () => {
         let changed = false;
@@ -314,7 +319,7 @@ export const GenCrud = (props: IGenGrudProps) => {
                                                 }
                                                 {' ' //className="btn-xs"
                                                 }
-                                                {idCols.length && <button className="btn btn-primary outline-danger" type="button"  onClick={() => props.doDelete(idCols.map(c=>row[c.field]))}>Delete</button>}
+                                                {idCols.length && <button className="btn btn-primary outline-danger" type="button"  onClick={() => props.doDelete(idCols.map(c=>row[c.field]), row)}>Delete</button>}
                                             </td>
                                         </tr>
                                     )

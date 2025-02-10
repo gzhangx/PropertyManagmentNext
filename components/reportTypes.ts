@@ -1,6 +1,7 @@
 import { FieldValueType, IDBFieldDef, IGetModelReturn, IPageState, ISqlDeleteResponse, ISqlOrderDef, ISqlRequestWhereItem, TableNames } from './types'
 import { IGoogleSheetAuthInfo } from './api';
 import { IEditTextDropdownItem } from './generic/GenericDropdown';
+import { ItemTypeDict } from './uidatahelpers/datahelperTypes';
 export interface IPayment {
     address: string;
     addressId: string;
@@ -198,7 +199,7 @@ export type IHelper = {
         rows: any[];
     }>;
     saveData: (data: any, id: FieldValueType, saveToSheet: boolean, foreignKeyLookup: IForeignKeyLookupMap) => Promise<any>;
-    deleteData: (ids: string[]) => Promise<ISqlDeleteResponse>;
+    deleteData: (ids: string[], foreignKeyLookup: IForeignKeyLookupMap, data: ItemTypeDict) => Promise<ISqlDeleteResponse>;
 }
 
 export type TableNameToHelper = Map<TableNames, IHelper>;

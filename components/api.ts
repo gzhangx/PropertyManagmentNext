@@ -442,3 +442,7 @@ export async function updateSheet(op: 'update' | 'append', id: string, range: st
 }) {
     return await doPost(`misc/sheet/${op}/${id}/${range}`, data);
 }
+
+export async function deleteSheetRow(id: string, sheetName: string, row: number) {
+    return await doPost(`misc/sheet/deleteRow/${id}/${sheetName}/${row}`, null);
+}
