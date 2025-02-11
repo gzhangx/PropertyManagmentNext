@@ -23,29 +23,29 @@ export function AutoAssignLeases() {
         const houseID = house.houseID;
         setProcessingHouseId(houseID);
         const finder = await getLeaseUtilForHouse(houseID);
-        const all = await finder.matchAllTransactions();
-        setTopBarMessages(state => {
-            return [...state, {
-                clsColor: 'bg-success',
-                clsIcon: 'fa-donate',
-                //subject: 'December 7, 2021',
-                text: `Found ${all.length} payments for house`
-            }]
-        });
-        for (const t of all) {
-            if (t.leaseID) {
-                await api.sqlAdd('rentPaymentInfo', t as any, false);
-                const lease = finder.allLeases.find(l => l.leaseID === t.leaseID);
+        await finder.matchAndAddLeaseToTransactions((pos, pmt) => {
+            if (!pmt) {
                 setTopBarMessages(state => {
                     return [...state, {
                         clsColor: 'bg-success',
                         clsIcon: 'fa-donate',
                         //subject: 'December 7, 2021',
-                        text: `Set lease ${t.leaseID} ${lease.startDate} ${lease.endDate} to ${t.houseID} ${t.receivedAmount}`
+                        text: `Found ${pos} payments for house`
+                    }]
+                });
+            } else {
+                const lease = finder.allLeases.find(l => l.leaseID === pmt.leaseID);
+                setTopBarMessages(state => {
+                    return [...state, {
+                        clsColor: 'bg-success',
+                        clsIcon: 'fa-donate',
+                        //subject: 'December 7, 2021',
+                        text: `Set lease ${pmt.leaseID} ${lease.startDate} ${lease.endDate} to ${pmt.houseID} ${pmt.receivedAmount}`,
                     }]
                 });
             }
-        }
+        })
+        
         const lease = await finder.findLeaseForDate(new Date());
         house.lease = lease;
         return lease;

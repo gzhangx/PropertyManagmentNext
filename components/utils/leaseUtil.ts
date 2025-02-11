@@ -1,7 +1,7 @@
 import { orderBy } from 'lodash';
 import * as api from '../api'
 import moment from 'moment';
-import { ILeaseInfo } from '../reportTypes';
+import { ILeaseInfo, IPayment } from '../reportTypes';
 import { round2 } from '../report/util/utils';
 
 
@@ -140,6 +140,19 @@ export async function getLeaseUtilForHouse(houseID: string) {
                     }
                 ]
             });
+        }, 
+        matchAndAddLeaseToTransactions: async (onProgress: (pos: number, pmt?: IPayment) => void) => {
+            const all = await matchAllTransactions();
+            onProgress(all.length);
+            let pos = 0;
+            for (const t of all) {
+                if (t.leaseID) {
+                    onProgress(pos, t);
+                    await api.sqlAdd('rentPaymentInfo', t as any, false);
+                }
+                pos++;
+            }
+            return all;
         }
     }
 }
