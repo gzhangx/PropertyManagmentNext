@@ -270,13 +270,13 @@ export function stdProcessSheetData(sheetData: ICompRowData[], pageState: IPageS
                                 acc.invalidDesc = `${fieldName}::=>${v} Can't resolve foreign key`;
                                 console.log(acc.invalidDesc)
                             } else {
-                                const resolved = fk.descToId[v];
+                                const resolved = fk.descToId.get(v as string);
                                 if (!resolved) {
                                     sd.invalid = fieldName;
                                     acc.invalidDesc = `${fieldName}::=>${v} Can't resolve foreign key for desc ${v}`;
-                                    console.log(acc.invalidDesc, fk.descToId)
+                                    console.log(acc.invalidDesc)
                                 } else {
-                                    acc[fieldName] = resolved;
+                                    acc[fieldName] = resolved.id;
                                 }
                             }
                         } else {
