@@ -28,7 +28,7 @@ export default withRouter(function MainDashboard(props) {
   //const [pageState, setPageState] = pstate;
   const currentActivePage = getSideBarCurrentSelectedItemName(rstate);
   const sideBarItem = sideBarContentLookup.get(currentActivePage);
-  console.log('-----------> sidebar item ', sideBarItem.name, sideBarItem.table, currentActivePage)
+  //console.log('-----------> sidebar item ', sideBarItem.name, sideBarItem.table, currentActivePage)
   let page = sideBarItem?.page;
   if (sideBarItem?.table) {
     const prms = getGenListParms(mainCtx, sideBarItem?.table);
