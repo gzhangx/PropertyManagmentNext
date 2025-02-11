@@ -148,7 +148,7 @@ function GenerateByCatData(state: IYearlyMaintenanceReportState, setShowDetail: 
                     <tr>
                         <th scope="col">#</th>
                         {
-                            workerNames.map((n, keyi) => {
+                            workerIds.map((n, keyi) => {
                                 const wkrCat = state.byWorkerByCat.byWorkerTotal[n];
                                 return <th scope="col" key={keyi} style={get1099Color(wkrCat)} onClick={()=>showDetail(wkrCat, n)}>{n}</th>
                             })
@@ -162,7 +162,7 @@ function GenerateByCatData(state: IYearlyMaintenanceReportState, setShowDetail: 
                             return <tr key={tri}>
                                 <th scope="row">{catId}</th>
                                 {
-                                    workerNames.map((workerName, keyi) => {
+                                    workerIds.map((workerName, keyi) => {
                                         const wkrCat = dataBy[catId][workerName];
                                         return <td scope="col" key={keyi} onClick={() => () => showDetail(wkrCat, '')}>{
                                                 amtDsp(wkrCat?.total)
@@ -176,7 +176,7 @@ function GenerateByCatData(state: IYearlyMaintenanceReportState, setShowDetail: 
                         <tr>
                             <th>Grand Total:</th>
                             {
-                                workerNames.map((workerName, keyi) => {
+                                workerIds.map((workerName, keyi) => {
                                     const wkrCat = state.byWorkerByCat.byWorkerTotal[workerName];
                                     
                                     return <td scope="col" style={get1099Color(wkrCat)} key={keyi}>{
