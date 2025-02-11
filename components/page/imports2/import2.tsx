@@ -353,7 +353,7 @@ function displayItems(pagePrms: IPageParms, curPageState: IPageStates) {
         return true;
     }
     const sheetDsp = curPageState.pageDetails.dataRows
-        .filter(x => (!x.sheetDataInvalidDontShowReason &&  (!x.matched || x.needUpdate || curPageState.showMatchedItems)) && belongsToOwner(x.importSheetData))
+        .filter(x => ((!x.matched || x.needUpdate || curPageState.showMatchedItems)) && belongsToOwner(x.importSheetData))  //!x.sheetDataInvalidDontShowReason && add this to not show bad data
         .map((sheetRow, ind) => {
             const showItem = (dc: IDisplayColumnInfo) => {
                 const field = dc.field;

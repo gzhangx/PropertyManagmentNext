@@ -74,6 +74,7 @@ export function stdFormatValue(def: IDBFieldDef, v: string | number, fieldName?:
             v = parseFloat(v);
         }
         if (Number.isNaN(v)) {
+            console.log('Invalid data for NANA ', fieldName, v, def);
             return {
                 error: `NAN=>${v}`,
                 v,
@@ -86,10 +87,16 @@ export function stdFormatValue(def: IDBFieldDef, v: string | number, fieldName?:
     }
     
     if (def.type === 'date' || def.type === 'datetime') {
+        if (!v && !def.required) {
+            return {
+                v: null,
+            }
+        }
         const mt = moment(v);
         if (!mt.isValid()) {
             //sd.invalid = fieldName;
             //acc.invalidDesc = `bad date ${fieldName}:${v}`;
+            console.log('Invalid data for DatEEE ', fieldName, v, def);
             return {
                 error: `bad date ${fieldName}:${v}`,
                 v,
