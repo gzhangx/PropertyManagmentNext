@@ -51,9 +51,15 @@ export interface IGenListProps  { //copied from gencrud, need combine and refact
 export function stdFormatValue(def: IDBFieldDef, v: string | number, fieldName?: string): { error?: string; v: string | number; } {
     if (def.type === 'decimal') {
         if (v === null || v === undefined || v === '') {
+            if (!def.required) {
+                return {
+                    v: null,
+                }
+            }
             //acc[fieldName] = 'invalid(null)';
             //sd.invalid = fieldName;
             //acc.invalidDesc = `${fieldName} Invalid(null)`;
+            console.log('Invalid data for ', fieldName, v, def);
             return {
                 error: 'invalid(null)',
                 v,
