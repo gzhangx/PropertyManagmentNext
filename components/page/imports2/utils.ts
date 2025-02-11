@@ -37,25 +37,25 @@ export async function loadPageSheetDataRaw(sheetId: string, pageState: IPageStat
             return null;
         }
 
-        const specialFields: Map<string, (data: any) => void> = new Map();
-        allFields.forEach(f => {
-            if (f.field === 'houseID' && f.foreignKey && f.foreignKey.table === 'houseInfo') {
-                specialFields.set(f.field, (data) => {
-                    const houseInfo = getHouseByAddress(pageState, data[f.field])
-                    if (houseInfo) {
-                        data['address'] = houseInfo.address;
-                        data[f.field] = houseInfo.houseID;
-                    }
-                });
-            }
-        })        
+        // const specialFields: Map<string, (data: any) => void> = new Map();
+        // allFields.forEach(f => {
+        //     if (f.field === 'houseID' && f.foreignKey && f.foreignKey.table === 'houseInfo') {
+        //         specialFields.set(f.field, (data) => {
+        //             const houseInfo = getHouseByAddress(pageState, data[f.field])
+        //             if (houseInfo) {
+        //                 data['address'] = houseInfo.address;
+        //                 data[f.field] = houseInfo.houseID;
+        //             }
+        //         });
+        //     }
+        // })        
         const dataRows: ISheetRowData[] = r.values.slice(1).map(rr => {
             let matchedById = '';
             const importSheetData = curPage.sheetMapping.mapping.reduce((acc, f, ind) => {
                 if (f) {
                     acc[f] = rr[ind];
-                    const specFunc = specialFields.get(f);
-                    if (specFunc) specFunc(acc);
+                    //const specFunc = specialFields.get(f);
+                    //if (specFunc) specFunc(acc);
                 }
                 return acc;
             }, {} as IStringDict);
@@ -216,11 +216,15 @@ function stdDisplayField(fieldNames: ALLFieldNames[], obj: IStringDict, pageStat
 }
 
 
+function toResolvedForeignKeyIdName(fieldName: string) {
+    return `${fieldName}_resolvedForeignKeyDesc`;
+}
+
 export function stdProcessSheetData(sheetData: ICompRowData[], pageState: IPageStates, mainCtx: IPageRelatedState): IStringDict[] {
     const allFields = pageState.curPage.allFields;
     const fieldNames = pageState.curPage.sheetMapping.mapping.filter(f => f);
     const getDef = (name: string) => allFields.find(f => f.field === name);
-    return sheetData.map(sd => {
+    return sheetData.map(sd => {        
         const acc = (sd as ISheetRowData).importSheetData || (sd as IDbRowMatchData).dbItemData;
         fieldNames.forEach(fieldName => {
             let v = acc[fieldName];
@@ -262,7 +266,7 @@ export function stdProcessSheetData(sheetData: ICompRowData[], pageState: IPageS
                 //         }                    
                 //     break;
                 default:                
-                    if (def.foreignKey && def.foreignKey.table) {
+                    if (def.foreignKey && def.foreignKey.table && sd.dataType === 'Sheet') {
                         const fk = mainCtx.foreignKeyLoopkup.get(def.foreignKey.table);
                         if (v || v === 0) {
                             if (!fk) {
@@ -276,27 +280,29 @@ export function stdProcessSheetData(sheetData: ICompRowData[], pageState: IPageS
                                     acc.invalidDesc = `${fieldName}::=>${v} Can't resolve foreign key for desc ${v}`;
                                     console.log(acc.invalidDesc)
                                 } else {
+                                    acc[toResolvedForeignKeyIdName(fieldName)] = v;
                                     acc[fieldName] = resolved.id;
                                 }
                             }
                         } else {
                             v = null;
                         }
-                    }
-                    switch (def.type) {
-                        case 'date':
-                        case 'datetime': 
-                        case 'decimal':
-                            const fmted = stdFormatValue(def, v, fieldName);
-                            if (fmted.error) {
-                                acc[fieldName] = fmted.error;
-                                sd.invalid = fieldName;
-                                acc.invalidDesc = `${fieldName}::=>${v} ${fmted.error}`;    
-                            }
-                            acc[fieldName] = fmted.v;
-                            break;
-                        default:
-                            acc[fieldName] = v || '';
+                    } else {
+                        switch (def.type) {
+                            case 'date':
+                            case 'datetime':
+                            case 'decimal':
+                                const fmted = stdFormatValue(def, v, fieldName);
+                                if (fmted.error) {
+                                    acc[fieldName] = fmted.error;
+                                    sd.invalid = fieldName;
+                                    acc.invalidDesc = `${fieldName}::=>${v} ${fmted.error}`;
+                                }
+                                acc[fieldName] = fmted.v;
+                                break;
+                            default:
+                                acc[fieldName] = v || '';
+                        }
                     }
                     // if (def.type === 'decimal') {
                     //     if (v === null || v === undefined) {
@@ -329,9 +335,26 @@ export function stdProcessSheetData(sheetData: ICompRowData[], pageState: IPageS
                     break;                
             }
         });
-        const displayData = stdDisplayField(fieldNames, { ...acc }, pageState);
-        sd.displayData = displayData;
-        return displayData;
+        //const displayData = stdDisplayField(fieldNames, { ...acc }, pageState);
+        //sd.displayData = displayData;
+        //return displayData;
+        //const displayData = stdDisplayField(fieldNames, { ...acc }, pageState);
+        //sd.displayData = displayData;
+        const obj = acc;
+        sd.displayData = fieldNames.reduce((acc, fieldName) => {
+            let dsp = obj[fieldName];
+            const fkdef = getDef(fieldName);
+            if (fkdef.foreignKey) {
+                if (dsp) {
+                    dsp = `${dsp}-${obj[toResolvedForeignKeyIdName(fieldName)]}`;
+                } else {
+                    dsp = '';
+                }
+            }
+            acc[fieldName] = dsp;
+            return acc;
+        }, {});   
+        return sd.displayData;
     });
 }
 
