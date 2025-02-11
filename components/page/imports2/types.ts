@@ -115,7 +115,7 @@ export interface IPageStates {
     houses: IHouseInfo[];
     payments: IPaymentWithArg[];
     //tenants: ITenantInfo[];
-    tenantByName: { [fname: string]: ITenantInfo };
+    //tenantByName: { [fname: string]: ITenantInfo };
     //paymentsByDateEct: { [key: string]: IPaymentWithArg[] };
     stateReloaded: number;
     showMatchedItems: boolean;
