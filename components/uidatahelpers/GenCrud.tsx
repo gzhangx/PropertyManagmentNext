@@ -130,6 +130,11 @@ export const GenCrud = (props: IGenGrudProps) => {
         return acc;
     }, {} as { [name: string]: IDBFieldDef });
 
+    const fkDefLookup: { [name: string]: IDBFieldDef } = columnInfo.reduce((acc, col) => {
+        acc[col.field] = col;
+        return acc;
+    }, {});
+
     const displayFieldsStripped = displayFields.map(f => {
         if (typeof f === 'string') return f;
         if (!f.field) return `*** Field ${f}.field is empty`;
@@ -312,8 +317,20 @@ export const GenCrud = (props: IGenGrudProps) => {
                                         <tr key={ind}>
                                             {
                                                 displayFieldsStripped.map((fn, find) => {
-                                                    let val = row[fn]
+                                                    const def = fkDefLookup[fn];                                                    
+                                                    const val = row[fn]
                                                     let dsp = val;
+                                                    if (def && def.foreignKey && def.foreignKey.table) {
+                                                        const fkk = mainCtx.foreignKeyLoopkup.get(def.foreignKey.table);
+                                                        if (fkk) {
+                                                            const desc = fkk.idDesc.get(val)?.desc;
+                                                            if (desc) {
+                                                                dsp = desc;
+                                                            } else {
+                                                                dsp = 'NOTMAPPED_' + val;
+                                                            }
+                                                        }
+                                                    }                                                                                                        
                                                     return <td key={find}>{dsp}</td>
                                                 })
                                             }

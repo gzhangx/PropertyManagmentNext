@@ -7,7 +7,7 @@ export function RentpaymentInfo(props) {
         displayFields={[
             { field: 'receivedDate', 'desc': 'ReceivedDate', defaultNewValue: () => moment().format('YYYY-MM-DD'), type: 'date' },
             { field: 'receivedAmount', 'desc': 'Amount', type: 'number' },
-            { field: 'address', 'desc': 'Address' },
+            { field: 'houseID', 'desc': 'Address' },
             { field: 'paymentTypeName', 'desc': 'type' },
             { field: 'notes', 'desc': 'Notes' },
         ]}
@@ -17,7 +17,7 @@ export function RentpaymentInfo(props) {
             mapping: [
                 'receivedDate',
                 'receivedAmount',
-                'houseID_labelDesc',
+                'houseID',
                 'paymentTypeName',
                 'notes',
             ],            

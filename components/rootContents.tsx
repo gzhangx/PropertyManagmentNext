@@ -44,7 +44,7 @@ const inputPages: LocalPageInfo[] = [
     {
         name: 'Payments',
         page: <RentpaymentInfo />,
-        table: 'rentPaymentInfo',
+        //table: 'rentPaymentInfo',
     },
     {
         name: 'MaintenanceRecords',
