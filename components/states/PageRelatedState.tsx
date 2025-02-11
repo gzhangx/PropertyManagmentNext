@@ -13,6 +13,7 @@ import {
     IWorkerInfo,
 } from '../reportTypes';
 import { checkLoginExpired, useRootPageContext } from './RootState';
+import { NotifyIconItem } from '../page/tinyIconNotify';
 
 const PageRelatedContext = React.createContext({} as IPageRelatedState);
 
@@ -44,6 +45,8 @@ export function PageRelatedContextWrapper(props: {
 
     const [foreignKeyLoopkup, setForeignKeyLookup] = useState<IForeignKeyLookupMap>(new Map());
 
+    const [topBarMessages, setTopBarMessages] = useState<NotifyIconItem[]>([]);
+    const [topBarErrors, setTopBarErrors] = useState<NotifyIconItem[]>([]);
     function reloadGoogleSheetAuthInfo() {
         return getSheetAuthInfo().then(auth => {
             if (auth.error) {
@@ -183,6 +186,10 @@ export function PageRelatedContextWrapper(props: {
         checkLoadForeignKeyForTable,
         translateForeignLeuColumn,
         forceReload: () => setReloadCounter(v => v + 1),
+        topBarErrors,
+        setTopBarErrors,
+        topBarMessages,
+        setTopBarMessages,
     };
     return <PageRelatedContext.Provider value={pageCtx}>
         { props.children}

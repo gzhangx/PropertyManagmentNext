@@ -2,6 +2,7 @@ import { FieldValueType, IDBFieldDef, IGetModelReturn, IPageState, ISqlDeleteRes
 import { IGoogleSheetAuthInfo } from './api';
 import { IEditTextDropdownItem } from './generic/GenericDropdown';
 import { ItemTypeDict } from './uidatahelpers/datahelperTypes';
+import { NotifyIconItem } from './page/tinyIconNotify';
 export interface IPayment {
     address: string;
     addressId: string;
@@ -233,6 +234,11 @@ export interface IPageRelatedState {
     checkLoadForeignKeyForTable: (table: TableNames) => Promise<IDBFieldDef[]>;
     translateForeignLeuColumn: (def: IDBFieldDef, dataDict: any) => string;
     forceReload: () => void;
+
+    topBarMessages: NotifyIconItem[];
+    setTopBarMessages: React.Dispatch<React.SetStateAction<NotifyIconItem[]>>;
+    topBarErrors: NotifyIconItem[];
+    setTopBarErrors: React.Dispatch<React.SetStateAction<NotifyIconItem[]>>;
 }
 
 export interface IIncomeExpensesContextValue extends IPageRelatedState {

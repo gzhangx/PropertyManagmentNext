@@ -1,23 +1,26 @@
 import { JSX, useState } from "react";
+
+export type NotifyIconItem = {
+    data?: any;
+    header?: any;
+    body?: any;
+    url?: any;
+    clsColor?: string;
+    clsIcon?: string;
+    subject?: string;
+    text?: string | JSX.Element;
+};
 export default function TinyIconNotify(props: {
     icon?: string;
-    count: string;
+    count: number;
     children?: JSX.Element[];
-    items?: {
-        data?: any;
-        header?: any;
-        body?: any;
-        url?: any;
-        clsColor?: string;
-        clsIcon?: string;
-        subject?: string;
-        text?: string | JSX.Element;
-    }[];
+    items?: NotifyIconItem[];
 }) {
     const { icon, count, children, items } = props;
     const [show, setShow] = useState(false);
     const iconClass = `fas fa-fw ${icon || 'fa-bell'}`;
     const showClass = `dropdown-list dropdown-menu dropdown-menu-right shadow animated--grow-in ${show && 'show'}`;
+    if (count === 0) return null;
     return <li className="nav-item dropdown no-arrow mx-1">
         <a className="nav-link dropdown-toggle" href="#" id="alertsDropdown" role="button"
             onClick={e => {

@@ -3,9 +3,11 @@ import { useRootPageContext } from '../states/RootState'
 
 import { CheckBoxMultiSelect } from '../uidatahelpers/CheckBoxMultiSelect'
 import { useState } from 'react';
+import { usePageRelatedContext } from '../states/PageRelatedState';
 export function TopBar() {
 
     const rootContext = useRootPageContext();
+    const mainCtx = usePageRelatedContext();
                 
     const [userProfileClicked, setUserProfileClicked] = useState(false);
     const ownerSels: {
@@ -65,87 +67,94 @@ export function TopBar() {
                 </div>
             </li>
 
-            <TinyIconNotify count="3"
+            <TinyIconNotify count={ mainCtx.topBarErrors.length}
                 items={
-                    [
-                        { header: 'Alerts Center' },
-                        {
-                            clsColor: 'bg-primary',
-                            clsIcon: 'fa-file-alt',
-                            subject: 'December 12, 2019',
-                            text: <span className="font-weight-bold">A new monthly report is ready to download!</span>
-                        },
-                        {
-                            clsColor: 'bg-success',
-                            clsIcon: 'fa-donate',
-                            subject: 'December 7, 2021',
-                            text: '$290.29 has been deposited into your account!'
-                        },
-                        {
-                            clsColor: 'bg-warning',
-                            clsIcon: 'fa-exclamation-triangle',
-                            subject: 'December 12, 2021',
-                            text: 'Tractor was not properly handled'
-                        },
-                        { url:'Show All Alerts'}
-                    ]
+                    mainCtx.topBarErrors
+                    //[
+                        //{ header: 'Alerts Center' },
+                        // {
+                        //     clsColor: 'bg-primary',
+                        //     clsIcon: 'fa-file-alt',
+                        //     subject: 'December 12, 2019',
+                        //     text: <span className="font-weight-bold">A new monthly report is ready to download!</span>
+                        // },
+                        // {
+                        //     clsColor: 'bg-success',
+                        //     clsIcon: 'fa-donate',
+                        //     subject: 'December 7, 2021',
+                        //     text: '$290.29 has been deposited into your account!'
+                        // },
+                        // {
+                        //     clsColor: 'bg-warning',
+                        //     clsIcon: 'fa-exclamation-triangle',
+                        //     subject: 'December 12, 2021',
+                        //     text: 'Tractor was not properly handled'
+                        // },
+                        //{ url:'Show All Alerts'}
+                    //]
                 }
             >                                 
             </TinyIconNotify>
-
-            <TinyIconNotify count="7">               
-                    <h6 className="dropdown-header">
-                        Message Center
-                    </h6>
-                    <a className="dropdown-item d-flex align-items-center" href="#">
-                        <div className="dropdown-list-image mr-3">
-                            <img className="rounded-circle" src="img/undraw_profile_1.svg"
-                                alt="..." />
-                            <div className="status-indicator bg-success"></div>
-                        </div>
-                        <div className="font-weight-bold">
-                            <div className="text-truncate">Hi there! I am wondering if you can help me with a
-                                problem I've been having.</div>
-                            <div className="small text-gray-500">Emily Fowler · 58m</div>
-                        </div>
-                    </a>
-                    <a className="dropdown-item d-flex align-items-center" href="#">
-                        <div className="dropdown-list-image mr-3">
-                            <img className="rounded-circle" src="img/undraw_profile_2.svg"
-                                alt="..." />
-                            <div className="status-indicator"></div>
-                        </div>
-                        <div>
-                            <div className="text-truncate">I have the photos that you ordered last month, how
-                                would you like them sent to you?</div>
-                            <div className="small text-gray-500">Jae Chun · 1d</div>
-                        </div>
-                    </a>
-                    <a className="dropdown-item d-flex align-items-center" href="#">
-                        <div className="dropdown-list-image mr-3">
-                            <img className="rounded-circle" src="img/undraw_profile_3.svg"
-                                alt="..." />
-                            <div className="status-indicator bg-warning"></div>
-                        </div>
-                        <div>
-                            <div className="text-truncate">Last month's report looks great, I am very happy with
-                                the progress so far, keep up the good work!</div>
-                            <div className="small text-gray-500">Morgan Alvarez · 2d</div>
-                        </div>
-                    </a>
-                    <a className="dropdown-item d-flex align-items-center" href="#">
-                        <div className="dropdown-list-image mr-3">
-                            <img className="rounded-circle" src="https://source.unsplash.com/Mv9hjnEUHR4/60x60"
-                                alt="..." />
-                            <div className="status-indicator bg-success"></div>
-                        </div>
-                        <div>
-                            <div className="text-truncate">I want to rent a different tractor</div>
-                            <div className="small text-gray-500">Chicken the Dog · 2w</div>
-                        </div>
-                    </a>
-                    <a className="dropdown-item text-center small text-gray-500" href="#">Read More Messages</a>
+            <TinyIconNotify count={mainCtx.topBarMessages.length}
+                items={mainCtx.topBarMessages}
+            >
             </TinyIconNotify>
+
+            {
+                // <TinyIconNotify count="7">
+                //     <h6 className="dropdown-header">
+                //         Message Center
+                //     </h6>
+                //     <a className="dropdown-item d-flex align-items-center" href="#">
+                //         <div className="dropdown-list-image mr-3">
+                //             <img className="rounded-circle" src="img/undraw_profile_1.svg"
+                //                 alt="..." />
+                //             <div className="status-indicator bg-success"></div>
+                //         </div>
+                //         <div className="font-weight-bold">
+                //             <div className="text-truncate">Hi there! I am wondering if you can help me with a
+                //                 problem I've been having.</div>
+                //             <div className="small text-gray-500">Emily Fowler · 58m</div>
+                //         </div>
+                //     </a>
+                //     <a className="dropdown-item d-flex align-items-center" href="#">
+                //         <div className="dropdown-list-image mr-3">
+                //             <img className="rounded-circle" src="img/undraw_profile_2.svg"
+                //                 alt="..." />
+                //             <div className="status-indicator"></div>
+                //         </div>
+                //         <div>
+                //             <div className="text-truncate">I have the photos that you ordered last month, how
+                //                 would you like them sent to you?</div>
+                //             <div className="small text-gray-500">Jae Chun · 1d</div>
+                //         </div>
+                //     </a>
+                //     <a className="dropdown-item d-flex align-items-center" href="#">
+                //         <div className="dropdown-list-image mr-3">
+                //             <img className="rounded-circle" src="img/undraw_profile_3.svg"
+                //                 alt="..." />
+                //             <div className="status-indicator bg-warning"></div>
+                //         </div>
+                //         <div>
+                //             <div className="text-truncate">Last month's report looks great, I am very happy with
+                //                 the progress so far, keep up the good work!</div>
+                //             <div className="small text-gray-500">Morgan Alvarez · 2d</div>
+                //         </div>
+                //     </a>
+                //     <a className="dropdown-item d-flex align-items-center" href="#">
+                //         <div className="dropdown-list-image mr-3">
+                //             <img className="rounded-circle" src="https://source.unsplash.com/Mv9hjnEUHR4/60x60"
+                //                 alt="..." />
+                //             <div className="status-indicator bg-success"></div>
+                //         </div>
+                //         <div>
+                //             <div className="text-truncate">I want to rent a different tractor</div>
+                //             <div className="small text-gray-500">Chicken the Dog · 2w</div>
+                //         </div>
+                //     </a>
+                //     <a className="dropdown-item text-center small text-gray-500" href="#">Read More Messages</a>
+                // </TinyIconNotify>
+            }
 
             <div className="topbar-divider d-none d-sm-block"></div>
 

@@ -11,6 +11,7 @@ import { LeaseList } from '../components/page/inputs/leaseList'
 import { MaintenanceRecords } from './page/inputs/maintenanceList'
 
 import YearlyMaintenanceReport from '../pages/reports/yearlyMaintenanceReport';
+import { AutoAssignLeases} from '../pages/reports/autoAssignLeases'
 
 import * as dev2 from '../pages/util/dev2'
 
@@ -64,6 +65,9 @@ const inputPages: LocalPageInfo[] = [
         name: 'Owners',
         page: <OwnerList />,
         table: 'ownerInfo'
+    }, {
+        name: 'AutoAssignLeases',
+        page: <AutoAssignLeases />        
     }
 ];
 
