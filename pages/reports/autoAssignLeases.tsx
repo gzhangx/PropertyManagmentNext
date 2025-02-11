@@ -1,20 +1,26 @@
 import * as api from '../../components/api'
-import { getLeaseUtilForHouse } from '../../components/utils/leaseUtil';
-import { IHouseInfo, ILeaseInfo, IPayment } from '../../components/reportTypes';
+import { getLeaseUtilForHouse, ILeaseInfoWithPmtInfo } from '../../components/utils/leaseUtil';
+import { IHouseInfo, ILeaseInfo } from '../../components/reportTypes';
 import { useEffect, useState } from 'react';
 import { usePageRelatedContext } from '../../components/states/PageRelatedState';
-import moment from 'moment';
-import { orderBy } from 'lodash';
+
+type HouseWithLease = IHouseInfo & {
+    lease?: ILeaseInfo;
+    leaseInfo?: ILeaseInfoWithPmtInfo;
+}
 export function AutoAssignLeases() {
         
 
     const mainCtx = usePageRelatedContext();
     const setTopBarMessages = mainCtx.topBarMessagesCfg.setTopBarItems;
     const setTopBarErrors = mainCtx.topBarErrorsCfg.setTopBarItems;
-    const [houses, setHouses] = useState<IHouseInfo[]>([]);
+    const [houses, setHouses] = useState<HouseWithLease[]>([]);
     const [processingHouseId, setProcessingHouseId] = useState('');
     const [disableProcessing, setDisableProcessing] = useState(false);
-    async function fixHouses(houseID: string) {
+
+    const [leaseExpanded, setLeaseExpanded] = useState<{ [key: string]: boolean }>({});
+    async function fixHouses(house: HouseWithLease) {
+        const houseID = house.houseID;
         setProcessingHouseId(houseID);
         const finder = await getLeaseUtilForHouse(houseID);
         const all = await finder.matchAllTransactions();
@@ -40,6 +46,9 @@ export function AutoAssignLeases() {
                 });
             }
         }
+        const lease = await finder.findLeaseForDate(new Date());
+        house.lease = lease;
+        return lease;
     }
 
     async function processAllHouses() {
@@ -49,7 +58,7 @@ export function AutoAssignLeases() {
         setTopBarErrors([]);
         setDisableProcessing(true);
         for (const house of houses) {
-            await fixHouses(house.houseID);
+            await fixHouses(house);
         }
         setDisableProcessing(false);
     }
@@ -70,6 +79,9 @@ export function AutoAssignLeases() {
             });
         })
     }, []);
+
+
+    
     return <div>
         <table className="table">
             <thead>
@@ -83,14 +95,14 @@ export function AutoAssignLeases() {
             <tbody>
                 {
                     houses.map(house => {
-                        return <tr>
-                            <td><button className='btn btn-primary' onClick={async () => {
+                        return <><tr>
+                            <td><button className='btn btn-primary' onClick={async () => {                                
                                 setTopBarMessages([
                                     {header: `House ${house.address}`}
                                 ]);
-                                const finder = await getLeaseUtilForHouse(house.houseID);
-                                const lease = await finder.findLeaseForDate(new Date());
-                                if (!lease) {
+                                const lease = await gatherLeaseInfomation(house);
+                                
+                                if (lease === 'Lease not found') {
                                     setTopBarErrors(state => {
                                         return [
                                             ...state,
@@ -98,16 +110,22 @@ export function AutoAssignLeases() {
                                                 clsColor: 'bg-warning',
                                                 clsIcon: 'fa-donate',
                                                 //subject: 'December 7, 2021',
-                                                text: 'Cant find leases'
+                                                text: `Cant find leases ${house.address}`
                                             }
                                         ];
                                     })
                                     return;
                                 }
-                                const payments = await finder.loadLeasePayments(lease);
-                                const leaseBalance = finder.calculateLeaseBalances(lease, payments, 3, new Date());
-
-                                leaseBalance.monthlyInfo.reverse();
+                                const leaseID = lease.lease.leaseID;
+                                if (leaseExpanded[leaseID]) {
+                                    setLeaseExpanded({
+                                        ...leaseExpanded,
+                                        [leaseID]: false,
+                                    });
+                                    return;
+                                }
+                                
+                                const leaseBalance = lease.leaseBalance;
                                 for (let i = 0; i < 2; i++) {
                                     const mi = leaseBalance.monthlyInfo[i];
                                     if (mi) {
@@ -121,18 +139,73 @@ export function AutoAssignLeases() {
                                         });
                                     }
                                 }
+
+                                setHouses(houses);
+
+                                setLeaseExpanded({
+                                    ...leaseExpanded,
+                                    [leaseID]: !leaseExpanded[leaseID],
+                                });
                             }}>{house.address}</button> </td>
                             <td>{house.city}</td><td>{house.ownerName}</td><td className={processingHouseId === house.houseID ? 'bg-warning' : ''}>{house.houseID}</td>
                             <td><button disabled={disableProcessing} className='btn btn-primary'
                             onClick={() => {
                                 setDisableProcessing(true);
-                                fixHouses(house.houseID).then(() => setDisableProcessing(false))
+                                fixHouses(house).then(() => setDisableProcessing(false))
                             }}
-                        >Fix</button></td></tr>
+                            >Fix</button></td>                            
+                        </tr>
+                        {
+                            house.lease && leaseExpanded[house.lease.leaseID] && house.leaseInfo && <tr>
+                                <td colSpan={4}>
+                                    <div className="card shadow mb-4">
+                                        <div className="card-header py-3">
+                                            <h6 className="m-0 font-weight-bold text-primary">Details</h6>
+                                        </div>
+                                        <div className="card-body">
+                                            <table className='table'>
+                                                <tbody>
+                                                    <tr><td colSpan={2}> lease.totalPayments</td><td colSpan={2}> lease.totalMissing</td></tr>
+                                                    <tr><td colSpan={2}>{house.leaseInfo.totalPayments}</td><td colSpan={2}>{house.leaseInfo.totalBalance}</td></tr>
+                                                    <tr><td>month</td><td>Paid</td><td>Balance</td></tr>
+                                                    {
+                                                        house.leaseInfo.monthlyInfo.map(info => {
+                                                            return <tr><td>{info.month}</td><td>{info.paid}</td><td>{info.balance}</td></tr>
+                                                        })
+                                                    }
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+                            }
+                        </>
                     })               
                 }
             </tbody>
         </table>
     </div>
 
+}
+
+
+
+async function gatherLeaseInfomation(house: HouseWithLease, date?: Date) {
+    const finder = await getLeaseUtilForHouse(house.houseID);
+    const lease = await finder.findLeaseForDate(date || new Date());
+
+    if (!lease) {        
+        return 'Lease not found';
+    }    
+    const payments = await finder.loadLeasePayments(lease);
+    const leaseBalance = finder.calculateLeaseBalances(lease, payments, 3, new Date());
+
+    leaseBalance.monthlyInfo.reverse();
+    house.lease = lease;
+    house.leaseInfo = leaseBalance;
+    return {
+        lease,
+        leaseBalance,
+    };
 }

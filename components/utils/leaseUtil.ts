@@ -3,6 +3,30 @@ import * as api from '../api'
 import moment from 'moment';
 import { ILeaseInfo } from '../reportTypes';
 import { round2 } from '../report/util/utils';
+
+
+interface IPaymentOfMonth {
+    paid: number;
+    shouldAccumatled: number;
+    accumulated: number;
+    month: string;
+    balance: number;
+}
+
+//Same as IPayment but only needed items
+type IPaymentForLease = {
+    receivedAmount: number;
+    houseID: string;
+    receivedDate: string;
+}
+
+export interface ILeaseInfoWithPmtInfo {
+    totalPayments: number;
+    totalBalance: number;
+    payments: IPaymentForLease[];
+    monthlyInfo: IPaymentOfMonth[];
+}
+
 export async function getLeaseUtilForHouse(houseID: string) {
     const allLeases = orderBy(await api.getLeases({
         whereArray: [{
@@ -48,27 +72,7 @@ export async function getLeaseUtilForHouse(houseID: string) {
     }
 
 
-    //Same as IPayment but only needed items
-    type IPaymentForLease = {
-        receivedAmount: number;
-        houseID: string;
-        receivedDate: string;
-    }
-    function calculateLeaseBalances(l: ILeaseInfo, payments: IPaymentForLease[], monthlyDueDate: number, today: string | Date | moment.Moment) {
-        interface IPaymentOfMonth {
-            paid: number;
-            shouldAccumatled: number;
-            accumulated: number;
-            month: string;
-            balance: number;
-        }
-        interface ILeaseInfoWithPmtInfo {
-            totalPayments: number;
-            totalBalance: number;
-            payments: IPaymentForLease[];
-            monthlyInfo: IPaymentOfMonth[];
-        }
-
+    function calculateLeaseBalances(l: ILeaseInfo, payments: IPaymentForLease[], monthlyDueDate: number, today: string | Date | moment.Moment) {        
         const monthlyInfo: IPaymentOfMonth[] = [];
         const now = moment(today);
         const dueDate = now.startOf('month').add(monthlyDueDate, 'days');
