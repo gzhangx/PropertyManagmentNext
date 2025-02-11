@@ -5,12 +5,20 @@ import { useEffect, useState } from 'react';
 import { usePageRelatedContext } from '../../components/states/PageRelatedState';
 import moment from 'moment';
 import { orderBy } from 'lodash';
-export function AutoAssignLeases() {    
+export function AutoAssignLeases() {
+        
+
+    const mainCtx = usePageRelatedContext();
+    const setTopBarMessages = mainCtx.topBarMessagesCfg.setTopBarItems;
+    const setTopBarErrors = mainCtx.topBarErrorsCfg.setTopBarItems;
+    const [houses, setHouses] = useState<IHouseInfo[]>([]);
+    const [processingHouseId, setProcessingHouseId] = useState('');
+    const [disableProcessing, setDisableProcessing] = useState(false);
     async function fixHouses(houseID: string) {
         setProcessingHouseId(houseID);
         const finder = await getLeaseUtilForHouse(houseID);
         const all = await finder.matchAllTransactions();
-        mainCtx.setTopBarMessages(state => {
+        setTopBarMessages(state => {
             return [...state, {
                 clsColor: 'bg-success',
                 clsIcon: 'fa-donate',
@@ -22,7 +30,7 @@ export function AutoAssignLeases() {
             if (t.leaseID) {
                 await api.sqlAdd('rentPaymentInfo', t as any, false);
                 const lease = finder.allLeases.find(l => l.leaseID === t.leaseID);
-                mainCtx.setTopBarMessages(state => {
+                setTopBarMessages(state => {
                     return [...state, {
                         clsColor: 'bg-success',
                         clsIcon: 'fa-donate',
@@ -32,28 +40,27 @@ export function AutoAssignLeases() {
                 });
             }
         }
-    }    
+    }
 
     async function processAllHouses() {
+        setTopBarMessages([
+            { header: 'Process all' }
+        ]);
+        setTopBarErrors([]);
         setDisableProcessing(true);
         for (const house of houses) {
             await fixHouses(house.houseID);
         }
         setDisableProcessing(false);
     }
-
-    const mainCtx = usePageRelatedContext();
-    const [houses, setHouses] = useState<IHouseInfo[]>([]);
-    const [processingHouseId, setProcessingHouseId] = useState('');
-    const [disableProcessing, setDisableProcessing] = useState(false);
     useEffect(() => {
-        mainCtx.setTopBarMessages([
+        setTopBarMessages([
             { header: 'Houses Loaded' }
         ]);
-        mainCtx.setTopBarErrors([]);
+        setTopBarErrors([]);
         api.getHouseInfo().then(houses => {
             setHouses(houses);
-            mainCtx.setTopBarMessages(state => {
+            setTopBarMessages(state => {
                 return [...state, {
                     clsColor: 'bg-success',
                     clsIcon: 'fa-donate',
@@ -78,13 +85,13 @@ export function AutoAssignLeases() {
                     houses.map(house => {
                         return <tr>
                             <td><button className='btn btn-primary' onClick={async () => {
-                                mainCtx.setTopBarMessages([
+                                setTopBarMessages([
                                     {header: `House ${house.address}`}
                                 ]);
                                 const finder = await getLeaseUtilForHouse(house.houseID);
                                 const lease = await finder.findLeaseForDate(new Date());
                                 if (!lease) {
-                                    mainCtx.setTopBarErrors(state => {
+                                    setTopBarErrors(state => {
                                         return [
                                             ...state,
                                             {
@@ -104,7 +111,7 @@ export function AutoAssignLeases() {
                                 for (let i = 0; i < 2; i++) {
                                     const mi = leaseBalance.monthlyInfo[i];
                                     if (mi) {
-                                        mainCtx.setTopBarMessages(state => {
+                                        setTopBarMessages(state => {
                                             return [...state, {
                                                 clsColor: 'bg-success',
                                                 clsIcon: 'fa-donate',

@@ -11,6 +11,7 @@ import {
     IModelsDict,
     IPageRelatedState,
     IWorkerInfo,
+    TopBarIconNotifyCfg,
 } from '../reportTypes';
 import { checkLoginExpired, useRootPageContext } from './RootState';
 import { NotifyIconItem } from '../page/tinyIconNotify';
@@ -45,8 +46,20 @@ export function PageRelatedContextWrapper(props: {
 
     const [foreignKeyLoopkup, setForeignKeyLookup] = useState<IForeignKeyLookupMap>(new Map());
 
-    const [topBarMessages, setTopBarMessages] = useState<NotifyIconItem[]>([]);
-    const [topBarErrors, setTopBarErrors] = useState<NotifyIconItem[]>([]);
+    function generateTopBarNotifyOpt(): TopBarIconNotifyCfg {
+        const [topBarMessages, setTopBarItems] = useState<NotifyIconItem[]>([]);
+        const [show, setShow] = useState<boolean>(false);
+        const cfg: TopBarIconNotifyCfg = {
+            items: topBarMessages,
+            setTopBarItems,
+            show,
+            setShow,
+        }
+        return cfg;
+    }
+
+    const topBarErrorsCfg = generateTopBarNotifyOpt();
+    const topBarMessagesCfg = generateTopBarNotifyOpt();
     function reloadGoogleSheetAuthInfo() {
         return getSheetAuthInfo().then(auth => {
             if (auth.error) {
@@ -186,10 +199,8 @@ export function PageRelatedContextWrapper(props: {
         checkLoadForeignKeyForTable,
         translateForeignLeuColumn,
         forceReload: () => setReloadCounter(v => v + 1),
-        topBarErrors,
-        setTopBarErrors,
-        topBarMessages,
-        setTopBarMessages,
+        topBarErrorsCfg,
+        topBarMessagesCfg,
     };
     return <PageRelatedContext.Provider value={pageCtx}>
         { props.children}

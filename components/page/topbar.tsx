@@ -67,9 +67,8 @@ export function TopBar() {
                 </div>
             </li>
 
-            <TinyIconNotify count={ mainCtx.topBarErrors.length}
-                items={
-                    mainCtx.topBarErrors
+            <TinyIconNotify
+                opts={mainCtx.topBarErrorsCfg}                
                     //[
                         //{ header: 'Alerts Center' },
                         // {
@@ -91,13 +90,10 @@ export function TopBar() {
                         //     text: 'Tractor was not properly handled'
                         // },
                         //{ url:'Show All Alerts'}
-                    //]
-                }
+                    //]                
             >                                 
             </TinyIconNotify>
-            <TinyIconNotify count={mainCtx.topBarMessages.length}
-                items={mainCtx.topBarMessages}
-            >
+            <TinyIconNotify opts={mainCtx.topBarMessagesCfg}>
             </TinyIconNotify>
 
             {

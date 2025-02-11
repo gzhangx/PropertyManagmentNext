@@ -10,17 +10,23 @@ export type NotifyIconItem = {
     subject?: string;
     text?: string | JSX.Element;
 };
-export default function TinyIconNotify(props: {
-    icon?: string;
-    count: number;
-    children?: JSX.Element[];
+
+export type TinyIconNotifyProps = {
     items?: NotifyIconItem[];
+    icon?: string;
+    show: boolean;
+    setShow: React.Dispatch<React.SetStateAction<boolean>>;
+}
+export default function TinyIconNotify(props: {    
+    children?: JSX.Element[];
+    opts: TinyIconNotifyProps;
 }) {
-    const { icon, count, children, items } = props;
-    const [show, setShow] = useState(false);
+    const { children, opts } = props;
+    const { icon, items, show, setShow } = opts;
+    //const [show, setShow] = useState(false);
     const iconClass = `fas fa-fw ${icon || 'fa-bell'}`;
     const showClass = `dropdown-list dropdown-menu dropdown-menu-right shadow animated--grow-in ${show && 'show'}`;
-    if (count === 0) return null;
+    if (!items?.length && !children) return null;
     return <li className="nav-item dropdown no-arrow mx-1">
         <a className="nav-link dropdown-toggle" href="#" id="alertsDropdown" role="button"
             onClick={e => {
@@ -32,7 +38,7 @@ export default function TinyIconNotify(props: {
             }}
             data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
             <i className={iconClass}></i>
-            <span className="badge badge-danger badge-counter">{count}</span>
+            <span className="badge badge-danger badge-counter">{items?.length}</span>
         </a>
         <div className={showClass}
             aria-labelledby="alertsDropdown">

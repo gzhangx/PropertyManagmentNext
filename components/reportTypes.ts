@@ -216,6 +216,13 @@ export type IForeignKeyCombo = {
 }
 
 
+export type TopBarIconNotifyCfg = {
+    show: boolean;
+    setShow: React.Dispatch<React.SetStateAction<boolean>>;
+    items: NotifyIconItem[];
+    setTopBarItems: React.Dispatch<React.SetStateAction<NotifyIconItem[]>>;
+}
+
 export interface IPageRelatedState {
     pageState: IPageState;    
     googleSheetAuthInfo: IGoogleSheetAuthInfo;
@@ -235,10 +242,8 @@ export interface IPageRelatedState {
     translateForeignLeuColumn: (def: IDBFieldDef, dataDict: any) => string;
     forceReload: () => void;
 
-    topBarMessages: NotifyIconItem[];
-    setTopBarMessages: React.Dispatch<React.SetStateAction<NotifyIconItem[]>>;
-    topBarErrors: NotifyIconItem[];
-    setTopBarErrors: React.Dispatch<React.SetStateAction<NotifyIconItem[]>>;
+    topBarMessagesCfg: TopBarIconNotifyCfg;
+    topBarErrorsCfg: TopBarIconNotifyCfg;
 }
 
 export interface IIncomeExpensesContextValue extends IPageRelatedState {
