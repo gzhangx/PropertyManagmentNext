@@ -1,11 +1,13 @@
 import { IMainSideBarSection } from './page/sidebar'
-import { HouseList } from '../components/page/reports/houseList'
-import { RentpaymentInfo } from '../components/page/reports/rentpaymentInfo'
+import { HouseList } from './page/inputs/houseList'
+import { RentpaymentInfo } from './page/inputs/rentpaymentInfo'
 import { CashFlowReport } from '../components/page/reports/cashflow'
 import { ExpenseByWorkerReport } from '../components/page/reports/expenseByWorkerReport'
-import { OwnerList } from '../components/page/reports/ownerList'
+import { OwnerList } from './page/inputs/ownerList'
 
-import { MaintenanceRecords } from '../components/page/reports/maintenanceList'
+import { TenantList} from '../components/page/inputs/tenantList'
+
+import { MaintenanceRecords } from './page/inputs/maintenanceList'
 
 import YearlyMaintenanceReport from '../pages/reports/yearlyMaintenanceReport';
 
@@ -46,6 +48,11 @@ const inputPages: LocalPageInfo[] = [
         name: 'MaintenanceRecords',
         page: <MaintenanceRecords />,
         table: 'maintenanceRecords',
+    },
+    {
+        name: 'Tenants',
+        page: <TenantList />,
+        table: 'tenantInfo',
     },
     {
         name: 'Owners',

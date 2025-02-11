@@ -14,6 +14,8 @@ import * as houseLoader from './loads/house';
 //import * as paymentLoader from './loads/payment';
 import * as workerLoader from './loads/workerInfo';
 
+import * as tenantLoader from './loads/tenants';
+
 import { ALLFieldNames } from '../../uidatahelpers/datahelperTypes';
 
 import * as allDefs from '../../uidatahelpers/defs/allDefs';
@@ -67,15 +69,7 @@ export function getPageDefs() {
             //displayItem: lease.displayItem,
             //displayDbExtra: lease.displayDbExtra,
         },
-        {
-            //...basicDef.tenant,
-            ...allDefs.tenantInfoDef,
-            //rowComparers: tenantLoad.TenantRowCompare,
-            dbLoader: () => theApi.getTenants().then(r => r as any as IDbSaveData[]),
-            //extraProcessSheetData: tenantLoad.extraProcessSheetData,
-            showCreateButtonColumn: 'firstName',
-            //dbInserter: inserter.getDbInserter('tenantInfo'),
-        },        
+        tenantLoader.tenantPageInfo,        
         maintenceRecords.maintenceRecordDef,
         workerLoader.workerInfo,
     ];

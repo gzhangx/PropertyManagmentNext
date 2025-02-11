@@ -20,3 +20,36 @@
 //     })
 //     return datas;
 // }
+
+
+
+
+import { getTenants } from '../../../api';
+import { IDbSaveData, IPageInfo, } from '../types'
+import * as allDefs from '../../../uidatahelpers/defs/allDefs';
+
+export const tenantPageInfo: IPageInfo = {
+    ...allDefs.tenantInfoDef,
+    //pageName: 'House Info',
+    //tableName: 'houseInfo',
+    //range: 'A1:I',    
+    dbLoader: () => getTenants().then(r => r as any as IDbSaveData[]),
+    //rowComparers: HouseRowCompare,
+    showCreateButtonColumn: 'tenantID',
+    displayColumnInfo: [
+        {
+            field: 'fullName',
+            name: 'FullName'
+        },
+        {
+            field: 'phone',
+            name: 'Phone'
+        },
+        {
+            field: 'email',
+            name: 'Email'
+        },        
+    ],
+    sheetMustExistField: 'tenantID',
+    //dbInserter: inserter.getDbInserter('houseInfo'),
+};
