@@ -1,10 +1,10 @@
-import { orderBy } from 'lodash';
 import * as api from '../../components/api'
-import moment from 'moment';
 import { getLeaseUtilForHouse } from '../../components/utils/leaseUtil';
-import { IHouseInfo } from '../../components/reportTypes';
+import { IHouseInfo, ILeaseInfo, IPayment } from '../../components/reportTypes';
 import { useEffect, useState } from 'react';
 import { usePageRelatedContext } from '../../components/states/PageRelatedState';
+import moment from 'moment';
+import { orderBy } from 'lodash';
 export function AutoAssignLeases() {    
     async function fixHouses(houseID: string) {
         setProcessingHouseId(houseID);
@@ -32,7 +32,7 @@ export function AutoAssignLeases() {
                 });
             }
         }
-    }
+    }    
 
     async function processAllHouses() {
         setDisableProcessing(true);
@@ -50,6 +50,7 @@ export function AutoAssignLeases() {
         mainCtx.setTopBarMessages([
             { header: 'Houses Loaded' }
         ]);
+        mainCtx.setTopBarErrors([]);
         api.getHouseInfo().then(houses => {
             setHouses(houses);
             mainCtx.setTopBarMessages(state => {
@@ -75,7 +76,47 @@ export function AutoAssignLeases() {
             <tbody>
                 {
                     houses.map(house => {
-                        return <tr><td>{house.address}</td><td>{house.city}</td><td>{house.ownerName}</td><td className={processingHouseId === house.houseID ? 'bg-warning' : ''}>{house.houseID}</td><td><button disabled={disableProcessing} className='btn btn-primary'
+                        return <tr>
+                            <td><button className='btn btn-primary' onClick={async () => {
+                                mainCtx.setTopBarMessages([
+                                    {header: `House ${house.address}`}
+                                ]);
+                                const finder = await getLeaseUtilForHouse(house.houseID);
+                                const lease = await finder.findLeaseForDate(new Date());
+                                if (!lease) {
+                                    mainCtx.setTopBarErrors(state => {
+                                        return [
+                                            ...state,
+                                            {
+                                                clsColor: 'bg-warning',
+                                                clsIcon: 'fa-donate',
+                                                //subject: 'December 7, 2021',
+                                                text: 'Cant find leases'
+                                            }
+                                        ];
+                                    })
+                                    return;
+                                }
+                                const payments = await finder.loadLeasePayments(lease);
+                                const leaseBalance = finder.calculateLeaseBalances(lease, payments, 3, new Date());
+
+                                leaseBalance.monthlyInfo.reverse();
+                                for (let i = 0; i < 2; i++) {
+                                    const mi = leaseBalance.monthlyInfo[i];
+                                    if (mi) {
+                                        mainCtx.setTopBarMessages(state => {
+                                            return [...state, {
+                                                clsColor: 'bg-success',
+                                                clsIcon: 'fa-donate',
+                                                //subject: 'December 7, 2021',
+                                                text: `${mi.month} balance=${mi.balance}`
+                                            }]
+                                        });
+                                    }
+                                }
+                            }}>{house.address}</button> </td>
+                            <td>{house.city}</td><td>{house.ownerName}</td><td className={processingHouseId === house.houseID ? 'bg-warning' : ''}>{house.houseID}</td>
+                            <td><button disabled={disableProcessing} className='btn btn-primary'
                             onClick={() => {
                                 setDisableProcessing(true);
                                 fixHouses(house.houseID).then(() => setDisableProcessing(false))
