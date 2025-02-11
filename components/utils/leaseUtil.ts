@@ -47,6 +47,7 @@ export async function getLeaseUtilForHouse(houseID: string) {
     }
 
     return {
+        allLeases,
         findLeaseForDate,
         matchAllTransactions,
     }
