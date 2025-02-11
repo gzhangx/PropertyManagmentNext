@@ -22,13 +22,13 @@ export default withRouter(function MainDashboard(props) {
     setIsClient(true)
   }, [])
   if (!isClient) return <div>pre rendered</div>
-
-  console.log('-----------> logged in is ', rstate.isLoggedIn())
+  
   if (!rstate.isLoggedIn()) return <Login></Login>
 
   //const [pageState, setPageState] = pstate;
   const currentActivePage = getSideBarCurrentSelectedItemName(rstate);
   const sideBarItem = sideBarContentLookup.get(currentActivePage);
+  console.log('-----------> sidebar item ', sideBarItem.name, sideBarItem.table, currentActivePage)
   let page = sideBarItem?.page;
   if (sideBarItem?.table) {
     const prms = getGenListParms(mainCtx, sideBarItem?.table);
