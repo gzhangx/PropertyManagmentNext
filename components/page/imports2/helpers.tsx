@@ -14,6 +14,7 @@ import * as inserter from './loads/inserter';
 import { deleteById } from '../../api';
 import { IDBFieldDef, TableNames } from '../../types';
 import { stdFormatValue } from '../../uidatahelpers/datahelpers';
+import { IPageRelatedState } from '../../reportTypes';
 
 export async function createEntity(params: IPageParms, changeRow: ISheetRowData, inserter: IDbInserter) {
     //const state = curPageState;

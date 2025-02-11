@@ -114,7 +114,7 @@ export interface IPageStates {
     housesById: { [houseID: string]: IHouseInfo };
     houses: IHouseInfo[];
     payments: IPaymentWithArg[];
-    tenants: ITenantInfo[];
+    //tenants: ITenantInfo[];
     tenantByName: { [fname: string]: ITenantInfo };
     //paymentsByDateEct: { [key: string]: IPaymentWithArg[] };
     stateReloaded: number;
@@ -130,7 +130,7 @@ export function getHouseByAddress(state: IPageStates, addr: string) {
 
 export interface IPageParms {
     dispatchCurPageState: React.Dispatch<(state: IPageStates) => IPageStates>;
-    refreshTenants: () => Promise<void>;
+    //refreshTenants: () => Promise<void>;
     setDlgContent: React.Dispatch<React.SetStateAction<JSX.Element>>;
     setErrorStr: (text: string) => void;
     showProgress: (msg: any) => void;

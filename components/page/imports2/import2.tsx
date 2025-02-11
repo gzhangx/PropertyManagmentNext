@@ -46,29 +46,29 @@ export function ImportPage() {
     //rootCtx.userInfo.
     //let sheetId = mainCtx.allOwners
 
-    const refreshTenants = () => {
-        return getTenants().then(tenants => {
-            dispatchCurPageState(state => {
-                return {
-                    ...state, 
-                    tenants,
-                    tenantByName: keyBy(tenants,t=>t.fullName),
-                    stateReloaded: state.stateReloaded+1,
-                };
-            });            
-        });
-    }
+    // const refreshTenants = () => {
+    //     return getTenants().then(tenants => {
+    //         dispatchCurPageState(state => {
+    //             return {
+    //                 ...state, 
+    //                 //tenants,
+    //                 tenantByName: keyBy(tenants,t=>t.fullName),
+    //                 stateReloaded: state.stateReloaded+1,
+    //             };
+    //         });            
+    //     });
+    // }
 
-    useEffect(() => {
-        refreshTenants();
-    }, [reloads.reloadUsers]);
+    // useEffect(() => {
+    //     refreshTenants();
+    // }, [reloads.reloadUsers]);
 
 
     
 
     const pagePrms: IPageParms = {
         dispatchCurPageState,
-        refreshTenants,
+        //refreshTenants,
         setDlgContent,
         setErrorStr: errorDlg.setDialogText,
         showProgress: msg => progressDlg.setDialogText(msg),
