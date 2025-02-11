@@ -73,7 +73,7 @@ export interface IDBFieldDef {
     unique?: boolean;
     ident?: boolean;
     dontUpdate?: boolean;
-    userSecurityField: boolean; //not in api, filled by model controller    
+    userSecurityField?: boolean; //not in api, filled by model controller    
     //key?: 'UNI' | 'PRI' | null;    
     foreignKey?: {
         table: TableNames;
