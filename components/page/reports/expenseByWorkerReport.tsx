@@ -1,12 +1,14 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { fMoneyformat, useIncomeExpensesContext } from '../../states/PaymentExpenseState';
 import { MonthRange } from './monthRange';
 import { getPaymentsByMonthAddress, getMaintenanceData, getMaintenanceDataByWorker, IMaintenanceDataByWorkerMonthRes, IMaintenanceMonthWorkerAmtRec } from './reportUtil';
 import moment from 'moment';
 //import {saveToGS} from './utils/updateGS';
 import { CloseableDialog } from '../../generic/basedialog'
+import { usePageRelatedContext } from '../../states/PageRelatedState';
 
-export function ExpenseByWorkerReport(props) {
+export function ExpenseByWorkerReport() {
+    const mainCtx = usePageRelatedContext();
     const ctx = useIncomeExpensesContext();
     const { payments, rawExpenseData, selectedHouses, monthes, paymentCalcOpts } = ctx;
 
@@ -18,6 +20,9 @@ export function ExpenseByWorkerReport(props) {
     const [showDetail, setShowDetail] = useState(null);
     const [showExpenseDetail, setShowExpenseDetail] = useState(null);
 
+    useEffect(() => {
+        mainCtx.loadForeignKeyLookup('workerInfo');
+    }, []);
     const getWorkerMon = (workerID: string, mon: string) => {
         const def = {} as IMaintenanceMonthWorkerAmtRec;
         const wkr = calculatedMaintData.byWorkerByMonth[workerID];
@@ -145,8 +150,10 @@ export function ExpenseByWorkerReport(props) {
 
                         {
                             [...calculatedMaintData.workerIDs].map((cat, key) => {
+                                const workerInfo = mainCtx.foreignKeyLoopkup.get('workerInfo');
+                                const workerName = workerInfo?.idDesc.get(cat)?.desc || cat;
                                 return <tr key={key}>
-                                    <td className='tdLeftSubCategoryHeader'>{cat}</td><td className="tdCenter  tdTotalItalic">{fMoneyformat(calculatedMaintData.workerTotals[cat])}</td>
+                                    <td className='tdLeftSubCategoryHeader'>{workerName}</td><td className="tdCenter  tdTotalItalic">{fMoneyformat(calculatedMaintData.workerTotals[cat])}</td>
                                     {
                                         monthes.map((mon, key) => {
                                             const catMon = getWorkerMon(cat, mon);

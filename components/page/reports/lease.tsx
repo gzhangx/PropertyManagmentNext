@@ -9,6 +9,8 @@ import { ILeaseInfo, IPayment } from '../../reportTypes';
 import { getLeases} from '../../api'
 import { keyBy, sortBy } from 'lodash';
 
+
+//old, moved toautoAssignLeases
 export function LeaseReport(props) {
     const ctx = useIncomeExpensesContext();
     const { payments, rawExpenseData, selectedHouses, monthes, paymentCalcOpts } = ctx;
