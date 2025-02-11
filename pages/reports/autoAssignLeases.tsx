@@ -23,7 +23,7 @@ export function AutoAssignLeases() {
         const houseID = house.houseID;
         setProcessingHouseId(houseID);
         const finder = await getLeaseUtilForHouse(houseID);
-        await finder.matchAndAddLeaseToTransactions((pos, pmt) => {
+        const all = await finder.matchAndAddLeaseToTransactions((pos, pmt) => {
             if (!pmt) {
                 setTopBarMessages(state => {
                     return [...state, {
@@ -44,7 +44,19 @@ export function AutoAssignLeases() {
                     }]
                 });
             }
-        })
+        });
+
+        const noLeases = all.filter(t => !t.leaseID);
+        if (noLeases.length) {
+            setTopBarErrors(noLeases.map(t => {
+                return {
+                    clsColor: 'bg-warn',
+                    clsIcon: 'fa-donate',
+                    //subject: 'December 7, 2021',
+                    text: `Unable to find lease for payment ${t.receivedAmount} ${t.receivedDate} addr=${t.address} house=${t.houseID}`
+                }
+            }));    
+        }
         
         const lease = await finder.findLeaseForDate(new Date());
         house.lease = lease;
