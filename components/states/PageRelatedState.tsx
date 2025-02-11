@@ -95,8 +95,7 @@ export function PageRelatedContextWrapper(props: {
             rows: any[];
             error?: string;
         };
-        checkLoginExpired(rootCtx, sqlRes);
-        const map: IForeignKeyIdDesc = new Map();
+        checkLoginExpired(rootCtx, sqlRes);        
         const idField = fields.filter(f => f.isId && !f.userSecurityField)[0].field;
         const parser = {
             idGetter: a => a[idField],
@@ -117,12 +116,16 @@ export function PageRelatedContextWrapper(props: {
                 desc: parser.descGetter(r),
             };
         })
+        const map: IForeignKeyIdDesc = new Map();
+        const descToId: IForeignKeyIdDesc = new Map();
         rows.forEach(r => {
             map.set(r.id, r);
+            descToId.set(r.desc, r);
         })
         const res: IForeignKeyCombo = {
             rows,
             idDesc: map,
+            descToId,
         };
         foreignKeyLoopkup.set(table, res);
         setForeignKeyLookup(new Map(foreignKeyLoopkup));

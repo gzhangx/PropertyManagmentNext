@@ -210,6 +210,7 @@ export type IForeignKeyParsedRow = {
 export type IForeignKeyIdDesc = Map<string, IForeignKeyParsedRow>;
 export type IForeignKeyCombo = {
     idDesc: IForeignKeyIdDesc;
+    descToId: IForeignKeyIdDesc;
     rows: IForeignKeyParsedRow[];
 }
 
