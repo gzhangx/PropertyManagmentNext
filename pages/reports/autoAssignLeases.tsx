@@ -59,7 +59,9 @@ export function AutoAssignLeases() {
         setDisableProcessing(true);
         for (const house of houses) {
             await fixHouses(house);
+            await processOneHouse(house);
         }
+        setHouses(houses);
         setDisableProcessing(false);
     }
     useEffect(() => {
@@ -81,13 +83,80 @@ export function AutoAssignLeases() {
     }, []);
 
 
+
+    const processOneHouse = async (house: HouseWithLease, expand = false) => {
+        if (house.leaseInfo) {
+            const leaseID = house.lease.leaseID;
+            if (expand) {
+                setLeaseExpanded({
+                    ...leaseExpanded,
+                    [leaseID]: !leaseExpanded[leaseID],
+                })
+            }
+            return;
+        }
+        if (expand) {
+            setTopBarMessages([
+                { header: `House ${house.address}` }
+            ]);
+        }
+        const lease = await gatherLeaseInfomation(house);
+
+        if (lease === 'Lease not found') {
+            setTopBarErrors(state => {
+                return [
+                    ...state,
+                    {
+                        clsColor: 'bg-warning',
+                        clsIcon: 'fa-donate',
+                        //subject: 'December 7, 2021',
+                        text: `Cant find leases ${house.address}`
+                    }
+                ];
+            })
+            return;
+        }
+        const leaseID = lease.lease.leaseID;
+        if (leaseExpanded[leaseID]) {
+            setLeaseExpanded({
+                ...leaseExpanded,
+                [leaseID]: false,
+            });
+            return;
+        }
+
+        const leaseBalance = lease.leaseBalance;
+        for (let i = 0; i < 2; i++) {
+            const mi = leaseBalance.monthlyInfo[i];
+            if (mi) {
+                setTopBarMessages(state => {
+                    return [...state, {
+                        clsColor: 'bg-success',
+                        clsIcon: 'fa-donate',
+                        //subject: 'December 7, 2021',
+                        text: `${mi.month} balance=${mi.balance}`
+                    }]
+                });
+            }
+        }
+
+        setHouses(houses);
+
+        if (expand) {
+            setLeaseExpanded({
+                ...leaseExpanded,
+                [leaseID]: !leaseExpanded[leaseID],
+            });
+        }
+    }
     
     return <div>
         <table className="table">
             <thead>
                 <tr>
                     <th scope="col"><button className='btn btn-primary' disabled={disableProcessing} onClick={processAllHouses}>House Process All</button></th>
-                    <th>City</th>
+                    <th></th>
+                    <th>Balance</th>
                     <th>Owner</th>
                     <th>Id</th>
                 </tr>
@@ -96,62 +165,17 @@ export function AutoAssignLeases() {
                 {
                     houses.map(house => {
                         return <><tr>
-                            <td><button className='btn btn-primary' onClick={async () => {                                
-                                setTopBarMessages([
-                                    {header: `House ${house.address}`}
-                                ]);
-                                const lease = await gatherLeaseInfomation(house);
-                                
-                                if (lease === 'Lease not found') {
-                                    setTopBarErrors(state => {
-                                        return [
-                                            ...state,
-                                            {
-                                                clsColor: 'bg-warning',
-                                                clsIcon: 'fa-donate',
-                                                //subject: 'December 7, 2021',
-                                                text: `Cant find leases ${house.address}`
-                                            }
-                                        ];
-                                    })
-                                    return;
-                                }
-                                const leaseID = lease.lease.leaseID;
-                                if (leaseExpanded[leaseID]) {
-                                    setLeaseExpanded({
-                                        ...leaseExpanded,
-                                        [leaseID]: false,
-                                    });
-                                    return;
-                                }
-                                
-                                const leaseBalance = lease.leaseBalance;
-                                for (let i = 0; i < 2; i++) {
-                                    const mi = leaseBalance.monthlyInfo[i];
-                                    if (mi) {
-                                        setTopBarMessages(state => {
-                                            return [...state, {
-                                                clsColor: 'bg-success',
-                                                clsIcon: 'fa-donate',
-                                                //subject: 'December 7, 2021',
-                                                text: `${mi.month} balance=${mi.balance}`
-                                            }]
-                                        });
-                                    }
-                                }
-
-                                setHouses(houses);
-
-                                setLeaseExpanded({
-                                    ...leaseExpanded,
-                                    [leaseID]: !leaseExpanded[leaseID],
-                                });
-                            }}>{house.address}</button> </td>
-                            <td>{house.city}</td><td>{house.ownerName}</td><td className={processingHouseId === house.houseID ? 'bg-warning' : ''}>{house.houseID}</td>
+                            <td>{house.address} </td><td>
+                                <button className='btn btn-primary' onClick={()=>processOneHouse(house, true)}>E</button>
+                            </td>
+                            <td>{house.leaseInfo? house.leaseInfo.totalBalance : 'NA'}</td><td>{house.ownerName}</td><td className={processingHouseId === house.houseID ? 'bg-warning' : ''}>{house.houseID}</td>
                             <td><button disabled={disableProcessing} className='btn btn-primary'
                             onClick={() => {
                                 setDisableProcessing(true);
-                                fixHouses(house).then(() => setDisableProcessing(false))
+                                fixHouses(house).then(() => {
+                                    setHouses(houses);
+                                    setDisableProcessing(false);
+                                })
                             }}
                             >Fix</button></td>                            
                         </tr>
