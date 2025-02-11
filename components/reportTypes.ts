@@ -113,7 +113,11 @@ export interface ILeaseInfo {
     'startDate': string;
     'houseID': string;
     ownerID: number;
-    tenantID: string;
+    tenant1: string;
+    tenant2: string;
+    tenant3: string;
+    tenant4: string;
+    tenant5: string;
     comment: string;
     monthlyRent: number;
 }
