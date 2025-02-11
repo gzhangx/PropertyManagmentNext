@@ -2,6 +2,7 @@
 import * as httpRequest from '@gzhangx/googleapi/lib/httpRequest'
 import { IGetModelReturn, TableNames, ISqlDeleteResponse, ISqlRequestFieldDef, ISqlRequestWhereItem } from './types'
 
+import { orderBy } from 'lodash';
 export interface ISiteConfig {
     baseUrl: string;
 }
@@ -318,7 +319,7 @@ export async function getLeases() : Promise<ILeaseInfo[]> {
     return sqlGet({
         table:'leaseInfo',
     }).then((r: {rows:ILeaseInfo[]})=>{
-        return r.rows;
+        return orderBy(r.rows, r=>r.endDate, 'desc');
     })    
 }
 
