@@ -35,7 +35,7 @@ export const tenantPageInfo: IPageInfo = {
     //range: 'A1:I',    
     dbLoader: () => getTenants().then(r => r as any as IDbSaveData[]),
     //rowComparers: HouseRowCompare,
-    showCreateButtonColumn: 'tenantID',
+    showCreateButtonColumn: 'fullName',
     displayColumnInfo: [
         {
             field: 'fullName',

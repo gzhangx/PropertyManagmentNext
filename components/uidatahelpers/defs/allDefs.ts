@@ -87,12 +87,44 @@ export const maintenanceInfoDef: ITableAndSheetMappingInfo = {
     }
 }
 
+
+export const leaseInfoDef: ITableAndSheetMappingInfo = {
+    table: 'leaseInfo',
+    sheetMapping: {
+        sheetName: 'Lease Info',
+        range: 'A1:M',
+        mapping: [
+            'leaseID',
+            'houseID',
+            'startDate',
+            'endDate',
+            'monthlyRent',
+            'deposit',
+            'petDeposit',
+            'otherDeposit',
+            'comment',
+            'reasonOfTermination',
+            'terminationDate',
+            'terminationComments',
+            'tenant1',
+            'tenant2',
+            'tenant3',
+            'tenant4',
+            'tenant5', //not here, added to force mapping
+        ],
+    },
+}
+
+
 const ownerInfoDef: ITableAndSheetMappingInfo = {
     table: 'ownerInfo'
 }
 
 
-export const tableNameToDefinitions = [tenantInfoDef, houseInfoDef, paymentInfoDef, workerInfoDef, maintenanceInfoDef, ownerInfoDef].reduce((acc, pp) => {
+export const tableNameToDefinitions = [tenantInfoDef, houseInfoDef, paymentInfoDef, workerInfoDef, maintenanceInfoDef,
+    leaseInfoDef,
+    ownerInfoDef,
+].reduce((acc, pp) => {
     acc.set(pp.table, pp);
     return acc;
 }, new Map<TableNames, ITableAndSheetMappingInfo>());

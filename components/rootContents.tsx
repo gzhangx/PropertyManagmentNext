@@ -5,7 +5,8 @@ import { CashFlowReport } from '../components/page/reports/cashflow'
 import { ExpenseByWorkerReport } from '../components/page/reports/expenseByWorkerReport'
 import { OwnerList } from './page/inputs/ownerList'
 
-import { TenantList} from '../components/page/inputs/tenantList'
+import { TenantList } from '../components/page/inputs/tenantList'
+import { LeaseList } from '../components/page/inputs/leaseList'
 
 import { MaintenanceRecords } from './page/inputs/maintenanceList'
 
@@ -53,6 +54,11 @@ const inputPages: LocalPageInfo[] = [
         name: 'Tenants',
         page: <TenantList />,
         table: 'tenantInfo',
+    },
+    {
+        name: 'Leases',
+        page: <LeaseList />,
+        table: 'leaseInfo',
     },
     {
         name: 'Owners',
