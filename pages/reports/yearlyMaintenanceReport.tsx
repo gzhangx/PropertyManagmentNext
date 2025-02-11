@@ -20,6 +20,7 @@ import { CreateSaveButton} from '../../components/generic/SaveFile'
 import { IEditTextDropdownItem } from "../../components/generic/GenericDropdown";
 import { exportMultiple1099, exportOne1099, I1099Info } from "../../components/report/util/1099";
 import { round2 } from "../../components/report/util/utils";
+import { usePageRelatedContext } from "../../components/states/PageRelatedState";
 
 interface IShowDetailsData {
     amount: number;
@@ -74,7 +75,8 @@ interface IYearlyMaintenanceReportState {
     curOwnerOptions: IEditTextDropdownItem[];
     houseToOwnerMap: {
         [houseName: string]: string;
-    }
+    };
+    lookUpWorkerName: (id: string) => string;
 }
 
 const amtDsp = (amt: number) => {
@@ -98,7 +100,7 @@ type IDetailParams = {
 };
 
 function GenerateByCatData(state: IYearlyMaintenanceReportState, setShowDetail: React.Dispatch<React.SetStateAction<IDetailParams>>) {    
-    const workerNames = state.dspWorkerIds || [];
+    const workerIds = state.dspWorkerIds || [];
     const catIds = state.byWorkerByCat.catIds || [];
     const dataBy = state.byWorkerByCat.byCats;
     const get1099Color = (wkrCat:IWithTotal):(React.CSSProperties) => {
@@ -202,14 +204,14 @@ function GenerateByCatData(state: IYearlyMaintenanceReportState, setShowDetail: 
                 </thead>
                 <tbody>                    
                     {
-                        workerNames.map((workerName, keyi) => {
-                            const wkrCat = state.byWorkerByCat.byWorkerTotal[workerName];                            
+                        workerIds.map((workerId, keyi) => {
+                            const wkrCat = state.byWorkerByCat.byWorkerTotal[workerId];                            
                             return <tr key={keyi} style={get1099Color(wkrCat)} >
-                                <th scope="row" onClick={() => showDetail(wkrCat, workerName)}>{workerName}</th>
-                                <td key={'total'+keyi}>{amtDsp(state.byWorkerByCat.byWorkerTotal[workerName]?.total)}</td>
+                                <th scope="row" onClick={() => showDetail(wkrCat, workerId)}>{state.lookUpWorkerName(workerId)}</th>
+                                <td key={'total' + keyi}>{amtDsp(state.byWorkerByCat.byWorkerTotal[workerId]?.total)}</td>
                                 {
                                     catIds.map((catId, tri) => {                                        
-                                        const wkrCat = dataBy[catId][workerName];
+                                        const wkrCat = dataBy[catId][workerId];
                                         return <td scope="col" key={tri} onClick={()=>showDetail(wkrCat, '')}>{
                                                 amtDsp(wkrCat?.total)
                                         }</td>
@@ -243,7 +245,12 @@ function GenerateByCatData(state: IYearlyMaintenanceReportState, setShowDetail: 
 
 
 export default function YearlyMaintenanceReport() {
-    
+    const mainCtx = usePageRelatedContext();
+    function lookUpWorkerName(workerId: string) {
+        const workerLookup = mainCtx.foreignKeyLoopkup.get('workerInfo');
+        if (!workerLookup) return workerId;
+        return workerLookup.idDesc.get(workerId)?.desc || workerId;
+    }
     const [state, setState] = useState<IYearlyMaintenanceReportState>({
         curYearSelection: '',
         curYearOptions: [],
@@ -272,6 +279,7 @@ export default function YearlyMaintenanceReport() {
         curSelectedOwner: 'NA',
         curOwnerOptions: [],
         houseToOwnerMap: {},
+        lookUpWorkerName,
     });
     
     const showProgress = progressText => setState(prev => {
@@ -409,6 +417,10 @@ export default function YearlyMaintenanceReport() {
 
     
     const [showDetail, setShowDetail] = useState<IDetailParams | null>(null);        
+    
+    useEffect(() => {
+        mainCtx.loadForeignKeyLookup('workerInfo');
+    }, []);
 
     
     return <div>
@@ -497,7 +509,7 @@ export default function YearlyMaintenanceReport() {
                                 }}
                             /><label className="form-check-label" style={{
                             marginRight:'10px'
-                        }}>{w}</label></div>
+                            }}>{lookUpWorkerName(w)}</label></div>
                     })
                 }
             
