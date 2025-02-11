@@ -12,7 +12,7 @@ type HouseWithLease = IHouseInfo & {
 export function getLeasePage() {
     return <AutoAssignLeases></AutoAssignLeases>
 }
-function AutoAssignLeases() {
+export default function AutoAssignLeases() {
         
 
     const mainCtx = usePageRelatedContext();
