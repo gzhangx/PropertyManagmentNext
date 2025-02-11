@@ -154,7 +154,7 @@ export function PageRelatedContextWrapper(props: {
         if (!lookup) {
             return val; //not loaded yet
         }
-        return lookup.idDesc.get(val)?.desc || 'Failed Lookup: '+val;        
+        return lookup.idDesc.get(val)?.desc || `Failed Lookup tbl=(${etb})-field=${def.field}: `+val;        
     }
 
     const pageCtx: IPageRelatedState = {
