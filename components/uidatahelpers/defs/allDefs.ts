@@ -92,7 +92,7 @@ export const leaseInfoDef: ITableAndSheetMappingInfo = {
     table: 'leaseInfo',
     sheetMapping: {
         sheetName: 'Lease Info',
-        range: 'A1:M',
+        range: 'A1:Q',
         mapping: [
             'leaseID',
             'houseID',
