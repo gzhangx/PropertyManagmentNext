@@ -33,7 +33,7 @@ export interface IPageFilter {
     id: string;
     table: string;
     field: string;
-    op: '>' | '>=' | '=' | '<' | '<=' | '!=' | '<>' | 'in';
+    op: SQLOPS;
     val: string;
 };
 
