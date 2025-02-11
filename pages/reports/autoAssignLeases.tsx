@@ -7,6 +7,7 @@ import { useEffect, useState } from 'react';
 import { usePageRelatedContext } from '../../components/states/PageRelatedState';
 export function AutoAssignLeases() {    
     async function fixHouses(houseID: string) {
+        setProcessingHouseId(houseID);
         const finder = await getLeaseUtilForHouse(houseID);
         const all = await finder.matchAllTransactions();
         mainCtx.setTopBarMessages(state => {
@@ -33,8 +34,18 @@ export function AutoAssignLeases() {
         }
     }
 
+    async function processAllHouses() {
+        setDisableProcessing(true);
+        for (const house of houses) {
+            await fixHouses(house.houseID);
+        }
+        setDisableProcessing(false);
+    }
+
     const mainCtx = usePageRelatedContext();
     const [houses, setHouses] = useState<IHouseInfo[]>([]);
+    const [processingHouseId, setProcessingHouseId] = useState('');
+    const [disableProcessing, setDisableProcessing] = useState(false);
     useEffect(() => {
         mainCtx.setTopBarMessages([
             { header: 'Houses Loaded' }
@@ -55,7 +66,7 @@ export function AutoAssignLeases() {
         <table className="table">
             <thead>
                 <tr>
-                    <th scope="col">House</th>
+                    <th scope="col"><button className='btn btn-primary' disabled={disableProcessing} onClick={processAllHouses}>House Process All</button></th>
                     <th>City</th>
                     <th>Owner</th>
                     <th>Id</th>
@@ -64,9 +75,10 @@ export function AutoAssignLeases() {
             <tbody>
                 {
                     houses.map(house => {
-                        return <tr><td>{house.address}</td><td>{house.city}</td><td>{house.ownerName}</td><td>{house.houseID}</td><td><button className='btn btn-primary'
+                        return <tr><td>{house.address}</td><td>{house.city}</td><td>{house.ownerName}</td><td className={processingHouseId === house.houseID ? 'bg-warning' : ''}>{house.houseID}</td><td><button disabled={disableProcessing} className='btn btn-primary'
                             onClick={() => {
-                                fixHouses(house.houseID)
+                                setDisableProcessing(true);
+                                fixHouses(house.houseID).then(() => setDisableProcessing(false))
                             }}
                         >Fix</button></td></tr>
                     })               
