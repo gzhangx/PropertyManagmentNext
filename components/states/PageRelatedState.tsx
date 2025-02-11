@@ -108,6 +108,8 @@ export function PageRelatedContextWrapper(props: {
             parser.descGetter = obj => obj.address;
         } else if (table === 'workerInfo') {
             parser.descGetter = (obj: IWorkerInfo )=>obj.workerName
+        } else if (table === 'tenantInfo') {
+            parser.descGetter = (obj) => obj.fullName;
         }
         const rows: IForeignKeyParsedRow[] = sqlRes.rows.map(r => {
             return {

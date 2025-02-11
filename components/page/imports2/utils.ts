@@ -16,6 +16,7 @@ import {get, keyBy} from "lodash";
 import * as lutil from "./loads/util";
 import { ALLFieldNames } from '../../uidatahelpers/datahelperTypes';
 import { stdFormatValue } from '../../uidatahelpers/datahelpers';
+import { IPageRelatedState } from '../../reportTypes';
 
 
 export async function loadPageSheetDataRaw(sheetId: string, pageState: IPageStates): Promise<IPageDataDetails> {
@@ -215,7 +216,7 @@ function stdDisplayField(fieldNames: ALLFieldNames[], obj: IStringDict, pageStat
 }
 
 
-export function stdProcessSheetData(sheetData: ICompRowData[], pageState: IPageStates): IStringDict[] {
+export function stdProcessSheetData(sheetData: ICompRowData[], pageState: IPageStates, mainCtx: IPageRelatedState): IStringDict[] {
     const allFields = pageState.curPage.allFields;
     const fieldNames = pageState.curPage.sheetMapping.mapping.filter(f => f);
     const getDef = (name: string) => allFields.find(f => f.field === name);
@@ -229,38 +230,59 @@ export function stdProcessSheetData(sheetData: ICompRowData[], pageState: IPageS
                 return;
             }
             switch (fieldName) {
-                case 'address':                                        
-                    const isHouse = def.foreignKey && def.foreignKey.field === 'houseID';
-                    if (!isHouse) {
-                        acc[fieldName] = v;
-                        break;
-                    }
-                    if (!v) {                        
-                        if (!acc['houseID']) {
-                            sd.invalid = 'house';
-                            acc.invalidDesc = 'house';
-                        } else {
-                            const house = pageState.housesById[acc['houseID']];
-                            if (house) {
-                                acc[fieldName] = house.address;
-                            } else {
-                                acc[fieldName] = `${v} Unable to match house`;
-                            }
-                        }
-                        break;
-                    }
+                // case 'address':                                        
+                //     const isHouse = def.foreignKey && def.foreignKey.field === 'houseID';
+                //     if (!isHouse) {
+                //         acc[fieldName] = v;
+                //         break;
+                //     }
+                //     if (!v) {                        
+                //         if (!acc['houseID']) {
+                //             sd.invalid = 'house';
+                //             acc.invalidDesc = 'house';
+                //         } else {
+                //             const house = pageState.housesById[acc['houseID']];
+                //             if (house) {
+                //                 acc[fieldName] = house.address;
+                //             } else {
+                //                 acc[fieldName] = `${v} Unable to match house`;
+                //             }
+                //         }
+                //         break;
+                //     }
                     
-                        const house = getHouseByAddress(pageState, v as string);
-                        if (house) {
-                            acc['houseID'] = house.houseID;
-                        } else {
-                            acc['houseID'] = null;
-                            //acc[fieldName] = `Invalid(${v})`;
-                            sd.invalid = 'house';
-                            acc.invalidDesc = 'house';
-                        }                    
-                    break;
+                //         const house = getHouseByAddress(pageState, v as string);
+                //         if (house) {
+                //             acc['houseID'] = house.houseID;
+                //         } else {
+                //             acc['houseID'] = null;
+                //             //acc[fieldName] = `Invalid(${v})`;
+                //             sd.invalid = 'house';
+                //             acc.invalidDesc = 'house';
+                //         }                    
+                //     break;
                 default:                
+                    if (def.foreignKey && def.foreignKey.table) {
+                        const fk = mainCtx.foreignKeyLoopkup.get(def.foreignKey.table);
+                        if (v || v === 0) {
+                            if (!fk) {
+                                sd.invalid = fieldName;
+                                acc.invalidDesc = `${fieldName}::=>${v} Can't resolve foreign key`;
+                                console.log(acc.invalidDesc)
+                            } else {
+                                const resolved = fk.descToId[v];
+                                if (!resolved) {
+                                    sd.invalid = fieldName;
+                                    acc.invalidDesc = `${fieldName}::=>${v} Can't resolve foreign key for desc ${v}`;
+                                    console.log(acc.invalidDesc, fk.descToId)
+                                } else {
+                                    acc[fieldName] = resolved;
+                                }
+                            }
+                        } else {
+                            v = null;
+                        }
+                    }
                     switch (def.type) {
                         case 'date':
                         case 'datetime': 

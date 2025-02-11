@@ -98,10 +98,15 @@ export async function genericPageLoader(prms: IPageParms, pageState: IPageStates
     //let extraProcessSheetData: (pg: ISheetRowData[], pageState: IPageStates) => Promise<ISheetRowData[]> = pageState.curPage.extraProcessSheetData || ((x, _) => Promise.resolve(x));
     pageState.sheetId = sheetId;
       
+    for (const fd of pageState.curPage.allFields) {
+        if (fd.foreignKey && fd.foreignKey.table) {
+            await prms.pageCtx.loadForeignKeyLookup(fd.foreignKey.table);
+        }
+    }
     stdProcessSheetData(pageDetails.dataRows, {
         ...pageState,
         ...hi,
-    });
+    }, prms.pageCtx);
 
     const mappingColumnInfo = getMappingColumnInfo(pageState.curPage);
     const rowComparer: IRowComparer =
@@ -164,7 +169,7 @@ export async function genericPageLoader(prms: IPageParms, pageState: IPageStates
     stdProcessSheetData(dbMatchData, {
         ...pageState,
         ...hi,
-    })
+    }, prms.pageCtx)
     //console.log("dbData and sheetDatas", dbData, sheetDatas)
     if (prms) prms.dispatchCurPageState(state => {
         return {
