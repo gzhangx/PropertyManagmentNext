@@ -2,6 +2,7 @@ import { orderBy } from 'lodash';
 import * as api from '../api'
 import moment from 'moment';
 import { ILeaseInfo } from '../reportTypes';
+import { round2 } from '../report/util/utils';
 export async function getLeaseUtilForHouse(houseID: string) {
     const allLeases = orderBy(await api.getLeases({
         whereArray: [{
@@ -80,7 +81,7 @@ export async function getLeaseUtilForHouse(houseID: string) {
         const finalMonthStr = lastDueMonth.format(YYYYMMFormat);
         while (curMon.isSameOrBefore(lastDueMonth)) {
             const month = curMon.format(YYYYMMFormat);
-            shouldAccumatled += l.monthlyRent;
+            shouldAccumatled = round2(shouldAccumatled + l.monthlyRent);
             const info: IPaymentOfMonth = {
                 month,
                 accumulated: 0,
@@ -101,14 +102,14 @@ export async function getLeaseUtilForHouse(houseID: string) {
         const result: ILeaseInfoWithPmtInfo = lps.reduce((acc, pmt) => {
             const paymentMonth = pmt.receivedDate.substring(0, 7);
             if (paymentMonth < finalMonthStr) {
-                acc.totalPayments = acc.totalPayments + pmt.receivedAmount;
-                acc.payments.push(pmt);
-                console.log(`lookuping up with ${pmt.receivedDate.substring(0, 7)}`)
+                acc.totalPayments = round2(acc.totalPayments + pmt.receivedAmount);
+                acc.payments.push(pmt);                
                 const info = monthInfoLookup[paymentMonth] || monthInfoLookup[firstMonthStr];
-                info.paid += pmt.receivedAmount;
+                info.paid = round2(info.paid + pmt.receivedAmount);                
                 info.accumulated = acc.totalPayments;
-                info.balance = info.shouldAccumatled - info.accumulated;
-                acc.totalBalance = info.shouldAccumatled - info.accumulated;
+                info.balance = round2(info.shouldAccumatled - info.accumulated);
+                acc.totalBalance = round2(info.shouldAccumatled - info.accumulated);
+                console.log(`lookuping up with ${pmt.receivedDate.substring(0, 7)} paid=${info.paid} accumulated=${info.accumulated} balance=${info.balance}`)
             }
             return acc;
         }, {

@@ -19,6 +19,7 @@ import { CloseableDialog } from '../../components/generic/basedialog'
 import { CreateSaveButton} from '../../components/generic/SaveFile'
 import { IEditTextDropdownItem } from "../../components/generic/GenericDropdown";
 import { exportMultiple1099, exportOne1099, I1099Info } from "../../components/report/util/1099";
+import { round2 } from "../../components/report/util/utils";
 
 interface IShowDetailsData {
     amount: number;
@@ -601,9 +602,6 @@ function getDspWorker(state: IYearlyMaintenanceReportState, row: IMaintenanceRaw
     return row.workerID;
 }
 
-function round2(num: number) {
-    return Math.round(num * 100) / 100
-}
 function formatData(state: IYearlyMaintenanceReportState, setState: React.Dispatch<React.SetStateAction<IYearlyMaintenanceReportState>>) {
     const dataRows = state.rawData;
     function getSet<T extends (IWithTotal | IHashWithTotal)>(obj: {[id:string]:T}, id: string, init: T) {
