@@ -23,7 +23,7 @@ export interface IPayment {
     receivedAmount: number;
     receivedDate: string;
     source: string;
-    vdPosControl: string;
+    leaseID?: string;
 }
 
 /*export interface IPageProps {

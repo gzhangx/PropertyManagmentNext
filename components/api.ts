@@ -278,7 +278,8 @@ export async function getPaymentRecords(): Promise<IPayment[]> {
         'paymentProcessor',                
         //'paidBy',
         'notes',
-            'ownerID'
+            'ownerID',
+            'leaseID',
         ],
         table: 'rentPaymentInfo',
         //whereArray: [{
@@ -297,10 +298,16 @@ export async function getPaymentRecords(): Promise<IPayment[]> {
     });    
 }
 
+type QueryConstraints = {
+    fields ?: (ISqlRequestFieldDef | string)[];
+    whereArray ?: ISqlRequestWhereItem[];
+}
+
 // Used by cashflow
-export async function getPaymnents() : Promise<IPayment[]> {
+export async function getPaymnents(inp: QueryConstraints = {}) : Promise<IPayment[]> {
     return sqlGet({
-        table:'rentPaymentInfo',
+        table: 'rentPaymentInfo',
+        ...inp,
     }).then((r: { rows: IPayment[] }) => {
         if (!r.rows) return null;
         return r.rows.map(r => {
@@ -315,11 +322,12 @@ export async function getPaymnents() : Promise<IPayment[]> {
     })    
 }
 
-export async function getLeases() : Promise<ILeaseInfo[]> {
+export async function getLeases(inp: QueryConstraints = {}) : Promise<ILeaseInfo[]> {
     return sqlGet({
-        table:'leaseInfo',
+        table: 'leaseInfo',
+        ...inp,
     }).then((r: {rows:ILeaseInfo[]})=>{
-        return orderBy(r.rows, r=>r.endDate, 'desc');
+        return orderBy(r.rows, r=>r.startDate, 'desc');
     })    
 }
 
