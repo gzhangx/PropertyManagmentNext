@@ -4,11 +4,8 @@ import { IHouseInfo, ILeaseInfo } from '../../components/reportTypes';
 import { useEffect, useState } from 'react';
 import { usePageRelatedContext } from '../../components/states/PageRelatedState';
 import Link from 'next/link';
+import { formateEmail, HouseWithLease } from '../../components/utils/leaseEmailUtil';
 
-type HouseWithLease = IHouseInfo & {
-    lease?: ILeaseInfo;
-    leaseInfo?: ILeaseInfoWithPmtInfo;
-}
 
 export function getLeasePage() {
     return <AutoAssignLeases></AutoAssignLeases>
@@ -204,28 +201,30 @@ export default function AutoAssignLeases() {
                                                 <h6 className="m-0 font-weight-bold text-primary">Details</h6>
                                                 <Link href='#' onClick={async e => {
 
-                                                    await mainCtx.loadForeignKeyLookup('tenantInfo');
+                                                    const formatedData = await formateEmail(mainCtx, house);
+//                                                     await mainCtx.loadForeignKeyLookup('tenantInfo');
 
-                                                    let last2 = '';
-                                                    for (let i = 0; i < 2; i++) {
-                                                        const inf = house.leaseInfo.monthlyInfo[i];
-                                                        if (!inf) break;
-                                                        last2 += `${inf.month}  Balance ${inf.balance}  Paid: ${inf.paid}\n`
-                                                    }
-                                                    const mailToIds = [];
-                                                    for (let i = 1; i <= 5; i++) {
-                                                        const id = house.lease['tenant' + i];
-                                                        if (id) mailToIds.push(id);
-                                                    }
-                                                    const tenantMaps = mainCtx.foreignKeyLoopkup.get('tenantInfo');
-                                                    const mailtos = mailToIds.map(id => (tenantMaps.idDesc.get(id) as any)?.email || `UnableToGetName${id}`).join(';');
-                                                    
-                                                    const subject = encodeURIComponent(`Payment received for ${house.address}`);
-                                                    const body = encodeURIComponent(`
-Dear tenant,
-Thank you for your payment, Below is your summary
-${last2}`);
-                                                    const mailto = `mailto:${mailtos}?subject=${subject}&body=${body}`;
+//                                                     let last2 = '';
+//                                                     for (let i = 0; i < 2; i++) {
+//                                                         const inf = house.leaseInfo.monthlyInfo[i];
+//                                                         if (!inf) break;
+//                                                         last2 += `${inf.month}  Balance ${inf.balance}  Paid: ${inf.paid}\n`
+//                                                     }
+//                                                     const mailToIds = [];
+//                                                     for (let i = 1; i <= 5; i++) {
+//                                                         const id = house.lease['tenant' + i];
+//                                                         if (id) mailToIds.push(id);
+//                                                     }
+//                                                     const tenantMaps = mainCtx.foreignKeyLoopkup.get('tenantInfo');
+//                                                     const mailtos = mailToIds.map(id => (tenantMaps.idDesc.get(id) as any)?.email || `UnableToGetName${id}`).join(';');
+
+//                                                     const subject = encodeURIComponent(`Payment received for ${house.address}`);
+//                                                     const body = encodeURIComponent(`
+// Dear tenant,
+// Thank you for your payment, Below is your summary
+// ${last2}`);
+                                                    //                                                     const mailto = `mailto:${mailtos}?subject=${subject}&body=${body}`;
+                                                    const mailto = `mailto:${formatedData.mailtos}?subject=${formatedData.subject}&body=${formatedData.body}`;
                                                     window.location.href = mailto;
                                                     e.preventDefault();
                                                 }}>Email</Link>

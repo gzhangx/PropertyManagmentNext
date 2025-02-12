@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
 import * as api from '../../api'
+import { getPaymentEmailConfig, paymentEmailSubject, paymentEmailText } from "../../utils/leaseEmailUtil";
 
-const paymentEmailSubject = 'paymentEmailSubject';
-const paymentEmailText = 'paymentEmailText';
+
 
 export function RenterEmailConfig() {
     const [configData, setConfigData] = useState({
@@ -10,13 +10,8 @@ export function RenterEmailConfig() {
         text: '',
     });
     useEffect(() => {
-        api.getUserOptions([]).then(res => {
-            const subject = res.find(r => r.id === paymentEmailSubject)?.data || '';
-            const text = res.find(r => r.id === paymentEmailText)?.data || '';
-            setConfigData({
-                subject,
-                text,
-            })
+        getPaymentEmailConfig().then(res => {            
+            setConfigData(res)
         })
     }, [])
     return (<div className="bg-gradient-primary">
