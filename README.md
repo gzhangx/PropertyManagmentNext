@@ -32,3 +32,20 @@ https://docs.aws.amazon.com/AmazonS3/latest/userguide/HostingWebsiteOnS3Setup.ht
 | paymentProcessor | varchar(100)  | YES  |     | NULL                |       |
 | houseID          | varchar(100)  | YES  |     | NULL                |       |
 | ownerID          | int
+
+
+
+utc -8 zone:
+ moment('2025-02-11 21:11:26').utcOffset(-3).format('YYYY-MM-DD HH:mm:ss')
+'2025-02-12 02:11:26'
+moment('2025-02-11 21:11:26').utc().format('YYYY-MM-DD HH:mm:ss')
+'2025-02-12 05:11:26'
+
+
+translate utc-8 from ui to utc-5 utc
+moment('2025-02-11 21:11:26').utcOffset(-3).format('YYYY-MM-DD HH:mm:ss')
+'2025-02-12 02:11:26'
+
+utc-5
+moment('2025-02-11 21:11:26').utc()
+Moment<2025-02-12T02:11:26Z>
