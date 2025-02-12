@@ -470,18 +470,17 @@ export async function deleteSheetRow(id: string, sheetName: string, row: number)
 
 
 
-export async function getUserOptions(name: string): Promise<any> {
+export async function getUserOptions(names: string[]) {
     const res = await sqlGet({
         table: 'userOptions',
-        whereArray: [
+        whereArray: names.map(name=>(
             {
                 field: 'id',
                 op: '=',
                 val: name,
-            }
-        ]
+            }))        
     });
-    return res.rows[0] as ({ id: string; data: string; } | undefined);
+    return res.rows as { id: string; data: string; }[];
 }
 
 export async function updateUserOptions(name: string, value: string) {
