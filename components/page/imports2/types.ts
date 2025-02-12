@@ -144,7 +144,3 @@ export interface IRowComparer {
     getSheetInvalidValues: (data: IDbSaveData) => string;
     //checkRowValid?: (data: IDbSaveData) => string | null;
 }
-
-export function YYYYMMDDFormater(date: string) : string {
-    return moment(date).format('YYYY-MM-DD');
-}
