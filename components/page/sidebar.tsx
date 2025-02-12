@@ -27,18 +27,19 @@ interface IMainSideBarProps {
 export function MainSideBar(props : IMainSideBarProps) {    
     const rs = useRootPageContext();
 
-    useEffect(() => {
-        props.sections.forEach(section => {
-            section.pages.forEach(page => {
-                if (page.selected) {
-                    //const itemName = getSideBarItemKey(page.name);            
-                    //rs.sideBarStates[getSideBarCurrentActiveItemKey()] = itemName;                    
-                    //rs.setSideBarStates({ ...rs.sideBarStates });
-                    activeSideBarItem(rs, page.name);
-                }
-            })
-        })
-    },[]);
+    // useEffect(() => {
+    //     props.sections.forEach(section => {
+    //         section.pages.forEach(page => {
+    //             if (page.selected) {
+    //                 //const itemName = getSideBarItemKey(page.name);            
+    //                 //rs.sideBarStates[getSideBarCurrentActiveItemKey()] = itemName;                    
+    //                 //rs.setSideBarStates({ ...rs.sideBarStates });
+    //                 console.log('====> side bar.useEffect.activeSideBarItem', page.name)
+    //                 activeSideBarItem(rs, page.name);
+    //             }
+    //         })
+    //     })
+    // },[]);
     const getLinkOnClick = (name:string)=>{
         //const itemName = getSideBarItemKey(name);
         return (e:MouseEvent)=>{
