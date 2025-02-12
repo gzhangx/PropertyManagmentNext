@@ -59,12 +59,22 @@ export function RenterEmailConfig() {
                             >Save
                             </a>
                         </form>
+                        <div>
+                            
+                        </div>
                         <hr />
                     </div>
                 </div>
                 
-            </div>
-
+            </div>                        
         </div>
+        <div className="form-group bg-gray-100 text-gray-900">
+            <div className="container">
+                <div className="row">Usage:  $DATE(YYYY-MM-DD) to show current Date</div>
+                <div className="row">$LOOPMONTHLY(4, $PDATE(YYYY/MM-DD) paid=$PAID balance=$BALANCE ) to show last 4 month of pay date, paid, balance</div>
+            </div>
+        </div>
+        <div className="form-group">
+        </div>            
     </div>)
 }
