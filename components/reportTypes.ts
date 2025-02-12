@@ -1,8 +1,9 @@
-import { FieldValueType, IDBFieldDef, IGetModelReturn, IPageState, ISqlDeleteResponse, ISqlOrderDef, ISqlRequestWhereItem, TableNames } from './types'
+import { AllDateTypes, FieldValueType, IDBFieldDef, IGetModelReturn, IPageState, ISqlDeleteResponse, ISqlOrderDef, ISqlRequestWhereItem, TableNames } from './types'
 import { IGoogleSheetAuthInfo } from './api';
 import { IEditTextDropdownItem } from './generic/GenericDropdown';
 import { ItemTypeDict } from './uidatahelpers/datahelperTypes';
 import { NotifyIconItem } from './page/tinyIconNotify';
+import moment from 'moment';
 export interface IPayment {
     address: string;
     addressId: string;
@@ -248,6 +249,12 @@ export interface IPageRelatedState {
 
     topBarMessagesCfg: TopBarIconNotifyCfg;
     topBarErrorsCfg: TopBarIconNotifyCfg;
+
+
+    timezone: number;
+    browserTimeToUTCDBTime: (bt: AllDateTypes) => string;
+    utcDbTimeToZonedTime: (utc: AllDateTypes, format?: 'YYYY-MM-DD') => string;
+    
 }
 
 export interface IIncomeExpensesContextValue extends IPageRelatedState {

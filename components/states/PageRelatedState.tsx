@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useContext } from 'react';
 import { getHouseInfo, getModel, getSheetAuthInfo, IGoogleSheetAuthInfo, sqlGet } from '../api';
 
-import { IDBFieldDef, IPagePropsByTable, TableNames } from '../types'
+import { AllDateTypes, IDBFieldDef, IPagePropsByTable, TableNames } from '../types'
 
 import {    
     IForeignKeyCombo,
@@ -15,6 +15,7 @@ import {
 } from '../reportTypes';
 import { checkLoginExpired, useRootPageContext } from './RootState';
 import { NotifyIconItem } from '../page/tinyIconNotify';
+import moment from 'moment';
 
 const PageRelatedContext = React.createContext({} as IPageRelatedState);
 
@@ -173,6 +174,11 @@ export function PageRelatedContextWrapper(props: {
         return lookup.idDesc.get(val)?.desc || `Failed Lookup tbl=(${etb})-field=${def.field}: `+val;        
     }
 
+
+    const curBrowserTimeZone = new Date().getTimezoneOffset() / 60;
+    const browserTouserZoneToUtcDeduction = - (rootCtx.userInfo.timezone || 0) - curBrowserTimeZone;
+    console.log('browserTouserZoneToUtcDeduction', browserTouserZoneToUtcDeduction);
+    const FULLYYYYMMDDHHMMSSFormat = 'YYYY-MM-DD HH:mm:ss';
     const pageCtx: IPageRelatedState = {
         //pageProps, setPageProps,
         pageState: {
@@ -201,6 +207,24 @@ export function PageRelatedContextWrapper(props: {
         forceReload: () => setReloadCounter(v => v + 1),
         topBarErrorsCfg,
         topBarMessagesCfg,
+        timezone: rootCtx.userInfo.timezone,
+        browserTimeToUTCDBTime: (bt: AllDateTypes) => {            
+            if (typeof bt === 'string') {
+                return moment.utc(bt).add(-rootCtx.userInfo.timezone,'h').format(FULLYYYYMMDDHHMMSSFormat)
+            }
+            if (bt instanceof Date) {
+                return bt.toISOString().substring(0, 19);
+            }            
+            return bt.utc().format(FULLYYYYMMDDHHMMSSFormat);
+        },
+        utcDbTimeToZonedTime: (utc: AllDateTypes, format?: 'YYYY-MM-DD' | 'YYYY-MM-DD HH:mm:ss') => {
+            try {                
+                return moment.utc(utc).utcOffset(rootCtx.userInfo.timezone).format(format || FULLYYYYMMDDHHMMSSFormat);
+            } catch (err) {
+                console.log(err, moment.utc(utc).utcOffset(rootCtx.userInfo.timezone));
+                return utc.toString();
+            }
+        },
     };
     return <PageRelatedContext.Provider value={pageCtx}>
         { props.children}

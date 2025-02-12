@@ -203,7 +203,7 @@ export const GenCrudAdd = (props: IGenGrudAddProps) => {
                         if (operation === 'Add') { //  !editItem
                             //create                            
                             if (c.type === 'date') {
-                                editItem[c.field] = moment().format('YYYY-MM-DD');
+                                editItem[c.field] = mainCtx.browserTimeToUTCDBTime(moment())//  moment().format('YYYY-MM-DD');
                             } else {
                                 if (c.isId) return null;
                             }

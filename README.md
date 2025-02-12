@@ -49,3 +49,6 @@ moment('2025-02-11 21:11:26').utcOffset(-3).format('YYYY-MM-DD HH:mm:ss')
 utc-5
 moment('2025-02-11 21:11:26').utc()
 Moment<2025-02-12T02:11:26Z>
+
+from utc string to est string:
+moment.utc('2025-02-12 02:11:26').utcOffset(-5)

@@ -57,6 +57,7 @@ export interface ILoginResponse {
     token: string;
     name: string;
     id: string;
+    timezone: number;
 }
 
 //copied from api
@@ -93,3 +94,6 @@ export function isColumnSecurityField(field: IDBFieldDef) {
 }
 
 export type FieldValueType = string | number | null;
+
+
+export type AllDateTypes = string | Date | moment.Moment;

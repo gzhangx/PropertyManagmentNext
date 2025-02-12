@@ -152,12 +152,24 @@ export function createHelper(rootCtx: RootState.IRootPageState, ctx: IPageRelate
                 error?: string;
                 };
             checkLoginExpired(rootCtx, res);
+            if (res.rows) {
+                res.rows.forEach(row => {
+                    accModelFields().forEach(mf => {
+                        if (mf.type === 'date' || mf.type === 'datetime') {
+                            row[mf.field] = ctx.utcDbTimeToZonedTime(row[mf.field])
+                        }
+                    })
+                })
+            }
             return res;
         },
         saveData: async (data: ItemType, id: string, saveToSheet: boolean, foreignKeyLookup: IForeignKeyLookupMap) => {
             const fieldTypeMapping: Map<string, IDBFieldDef> = new Map();
             const submitData = accModelFields().reduce((acc, f) => {
-                acc[f.field] = data[f.field];                
+                acc[f.field] = data[f.field];
+                if (f.type === 'date' || f.type === 'datetime') {
+                    acc[f.field] = ctx.browserTimeToUTCDBTime(data[f.field]);
+                }
                 fieldTypeMapping.set(f.field, f);                
                 return acc;
             }, {});
