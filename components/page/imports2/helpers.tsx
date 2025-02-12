@@ -16,11 +16,21 @@ import { IDBFieldDef, TableNames } from '../../types';
 import { stdFormatValue } from '../../uidatahelpers/datahelpers';
 import { IPageRelatedState } from '../../reportTypes';
 
-export async function createEntity(params: IPageParms, changeRow: ISheetRowData, inserter: IDbInserter) {
+export async function createEntity(params: IPageParms, changeRow: ISheetRowData, inserter: IDbInserter, fields: IDBFieldDef[]) {
     //const state = curPageState;
     const dispatchCurPageState = params.dispatchCurPageState;
     //const changeRow = state.pageDetails.dataRows[rowInd] as ISheetRowData;
-    const saveData = changeRow.importSheetData;    
+    const saveData = {
+        ...changeRow.importSheetData         
+    };
+    fields.forEach(f => {
+        if (f.type === 'date' || f.type === 'datetime') {
+            const v = saveData[f.field];
+            if (v) {
+                saveData[f.field] = params.pageCtx.browserTimeToUTCDBTime(v as string);
+            }
+        }
+    })
     if (changeRow.invalid) {
         console.log(`invalid payment, don't create ${changeRow.invalid}`);
         return;
@@ -239,7 +249,7 @@ export function getDisplayHeaders(params: IPageParms, curPageState: IPageStates)
                                 const err = validRow(sheetRow.importSheetData);
                                                                 
                                 if (!err)
-                                    await createEntity(params, sheetRow, dbInserter);
+                                    await createEntity(params, sheetRow, dbInserter, curPageState.curPage.allFields!);
                                 else {
                                     console.log('Found error during process all for page',err);    
                                     params.setErrorStr(err);
