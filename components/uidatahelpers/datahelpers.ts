@@ -47,8 +47,8 @@ export interface IGenListProps  { //copied from gencrud, need combine and refact
 }
 
 
-
-export function stdFormatValue(def: IDBFieldDef, v: string | number, fieldName?: string): { error?: string; v: string | number; } {
+/// if ctx exists, means it is from DB and need update zone
+export function stdFormatValue(def: IDBFieldDef, v: string | number, fieldName?: string, ctx?: IPageRelatedState): { error?: string; v: string | number; } {
     if (def.type === 'decimal') {
         if (v === null || v === undefined || v === '') {
             if (!def.required) {
@@ -102,7 +102,7 @@ export function stdFormatValue(def: IDBFieldDef, v: string | number, fieldName?:
                 v,
             }
         } else {
-            const dateStr = mt.format('YYYY-MM-DD');
+            const dateStr = ctx ? ctx.utcDbTimeToZonedTime(v as string, 'YYYY-MM-DD') : mt.format('YYYY-MM-DD');
             //acc[fieldName] = dateStr;
             return {
                 v: dateStr,
@@ -184,7 +184,7 @@ export function createHelper(rootCtx: RootState.IRootPageState, ctx: IPageRelate
 
             if (sheetMapping) {
                 
-                const mapFuns = getSheetMappingFuncs(accModelFields(), sheetMapping, foreignKeyLookup, newId);
+                const mapFuns = getSheetMappingFuncs(accModelFields(), sheetMapping, foreignKeyLookup, newId, ctx);
                 
                 
                 const values = mapFuns.getSheetValuesFromData(data);
@@ -293,7 +293,7 @@ export function createHelper(rootCtx: RootState.IRootPageState, ctx: IPageRelate
         deleteData: async (ids, foreignKeyLookup: IForeignKeyLookupMap, data) => {
             const deleteRes = await sqlDelete(table, ids);
             if (sheetMapping) {
-                const mapFuns = getSheetMappingFuncs(accModelFields(), sheetMapping, foreignKeyLookup, '');
+                const mapFuns = getSheetMappingFuncs(accModelFields(), sheetMapping, foreignKeyLookup, '', ctx);
                 const foundRow = await mapFuns.findItemOnSheet({
                     ...data,
                     _vdOriginalRecord: data,
@@ -313,7 +313,8 @@ export function createHelper(rootCtx: RootState.IRootPageState, ctx: IPageRelate
 
 function getSheetMappingFuncs(fields: IDBFieldDef[], sheetMapping: DataToDbSheetMapping, foreignKeyLookup: IForeignKeyLookupMap,
     //id: string, //id of object, might be null for new one
-    sqlSaveId: string //after save, if it is new item, will return an id
+    sqlSaveId: string, //after save, if it is new item, will return an id
+    mainCtx: IPageRelatedState
 ) {
     const helperState = {
         dateFields: [] as string[],
@@ -393,7 +394,7 @@ function getSheetMappingFuncs(fields: IDBFieldDef[], sheetMapping: DataToDbSheet
         } else {
             //no sheet id, must match against old data
             let foundRow = -1;
-            function matchToLower(val: string, fieldName: string) {
+            function matchToLower(val: string, fieldName: string, ctx?: IPageRelatedState) {
                 if (!val) {
                     if (val === undefined) return '';
                     if (val === null) return '';
@@ -402,7 +403,7 @@ function getSheetMappingFuncs(fields: IDBFieldDef[], sheetMapping: DataToDbSheet
                 val = val.toString().trim();
                 const def = fieldTypeMapping.get(fieldName);
                 if (!def) return val;
-                return stdFormatValue(def, val, fieldName).v;
+                return stdFormatValue(def, val, fieldName, ctx).v;
             }
             const originalValues = getSheetValuesFromData(data._vdOriginalRecord);
             for (let row = 0; row < sheetData.values.length; row++) {
@@ -413,7 +414,7 @@ function getSheetMappingFuncs(fields: IDBFieldDef[], sheetMapping: DataToDbSheet
                 for (const fielName of sheetMapping.mapping) {
                     if (!fielName) continue;
                     //console.log('matching row', row, fielName, 'rowData', rowData[pos], 'f=', matchToLower(rowData[pos], fielName), `data '${data[fielName]}'`, 'f=',matchToLower(data[fielName] as string, fielName))
-                    if (matchToLower(rowData[pos], fielName) !== matchToLower(originalValues[pos], fielName)) {
+                    if (matchToLower(rowData[pos], fielName) !== matchToLower(originalValues[pos], fielName, mainCtx)) {
                         ok = false;
                         if (debugKeepMatching) {
                             console.log('!! not matching row', row, fielName, `rowData= '${rowData[pos]}' matchToLowerRowData='${matchToLower(rowData[pos], fielName)}'`, ` original ${originalValues[pos]} data '${data[fielName]}'`, 'f=', matchToLower(data[fielName] as string, fielName))

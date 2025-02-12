@@ -112,7 +112,7 @@ export async function genericPageLoader(prms: IPageParms, pageState: IPageStates
     const rowComparer: IRowComparer =
     {
         name: 'Payment Row Comparer',
-        getRowKey: (data: IDbSaveData, soruce: string) => {
+        getRowKey: (data: IDbSaveData, source: 'DB' | 'Sheet') => {
             const parts = mappingColumnInfo.map(fd => {
                 switch (fd.type) {
                     case 'date':
@@ -120,7 +120,7 @@ export async function genericPageLoader(prms: IPageParms, pageState: IPageStates
                         //return YYYYMMDDFormater(data[fd.field] as string)
                     case 'decimal':
                         //return parseFloat(data[fd.field] as string).toFixed(2);
-                        return stdFormatValue(fd, data[fd.field], fd.field).v;
+                        return stdFormatValue(fd, data[fd.field], fd.field, source=== 'DB'? prms.pageCtx: undefined).v;
                     default:
                         return (data[fd.field] as string || '').toString().trim();
                 }
@@ -135,7 +135,7 @@ export async function genericPageLoader(prms: IPageParms, pageState: IPageStates
                     //return YYYYMMDDFormater(data[fd.field] as string)
                     case 'decimal':
                         //return parseFloat(data[fd.field] as string).toFixed(2);
-                        return (stdFormatValue(fd, data[fd.field], fd.field).v || '').toString();
+                        return (stdFormatValue(fd, data[fd.field], fd.field).v || '', prms.pageCtx).toString();
                     default:
                         return (data[fd.field] as string || '').toString().trim();
                 }
