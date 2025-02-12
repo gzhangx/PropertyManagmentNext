@@ -38,9 +38,9 @@ export async function getLeaseUtilForHouse(houseID: string) {
 
 
     function findLeaseForDate(date: string | Date | moment.Moment): ILeaseInfo {
-        const pd = moment(date);
+        const pd = moment.utc(date);
         for (const l of allLeases) {
-            if (moment(l.startDate).isBefore(pd)) {
+            if (moment.utc(l.startDate).isBefore(pd)) {
                 return l;
             }
         }
@@ -74,9 +74,9 @@ export async function getLeaseUtilForHouse(houseID: string) {
 
     function calculateLeaseBalances(l: ILeaseInfo, payments: IPaymentForLease[], monthlyDueDate: number, today: string | Date | moment.Moment) {        
         const monthlyInfo: IPaymentOfMonth[] = [];
-        const now = moment(today);
+        const now = moment.utc(today);
         const dueDate = now.startOf('month').add(monthlyDueDate, 'days');
-        let curMon = moment(l.startDate);
+        let curMon = moment.utc(l.startDate);
         let shouldAccumatled = 0;
         const lastDueMonth = now.isAfter(dueDate) ? now : now.add(-1, 'month').startOf('month');
         const monthInfoLookup: { [mon: string]: IPaymentOfMonth } = {};
@@ -100,7 +100,7 @@ export async function getLeaseUtilForHouse(houseID: string) {
         const lps = orderBy(payments.filter(p => p.houseID === l.houseID).map(p => {
             return {
                 ...p,
-                receivedDate: moment(p.receivedDate).format('YYYY-MM-DD'),
+                receivedDate: moment.utc(p.receivedDate).format('YYYY-MM-DD HH:mm:ss'),  //TODO change this to db date utc
             }
         }), p => p.receivedDate, 'asc');
         const result: ILeaseInfoWithPmtInfo = lps.reduce((acc, pmt) => {

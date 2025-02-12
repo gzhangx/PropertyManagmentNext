@@ -3,7 +3,7 @@ import { IGoogleSheetAuthInfo } from './api';
 import { IEditTextDropdownItem } from './generic/GenericDropdown';
 import { ItemTypeDict } from './uidatahelpers/datahelperTypes';
 import { NotifyIconItem } from './page/tinyIconNotify';
-import moment from 'moment';
+
 export interface IPayment {
     address: string;
     addressId: string;

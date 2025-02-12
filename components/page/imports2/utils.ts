@@ -11,10 +11,8 @@ import {
     IDbSaveData,
 } from './types'
 import {getHouseInfo, googleSheetRead,} from '../../api'
-import moment from "moment/moment";
 import {get, keyBy} from "lodash";
 import * as lutil from "./loads/util";
-import { ALLFieldNames } from '../../uidatahelpers/datahelperTypes';
 import { stdFormatValue } from '../../uidatahelpers/datahelpers';
 import { IPageRelatedState } from '../../reportTypes';
 
@@ -181,38 +179,6 @@ export function matchItems(pageDetails: IPageDataDetails, dbData: IDbSaveData[],
         return sd;
     });
     return dbMatchData;
-}
-
-
-function stdDisplayField(fieldNames: ALLFieldNames[], obj: IStringDict, pageState: IPageStates) : IStringDict {
-    return fieldNames.reduce((acc, fieldName) => {
-        let dsp = obj[fieldName];
-        if (dsp === 0) {
-            acc[fieldName] = dsp;
-            return acc;
-        }
-        if (dsp === null || dsp === undefined) {
-            acc[fieldName] = '';
-            return acc;
-        }
-        if (!dsp && dsp !== '') return acc;
-        const fieldDef = pageState.curPage.allFields.find(f => f.field === fieldName);
-        switch (fieldDef.type) {
-            case 'date':            
-                const mmt = moment(dsp);
-                if (mmt.isValid())
-                    dsp = mmt.format('YYYY-MM-DD');
-                else
-                    dsp = `Invalid(${dsp})`;
-                break;
-            case 'decimal':            
-                if (typeof dsp === 'number') dsp = dsp.toFixed(2);
-                else dsp = parseFloat(dsp || '0').toFixed(2);
-                break;            
-        }
-        acc[fieldName] = dsp;
-        return acc;
-    }, {});
 }
 
 
