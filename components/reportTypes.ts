@@ -218,6 +218,8 @@ export type IForeignKeyCombo = {
     idDesc: IForeignKeyIdDesc;
     descToId: IForeignKeyIdDesc;
     rows: IForeignKeyParsedRow[];
+
+    specialOptionGenerator?: (row: ItemTypeDict) => IEditTextDropdownItem[];
 }
 
 

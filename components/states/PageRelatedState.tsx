@@ -8,6 +8,7 @@ import {
     IForeignKeyIdDesc,
     IForeignKeyLookupMap,
     IForeignKeyParsedRow,
+    ILeaseInfo,
     IModelsDict,
     IPageRelatedState,
     IWorkerInfo,
@@ -16,6 +17,8 @@ import {
 import { checkLoginExpired, useRootPageContext } from './RootState';
 import { NotifyIconItem } from '../page/tinyIconNotify';
 import moment from 'moment';
+import { IEditTextDropdownItem } from '../generic/GenericDropdown';
+import { orderBy } from 'lodash';
 
 const PageRelatedContext = React.createContext({} as IPageRelatedState);
 
@@ -120,32 +123,59 @@ export function PageRelatedContextWrapper(props: {
         } as {
             idGetter: (obj: any) => string;
             descGetter: (obj: any) => string;
+            }
+        
+        const res: IForeignKeyCombo = {
+            rows: [],
+            idDesc: new Map(),
+            descToId: new Map(),
+        };
+        switch (table) {
+            case 'houseInfo':
+                parser.descGetter = obj => obj.address;
+                break;
+            case 'workerInfo':
+                parser.descGetter = (obj: IWorkerInfo) => obj.workerName
+                break;
+            case 'tenantInfo':
+                parser.descGetter = (obj) => obj.fullName;
+                break;
+            case 'leaseInfo':
+                parser.descGetter = (obj: ILeaseInfo) => obj.houseID+'-'+obj.startDate.substring(0,10) + '-' + obj.endDate.substring(0,10)+'-'+obj.leaseID;
+                res.specialOptionGenerator = (row) => {                     
+                    const leases = orderBy((res.rows as (ILeaseInfo & { id: string; desc: string; })[]).filter(r=>r.houseID === row.houseID), l=>l.startDate, 'desc');
+                    
+                    return leases.map(l => {
+                        const rr: IEditTextDropdownItem = {
+                            label: l.desc,
+                            value: l.id,
+                        };
+                        return rr;
+                    })
+                };
+                break;
+            default:
+                console.log(`Error, id desc sorter not set for ${table}`);
         }
-        if (table === 'houseInfo') {
-            parser.descGetter = obj => obj.address;
-        } else if (table === 'workerInfo') {
-            parser.descGetter = (obj: IWorkerInfo )=>obj.workerName
-        } else if (table === 'tenantInfo') {
-            parser.descGetter = (obj) => obj.fullName;
-        }
-        const rows: IForeignKeyParsedRow[] = sqlRes.rows.map(r => {
+        
+        res.rows = sqlRes.rows.map(r => {
             return {
                 ...r,
                 id: parser.idGetter(r),
                 desc: parser.descGetter(r),
             };
-        })        
-        const map: IForeignKeyIdDesc = new Map();
-        const descToId: IForeignKeyIdDesc = new Map();
-        rows.forEach(r => {
-            map.set(r.id, r);
-            descToId.set(r.desc, r);
         })
-        const res: IForeignKeyCombo = {
-            rows,
-            idDesc: map,
-            descToId,
-        };
+        //const map: IForeignKeyIdDesc = new Map();
+        //const descToId: IForeignKeyIdDesc = new Map();
+        res.rows.forEach(r => {
+            res.idDesc.set(r.id, r);
+            res.descToId.set(r.desc, r);
+        })
+        //const res: IForeignKeyCombo = {
+        //    rows,
+        //    idDesc: map,
+        //    descToId,
+        //};
         foreignKeyLoopkup.set(table, res);
         setForeignKeyLookup(new Map(foreignKeyLoopkup));
         return res;

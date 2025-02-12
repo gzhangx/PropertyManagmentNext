@@ -220,7 +220,7 @@ export const GenCrudAdd = (props: IGenGrudAddProps) => {
                         const createSelection = (optName: TableNames, colField: string) => {                            
                             const fops = mainCtx.foreignKeyLoopkup.get(optName);
                             if (!fops) return null;
-                            const selOptions = fops.rows.map(r => {
+                            const selOptions = fops.specialOptionGenerator ? fops.specialOptionGenerator(editItem) :  fops.rows.map(r => {
                                 return {
                                     label: r.desc,
                                     value: r.id,
