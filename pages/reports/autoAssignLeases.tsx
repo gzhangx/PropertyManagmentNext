@@ -225,7 +225,8 @@ export default function AutoAssignLeases() {
 // ${last2}`);
                                                     //                                                     const mailto = `mailto:${mailtos}?subject=${subject}&body=${body}`;
                                                     const mailto = `mailto:${formatedData.mailtos}?subject=${formatedData.subject}&body=${formatedData.body}`;
-                                                    window.location.href = mailto;
+                                                    //window.location.href = mailto;
+                                                    console.log('TODO: place above line back', formatedData)
                                                     e.preventDefault();
                                                 }}>Email</Link>
                                         </div>
