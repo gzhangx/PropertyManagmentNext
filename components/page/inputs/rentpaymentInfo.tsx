@@ -11,17 +11,5 @@ export function RentpaymentInfo(props) {
             { field: 'paymentTypeName', 'desc': 'type' },
             { field: 'notes', 'desc': 'Notes' },
         ]}
-
-        sheetMapping={{
-            sheetName: 'PaymentRecord',
-            mapping: [
-                'receivedDate',
-                'receivedAmount',
-                'houseID',
-                'paymentTypeName',
-                'notes',
-            ],            
-            //endCol: 'B',
-        }}
     /> 
 }

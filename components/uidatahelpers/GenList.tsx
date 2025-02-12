@@ -2,7 +2,6 @@ import React,{useState,useEffect} from 'react';
 import { GenCrud, getPageSorts, getPageFilters } from './GenCrud';
 import { ItemType } from './GenCrudAdd';
 import { createHelper, IGenListProps } from './datahelpers';
-import { getFKDefs } from './GenCrudTableFkTrans';
 
 import * as RootState from '../states/RootState'
 import { FieldValueType, IDBFieldDef, ISqlRequestWhereItem } from '../types';
@@ -91,7 +90,7 @@ export function GenList(props: IGenListProps) {
             (loading||!columnInf)? <p>Loading</p>:
                 <div>
                     <GenCrud
-                        fkDefs={getFKDefs()}
+                        //fkDefs={getFKDefs()}
                     paggingInfo={paggingInfo} setPaggingInfo={setPaggingInfo}
                     reload = {reload}
                     pageState = {pageState}

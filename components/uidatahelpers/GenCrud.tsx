@@ -4,7 +4,7 @@ import { v1 } from 'uuid';
 import { EditTextDropdown } from '../generic/EditTextDropdown';
 import { GenCrudAdd, ItemType } from './GenCrudAdd';
 import { ISqlOrderDef, SortOps, IPageFilter, IPageState, IDBFieldDef, TableNames, SQLOPS, FieldValueType } from '../types'
-import { IFKDefs} from './GenCrudTableFkTrans'
+//import { IFKDefs} from './GenCrudTableFkTrans'
 import { ItemTypeDict } from './datahelperTypes';
 import { usePageRelatedContext } from '../states/PageRelatedState';
 import moment from 'moment';
@@ -46,7 +46,7 @@ export interface IGenGrudProps {
     //show: boolean;
     table: TableNames;
     //desc?: string;
-    fkDefs?: IFKDefs;
+    //fkDefs?: IFKDefs;
     doDelete: (ids: string[], data: ItemTypeDict) => void;
     idCol?: { field: string; }
     reload?: () => Promise<void>;

@@ -42,12 +42,12 @@ export const GenCrudAdd = (props: IGenGrudAddProps) => {
         show,
         table,
         desc,
-        fkDefs,
+        //fkDefs,
         operation,
     }
         = props;
         
-    const getForeignKeyProcessor = fk => get(fkDefs, [fk, 'processForeignKey']);
+    //const getForeignKeyProcessor = fk => get(fkDefs, [fk, 'processForeignKey']);
     //let id:string|number = '';
     const { idName, id } = columnInfo.reduce((acc, col) => {
         if (col.isId && !col.userSecurityField) {
@@ -186,6 +186,7 @@ export const GenCrudAdd = (props: IGenGrudAddProps) => {
             title: 'error',
         })
     }
+
     return <div className={dspClassName} tabIndex={-1} role="dialog">
         <Dialog dialogInfo={errDlgPrm}></Dialog>
         <div className="modal-dialog" role="document">
@@ -195,45 +196,7 @@ export const GenCrudAdd = (props: IGenGrudAddProps) => {
                 <button type="button" className="close" data-dismiss="modal" aria-label="Close">
                         <span aria-hidden="true" onClick={internalCancel}>&times;</span>
                 </button>
-            </div>
-                {
-                    columnInfo.filter(c => c.foreignKey).filter(c => c.foreignKey.table && columnInfoMaps[c.foreignKey.table]).map((c, cind) => {
-                        const thisTbl = c.foreignKey.table;
-                        const processForeignKey = getForeignKeyProcessor(thisTbl);
-                        if (!processForeignKey) return;
-                        const { helper, columnInfo } = columnInfoMaps[thisTbl];
-                        const doAdd = (data, id) => {
-                            return helper.saveData(data, id, true, mainCtx.foreignKeyLoopkup).then(res => {
-                                return res;
-                            }).catch(err => {
-                                console.log(err);
-                                setErrorText(err.message);
-                            });
-                        }
-                        const addDone = async added => {
-                            if (!added) {
-                                setAddNewForField('');
-                                return setErrorText('Cancelled');
-                            }
-                            //const optDataOrig = await columnInfoMaps[thisTbl].helper.loadData();
-                            //const optData = optDataOrig.rows;
-                            // setOptsData(prev => {
-                            //     return {
-                            //         ...prev,
-                            //         [thisTbl]: processForeignKey(c.foreignKey, optData)
-                            //     }
-                            // });
-                            setEditItem(prev => {
-                                return {
-                                    ...prev,
-                                    [c.field]: added.id,
-                                }
-                            })
-                            setAddNewForField('');
-                        }
-                        return <GenCrudAdd {...props} key={cind} columnInfo={columnInfo} doAdd={doAdd} onCancel={addDone} show={addNewForField === c.field}></GenCrudAdd>
-                    }).filter(x => x)
-                }
+            </div>                
                 <div className='container-fluid'>
                 {
                     columnInfo.map((c, cind) => {
