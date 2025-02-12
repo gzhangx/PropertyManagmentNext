@@ -3,7 +3,7 @@ import React from "react";
 //export type TYPEDBTables = 'ownerInfo' | 'rentPaymentInfo' | 'houseInfo';
 
 export type TableNames = 'rentPaymentInfo' | 'houseInfo' | 'maintenanceRecords' | 'ownerInfo' | 'leaseInfo' | 'tenantInfo' | 'workerComp' | 'userInfo'
-    | 'googleApiCreds' | 'workerInfo';
+    | 'googleApiCreds' | 'workerInfo' | 'userOptions';
 export interface ISqlDeleteResponse {
     affectedRows: number;
 }

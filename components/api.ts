@@ -191,7 +191,8 @@ export async function sqlGet(input: ISqlRequest): Promise<any> {
     return doPost(`sql/get?tableDbg=${input.table}`, input);
 }
 
-export async function sqlAdd(table: TableNames, fields: { [key: string]: string | number; }, doCreate:boolean) {
+//set both create/update to true to upsert
+export async function sqlAdd(table: TableNames, fields: { [key: string]: string | number; }, doCreate:boolean, doUpdate?: boolean) {
     //     "table":"tenantInfo",
     //     "fields":{"tenantID":"289a8120-01fd-11eb-8993-ab1bf8206feb", "firstName":"gang", "lastName":"testlong"},
     //    "create":true
@@ -200,7 +201,7 @@ export async function sqlAdd(table: TableNames, fields: { [key: string]: string 
         table,
         fields,
         doCreate,
-        doUpdate: !doCreate
+        doUpdate: !doCreate || doUpdate
     })
 }
 
@@ -465,4 +466,27 @@ export async function updateSheet(op: 'update' | 'append', id: string, range: st
 
 export async function deleteSheetRow(id: string, sheetName: string, row: number) {
     return await doPost(`misc/sheet/deleteRow/${id}/${sheetName}/${row}`, null);
+}
+
+
+
+export async function getUserOptions(name: string): Promise<any> {
+    const res = await sqlGet({
+        table: 'userOptions',
+        whereArray: [
+            {
+                field: 'id',
+                op: '=',
+                val: name,
+            }
+        ]
+    });
+    return res.rows[0] as ({ id: string; data: string; } | undefined);
+}
+
+export async function updateUserOptions(name: string, value: string) {
+    return await sqlAdd('userOptions', {
+        id: name,
+        data: value,
+    }, true, true);
 }

@@ -12,6 +12,7 @@ import { MaintenanceRecords } from './page/inputs/maintenanceList'
 
 import YearlyMaintenanceReport from '../pages/reports/yearlyMaintenanceReport';
 import { getLeasePage } from '../pages/reports/autoAssignLeases'
+import { RenterEmailConfig } from '../components/page/inputs/renterEmailConfig'
 
 import * as dev2 from '../pages/util/dev2'
 
@@ -68,6 +69,9 @@ const inputPages: LocalPageInfo[] = [
     }, {
         name: 'AutoAssignLeases',
         page: getLeasePage(),        
+    }, {
+        name: 'Renter Email Config',
+        page: <RenterEmailConfig></RenterEmailConfig>
     }
 ];
 
