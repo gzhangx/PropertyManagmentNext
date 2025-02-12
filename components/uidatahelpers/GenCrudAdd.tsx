@@ -73,7 +73,7 @@ export const GenCrudAdd = (props: IGenGrudAddProps) => {
 
 
     //const [errorText, setErrorText] = useState('');
-    const [addNewForField, setAddNewForField] = useState('');
+    //const [addNewForField, setAddNewForField] = useState('');
     //const [optsData, setOptsData] = useState<{[keyName:string]:IEditTextDropdownItem[]}>({});
     const handleChange = e => {
         const { name, value } = e.target;
@@ -227,12 +227,13 @@ export const GenCrudAdd = (props: IGenGrudAddProps) => {
                                     selected: false,
                                 }
                             }) // optsData[optName];
-                            if (!selOptions) return null;
-                            const options = selOptions.map(s=>({...s, selected: false,})).concat({
-                                label: 'Add New',
-                                value: 'AddNew',
-                                selected: false,
-                            })
+                            //if (!selOptions) return null;
+                            //const options = selOptions.map(s=>({...s, selected: false,})).concat({
+                            //    label: 'Add New',
+                            //    value: 'AddNew',
+                            //    selected: false,
+                            //})
+                            const options = selOptions;
                             const curSelection = options.filter(o => o.value === get(editItem, colField))[0];
                             if (curSelection) {
                                 curSelection.selected = true;
@@ -242,10 +243,10 @@ export const GenCrudAdd = (props: IGenGrudAddProps) => {
                                 <EditTextDropdown items={options}
                                     onSelectionChanged={
                                         (s: IEditTextDropdownItem) => {                                            
-                                            if (s.value === 'AddNew') {
-                                                setAddNewForField(colField);
-                                            } else
-                                                setEditItem({ ...editItem, [colField]: s.value, [colField+'_labelDesc']: s.label });    
+                                            //if (s.value === 'AddNew') {
+                                            //    setAddNewForField(colField);
+                                            //} else
+                                            setEditItem({ ...editItem, [colField]: s.value });    //, [colField+'_labelDesc']: s.label
                                         }
                                     }
                                 ></EditTextDropdown>
