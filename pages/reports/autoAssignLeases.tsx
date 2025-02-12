@@ -106,14 +106,15 @@ export default function AutoAssignLeases() {
                     ...leaseExpanded,
                     [leaseID]: !leaseExpanded[leaseID],
                 })
-            }
-            return;
+                return;
+            }            
         }
         if (expand) {
             setTopBarMessages([
                 { header: `House ${house.address}` }
             ]);
         }
+        setProcessingHouseId(house.houseID);
         const lease = await gatherLeaseInfomation(house);
 
         if (lease === 'Lease not found') {
