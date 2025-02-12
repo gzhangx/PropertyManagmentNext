@@ -18,6 +18,7 @@ type IPaymentForLease = {
     receivedAmount: number;
     houseID: string;
     receivedDate: string;
+    paymentTypeName: string;
 }
 
 export interface ILeaseInfoWithPmtInfo {
@@ -83,9 +84,12 @@ export async function getLeaseUtilForHouse(houseID: string) {
         const YYYYMMFormat = 'YYYY-MM';
         const firstMonthStr = curMon.format(YYYYMMFormat);
         const finalMonthStr = lastDueMonth.format(YYYYMMFormat);
+        const terminationDate = l.terminationDate ? moment(l.terminationDate) : null;
         while (curMon.isSameOrBefore(lastDueMonth)) {
             const month = curMon.format(YYYYMMFormat);
-            shouldAccumatled = round2(shouldAccumatled + l.monthlyRent);
+            if (!terminationDate || curMon.isSameOrBefore(terminationDate)) {
+                shouldAccumatled = round2(shouldAccumatled + l.monthlyRent);
+            }
             const info: IPaymentOfMonth = {
                 month,
                 accumulated: 0,
@@ -104,10 +108,11 @@ export async function getLeaseUtilForHouse(houseID: string) {
             }
         }), p => p.receivedDate, 'asc');
         const result: ILeaseInfoWithPmtInfo = lps.reduce((acc, pmt) => {
+            if (pmt.paymentTypeName !== 'Rent') return acc;
             const paymentMonth = pmt.receivedDate.substring(0, 7);
-            if (paymentMonth < finalMonthStr) {
+            if (paymentMonth <= finalMonthStr) {
                 acc.totalPayments = round2(acc.totalPayments + pmt.receivedAmount);
-                acc.payments.push(pmt);                
+                acc.payments.push(pmt);
                 const info = monthInfoLookup[paymentMonth] || monthInfoLookup[firstMonthStr];
                 info.paid = round2(info.paid + pmt.receivedAmount);                
                 info.accumulated = acc.totalPayments;
@@ -121,6 +126,18 @@ export async function getLeaseUtilForHouse(houseID: string) {
             totalBalance: 0,
             payments: [],
             monthlyInfo,
+        });
+        result.monthlyInfo.reduce((acc, mon) => {            
+            if (!mon.accumulated) mon.accumulated = acc.last.accumulated;
+            const balance = round2(mon.shouldAccumatled - mon.accumulated);
+            if (mon.balance == 0) mon.balance = balance;
+            if (balance !== mon.balance) {
+                console.log(`Error!!!! should not have a different balance ${balance} ${mon.balance}`);
+            }
+            acc.last = mon;
+            return acc;
+        }, {
+            last: result.monthlyInfo[0]
         });
         return result;
     }

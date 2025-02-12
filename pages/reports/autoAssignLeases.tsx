@@ -106,7 +106,7 @@ export default function AutoAssignLeases() {
                     ...leaseExpanded,
                     [leaseID]: !leaseExpanded[leaseID],
                 })
-                return;
+                //return;
             }            
         }
         if (expand) {
