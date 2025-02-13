@@ -7,89 +7,33 @@ import moment from 'moment';
 import { GetInfoDialogHelper } from '../../generic/basedialog'
 import { ILeaseInfo, IPayment } from '../../reportTypes';
 import { getLeases} from '../../api'
-import { keyBy, sortBy } from 'lodash';
+import { keyBy, orderBy, sortBy } from 'lodash';
+import { getLeaseUtilForHouse, ILeaseInfoWithPmtInfo } from '../../utils/leaseUtil';
 
 
 //old, moved toautoAssignLeases
-export function LeaseReport(props) {
+export function LeaseReport() {
     const ctx = useIncomeExpensesContext();
-    const { payments, rawExpenseData, selectedHouses, monthes, paymentCalcOpts } = ctx;
     
-    const monAddr = getPaymentsByMonthAddress(payments, paymentCalcOpts);
-
-    const calculatedMaintData = getMaintenanceData(rawExpenseData, paymentCalcOpts);    
     
-    interface IPaymentOfMonth {
-        paid: number;
-        shouldAccumatled: number;
-        accumulated: number;
-        month: string;
-    }
-    interface ILeaseInfoWithPmtInfo extends ILeaseInfo {
-        totalPayments: number;
-        totalMissing: number;
-        payments: IPayment[];
-        monthlyInfo: IPaymentOfMonth[];
-    }
-    const [leases, setLeases] = useState<ILeaseInfoWithPmtInfo[]>([]);
+    type ILeaseInfoWithPmtInfoWithHouseId = ILeaseInfoWithPmtInfo & ILeaseInfo;
+    const [leases, setLeases] = useState<ILeaseInfoWithPmtInfoWithHouseId[]>([]);
 
     const [leaseExpanded, setLeaseExpanded] = useState<{ [key: string]: boolean }>({});
     const monthlyDueDate = 3;
     useEffect(() => {
-        getLeases().then(ls => {
-            setLeases(ls.map(l => {
-                const monthlyInfo: IPaymentOfMonth[] = [];
-                const now = moment();
-                const dueDate = now.startOf('month').add(monthlyDueDate, 'days');
-                let curMon = moment(l.startDate);
-                let shouldAccumatled = 0;
-                const lastDueMonth = now.isAfter(dueDate) ? now : now.add(-1, 'month').startOf('month');
-                const monthInfoLookup: { [mon: string]: IPaymentOfMonth } = {};
-                while (curMon.isSameOrBefore(lastDueMonth)) {
-                    const month = curMon.format('YYYY-MM');
-                    shouldAccumatled += l.monthlyRent;
-                    const info = {
-                        month,
-                        accumulated: 0,
-                        shouldAccumatled,
-                        paid: 0,
-                    }
-                    monthInfoLookup[month] = info;
-                    monthlyInfo.push(info);
-                    curMon = curMon.add(1, 'month');
-                }
-                const lps = payments.filter(p => p.houseID === l.houseID).map(p => {
-                    return {
-                        ...p,
-                        receivedDate: moment(p.receivedDate).format('YYYY-MM-DD'),
-                    }
-                }).filter(p => p.receivedDate >= l.startDate);
-                const result: ILeaseInfoWithPmtInfo = lps.reduce((acc, pmt) => {
-                    acc.totalPayments = acc.totalPayments + pmt.receivedAmount;
-                    acc.payments.push(pmt);
-                    console.log(`lookuping up with ${pmt.receivedDate.substring(0, 7)}`)
-                    const info = monthInfoLookup[pmt.receivedDate.substring(0, 7)];
-                    if (info) {
-                        info.paid += pmt.receivedAmount;
-                    }
-                    return acc;
-                }, {
-                    ...l,
-                    totalPayments: 0,
-                    totalMissing: 0,
-                    payments: [],
-                    monthlyInfo,
+        getLeases().then(async lss => {
+            const all: ILeaseInfoWithPmtInfoWithHouseId[] = [];
+            for (const ls of orderBy(lss, ls=>ls.startDate, 'desc')) {
+                const lt = await getLeaseUtilForHouse(ls.houseID);   
+                const pmts = await lt.loadLeasePayments(ls);
+                const r: ILeaseInfoWithPmtInfo = lt.calculateLeaseBalances(ls, pmts, monthlyDueDate, new Date());
+                all.push({                    
+                    ...r,
+                    ...ls,
                 });
-                result.monthlyInfo.reduce((acc, info) => {
-                    acc.total += info.paid;
-                    info.accumulated = acc.total;
-                    result.totalMissing = info.shouldAccumatled - info.accumulated;
-                    return acc;
-                }, {
-                    total: 0,
-                });
-                return result;
-            }));
+            }            
+            setLeases(all);            
         })
     }, [ctx.googleSheetAuthInfo.googleSheetId]);
     
@@ -172,7 +116,7 @@ export function LeaseReport(props) {
                                                         <table className='table'>
                                                             <tbody>
                                                             <tr><td colSpan={2}> lease.totalPayments</td><td colSpan={2}> lease.totalMissing</td></tr>
-                                                                <tr><td colSpan={2}>{lease.totalPayments}</td><td colSpan={2}>{lease.totalMissing}</td></tr>
+                                                                <tr><td colSpan={2}>{lease.totalPayments}</td><td colSpan={2}>{lease.totalBalance}</td></tr>
                                                                 <tr><td>month</td><td>Paid</td><td>Accumulated</td><td>Should Accumlated</td></tr>
                                                                 {
                                                                     lease.monthlyInfo.map(info => {
