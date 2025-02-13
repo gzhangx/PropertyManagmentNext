@@ -105,9 +105,8 @@ function doReplace(text: string, house: HouseWithLease, tenants: ITenantInfo[], 
     const tags = parser(text, 0, 0);
     const monthlyInfo = house.leaseInfo.monthlyInfo;
     const output: string = tags.parts.reduce((acc: string, tag: TAG) => {
-        let accStr: string = acc;
         if (typeof tag === 'string') {
-            return accStr + tag;
+            return acc + tag;
         } else {
             switch (tag.tag) {
                 case '$LoopMonthly{':
@@ -156,24 +155,24 @@ function doReplace(text: string, house: HouseWithLease, tenants: ITenantInfo[], 
                         }
                     }
                     break;
-                case '$Date':
+                case '$Date{':
                     if (typeof tag.parts[0] === 'string') {
-                        accStr += moment().format(tag.parts[0]);
+                        acc += moment().format(tag.parts[0]);
                     } else {
                         logger(`Warning, ${tag.tag} has no formatting`);
-                        accStr += new Date().toISOString();
+                        acc += new Date().toISOString();
                     }                    
                     break;
                 case '$CurrentBalance':
                     const amt = monthlyInfo[0]?.balance?.toFixed(2);
-                    accStr += amt? '$'+amt:'';
+                    acc += amt? '$'+amt:'';
                     break;
                 case '$Renters':
-                    accStr += tenants.map(t => t.fullName).join(',');
+                    acc += tenants.map(t => t.fullName).join(',');
                     break;
             }
         }
-        return accStr;
+        return acc;
     }, '') as string;
     
     return output;
