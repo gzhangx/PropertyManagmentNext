@@ -122,6 +122,7 @@ export interface ILeaseInfo {
     tenant5: string;
     comment: string;
     monthlyRent: number;
+    contractDates: any;
 }
 
 export interface ITenantInfo {

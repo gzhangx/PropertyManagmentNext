@@ -1,15 +1,19 @@
 import React, {useEffect, useState} from 'react';
-import { fMoneyformat, useIncomeExpensesContext } from '../../states/PaymentExpenseState';
-import { MonthRange } from './monthRange';
-import { getPaymentsByMonthAddress, getMaintenanceData, IAmountAndPmtRecords } from './reportUtil';
-import moment from 'moment';
-//import {saveToGS} from './utils/updateGS';
-import { GetInfoDialogHelper } from '../../generic/basedialog'
-import { IHouseInfo, ILeaseInfo, IPayment } from '../../reportTypes';
+import { IHouseInfo, ILeaseInfo } from '../../reportTypes';
 import { getLeases} from '../../api'
-import { keyBy, orderBy, sortBy } from 'lodash';
 import { getLeaseUtilForHouse, ILeaseInfoWithPmtInfo } from '../../utils/leaseUtil';
 import { usePageRelatedContext } from '../../states/PageRelatedState';
+
+
+
+const LeaseContractDateTypesAry = ['onetimeRentAmount', 'newRentAmount', 'oneTimeRentAdjustment'] as const;
+type LeaseContractDateTypes = typeof LeaseContractDateTypesAry[number];
+type LeaseContractDate = {
+    type: LeaseContractDateTypes;
+    amount: number;
+}
+
+type ContractDates = LeaseContractDate[];
 
 
 //old, moved toautoAssignLeases
@@ -74,6 +78,19 @@ export function LeaseReport() {
         },
     ]
 
+    function updateLease(lease: ILeaseInfoWithPmtInfoWithHouseId) {
+        setLeases(orig => {
+            const newLeases = [...orig];
+            const ind = newLeases.findIndex(v => v.leaseID === lease.leaseID);
+            if (ind >= 0) {
+                newLeases[ind] = {
+                    ...lease,
+                }
+            }
+            return newLeases;
+        })
+    }
+
     //const houseById = keyBy(ctx.allHouses, h => h.houseID)
     return <div>
         
@@ -108,17 +125,11 @@ export function LeaseReport() {
                                                     const lt = await getLeaseUtilForHouse(lease.houseID);
                                                     const pmts = await lt.loadLeasePayments(lease);
                                                     const r: ILeaseInfoWithPmtInfo = lt.calculateLeaseBalances(lease, pmts, monthlyDueDate, new Date());
-                                                    setLeases(orig => {
-                                                        const newLeases = [...orig];
-                                                        const ind = newLeases.findIndex(v => v.leaseID === lease.leaseID);
-                                                        if (ind >= 0) {
-                                                            newLeases[ind] = {
-                                                                ...lease,
-                                                                ...r,
-                                                            }                                                            
-                                                        }
-                                                        return newLeases;
+                                                    updateLease({
+                                                        ...lease,
+                                                        ...r,
                                                     })
+                                                    
                                                     setLeaseExpanded(state => {                                                                                                 
                                                         return {
                                                             ...state,
