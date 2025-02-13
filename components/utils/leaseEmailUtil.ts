@@ -36,7 +36,7 @@ const verbs = [
     '$Balance',
     '$Renters',
     '$CurrentBalance',
-    '$Date',
+    '$Date{',
 ] as const;
 type TagNames = typeof verbs[number];
 type TAG = {
@@ -86,7 +86,7 @@ function parser(s: string, pos: number, level: number) {
                     pos = prt.pos;
                 }
             }
-        } else if (v === ENDMATCHCHAR) {
+        } else if (v === ENDMATCHCHAR && level !== 0) { //if level is 0, that is a bad match
             parts.push(curBuffer);
             break;
         } else {
