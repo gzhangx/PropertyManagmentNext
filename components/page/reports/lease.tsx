@@ -3,18 +3,41 @@ import { IHouseInfo, ILeaseInfo } from '../../reportTypes';
 import { getLeases} from '../../api'
 import { getLeaseUtilForHouse, ILeaseInfoWithPmtInfo } from '../../utils/leaseUtil';
 import { usePageRelatedContext } from '../../states/PageRelatedState';
+import { EditTextDropdown } from '../../generic/EditTextDropdown';
 
 
 
-const LeaseContractDateTypesAry = ['onetimeRentAmount', 'newRentAmount', 'oneTimeRentAdjustment'] as const;
+const LeaseContractDateTypesAry = ['onetimeRentAmount', 'newRentAmount', 'oneTimeRentAdjustment', ''] as const;
 type LeaseContractDateTypes = typeof LeaseContractDateTypesAry[number];
 type LeaseContractDate = {
     type: LeaseContractDateTypes;
+    date: string;
     amount: number;
 }
 
 type ContractDates = LeaseContractDate[];
 
+
+function getContractTypeSel() {
+    return [
+        {
+            label: '',
+            value: '',
+        },
+        {
+            label: 'One Time Rent',
+            value: 'onetimeRentAmount',
+        },
+        {
+            label: 'New Rent Amount',
+            value: 'newRentAmount',
+        },
+        {
+            label: 'Rent Adjustment',
+            value: 'oneTimeRentAdjustment',
+        },
+    ]
+}
 
 //old, moved toautoAssignLeases
 export function LeaseReport() {    
@@ -27,6 +50,14 @@ export function LeaseReport() {
     const [leaseExpanded, setLeaseExpanded] = useState<{ [key: string]: boolean }>({});
 
     const [contractDatesExpanded, setContractDatesExpanded] = useState<{ [key: string]: boolean }>({});
+
+    const [isAddNew, setIsAddNew] = useState(false);
+    const [newItem, setNewItem] = useState<LeaseContractDate & { strAmount: string; }>({
+        type: '',
+        date: '',
+        amount: 0,
+        strAmount: '',
+    });
     const monthlyDueDate = 5;
     useEffect(() => {
         getLeases().then(async lss => {
@@ -186,11 +217,42 @@ export function LeaseReport() {
                                                         <h6 className="m-0 font-weight-bold text-primary">Details</h6>
                                                     </div>
                                                     <div className="card-body">
+                                                        <button className='btn btn-primary' onClick={() => {
+                                                            setIsAddNew(!isAddNew);
+                                                        }}>Add new</button>
                                                         <table className='table'>
                                                             <tbody>
-                                                                <tr><td colSpan={2}> lease.totalPayments</td><td colSpan={2}> lease.totalMissing</td></tr>
-                                                                <tr><td colSpan={2}>{lease.totalPayments}</td><td colSpan={2}>{lease.totalBalance}</td></tr>
-                                                                <tr><td>month</td><td>Paid</td><td>Accumulated</td><td>Should Accumlated</td></tr>                                                                
+                                                                <tr><td>Type</td><td>Date</td><td>Amount</td></tr>
+                                                                {
+                                                                    ((lease.contractDates || []) as LeaseContractDate[]).map(d => {
+                                                                        return <tr><td>{d.type}</td><td>{d.date}</td><td>{ d.amount}</td><td>Edit</td><td>Delete</td></tr>
+                                                                    })
+                                                                }
+                                                                {
+                                                                    isAddNew && <tr>
+                                                                        <td><EditTextDropdown items={getContractTypeSel()} onSelectionChanged={e => {
+                                                                            setNewItem({
+                                                                                ...newItem,
+                                                                                type: e.value,
+                                                                            })
+                                                                        }}></EditTextDropdown></td>
+                                                                        <td><input value={newItem.date} onChange={e => {
+                                                                            setNewItem({
+                                                                                ...newItem,
+                                                                                date: e.target.value,
+                                                                            })
+                                                                        }}></input></td>
+                                                                        <td><input value={newItem.amount} onChange={e => {
+                                                                            setNewItem({
+                                                                                ...newItem,
+                                                                                strAmount: e.target.value,
+                                                                                amount: parseFloat(e.target.value)
+                                                                            })
+                                                                        }}></input></td>
+                                                                        <td>Submit</td>
+                                                                        <td>Cancel</td>
+                                                                    </tr>
+                                                                }
                                                             </tbody>
                                                         </table>
                                                     </div>
