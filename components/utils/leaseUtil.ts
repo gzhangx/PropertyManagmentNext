@@ -82,14 +82,21 @@ export async function getLeaseUtilForHouse(houseID: string) {
         const lastDueMonth = now.isAfter(dueDate) ? now : now.add(-1, 'month').startOf('month');
         const monthInfoLookup: { [mon: string]: IPaymentOfMonth } = {};
         const YYYYMMFormat = 'YYYY-MM';
-        const firstMonthStr = curMon.format(YYYYMMFormat);
-        const finalMonthStr = lastDueMonth.format(YYYYMMFormat);
-        const terminationDate = l.terminationDate ? moment(l.terminationDate) : null;
+        //const firstMonthStr = curMon.format(YYYYMMFormat);
+        let finalMonthStr = '';  //lastDueMonth.format(YYYYMMFormat);
+        //const terminationDate = l.terminationDate ? moment(l.terminationDate) : null;
         while (curMon.isSameOrBefore(lastDueMonth)) {
             const month = curMon.format(YYYYMMFormat);
-            if (!terminationDate || curMon.isSameOrBefore(terminationDate)) {
-                shouldAccumatled = round2(shouldAccumatled + l.monthlyRent);
+            const checkTerminated = (str: string) => str && curMon.isSameOrBefore(moment(str));
+            const checkEnded = (str: string) => str && curMon.isAfter(moment(str));
+            const isTerminated = checkTerminated(l.terminationDate);
+            const ended = checkEnded(l.endDate);
+            
+            if (isTerminated || ended) {
+                break;
             }
+            shouldAccumatled = round2(shouldAccumatled + l.monthlyRent);
+            
             const info: IPaymentOfMonth = {
                 month,
                 accumulated: 0,
@@ -98,6 +105,7 @@ export async function getLeaseUtilForHouse(houseID: string) {
                 balance: 0,
             }
             monthInfoLookup[month] = info;
+            finalMonthStr = month;
             monthlyInfo.push(info);
             curMon = curMon.add(1, 'month');
         }
@@ -107,13 +115,19 @@ export async function getLeaseUtilForHouse(houseID: string) {
                 receivedDate: moment.utc(p.receivedDate).format('YYYY-MM-DD HH:mm:ss'),  //TODO change this to db date utc
             }
         }), p => p.receivedDate, 'asc');
+        function strToNum(str: string) {
+            return parseInt(str.replace(/\D/g,''));
+        }
         const result: ILeaseInfoWithPmtInfo = lps.reduce((acc, pmt) => {
             if (pmt.paymentTypeName !== 'Rent') return acc;
             const paymentMonth = pmt.receivedDate.substring(0, 7);
-            if (paymentMonth <= finalMonthStr) {
+            if (finalMonthStr && strToNum(paymentMonth) <= strToNum(finalMonthStr)) {
                 acc.totalPayments = round2(acc.totalPayments + pmt.receivedAmount);
                 acc.payments.push(pmt);
-                const info = monthInfoLookup[paymentMonth] || monthInfoLookup[firstMonthStr];
+                const info = monthInfoLookup[paymentMonth]; // || monthInfoLookup[firstMonthStr];
+                if (!info) {
+                    console.log('Cant find info for ', paymentMonth, monthInfoLookup, 'finalMonthStr', finalMonthStr, 'patyMtntmonth', paymentMonth, strToNum(paymentMonth), 'strToNum(finalMonthStr)', strToNum(finalMonthStr))
+                }
                 info.paid = round2(info.paid + pmt.receivedAmount);                
                 info.accumulated = acc.totalPayments;
                 info.balance = round2(info.shouldAccumatled - info.accumulated);
