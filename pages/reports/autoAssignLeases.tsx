@@ -202,7 +202,13 @@ export default function AutoAssignLeases() {
                                                 <h6 className="m-0 font-weight-bold text-primary">Details</h6>
                                                 <Link href='#' onClick={async e => {
 
-                                                    const formatedData = await formateEmail(mainCtx, house);
+                                                    const formatedData = await formateEmail(mainCtx, house, err => {
+                                                        mainCtx.topBarErrorsCfg.setTopBarItems(itm => {
+                                                            return [...itm, {
+                                                                text: err,
+                                                            }]
+                                                        })
+                                                    });
 //                                                     await mainCtx.loadForeignKeyLookup('tenantInfo');
 
 //                                                     let last2 = '';

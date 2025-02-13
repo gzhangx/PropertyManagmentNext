@@ -1,7 +1,8 @@
 import moment from 'moment';
 import { getUserOptions } from '../api'
-import { IHouseInfo, ILeaseInfo, IPageRelatedState } from '../reportTypes';
+import { IHouseInfo, ILeaseInfo, IPageRelatedState, ITenantInfo } from '../reportTypes';
 import { ILeaseInfoWithPmtInfo } from './leaseUtil';
+import { IStringLogger } from '../types';
 
 
 export const paymentEmailSubject = 'paymentEmailSubject';
@@ -24,68 +25,171 @@ export type HouseWithLease = IHouseInfo & {
 }
 
 
-function doReplace(text: string, house: HouseWithLease) {
-    function doDate(inp: string, ary: RegExpMatchArray | null, date: moment.Moment) {
-        if (ary === null) return inp;
-        //0 is original str, 1 is what's inside date, 2 is the rest of string, index is where to cut to get first part
-        return inp.substring(0, ary.index) + moment().format(ary[1]) + ary[2];
-    }
-    function doDirectReplace(inp: string, reg: RegExp, replaceBy: string) {
-        while (true) {
-            const mc = inp.match(reg);
-            if (!mc) break;
-            inp = inp.substring(0, mc.index) + replaceBy + mc[1];
+
+const START = '$';
+const MATCHCHAR = '{';
+const ENDMATCHCHAR = '}'
+const verbs = [
+    '$LoopMonthly{',
+    '$PaymentDate{',
+    '$Paid',
+    '$Balance',
+    '$Renters',
+    '$CurrentBalance',
+    '$Date',
+] as const;
+type TagNames = typeof verbs[number];
+type TAG = {
+    tag: TagNames;
+    parts: (string | TAG)[];
+}
+function parser(s: string, pos: number, level: number) {
+    const parts: (string | TAG)[] = [];
+
+    
+    let curBuffer = '';
+    let inSTART = false;
+    let lastChar = '';
+    for (; pos < s.length; pos++) {
+        const v = s[pos];
+        if (lastChar === '\\') {
+            if (v === '{' || v === '}') {
+                lastChar = '';
+                curBuffer += v;
+                continue;
+            }
+            curBuffer += lastChar;
+            lastChar = '';
         }
-        return inp;
-    }
-    const matches: {
-        action: (inp: string) => string,
-    }[] = [
-            {
-                action: (inp) => {
-                    const ary = inp.match(/\$DATE\((.+)\)(.*)/);
-                    while (true) {
-                        const res = doDate(inp, ary, moment());
-                        if (res === inp) return res;
-                        inp = res;
-                    }
-                },
-            },
-            {
-                action: (inp) => {
-                    const ary = inp.match(/\$LOOPMONTHLY\((\d+)[ \t]*,(.+)\)(.*)/);
-                    if (ary === null) return inp;
-                    //0 origina, 1 is number of repeats, 2 content, 3 rest index: start
-                    const pre = inp.substring(0, ary.index);
-                    const content = ary[2];
-                    const post = ary[3];
-                    const nums = parseInt(ary[1]);
-                    const lines: string[] = [];
-                    for (let i = 0; i < nums; i++) {                        
-                        const m = house.leaseInfo.monthlyInfo[i];                        
-                        if (!m) break;
-                        let thisContent = content;
-                        while (true) {
-                            const mc = thisContent.match(/\$PDATE\((.+)\)(.+)/)
-                            if (!mc) break;
-                            thisContent = doDate(thisContent, mc, moment(m.month+'-01'));
-                        }
-                        thisContent = doDirectReplace(thisContent, /\$PAID(.+)/, '$' + m.paid.toFixed(2));
-                        thisContent = doDirectReplace(thisContent, /\$BALANCE(.+)/, '$' + m.balance.toFixed(2));
-                        lines.push(thisContent);
-                    }
-                    return pre + lines.join('\n') + post;
+        if (v === '\\') {
+            lastChar = v;
+            continue;
+        }
+        if (v === START) {
+            inSTART = true;
+            parts.push(curBuffer);
+            curBuffer = v;
+        } else if (inSTART) {
+            curBuffer += v;
+            const who = verbs.indexOf(curBuffer as TagNames);
+            if (who >= 0) {
+                const tag: TAG = {
+                    tag: curBuffer as TagNames,
+                    parts: [],
+                }
+                curBuffer = '';
+                inSTART = false;
+                parts.push(tag);
+                if (tag.tag.endsWith(MATCHCHAR)) {
+                    const prt = parser(s, pos + 1, level + 1);
+                    tag.parts = prt.parts;
+                    pos = prt.pos;
                 }
             }
-        ];
-    for (const m of matches) {
-        text = text.split('\n').map(t => {
-            return m.action(t);
-        }).join('\n')        
+        } else if (v === ENDMATCHCHAR) {
+            parts.push(curBuffer);
+            break;
+        } else {
+            curBuffer += v;
+        }
+        lastChar = v;
     }
-    return text;
+    return {
+        parts,
+        pos,
+    }
 }
-export async function formateEmail(mainCtx: IPageRelatedState, house: HouseWithLease) {
+
+
+function doReplace(text: string, house: HouseWithLease, tenants: ITenantInfo[],  logger: IStringLogger) {
+    const tags = parser(text, 0, 0);
+    const monthlyInfo = house.leaseInfo.monthlyInfo;
+    const output: string = tags.parts.reduce((acc: string, tag: TAG) => {
+        let accStr: string = acc;
+        if (typeof tag === 'string') {
+            return accStr + tag;
+        } else {
+            switch (tag.tag) {
+                case '$LoopMonthly{':
+                    if (!tag.parts.length) {
+                        logger(`Warning, ${tag.tag} expecting contents`);                        
+                    } else {
+                        const p0 = tag.parts[0];
+                        if (typeof p0 !== 'string') {
+                            logger(`Warning, ${tag.tag} expecting number, as first parameter`);
+                        } else {
+                            const matched = p0.match(/(\d+)[ ]*,(.*)/);
+                            if (!matched) {
+                                logger(`Warning, ${tag.tag} expecting number, as first parameter`);
+                            } else {
+                                const loops = parseInt(matched[1]);
+                                acc += matched[2];                                
+                                for (let i = 0; i < loops; i++) {
+                                    const curMonthlyInfo = monthlyInfo[i];
+                                    if (!curMonthlyInfo) break;
+                                    acc += matched[2];
+                                    for (let pi = 1; pi < tag.parts.length; pi++) {
+                                        const ptg = tag.parts[pi]; 
+                                        if (typeof ptg === 'string') {
+                                            acc += ptg;
+                                        } else {
+                                            switch (ptg.tag) {
+                                                case '$Balance':
+                                                    acc += '$'+curMonthlyInfo.balance.toFixed(2);
+                                                    break;
+                                                case '$Paid':
+                                                    acc += '$' + curMonthlyInfo.paid.toFixed(2);
+                                                    break;
+                                                case '$PaymentDate{':
+                                                    if (ptg.parts.length && typeof ptg.parts[0] === 'string') {
+                                                        acc+= moment(curMonthlyInfo.month+'-01').format(ptg.parts[0])
+                                                    } else {
+                                                        logger(`Warning, ${ptg.tag} no format specified`)
+                                                        acc += curMonthlyInfo.month;
+                                                    }
+                                                    break;
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    break;
+                case '$Date':
+                    if (typeof tag.parts[0] === 'string') {
+                        accStr += moment().format(tag.parts[0]);
+                    } else {
+                        logger(`Warning, ${tag.tag} has no formatting`);
+                        accStr += new Date().toISOString();
+                    }                    
+                    break;
+                case '$CurrentBalance':
+                    const amt = monthlyInfo[0]?.balance?.toFixed(2);
+                    accStr += amt? '$'+amt:'';
+                    break;
+                case '$Renters':
+                    accStr += tenants.map(t => t.fullName).join(',');
+                    break;
+            }
+        }
+        return accStr;
+    }, '') as string;
+    
+    return output;
+}
+
+async function getTenantsForHouse(mainCtx: IPageRelatedState, house: HouseWithLease) {
+    const mailToIds = [];
+    for (let i = 1; i <= 5; i++) {
+        const id = house.lease['tenant' + i];
+        if (id) mailToIds.push(id);
+    }
+    const tenantMaps = mainCtx.foreignKeyLoopkup.get('tenantInfo');
+    const tenants = mailToIds.map(id => (tenantMaps.idDesc.get(id) as unknown as ITenantInfo)).filter(x=>x);
+    return tenants;
+}
+export async function formateEmail(mainCtx: IPageRelatedState, house: HouseWithLease, logger: IStringLogger) {
     const template = await getPaymentEmailConfig();
 
     await mainCtx.loadForeignKeyLookup('tenantInfo');
@@ -96,16 +200,18 @@ export async function formateEmail(mainCtx: IPageRelatedState, house: HouseWithL
         if (!inf) break;
         last2 += `${inf.month}  Balance ${inf.balance}  Paid: ${inf.paid}\n`
     }
-    const mailToIds = [];
-    for (let i = 1; i <= 5; i++) {
-        const id = house.lease['tenant' + i];
-        if (id) mailToIds.push(id);
-    }
-    const tenantMaps = mainCtx.foreignKeyLoopkup.get('tenantInfo');
-    const mailtos = mailToIds.map(id => (tenantMaps.idDesc.get(id) as any)?.email || `UnableToGetName${id}`).join(';');
+    // const mailToIds = [];
+    // for (let i = 1; i <= 5; i++) {
+    //     const id = house.lease['tenant' + i];
+    //     if (id) mailToIds.push(id);
+    // }
+    const tenants = await getTenantsForHouse(mainCtx, house);
+    //const tenantMaps = mainCtx.foreignKeyLoopkup.get('tenantInfo');
+    //const mailtos = mailToIds.map(id => (tenantMaps.idDesc.get(id) as any)?.email || `UnableToGetName${id}`).join(';');
+    const mailtos = tenants.map(t => t.email);
 
-    const subject = encodeURIComponent(doReplace(template.subject, house));
-    const body = encodeURIComponent(doReplace(template.text, house));
+    const subject = encodeURIComponent(doReplace(template.subject, house, tenants,logger));
+    const body = encodeURIComponent(doReplace(template.text, house, tenants,logger));
     
     return {
         subject, 

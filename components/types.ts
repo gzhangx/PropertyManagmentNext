@@ -97,3 +97,6 @@ export type FieldValueType = string | number | null;
 
 
 export type AllDateTypes = string | Date | moment.Moment;
+
+
+export type IStringLogger = (s: string) => void;
