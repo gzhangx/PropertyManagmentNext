@@ -250,7 +250,9 @@ export function LeaseReport() {
                                                                             })
                                                                         }}></input></td>
                                                                         <td>Submit</td>
-                                                                        <td>Cancel</td>
+                                                                        <td><button className='btn btn-primary' onClick={() => {
+                                                                            setIsAddNew(false);
+                                                                        }}>Cancel</button></td>
                                                                     </tr>
                                                                 }
                                                             </tbody>
