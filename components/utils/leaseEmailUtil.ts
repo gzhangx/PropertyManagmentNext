@@ -94,6 +94,9 @@ function parser(s: string, pos: number, level: number) {
         }
         lastChar = v;
     }
+    if (curBuffer) {
+        parts.push(curBuffer);
+    }
     return {
         parts,
         pos,
