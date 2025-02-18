@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useContext } from 'react';
+import React, { useState, useEffect, useContext, JSX } from 'react';
 import { getHouseInfo, getModel, getSheetAuthInfo, IGoogleSheetAuthInfo, sqlGet } from '../api';
 
 import { AllDateTypes, IDBFieldDef, IPagePropsByTable, TableNames } from '../types'
@@ -47,6 +47,9 @@ export function PageRelatedContextWrapper(props: {
 
     const [models, setModels] = useState<IModelsDict>(new Map());
 
+    const [loadingDlgContent, setLoadingDlgContent] = useState<string | JSX.Element | null>(null);
+
+    const [loadingDlgTitle, setLoadingDlgTitle] = useState<string>('Loading');
 
     const [foreignKeyLoopkup, setForeignKeyLookup] = useState<IForeignKeyLookupMap>(new Map());
 
@@ -255,6 +258,13 @@ export function PageRelatedContextWrapper(props: {
                 return utc.toString();
             }
         },
+
+        loadingDlgContent,
+        loadingDlgTitle,
+        showLoadingDlg: (cnt, title) => {
+            setLoadingDlgContent(cnt);
+            if (title !== loadingDlgTitle && title !== undefined) setLoadingDlgTitle(title);
+        }
     };
     return <PageRelatedContext.Provider value={pageCtx}>
         { props.children}

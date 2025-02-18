@@ -3,6 +3,7 @@ import { IGoogleSheetAuthInfo } from './api';
 import { IEditTextDropdownItem } from './generic/GenericDropdown';
 import { ItemTypeDict } from './uidatahelpers/datahelperTypes';
 import { NotifyIconItem } from './page/tinyIconNotify';
+import { JSX } from 'react';
 
 export interface IPayment {
     address: string;
@@ -259,6 +260,10 @@ export interface IPageRelatedState {
     browserTimeToUTCDBTime: (bt: AllDateTypes) => string;
     utcDbTimeToZonedTime: (utc: AllDateTypes, format?: 'YYYY-MM-DD') => string;
     
+
+    showLoadingDlg: (content: string | JSX.Element, title?: string) => void;
+    loadingDlgContent: string | JSX.Element | null;
+    loadingDlgTitle: string;
 }
 
 export interface IIncomeExpensesContextValue extends IPageRelatedState {

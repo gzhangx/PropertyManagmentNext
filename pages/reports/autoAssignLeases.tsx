@@ -20,10 +20,12 @@ export default function AutoAssignLeases() {
     const [processingHouseId, setProcessingHouseId] = useState('');
     const [disableProcessing, setDisableProcessing] = useState(false);
 
+    let fixingAllHouses = false;
     const [leaseExpanded, setLeaseExpanded] = useState<{ [key: string]: boolean }>({});
     async function fixHouses(house: HouseWithLease) {
         const houseID = house.houseID;
         setProcessingHouseId(houseID);
+        mainCtx.showLoadingDlg('Fixing ' + house.address);
         const finder = await getLeaseUtilForHouse(houseID);
         const all = await finder.matchAndAddLeaseToTransactions((pos, pmt) => {
             if (!pmt) {
@@ -66,6 +68,8 @@ export default function AutoAssignLeases() {
     }
 
     async function processAllHouses() {
+        fixingAllHouses = true;
+        mainCtx.showLoadingDlg('Fixing houses');
         setTopBarMessages([
             { header: 'Process all' }
         ]);
@@ -77,6 +81,8 @@ export default function AutoAssignLeases() {
         }
         setHouses(houses);
         setDisableProcessing(false);
+        mainCtx.showLoadingDlg(null);
+        fixingAllHouses = false;
     }
     useEffect(() => {
         setTopBarMessages([
@@ -181,15 +187,23 @@ export default function AutoAssignLeases() {
                     houses.map(house => {
                         return <><tr>
                             <td>{house.address} </td><td>
-                                <button className='btn btn-primary' onClick={()=>processOneHouse(house, true)}>E</button>
+                                <button className='btn btn-primary' onClick={() => {
+                                    if (!house.leaseInfo) {
+                                        mainCtx.showLoadingDlg('Fixing');
+                                    }
+                                    processOneHouse(house, true).then(() => {
+                                        mainCtx.showLoadingDlg(null);
+                                    })                                   
+                                 }}>E</button>
                             </td>
                             <td>{house.leaseInfo? house.leaseInfo.totalBalance : 'NA'}</td><td>{house.ownerName}</td><td className={processingHouseId === house.houseID ? 'bg-warning' : ''}>{house.houseID}</td>
                             <td><button disabled={disableProcessing} className='btn btn-primary'
                             onClick={() => {
                                 setDisableProcessing(true);
-                                fixHouses(house).then(() => {
+                                fixHouses(house).then(() => {                                    
                                     setHouses(houses);
                                     setDisableProcessing(false);
+                                    mainCtx.showLoadingDlg(null);
                                 })
                             }}
                             >Fix</button></td>                            

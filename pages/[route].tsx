@@ -12,6 +12,7 @@ import { sideBarContentLookup} from '../components/rootContents'
 import { useEffect } from 'react'
 import { NAVPrefix } from '../components/nav/consts'
 import { usePageRelatedContext } from '../components/states/PageRelatedState'
+import { CloseableDialog } from '../components/generic/basedialog'
 export default function () {
     const router = useRouter()    
     const rs = useRootPageContext();
@@ -34,6 +35,20 @@ export default function () {
     }, [currentPath]);    
 
     return <div>
+        <CloseableDialog show={!!mainCtx.loadingDlgContent} title={ mainCtx.loadingDlgTitle } setShow={() => {
+            mainCtx.showLoadingDlg(null);
+        }}>
+            {
+                typeof mainCtx.loadingDlgContent === 'string' ?
+                <div className="modal-body">
+                    <div>
+                        {mainCtx.loadingDlgContent}
+                    </div>
+                    </div>
+                    :
+                    mainCtx.loadingDlgContent
+            }
+                </CloseableDialog>
         <Dashboard/>
     </div>
 }
