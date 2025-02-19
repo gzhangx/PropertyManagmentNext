@@ -489,3 +489,13 @@ export async function updateUserOptions(name: string, value: string) {
         data: value,
     }, true, true);
 }
+
+
+export async function sendEmail(to: string[], subject: string, text?: string, html?: string) {
+    return await doPost('util/sendMail', {
+        to,
+        subject,
+        text,
+        html,
+    });
+}

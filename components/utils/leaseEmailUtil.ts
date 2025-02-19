@@ -7,13 +7,20 @@ import { IStringLogger } from '../types';
 
 export const paymentEmailSubject = 'paymentEmailSubject';
 export const paymentEmailText = 'paymentEmailText';
+export const googleSmtpUser = 'googleSmtpUser';
+export const googleSmtpPass = 'googleSmtpPass';
 export async function getPaymentEmailConfig() {
     return getUserOptions([]).then(res => {
         const subject = res.find(r => r.id === paymentEmailSubject)?.data || '';
         const text = res.find(r => r.id === paymentEmailText)?.data || '';
+
+        const user = res.find(r => r.id === googleSmtpUser)?.data || '';
+        const pass = res.find(r => r.id === googleSmtpPass)?.data || '';
         return {
             subject,
             text,
+            user,
+            pass
         }
     })
 }
@@ -212,8 +219,8 @@ export async function formateEmail(mainCtx: IPageRelatedState, house: HouseWithL
     //const mailtos = mailToIds.map(id => (tenantMaps.idDesc.get(id) as any)?.email || `UnableToGetName${id}`).join(';');
     const mailtos = tenants.map(t => t.email);
 
-    const subject = encodeURIComponent(doReplace(template.subject, house, tenants,logger));
-    const body = encodeURIComponent(doReplace(template.text, house, tenants,logger));
+    const subject = (doReplace(template.subject, house, tenants,logger));
+    const body = (doReplace(template.text, house, tenants,logger));
     
     return {
         subject, 

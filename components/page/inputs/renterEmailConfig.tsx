@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import * as api from '../../api'
-import { getPaymentEmailConfig, paymentEmailSubject, paymentEmailText } from "../../utils/leaseEmailUtil";
+import { getPaymentEmailConfig, googleSmtpPass, googleSmtpUser, paymentEmailSubject, paymentEmailText } from "../../utils/leaseEmailUtil";
 
 
 
@@ -8,6 +8,9 @@ export function RenterEmailConfig() {
     const [configData, setConfigData] = useState({
         subject: '',
         text: '',
+
+        user: '',
+        pass: '',
     });
     useEffect(() => {
         getPaymentEmailConfig().then(res => {            
@@ -50,11 +53,39 @@ export function RenterEmailConfig() {
                                     }}
                                 />
                             </div>
+
+                            <div className="form-group">
+                                <input type='text' className="form-control "
+                                    name="txtUser" placeholder="User"
+                                    value={configData.user}
+                                    onChange={e => {
+                                        configData.user = e.target.value;
+                                        setConfigData({
+                                            ...configData,
+                                        })
+                                    }}
+                                />
+                            </div>
+
+                            <div className="form-group">
+                                <input type='text' className="form-control "
+                                    name="txtPass" placeholder="Pass"
+                                    value={configData.pass}
+                                    onChange={e => {
+                                        configData.pass = e.target.value;
+                                        setConfigData({
+                                            ...configData,
+                                        })
+                                    }}
+                                />
+                            </div>
                             <a href="index.html" className="btn btn-primary btn-user btn-block"
                                 onClick={(async e => {
                                     e.preventDefault();
                                     await api.updateUserOptions(paymentEmailSubject, configData.subject);
                                     await api.updateUserOptions(paymentEmailText, configData.text);
+                                    await api.updateUserOptions(googleSmtpUser, configData.user);
+                                    await api.updateUserOptions(googleSmtpPass, configData.pass);
                                 })}
                             >Save
                             </a>

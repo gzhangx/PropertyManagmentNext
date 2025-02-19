@@ -5,6 +5,7 @@ import { useEffect, useState } from 'react';
 import { usePageRelatedContext } from '../../components/states/PageRelatedState';
 import Link from 'next/link';
 import { formateEmail, HouseWithLease } from '../../components/utils/leaseEmailUtil';
+import { CloseableDialog } from '../../components/generic/basedialog';
 
 
 export function getLeasePage() {
@@ -22,6 +23,12 @@ export default function AutoAssignLeases() {
 
     let fixingAllHouses = false;
     const [leaseExpanded, setLeaseExpanded] = useState<{ [key: string]: boolean }>({});
+
+    const [emailPreview, setEmailPreview] = useState({
+        subject: '',
+        to: '',
+        html: '',
+    })
     async function fixHouses(house: HouseWithLease) {
         const houseID = house.houseID;
         setProcessingHouseId(houseID);
@@ -172,6 +179,49 @@ export default function AutoAssignLeases() {
     }
     
     return <div>
+        <CloseableDialog show={!!emailPreview.html} setShow={() => {
+            setEmailPreview({
+                to: '',
+                html: '',
+                subject: '',
+            });
+        }}>
+
+                <div className="container-fluid">
+                        <div className="row">
+                            <div className="card bg-primary text-white shadow">
+                            <div className="card-body">
+                                <input type='text'
+                                    className="form-control "
+                                    placeholder='Email To'
+                                    size={emailPreview.to.length}
+                                    value={emailPreview.to} onChange={e => {
+                                    setEmailPreview(state => {
+                                        return {
+                                            ...state,
+                                            to: e.target.value,
+                                        }
+                                    })
+                                }}></input>                                    
+                                    <div className="text-white-50 small">to</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div className="row">
+                            <div className="card bg-success text-white shadow">
+                                <div className="card-body">
+                                    { emailPreview.subject}
+                                    <div className="text-white-50 small">subject</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div className="row">
+                            <div className="card bg-info text-white shadow">
+                                <div dangerouslySetInnerHTML={{ __html: emailPreview.html }}></div>
+                            </div>
+                        </div>                        
+                    </div>
+        </CloseableDialog>
         <table className="table">
             <thead>
                 <tr>
@@ -245,8 +295,15 @@ export default function AutoAssignLeases() {
 // Thank you for your payment, Below is your summary
 // ${last2}`);
                                                     //                                                     const mailto = `mailto:${mailtos}?subject=${subject}&body=${body}`;
-                                                    const mailto = `mailto:${formatedData.mailtos}?subject=${formatedData.subject}&body=${formatedData.body}`;
-                                                    window.location.href = mailto;                                                    
+                                                    //const mailto = `mailto:${formatedData.mailtos}?subject=${formatedData.subject}&body=${formatedData.body}`;
+                                                    //window.location.href = mailto;
+
+                                                    setEmailPreview({
+                                                        to: formatedData.mailtos.join(','),
+                                                        subject: formatedData.subject,
+                                                        html: formatedData.body,
+                                                    })
+                                                    //await api.sendEmail(formatedData.mailtos, formatedData.subject, formatedData.body);
                                                     e.preventDefault();
                                                 }}>Email</Link>
                                         </div>
