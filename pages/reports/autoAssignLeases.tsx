@@ -28,6 +28,7 @@ export default function AutoAssignLeases() {
         subject: '',
         to: '',
         html: '',
+        edit: false,
     })
     async function fixHouses(house: HouseWithLease) {
         const houseID = house.houseID;
@@ -184,6 +185,7 @@ export default function AutoAssignLeases() {
             to: '',
             html: '',
             subject: '',
+            edit: false,
         });
     };
 
@@ -197,6 +199,14 @@ export default function AutoAssignLeases() {
                 <button type="button" className="btn btn-secondary" data-dismiss="modal" onClick={async () => {
                     await api.sendEmail(emailPreview.to.split(','), emailPreview.subject, emailPreview.html);
                 }}>Send</button>
+                <button type="button" className="btn btn-secondary" data-dismiss="modal" onClick={async () => {
+                    setEmailPreview(state => {
+                        return {
+                            ...state,
+                            edit: !emailPreview.edit,
+                        }
+                    })
+                }}>{ emailPreview.edit? 'Stop Edit': 'Edit'}</button>
                 <button type="button" className="btn btn-secondary" data-dismiss="modal" onClick={closePreview}>Close</button>
             </div>}
         >
@@ -216,7 +226,7 @@ export default function AutoAssignLeases() {
                                             to: e.target.value,
                                         }
                                     })
-                                }}></input>                                    
+                                }}></input>
                                     <div className="text-white-50 small">to</div>
                                 </div>
                             </div>
@@ -224,14 +234,37 @@ export default function AutoAssignLeases() {
                         <div className="row">
                             <div className="card bg-success text-white shadow">
                                 <div className="card-body">
-                                    { emailPreview.subject}
+                                {emailPreview.edit ? <input type='text'
+                                    className="form-control "
+                                    placeholder='Subject'
+                                    size={emailPreview.subject.length}
+                                    value={emailPreview.subject} onChange={e => {
+                                        setEmailPreview(state => {
+                                            return {
+                                                ...state,
+                                                subject: e.target.value,
+                                            }
+                                        })
+                                    }}></input> : emailPreview.subject}
                                     <div className="text-white-50 small">subject</div>
                                 </div>
                             </div>
                         </div>
                         <div className="row">
-                            <div className="card bg-info text-white shadow">
-                                <div dangerouslySetInnerHTML={{ __html: emailPreview.html }}></div>
+                        <div className="card bg-info text-white shadow">
+                            {emailPreview.edit ? <textarea rows={10} cols={100}
+                                value={emailPreview.html}
+                                onChange={e => {                                    
+                                    setEmailPreview(state => {
+                                        return {
+                                            ...state,
+                                            html: e.target.value,
+                                        }
+                                    })
+                                }}
+                            />
+                                : <div dangerouslySetInnerHTML={{ __html: emailPreview.html }}></div>}
+                                
                             </div>
                         </div>                        
                 </div>
@@ -317,6 +350,7 @@ export default function AutoAssignLeases() {
                                                         to: formatedData.mailtos.join(','),
                                                         subject: formatedData.subject,
                                                         html: formatedData.body,
+                                                        edit: false,
                                                     })
                                                     //await api.sendEmail(formatedData.mailtos, formatedData.subject, formatedData.body);
                                                     e.preventDefault();
