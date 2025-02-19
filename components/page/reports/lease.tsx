@@ -79,6 +79,8 @@ export function LeaseReport() {
                     payments: [],
                     totalBalance: 0,
                     totalPayments: 0,
+                    lastPaymentAmount: 0,
+                    lastPaymentDate: '',
                 }
             }));
         });
