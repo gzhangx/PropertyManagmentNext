@@ -26,6 +26,8 @@ export interface ILeaseInfoWithPmtInfo {
     totalBalance: number;
     payments: IPaymentForLease[];
     monthlyInfo: IPaymentOfMonth[];
+    lastPaymentDate: string;
+    lastPaymentAmount: number;
 }
 
 export async function getLeaseUtilForHouse(houseID: string) {
@@ -122,6 +124,10 @@ export async function getLeaseUtilForHouse(houseID: string) {
             if (pmt.paymentTypeName !== 'Rent') return acc;
             const paymentMonth = pmt.receivedDate.substring(0, 7);
             if (finalMonthStr && strToNum(paymentMonth) <= strToNum(finalMonthStr)) { //issue with firefox
+                if (!acc.lastPaymentAmount) {
+                    acc.lastPaymentDate = pmt.receivedDate;
+                    acc.lastPaymentAmount = pmt.receivedAmount;
+                }
                 acc.totalPayments = round2(acc.totalPayments + pmt.receivedAmount);
                 acc.payments.push(pmt);
                 const info = monthInfoLookup[paymentMonth]; // || monthInfoLookup[firstMonthStr];
@@ -140,6 +146,8 @@ export async function getLeaseUtilForHouse(houseID: string) {
             totalBalance: 0,
             payments: [],
             monthlyInfo,
+            lastPaymentDate: '',
+            lastPaymentAmount: 0,
         });
         result.monthlyInfo.reduce((acc, mon) => {            
             if (!mon.accumulated) mon.accumulated = acc.last.accumulated;

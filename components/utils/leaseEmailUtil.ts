@@ -44,6 +44,8 @@ const verbs = [
     '$Renters',
     '$CurrentBalance',
     '$Date{',
+    '$LastPaymentDate{',
+    '$LastPaymentAmount',
 ] as const;
 type TagNames = typeof verbs[number];
 type TAG = {
@@ -174,11 +176,26 @@ function doReplace(text: string, house: HouseWithLease, tenants: ITenantInfo[], 
                     }                    
                     break;
                 case '$CurrentBalance':
-                    const amt = monthlyInfo[0]?.balance?.toFixed(2);
-                    acc += amt? '$'+amt:'';
+                    {
+                        const amt = monthlyInfo[0]?.balance?.toFixed(2);
+                        acc += amt ? '$' + amt : '';
+                    }
                     break;
                 case '$Renters':
                     acc += tenants.map(t => t.fullName).join(',');
+                    break;
+                case '$LastPaymentDate{':
+                    if (typeof tag.parts[0] === 'string') {
+                        acc += moment(house.leaseInfo.lastPaymentDate).format(tag.parts[0]);
+                    } else {
+                        acc += moment(house.leaseInfo.lastPaymentDate).format('YYYY-MM-DD');
+                    }
+                    break;
+                case '$LastPaymentAmount':
+                    {
+                        const lamt = house.leaseInfo.lastPaymentAmount;
+                        acc += lamt ? '$' + lamt : '';
+                    }
                     break;
             }
         }
