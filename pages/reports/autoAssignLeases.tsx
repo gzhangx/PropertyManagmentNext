@@ -196,7 +196,7 @@ export default function AutoAssignLeases() {
             footer={<div className="modal-footer">
                 <button type="button" className="btn btn-secondary" data-dismiss="modal" onClick={async () => {
                     await api.sendEmail(emailPreview.to.split(','), emailPreview.subject, emailPreview.html);
-                }}>Close</button>
+                }}>Send</button>
                 <button type="button" className="btn btn-secondary" data-dismiss="modal" onClick={closePreview}>Close</button>
             </div>}
         >
