@@ -5,12 +5,13 @@ interface IGenericDialogProps {
     children:any;
     show: boolean;
     raw?: boolean;
+    rootDialogStyle?: React.CSSProperties;
 }
 export function BaseDialog(props: IGenericDialogProps) {
     const { children, show, raw} = props;
     const dspClassName = `modal ${show ? ' modal-show ' : 'modal'}`;
-    return raw?children:<div className={dspClassName} tabIndex={-1} role="dialog">
-        <div className="modal-dialog" role="document">
+    return raw ? children : <div className={dspClassName} tabIndex={-1} role="dialog">
+        <div className="modal-dialog" style={props.rootDialogStyle} role="document">
             <div className="modal-content">
                 {children}
             </div>

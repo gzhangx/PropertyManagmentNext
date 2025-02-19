@@ -178,15 +178,29 @@ export default function AutoAssignLeases() {
         }
     }
     
-    return <div>
-        <CloseableDialog show={!!emailPreview.html} setShow={() => {
-            setEmailPreview({
-                to: '',
-                html: '',
-                subject: '',
-            });
-        }}>
 
+    const closePreview = () => {
+        setEmailPreview({
+            to: '',
+            html: '',
+            subject: '',
+        });
+    };
+
+    return <div>
+        <CloseableDialog show={!!emailPreview.html}
+            rootDialogStyle={{
+                maxWidth: '1000px'
+            }}
+            setShow={closePreview}
+            footer={<div className="modal-footer">
+                <button type="button" className="btn btn-secondary" data-dismiss="modal" onClick={async () => {
+                    await api.sendEmail(emailPreview.to.split(','), emailPreview.subject, emailPreview.html);
+                }}>Close</button>
+                <button type="button" className="btn btn-secondary" data-dismiss="modal" onClick={closePreview}>Close</button>
+            </div>}
+        >
+            <div style={{overflow:'scroll'}}>
                 <div className="container-fluid">
                         <div className="row">
                             <div className="card bg-primary text-white shadow">
@@ -220,7 +234,8 @@ export default function AutoAssignLeases() {
                                 <div dangerouslySetInnerHTML={{ __html: emailPreview.html }}></div>
                             </div>
                         </div>                        
-                    </div>
+                </div>
+            </div>
         </CloseableDialog>
         <table className="table">
             <thead>
