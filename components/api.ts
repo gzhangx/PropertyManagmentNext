@@ -438,12 +438,6 @@ interface IGoogleAuthInfo {
 export type IGoogleSheetAuthInfo = {
     googleSheetId: string;
     error?: string;
-    otherUserConfig?: {
-        googleSmtp?: {
-            user: string;
-            pass: string;
-        }
-    };
 } & IGoogleAuthInfo;
 
 export async function getSheetAuthInfo(): Promise<IGoogleSheetAuthInfo> {
