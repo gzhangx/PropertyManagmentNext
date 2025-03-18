@@ -8,7 +8,7 @@ import {
     activeSideBarItem,
 } from "../components/states/RootState"
 
-import { sideBarContentLookup} from '../components/rootContents'
+import { sideBarContentLookup} from '../components/pageConfigs'
 import { useEffect } from 'react'
 import { NAVPrefix } from '../components/nav/consts'
 import { usePageRelatedContext } from '../components/states/PageRelatedState'

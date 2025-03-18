@@ -1,18 +1,18 @@
 import { IMainSideBarSection } from './page/sidebar'
 import { HouseList } from './page/inputs/houseList'
 import { RentpaymentInfo } from './page/inputs/rentpaymentInfo'
-import { CashFlowReport } from '../components/page/reports/cashflow'
-import { ExpenseByWorkerReport } from '../components/page/reports/expenseByWorkerReport'
+import { CashFlowReport } from './page/reports/cashflow'
+import { ExpenseByWorkerReport } from './page/reports/expenseByWorkerReport'
 import { OwnerList } from './page/inputs/ownerList'
 
-import { TenantList } from '../components/page/inputs/tenantList'
-import { LeaseList } from '../components/page/inputs/leaseList'
+import { TenantList } from './page/inputs/tenantList'
+import { LeaseList } from './page/inputs/leaseList'
 
 import { MaintenanceRecords } from './page/inputs/maintenanceList'
 
 import YearlyMaintenanceReport from '../pages/reports/yearlyMaintenanceReport';
 import { getLeasePage } from '../pages/reports/autoAssignLeases'
-import { RenterEmailConfig } from '../components/page/inputs/renterEmailConfig'
+import { RenterEmailConfig } from './page/inputs/renterEmailConfig'
 
 import * as dev2 from '../pages/util/dev2'
 
