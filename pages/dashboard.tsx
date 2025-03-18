@@ -6,7 +6,7 @@ import {MainSideBar} from '../components/page/sidebar'
 import { TopBar } from '../components/page/topbar'
 import { Footer } from '../components/page/pageFooter'
 
-import { sections, sideBarContentLookup } from '../components/rootContents'
+import { sections, sideBarContentLookup, otherPages } from '../components/rootContents'
 import { OriginalDashboard } from '../components/demo/origDashboard'
 import { GenList } from '../components/uidatahelpers/GenList';
 import { getGenListParms } from '../components/uidatahelpers/datahelpers';
@@ -37,7 +37,7 @@ export default withRouter(function MainDashboard(props) {
   return (
     <div>
       <div id="wrapper">
-        <MainSideBar sections={sections}></MainSideBar>        
+        <MainSideBar sections={sections} otherPages={otherPages}></MainSideBar>        
           <div id="content-wrapper" className="d-flex flex-column">
             <div id="content">
               <TopBar />

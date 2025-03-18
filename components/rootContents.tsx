@@ -136,7 +136,10 @@ const { sections, sideBarContentLookup } = allSections.reduce((acc, sec) => {
     sectionsByName: {} as {[name:string]:IMainSideBarSection},
 });
 
+
+const otherPages = <></>
 export {
     sections,
     sideBarContentLookup,
+    otherPages,
 };

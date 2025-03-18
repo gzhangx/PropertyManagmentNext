@@ -23,6 +23,7 @@ export interface IMainSideBarSection {
 }
 interface IMainSideBarProps {
     sections: IMainSideBarSection[];
+    otherPages: JSX.Element;
 }
 export function MainSideBar(props : IMainSideBarProps) {    
     const rs = useRootPageContext();
@@ -158,6 +159,22 @@ export function MainSideBar(props : IMainSideBarProps) {
             // ></PageNavTab>
         }
 
+        
+        
+                
+
+        {
+            props.otherPages
+        }
+        {
+            false && Removed()
+        }
+    </ul>
+}
+
+
+function Removed() {
+    return <>
         <hr className="sidebar-divider" />
 
         <div className="sidebar-heading">
@@ -175,13 +192,13 @@ export function MainSideBar(props : IMainSideBarProps) {
                 <>
                     <h6 className="collapse-header">Login Screens:</h6>
                     <Link href="Login" legacyBehavior>
-                    <a className="collapse-item" href="#">Login</a>
+                        <a className="collapse-item" href="#">Login</a>
                     </Link>
                     <Link href="register" legacyBehavior>
-                    <a className="collapse-item" href="register.html">Register</a>
+                        <a className="collapse-item" href="register.html">Register</a>
                     </Link>
                     <Link href="forget" legacyBehavior>
-                    <a className="collapse-item" href="forgot-password.html">Forgot Password</a>
+                        <a className="collapse-item" href="forgot-password.html">Forgot Password</a>
                     </Link>
                     <div className="collapse-divider"></div>
                     <h6 className="collapse-header">Other Pages:</h6>
@@ -189,7 +206,7 @@ export function MainSideBar(props : IMainSideBarProps) {
                 </>
             }
         ></PageNavTab>
-        
+
         <li className="nav-item">
             <a className="nav-link" href="#">
                 <i className="fas fa-fw fa-chart-area"></i>
@@ -209,10 +226,9 @@ export function MainSideBar(props : IMainSideBarProps) {
         </div>
 
         <div className="sidebar-card d-none d-lg-flex">
-            <img className="sidebar-card-illustration mb-2" src="/img/undraw_rocket.svg" alt="..."   width={100} height={100} />
+            <img className="sidebar-card-illustration mb-2" src="/img/undraw_rocket.svg" alt="..." width={100} height={100} />
             <p className="text-center mb-2"><strong>SB Admin Pro</strong> is packed with premium features, components, and more!</p>
             <a className="btn btn-success btn-sm" href="#">Upgrade to Pro!</a>
         </div>
-
-    </ul>
+    </>
 }
