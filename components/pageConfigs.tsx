@@ -23,6 +23,8 @@ import type { JSX } from "react";
 import { TableNames } from './types'
 import { PaymentExpenseStateWrapper } from './states/PaymentExpenseState'
 
+import GoogleSheetConfigPage from '../pages/config/googleSheetConfig'
+
 type LocalPageInfo = {
     name: string;
     page: JSX.Element;
@@ -69,10 +71,7 @@ const inputPages: LocalPageInfo[] = [
     }, {
         name: 'AutoAssignLeases',
         page: getLeasePage(),        
-    }, {
-        name: 'Renter Email Config',
-        page: <RenterEmailConfig></RenterEmailConfig>
-    }
+    }, 
 ];
 
 const allSections = [
@@ -98,18 +97,35 @@ const allSections = [
             {
                 name: 'Yearly 1099 Report',
                 page: <YearlyMaintenanceReport/>,
-            },
-            {
-                name: 'Google Sheet Imports 2',
-                page: <dev2.DevelopPage />,
-                selected: true,
-            },
+            },            
         ]
     },
     {
         name: 'PM Inputs',
         pages: inputPages,
     },
+    {
+        name: 'Config',
+        pages: [
+            {
+                name: 'Google Sheet Config',
+                page: <GoogleSheetConfigPage />,
+            },
+            {
+                name: 'Renter Email Config',
+                page: <RenterEmailConfig></RenterEmailConfig>
+            }
+        ]
+    }, {
+        name: 'Google Imports',
+        pages: [
+            {
+                name: 'Google Sheet Imports 2',
+                page: <dev2.DevelopPage />,
+                selected: true,
+            },
+        ]
+    }
 ]
 
 
