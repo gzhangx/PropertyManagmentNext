@@ -67,6 +67,13 @@ export function stdFormatValue(def: IDBFieldDef, v: string | number, fieldName?:
         }
         if (typeof v === 'string') {
             v = v.replace(/[\$, ]/g, '').trim();
+
+            if (v[0] === '−') {
+                return {
+                    error: `Bad Data, − found maybe it should be -`,
+                    v,
+                }
+            }
             const neg = v.match(/\(([0-9]+(.[0-9]*){0,1}){1}\)/);
             if (neg) {
                 v = '-' + neg[1];
