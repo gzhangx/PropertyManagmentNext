@@ -13,7 +13,6 @@ import * as inserter from './loads/inserter';
 import { deleteById } from '../../api';
 import { IDBFieldDef, TableNames } from '../../types';
 import { stdFormatValue } from '../../uidatahelpers/datahelpers';
-import { IPageRelatedState } from '../../reportTypes';
 
 export async function createEntity(params: IPageParms, changeRow: ISheetRowData, inserter: IDbInserter, fields: IDBFieldDef[]) {
     //const state = curPageState;
@@ -245,8 +244,12 @@ export function getDisplayHeaders(params: IPageParms, curPageState: IPageStates)
                             }
                             updatedCount++;
                             try {       
+                                if (sheetRow.invalid) {
+                                    console.log('invalid row in process all imports', sheetRow.invalid, sheetRow);
+                                    continue;
+                                }
                                 const err = validRow(sheetRow.importSheetData);
-                                                                
+                                console.log('createntity', err, sheetRow.invalid);                                   
                                 if (!err)
                                     await createEntity(params, sheetRow, dbInserter, curPageState.curPage.allFields!);
                                 else {
@@ -272,7 +275,7 @@ export function getDisplayHeaders(params: IPageParms, curPageState: IPageStates)
                         await delAct.deleteFunction();
                     }
                     params.showProgress('done');
-                }}>Process All</button></>
+                }}>Process All Imports</button></>
             }
         }
         return <td key={key}>{            

@@ -199,6 +199,11 @@ export function stdProcessSheetData(sheetData: ICompRowData[], pageState: IPageS
                 console.log(`Warning, can't find def for field ${pageState.curPage.table}.${fieldName} `)
                 return;
             }
+            if ((v === undefined || v === null) && def.required) {
+                sd.invalid = `${fieldName}::=>${v} stdProcessSheetData: Required field`;
+                acc.invalidDesc = `${fieldName}::=>${v} stdProcessSheetData: Required field`;
+                return;
+            }
             switch (fieldName) {
                 // case 'address':                                        
                 //     const isHouse = def.foreignKey && def.foreignKey.field === 'houseID';
@@ -237,7 +242,8 @@ export function stdProcessSheetData(sheetData: ICompRowData[], pageState: IPageS
                         if (v || v === 0) {
                             if (!fk) {
                                 sd.invalid = fieldName;
-                                acc.invalidDesc = `${fieldName}::=>${v} Can't resolve foreign key`;
+                                //acc.invalidDesc = `${fieldName}::=>${v} Can't resolve foreign key`;
+                                sd.invalid = `${fieldName}::=>${v} Can't resolve foreign key`;
                                 console.log(acc.invalidDesc)
                             } else {
                                 const resolved = fk.descToId.get(v as string);
@@ -248,8 +254,8 @@ export function stdProcessSheetData(sheetData: ICompRowData[], pageState: IPageS
                                         console.log(warn)
                                     } else {
                                         sd.invalid = fieldName;
-                                        acc.invalidDesc = `${fieldName}::=>${v} Can't resolve foreign key for desc ${v}`;
-                                        console.log(acc.invalidDesc)
+                                        sd.invalid = `${fieldName}::=>${v} Can't resolve foreign key for desc ${v}`;
+                                        console.log(sd.invalid)
                                     }
                                 } else {
                                     acc[toResolvedForeignKeyIdName(fieldName)] = v;
@@ -268,7 +274,7 @@ export function stdProcessSheetData(sheetData: ICompRowData[], pageState: IPageS
                                 if (fmted.error) {
                                     acc[fieldName] = fmted.error;
                                     sd.invalid = fieldName;
-                                    acc.invalidDesc = `${fieldName}::=>${v} ${fmted.error}`;
+                                    sd.invalid = `${fieldName}::=>${v} ${fmted.error}`;
                                 }
                                 acc[fieldName] = fmted.v;
                                 break;
