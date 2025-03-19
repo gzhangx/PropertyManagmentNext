@@ -252,10 +252,11 @@ export function PageRelatedContextWrapper(props: {
         },
         utcDbTimeToZonedTime: (utc: AllDateTypes, format?: 'YYYY-MM-DD' | 'YYYY-MM-DD HH:mm:ss') => {
             try {               
-                return momentTimezone.tz(utc, rootCtx.userInfo.timezone).format(format || FULLYYYYMMDDHHMMSSFormat);
+                //console.log('from utc', utc, ' to ', rootCtx.userInfo.timezone, momentTimezone.tz(moment.utc(utc), rootCtx.userInfo.timezone).format(format || FULLYYYYMMDDHHMMSSFormat))
+                return momentTimezone.tz(moment.utc(utc), rootCtx.userInfo.timezone).format(format || FULLYYYYMMDDHHMMSSFormat);
                 //return moment.utc(utc).utcOffset(rootCtx.userInfo.timezone).format(format || FULLYYYYMMDDHHMMSSFormat);
             } catch (err) {
-                console.log(err, moment.utc(utc).utcOffset(rootCtx.userInfo.timezone));
+                console.log(err);
                 return utc.toString();
             }
         },
