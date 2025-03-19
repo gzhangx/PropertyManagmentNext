@@ -58,7 +58,7 @@ export function getLoginInfo(): ILoginResponse {
 export function RootPageStateWrapper({ children }) {
     const [sideBarStates, setSideBarStates] = useState({});
     //const [pageProps, setPageProps] = useState({});
-    const [userInfo, setUserInfo] = useState<ILoginResponse>(getLoginInfo() || { id: '', name:'', token:'', timezone: -5});
+    const [userInfo, setUserInfo] = useState<ILoginResponse>(getLoginInfo() || { id: '', name:'', token:'', timezone: 'America/New_York'});
     const defVal: IRootPageState = {
         sideBarStates,
         setSideBarStates,
