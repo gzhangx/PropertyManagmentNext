@@ -1,4 +1,4 @@
-import { AllDateTypes, FieldValueType, IDBFieldDef, IGetModelReturn, IPageState, ISqlDeleteResponse, ISqlOrderDef, ISqlRequestWhereItem, TableNames } from './types'
+import { AllDateTypes, FieldValueType, IDBFieldDef, IGetModelReturn, IPageState, ISqlDeleteResponse, ISqlOrderDef, ISqlRequestWhereItem, TableNames, TimeZoneType } from './types'
 import { IGoogleSheetAuthInfo } from './api';
 import { IEditTextDropdownItem } from './generic/GenericDropdown';
 import { ItemTypeDict } from './uidatahelpers/datahelperTypes';
@@ -256,7 +256,7 @@ export interface IPageRelatedState {
     topBarErrorsCfg: TopBarIconNotifyCfg;
 
 
-    timezone: number;
+    timezone: TimeZoneType;
     browserTimeToUTCDBTime: (bt: AllDateTypes) => string;
     utcDbTimeToZonedTime: (utc: AllDateTypes, format?: 'YYYY-MM-DD') => string;
     

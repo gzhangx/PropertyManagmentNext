@@ -1,13 +1,11 @@
 import React, { useState, useEffect, useContext, JSX } from 'react';
-import { getHouseInfo, getModel, getSheetAuthInfo, IGoogleSheetAuthInfo, sqlGet } from '../api';
+import { getModel, getSheetAuthInfo, IGoogleSheetAuthInfo, sqlGet } from '../api';
 
 import { AllDateTypes, IDBFieldDef, IPagePropsByTable, TableNames } from '../types'
 
 import {    
     IForeignKeyCombo,
-    IForeignKeyIdDesc,
     IForeignKeyLookupMap,
-    IForeignKeyParsedRow,
     ILeaseInfo,
     IModelsDict,
     IPageRelatedState,
@@ -19,6 +17,8 @@ import { NotifyIconItem } from '../page/tinyIconNotify';
 import moment from 'moment';
 import { IEditTextDropdownItem } from '../generic/GenericDropdown';
 import { orderBy } from 'lodash';
+
+import momentTimezone from 'moment-timezone';
 
 const PageRelatedContext = React.createContext({} as IPageRelatedState);
 
@@ -243,7 +243,7 @@ export function PageRelatedContextWrapper(props: {
         timezone: rootCtx.userInfo.timezone,
         browserTimeToUTCDBTime: (bt: AllDateTypes) => {            
             if (typeof bt === 'string') {
-                return moment.utc(bt).add(-rootCtx.userInfo.timezone,'h').format(FULLYYYYMMDDHHMMSSFormat)
+                return momentTimezone.tz(bt, rootCtx.userInfo.timezone).utc().format(FULLYYYYMMDDHHMMSSFormat)
             }
             if (bt instanceof Date) {
                 return bt.toISOString().substring(0, 19);
@@ -251,8 +251,9 @@ export function PageRelatedContextWrapper(props: {
             return bt.utc().format(FULLYYYYMMDDHHMMSSFormat);
         },
         utcDbTimeToZonedTime: (utc: AllDateTypes, format?: 'YYYY-MM-DD' | 'YYYY-MM-DD HH:mm:ss') => {
-            try {                
-                return moment.utc(utc).utcOffset(rootCtx.userInfo.timezone).format(format || FULLYYYYMMDDHHMMSSFormat);
+            try {               
+                return momentTimezone.tz(utc, rootCtx.userInfo.timezone).format(format || FULLYYYYMMDDHHMMSSFormat);
+                //return moment.utc(utc).utcOffset(rootCtx.userInfo.timezone).format(format || FULLYYYYMMDDHHMMSSFormat);
             } catch (err) {
                 console.log(err, moment.utc(utc).utcOffset(rootCtx.userInfo.timezone));
                 return utc.toString();

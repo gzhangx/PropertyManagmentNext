@@ -52,12 +52,14 @@ export interface IPageState {
     setPageProps: React.Dispatch<React.SetStateAction<IPagePropsByTable>>;
 }
 
+export type TimeZoneType = 'America/New_York' | 'America/Chicago' | 'America/Denver' | 'America/Los_Angeles' | 'America/Phoenix' | 'America/Anchorage' | 'Pacific/Honolulu';
+
 export interface ILoginResponse {
     error?: string;
     token: string;
     name: string;
     id: string;
-    timezone: number;
+    timezone: TimeZoneType;
 }
 
 //copied from api
