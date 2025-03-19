@@ -31,7 +31,7 @@ export async function createEntity(params: IPageParms, changeRow: ISheetRowData,
         }
     })
     if (changeRow.invalid) {
-        console.log(`invalid payment, don't create ${changeRow.invalid}`);
+        console.log(`invalid entity, don't create (${inserter.name}) invalid=${changeRow.invalid}`, saveData);
         return;
     }
     if (!changeRow.needUpdate) {
@@ -43,7 +43,7 @@ export async function createEntity(params: IPageParms, changeRow: ISheetRowData,
     //    saveData, true
     //).
     return inserter.createEntity(saveData).then(res => {
-        console.log('sql add owner');
+        console.log('sql add entity', inserter.name);
         console.log(res);
         dispatchCurPageState(state => {
             return {
@@ -55,9 +55,9 @@ export async function createEntity(params: IPageParms, changeRow: ISheetRowData,
             }
         })
     }).catch(err => {
-        console.log('sql add owner err');
+        console.log('sql add entity err',inserter.name);
         console.log(err)
-        params.setErrorStr(`sql add rentpayment error ${err.message}`);
+        params.setErrorStr(`sql add entity error entity=${inserter.name} ${err.message}`);
     })    
 }
 
