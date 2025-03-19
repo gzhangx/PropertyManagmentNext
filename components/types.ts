@@ -82,6 +82,7 @@ export interface IDBFieldDef {
         table: TableNames;
         field: string;
     };
+    allowBadForeignKey?: boolean;
 }
 
 export interface IGetModelReturn {

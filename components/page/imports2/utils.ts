@@ -242,9 +242,15 @@ export function stdProcessSheetData(sheetData: ICompRowData[], pageState: IPageS
                             } else {
                                 const resolved = fk.descToId.get(v as string);
                                 if (!resolved) {
-                                    sd.invalid = fieldName;
-                                    acc.invalidDesc = `${fieldName}::=>${v} Can't resolve foreign key for desc ${v}`;
-                                    console.log(acc.invalidDesc)
+                                    if (def.allowBadForeignKey) {
+                                        acc[fieldName] = v;
+                                        const warn = `Allowed mismatch forenigh key warning${fieldName}::=>${v} Notable resolve foreign key for desc ${v}`;
+                                        console.log(warn)
+                                    } else {
+                                        sd.invalid = fieldName;
+                                        acc.invalidDesc = `${fieldName}::=>${v} Can't resolve foreign key for desc ${v}`;
+                                        console.log(acc.invalidDesc)
+                                    }
                                 } else {
                                     acc[toResolvedForeignKeyIdName(fieldName)] = v;
                                     acc[fieldName] = resolved.id;
