@@ -208,9 +208,9 @@ export function PageRelatedContextWrapper(props: {
     }
 
 
-    const curBrowserTimeZone = new Date().getTimezoneOffset() / 60;
-    const browserTouserZoneToUtcDeduction = - (rootCtx.userInfo.timezone || 0) - curBrowserTimeZone;
-    console.log('browserTouserZoneToUtcDeduction', browserTouserZoneToUtcDeduction);
+    //const curBrowserTimeZone = new Date().getTimezoneOffset() / 60;
+    //const browserTouserZoneToUtcDeduction = - (rootCtx.userInfo.timezone || 0) - curBrowserTimeZone;
+    //console.log('browserTouserZoneToUtcDeduction', browserTouserZoneToUtcDeduction);
     const FULLYYYYMMDDHHMMSSFormat = 'YYYY-MM-DD HH:mm:ss';
     const pageCtx: IPageRelatedState = {
         //pageProps, setPageProps,
