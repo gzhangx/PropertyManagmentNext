@@ -199,7 +199,7 @@ export function stdProcessSheetData(sheetData: ICompRowData[], pageState: IPageS
                 console.log(`Warning, can't find def for field ${pageState.curPage.table}.${fieldName} `)
                 return;
             }
-            if ((v === undefined || v === null) && def.required) {
+            if ((v === undefined || v === null || v === '') && def.required) {
                 sd.invalid = `${fieldName}::=>${v} stdProcessSheetData: Required field`;
                 acc.invalidDesc = `${fieldName}::=>${v} stdProcessSheetData: Required field`;
                 return;

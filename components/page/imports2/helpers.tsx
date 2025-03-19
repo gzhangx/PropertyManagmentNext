@@ -253,14 +253,14 @@ export function getDisplayHeaders(params: IPageParms, curPageState: IPageStates)
                                 if (!err)
                                     await createEntity(params, sheetRow, dbInserter, curPageState.curPage.allFields!);
                                 else {
-                                    console.log('Found error during process all for page',err);    
+                                    console.log('Found error during process all for page',err, sheetRow);    
                                     params.setErrorStr(err);
                                     //break;
                                 }
                             } catch (err) {
                                 const errStr = `Error createViaInserter ${table} ${err.message}`;
-                                console.log(errStr);
-                                console.log(err);
+                                console.log('stdProcess caught errStr', errStr);
+                                console.log('stdProcess caught err',err);
                                 params.showProgress('');
                                 params.setErrorStr(errStr);
                                 break;
