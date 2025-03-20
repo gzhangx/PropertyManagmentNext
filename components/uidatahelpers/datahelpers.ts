@@ -109,7 +109,8 @@ export function stdFormatValue(def: IDBFieldDef, v: string | number, fieldName?:
                 v,
             }
         } else {
-            const dateStr = ctx ? ctx.utcDbTimeToZonedTime(v as string, 'YYYY-MM-DD') : mt.format('YYYY-MM-DD');
+            const dateFmt = def.type === 'datetime' ? 'YYYY-MM-DD HH:mm:ss' : 'YYYY-MM-DD';
+            const dateStr = ctx ? ctx.utcDbTimeToZonedTime(v as string, dateFmt) : mt.format(dateFmt);
             //acc[fieldName] = dateStr;
             return {
                 v: dateStr,

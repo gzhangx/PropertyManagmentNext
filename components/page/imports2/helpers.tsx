@@ -21,14 +21,7 @@ export async function createEntity(params: IPageParms, changeRow: ISheetRowData,
     const saveData = {
         ...changeRow.importSheetData         
     };
-    fields.forEach(f => {
-        if (f.type === 'date' || f.type === 'datetime') {
-            const v = saveData[f.field];
-            if (v) {
-                saveData[f.field] = params.pageCtx.browserTimeToUTCDBTime(v as string);
-            }
-        }
-    })
+
     if (changeRow.invalid) {
         console.log(`invalid entity, don't create (${inserter.name}) invalid=${changeRow.invalid}`, saveData);
         return;
@@ -135,7 +128,7 @@ export async function genericPageLoader(prms: IPageParms, pageState: IPageStates
             })                        
             return parts.join('-');
         },
-        getRowKeys: (data: IDbSaveData) => {
+        getRowKeys: (data: IDbSaveData, source: 'DB' | 'Sheet') => {  //used for debug only
             const parts = mappingColumnInfo.map(fd => {
                 switch (fd.type) {
                     case 'date':
@@ -143,7 +136,7 @@ export async function genericPageLoader(prms: IPageParms, pageState: IPageStates
                     //return YYYYMMDDFormater(data[fd.field] as string)
                     case 'decimal':
                         //return parseFloat(data[fd.field] as string).toFixed(2);
-                        return (stdFormatValue(fd, data[fd.field], fd.field).v || '', prms.pageCtx).toString();
+                        return stdFormatValue(fd, data[fd.field], fd.field, source === 'DB' ? prms.pageCtx : undefined).v as string;
                     default:
                         return (data[fd.field] as string || '').toString().trim();
                 }
@@ -208,7 +201,7 @@ export function getDisplayHeaders(params: IPageParms, curPageState: IPageStates)
             return def as IDisplayColumnInfo;
         })
     }
-    const dbInserter: IDbInserter = inserter.getDbInserter(table, true);
+    const dbInserter: IDbInserter = inserter.getDbInserter(params.pageCtx, table, true);
     const requiredFields = curPageState.curPage.allFields.filter(f => {
         return !f.isId && f.required && !f.userSecurityField;
     });
@@ -288,7 +281,7 @@ export function getDisplayHeaders(params: IPageParms, curPageState: IPageStates)
 
 export async function updateRowData(params: IPageParms, table: TableNames, sheetRow: ISheetRowData, doCreate: boolean) {
     params.showProgress('processing');
-    const dbInserter: IDbInserter = inserter.getDbInserter(table, doCreate);
+    const dbInserter: IDbInserter = inserter.getDbInserter(params.pageCtx, table, doCreate);
     try {
         await dbInserter.createEntity(sheetRow.importSheetData);
         sheetRow.needUpdate = false;

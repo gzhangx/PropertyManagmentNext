@@ -112,7 +112,7 @@ export function matchItems(pageDetails: IPageDataDetails, dbData: IDbSaveData[],
     let debugItems: string[][] = [];
     const dbDataKeyed = dbMatchData.reduce((acc, d) => {
         const key = cmp.getRowKey(d.dbItemData, 'DB');
-        debugItems.push(cmp.getRowKeys(d.dbItemData));
+        debugItems.push(cmp.getRowKeys(d.dbItemData, 'DB'));
         if (sheetIdField) {
             const id = d.dbItemData[sheetIdField] as string;
             if (id) {
@@ -152,14 +152,18 @@ export function matchItems(pageDetails: IPageDataDetails, dbData: IDbSaveData[],
             }
         } else {
             {
-                const dkeys = cmp.getRowKeys(sd.importSheetData);
+                const dkeys = cmp.getRowKeys(sd.importSheetData, 'Sheet');
                 //debug starts
                 let curFiltered = debugItems;
                 for (let d = 0; d < dkeys.length; d++) {
                     const filtered = curFiltered.filter(di => {
                         if (di[d] === '2020-11-17') {
                             //console.log(`di cmp ${di[d]} ${dkeys[d]} equal=${di[d] === dkeys[d]}`)
-                        }                        
+                        }
+                        const did = di[d];                        
+                        if (did && did.match && did.match(/\d{4}-\d{2}-\d{2}/)) {
+                            return did.substring(0, 10) === dkeys[d].substring(0, 10);
+                        }
                         return di[d] === dkeys[d];
                     });
                     if (filtered.length === 0) break;

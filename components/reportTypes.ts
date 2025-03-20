@@ -258,7 +258,7 @@ export interface IPageRelatedState {
 
     timezone: TimeZoneType;
     browserTimeToUTCDBTime: (bt: AllDateTypes) => string;
-    utcDbTimeToZonedTime: (utc: AllDateTypes, format?: 'YYYY-MM-DD') => string;
+    utcDbTimeToZonedTime: (utc: AllDateTypes, format?: 'YYYY-MM-DD' | 'YYYY-MM-DD HH:mm:ss') => string;
     
 
     showLoadingDlg: (content: string | JSX.Element, title?: string) => void;
