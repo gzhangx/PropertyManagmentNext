@@ -36,7 +36,6 @@ export function GenList(props: IGenListProps) {
     const reload = async () => {
         let whereArray = (getPageFilters(pageState, table) as any) as ISqlRequestWhereItem[];
         const order = getPageSorts(pageState, table);
-        const model = await helper.loadModel();
         await helper.loadData({
             whereArray,
             order,
@@ -45,24 +44,7 @@ export function GenList(props: IGenListProps) {
         }).then(res => {
             const {rows, total} = res;
             setPaggingInfo({ ...paggingInfo, total, })
-
-            const dateFields: IDBFieldDef[] = [];
-            model.fields.forEach(f => {
-                if (f.type === 'date' || f.type === 'datetime') {
-                    dateFields.push(f);
-                }
-            })
-            if (dateFields.length > 0) {
-                rows.forEach(r => {
-                    dateFields.forEach(f => {
-                        const date = r[f.field];
-                        if (date) {
-                            //console.log('converting f', f.field, ' from ', date, 'to ', secCtx.utcDbTimeToZonedTime(date), 'root',rootCtx.userInfo.timezone);
-                            r[f.field] = secCtx.utcDbTimeToZonedTime(date);
-                        }
-                    });
-                });
-            }
+            
             setMainData(rows);
             setLoading(false);
         });
