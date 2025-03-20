@@ -101,8 +101,18 @@ export function RenterEmailConfig() {
         </div>
         <div className="form-group bg-gray-100 text-gray-900">
             <div className="container">
-                <div className="row">Usage:  $DATE(YYYY-MM-DD) to show current Date</div>
-                <div className="row">$LOOPMONTHLY(4, $PDATE(YYYY/MM-DD) paid=$PAID balance=$BALANCE ) to show last 4 month of pay date, paid, balance</div>
+                <div className="row">Usage:  { `Rent Payment of $PAID Was Received `}</div>
+                <div className="row">{ `Dear $Renters, <br>
+
+Your Rent Payment of $LastPaymentAmount was received on $LastPaymentDate{MM/DD/YYYY}.
+Here is your balance in details, 
+<table>
+<tr><td>Date</td><td>Paid</td><td>Previous Balance</td></tr>
+$LoopMonthly{3, <tr><td>$PaymentDate{YYYY/MMM}</td> <td>p=$Paid</td> <td>pbalance=$Balance</td></tr>
+}
+</table>
+Please let me know if you have any questions or concerns. 
+Thank you`}</div>
             </div>
         </div>
         <div className="form-group">
