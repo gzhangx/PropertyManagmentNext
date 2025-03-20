@@ -99,7 +99,7 @@ export function stdFormatValue(def: IDBFieldDef, v: string | number, fieldName?:
                 v: null,
             }
         }
-        const mt = moment(v);
+        const mt = moment.utc(v);
         if (!mt.isValid()) {
             //sd.invalid = fieldName;
             //acc.invalidDesc = `bad date ${fieldName}:${v}`;
@@ -109,6 +109,11 @@ export function stdFormatValue(def: IDBFieldDef, v: string | number, fieldName?:
                 v,
             }
         } else {
+            if (def.type === 'date') {
+                return {
+                    v: mt.format('YYYY-MM-DD'),
+                }
+            }
             const dateFmt = def.type === 'datetime' ? 'YYYY-MM-DD HH:mm:ss' : 'YYYY-MM-DD';
             const dateStr = ctx ? ctx.utcDbTimeToZonedTime(v as string, dateFmt) : mt.format(dateFmt);
             //acc[fieldName] = dateStr;
