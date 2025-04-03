@@ -15,7 +15,7 @@ export interface IGenericDropdownProps {
     setShow?: (boolean) => void;
     show?: boolean;
 
-    opts?: IGenericDropdownPropsOptional;    
+    opts?: IGenericDropdownPropsOptional;
 }
 
 export interface IGenericDropdownPropsOptional {    

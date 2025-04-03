@@ -11,6 +11,7 @@ import { LeaseList } from './page/inputs/leaseList'
 import { MaintenanceRecords } from './page/inputs/maintenanceList'
 
 import YearlyMaintenanceReport from '../pages/reports/yearlyMaintenanceReport';
+import RentReport from '../pages/reports/rentReport';
 import { getLeasePage } from '../pages/reports/autoAssignLeases'
 import { RenterEmailConfig } from './page/inputs/renterEmailConfig'
 
@@ -81,6 +82,10 @@ const allSections = [
             {
                 name: 'Cash Flow',
                 page: doWrap(<CashFlowReport />),
+            },
+            {
+                name: 'Rent Report',
+                page: <RentReport />,
             },
             {
                 name: 'Lease Report',

@@ -476,7 +476,7 @@ function getTableNameToSheetMapping(sheetMapping?: DataToDbSheetMapping) {
     return sheetMapping;
 }
 
-export async function createAndLoadHelper(rootCtx: RootState.IRootPageState, ctx: IPageRelatedState, props: IGenListProps) {
+export async function createAndLoadHelper(rootCtx: RootState.IRootPageState, ctx: IPageRelatedState, props: ITableAndSheetMappingInfo) {
     const helper = createHelper(rootCtx, ctx, props);
     await helper.loadModel();
     return helper;

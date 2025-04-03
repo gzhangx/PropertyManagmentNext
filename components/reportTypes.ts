@@ -192,9 +192,9 @@ export type IModelsProps = {
 
 export interface IHelperOpts {
     whereArray: ISqlRequestWhereItem[];
-    order: ISqlOrderDef[];
-    rowCount: number;
-    offset: number;
+    order?: ISqlOrderDef[];
+    rowCount?: number;
+    offset?: number;
 }
 
 
@@ -219,6 +219,7 @@ export type IForeignKeyParsedRow = {
 export type IForeignKeyIdDesc = Map<string, IForeignKeyParsedRow>;
 export type IForeignKeyCombo = {
     idDesc: IForeignKeyIdDesc;
+    idObj: Map<string, ItemTypeDict>;
     descToId: IForeignKeyIdDesc;
     rows: IForeignKeyParsedRow[];
 
@@ -250,6 +251,8 @@ export interface IPageRelatedState {
     loadForeignKeyLookup: (t: TableNames, forceReload?: boolean) => Promise<IForeignKeyCombo>;
     checkLoadForeignKeyForTable: (table: TableNames) => Promise<IDBFieldDef[]>;
     translateForeignLeuColumn: (def: IDBFieldDef, dataDict: any) => string;
+    translateForeignLeuColumnToObject: (def: IDBFieldDef, data: any) => ItemTypeDict | string;
+    getAllForeignKeyLookupItems: (table: TableNames) => ItemTypeDict[] | null;
     forceReload: () => void;
 
     topBarMessagesCfg: TopBarIconNotifyCfg;

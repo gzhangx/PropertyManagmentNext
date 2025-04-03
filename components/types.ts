@@ -81,6 +81,7 @@ export interface IDBFieldDef {
     foreignKey?: {
         table: TableNames;
         field: string;
+        resolvedToField?: 'addressObj';
     };
     allowBadForeignKey?: boolean;
 }

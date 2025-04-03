@@ -19,6 +19,7 @@ import { IEditTextDropdownItem } from '../generic/GenericDropdown';
 import { orderBy } from 'lodash';
 
 import momentTimezone from 'moment-timezone';
+import { ItemTypeDict } from '../uidatahelpers/datahelperTypes';
 
 const PageRelatedContext = React.createContext({} as IPageRelatedState);
 
@@ -130,6 +131,7 @@ export function PageRelatedContextWrapper(props: {
         
         const res: IForeignKeyCombo = {
             rows: [],
+            idObj: new Map(),
             idDesc: new Map(),
             descToId: new Map(),
         };
@@ -162,9 +164,11 @@ export function PageRelatedContextWrapper(props: {
         }
         
         res.rows = sqlRes.rows.map(r => {
+            const id = parser.idGetter(r);
+            res.idObj.set(id, r);
             return {
                 ...r,
-                id: parser.idGetter(r),
+                id,
                 desc: parser.descGetter(r),
             };
         })
@@ -207,6 +211,25 @@ export function PageRelatedContextWrapper(props: {
         return lookup.idDesc.get(val)?.desc || `Failed Lookup tbl=(${etb})-field=${def.field}: `+val;        
     }
 
+    function translateForeignLeuColumnToObject(def: IDBFieldDef, data: any): ItemTypeDict | string {
+        const etb = def.foreignKey?.table;
+        const val = data[def.field] as string;
+        if (!etb) {
+            return val;
+        }
+        const lookup = foreignKeyLoopkup.get(etb);
+        if (!lookup) {
+            return val; //not loaded yet
+        }
+        return lookup.idObj.get(val);
+    }
+
+    function getAllForeignKeyLookupItems(table: TableNames): ItemTypeDict[] | null {
+        const all = foreignKeyLoopkup.get(table);
+        if (!all) return null;
+        return Array.from(all.idObj.values());
+    }
+
 
     //const curBrowserTimeZone = new Date().getTimezoneOffset() / 60;
     //const browserTouserZoneToUtcDeduction = - (rootCtx.userInfo.timezone || 0) - curBrowserTimeZone;
@@ -237,6 +260,8 @@ export function PageRelatedContextWrapper(props: {
         foreignKeyLoopkup, loadForeignKeyLookup,
         checkLoadForeignKeyForTable,
         translateForeignLeuColumn,
+        translateForeignLeuColumnToObject,
+        getAllForeignKeyLookupItems,
         forceReload: () => setReloadCounter(v => v + 1),
         topBarErrorsCfg,
         topBarMessagesCfg,
