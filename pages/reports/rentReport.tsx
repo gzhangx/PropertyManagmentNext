@@ -15,6 +15,9 @@ import { createAndLoadHelper } from "../../components/uidatahelpers/datahelpers"
 import { IRootPageState, useRootPageContext } from "../../components/states/RootState";
 import { IDBFieldDef } from "../../components/types";
 import { IEditTextDropdownItem } from "../../components/generic/GenericDropdown";
+import { all } from "bluebird";
+import { CloseableDialog } from "../../components/generic/basedialog";
+import { orderBy } from "lodash";
 
 interface IShowDetailsData {
     amount: number;
@@ -40,6 +43,19 @@ export type IPaymentWithDateMonthPaymentType = IPayment & {
     paymentTypeName: string;
     address: string;
     addressObj: IHouseInfo;
+}
+
+type RentReportCellData = {
+    amount: number;
+    payments: IPaymentWithDateMonthPaymentType[];
+}
+
+type RentReportMonthRowData = {
+    [month: string]: RentReportCellData;
+}
+
+type AllRentReportData = {
+    [houseID: string]: RentReportMonthRowData;
 }
 
 export async function loadPayment(rootCtx: IRootPageState, mainCtx: IPageRelatedState, opts: IHelperOpts) {
@@ -95,7 +111,12 @@ export default function RentReport() {
         value: ''
     });
     const [allOwners, setAllOwners] = useState<{ label: string; value: string; }[]>([]);
-    const [allPaymentData, setAllPaymentData] = useState<IPaymentWithDateMonthPaymentType[]>([]);
+    //const [allPaymentData, setAllPaymentData] = useState<IPaymentWithDateMonthPaymentType[]>([]);
+
+    const [allRentReportData, setAllRentReportData] = useState<AllRentReportData>({});
+
+    const [showDetail, setShowDetail] = useState<RentReportCellData | null>(null);   
+
     const loadData = async () => {        
         if (selectedMonths.length === 0) return;
 
@@ -117,7 +138,7 @@ export default function RentReport() {
                 }
             ],
         });
-        setAllPaymentData(paymentData);
+        //setAllPaymentData(paymentData);
         
         const ownerDc = paymentData.reduce((acc, pmt) => {
             const ownerName = pmt.addressObj?.ownerName;
@@ -140,14 +161,48 @@ export default function RentReport() {
 
 
         mainCtx.showLoadingDlg('');
-        const allHouses = mainCtx.getAllForeignKeyLookupItems('houseInfo') as IHouseInfo[];
+        //const allHouses = mainCtx.getAllForeignKeyLookupItems('houseInfo') as IHouseInfo[];
         //selectedMonths
+
+        paymentData.forEach(pmt => {            
+            let houseMOnth = allRentReportData[pmt.houseID];
+            if (!houseMOnth) {
+                houseMOnth = {};
+                allRentReportData[pmt.houseID] = houseMOnth;
+            }
+            let monthData = houseMOnth[pmt.month];
+            if (!monthData) {   
+                monthData = {
+                    amount: 0,
+                    payments: [],
+                };
+                houseMOnth[pmt.month] = monthData;
+            }
+            monthData.amount += pmt.amount;
+            monthData.payments.push(pmt);
+        });
+
+        setAllRentReportData(allRentReportData);
+        
     }
     useEffect(() => {
         loadData();
     }, [selectedMonths.join(',')]);
     
+    const allHouses = (mainCtx.getAllForeignKeyLookupItems('houseInfo') || []) as IHouseInfo[];
     return <div>
+        <CloseableDialog show={!!showDetail} title='Item Details' setShow={() => setShowDetail(null)}>
+                    <div className="modal-body">                        
+                    <table>
+                        {
+                            orderBy((showDetail?.payments || [] ), 'receivedDate').map((d,tri) => {
+                                return <tr key={tri}><td>{d.amount.toFixed(2)}</td><td>{d.date}</td> <td>{d.address}</td><td> {d.notes}</td> <td>{d.month}</td></tr>
+                            })
+        
+                        }
+                        </table>                        
+                    </div>
+                </CloseableDialog>
         <div className="row">
             <div className="col-sm-3">
                 <EditTextDropdown
@@ -171,9 +226,31 @@ export default function RentReport() {
                     setCurOwner(sel);
                     }} curDisplayValue={curOwner.label}
                     opts={{ placeHolder: 'Select Owner' }}
-                ></EditTextDropdown></div>
-            
-
+                ></EditTextDropdown></div>        
+        </div>
+        <div className="row">
+            <table className="table table-striped table-bordered table-hover">
+                <thead>
+                    <tr><td>HouseName</td>{
+                        selectedMonths.map(mon => <td key={mon}>{mon}</td>)
+                    }</tr>
+                </thead>
+                <tbody>
+                    {
+                        allHouses.filter(h=>h.ownerName === curOwner.value || !curOwner.value).map(house => {
+                            return <tr key={house.houseID}><td>{house.address}</td>
+                                {
+                                    selectedMonths.map(mon => {
+                                        const monthData = allRentReportData[house.houseID]?.[mon];
+                                        const amt = monthData?.amount || 0;
+                                        return <td key={mon} className="text-end">{amtDsp(amt)}</td>
+                                    })
+                                }
+                            </tr>
+                        })
+                    }
+                </tbody>
+            </table>
         </div>
     </div>
 }
