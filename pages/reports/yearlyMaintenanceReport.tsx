@@ -21,7 +21,7 @@ import { IEditTextDropdownItem } from "../../components/generic/GenericDropdown"
 import { exportMultiple1099, exportOne1099, I1099Info } from "../../components/report/util/1099";
 import { round2 } from "../../components/report/util/utils";
 import { usePageRelatedContext } from "../../components/states/PageRelatedState";
-import { formatAccounting } from "../../components/utils/reportUtils";
+import { DoubleAryToCsv, formatAccounting } from "../../components/utils/reportUtils";
 import { TextAlignment } from "pdf-lib";
 
 interface IShowDetailsData {
@@ -86,11 +86,7 @@ const amtDsp = (amt: number) => {
     return formatAccounting(amt);
 }
 
-function DoubleAryToCsv(data: string[][]): string {
-    return data.map(ss => {
-        return ss.join(',');
-    }).join('\r\n');
-}
+
 
 type IDetailParams = {
     details: IShowDetailsData[];

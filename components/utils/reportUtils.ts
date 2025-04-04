@@ -158,3 +158,10 @@ export function formatAccounting(number: number | string) {
     let year = date.getFullYear();
     return `${month}/${day}/${year}`;
 }
+
+
+export function DoubleAryToCsv(data: string[][]): string {
+    return data.map(ss => {
+        return ss.join(',');
+    }).join('\r\n');
+}

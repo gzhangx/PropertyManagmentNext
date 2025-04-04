@@ -12,8 +12,9 @@ import { useRootPageContext } from "../../components/states/RootState";
 import { IEditTextDropdownItem } from "../../components/generic/GenericDropdown";
 import { CloseableDialog } from "../../components/generic/basedialog";
 import { orderBy } from "lodash";
-import { formatAccounting, getMonthAry, IPaymentWithDateMonthPaymentType, loadDataWithMonthRange, loadMaintenanceData, loadPayment, MonthSelections } from "../../components/utils/reportUtils";
+import { DoubleAryToCsv, formatAccounting, getMonthAry, IPaymentWithDateMonthPaymentType, loadDataWithMonthRange, loadMaintenanceData, loadPayment, MonthSelections } from "../../components/utils/reportUtils";
 import { round2 } from "../../components/report/util/utils";
+import { CreateSaveButton } from "../../components/generic/SaveFile";
 
 
 const amtDsp = (amt: number) => {
@@ -213,6 +214,18 @@ export default function CashFlowReport() {
         expenseTotals[i + 1] = allHouseExpense;
         expenseTotals[0] = round2(expenseTotals[0] + allHouseExpense);
     });
+
+
+    const arrayDisplayData = generateExportArray(selectedHouses, paymentTypes, allRentReportData, incomeTotals, expenseCats, expenseReportData, expenseTotals);
+    
+    const exportData: string[][] = [
+        ['Income'],
+        ...arrayDisplayData.incomeArray.map(row => row.map(cell => cell.amount?.toString() || cell.display)),
+        ['Expenses'],
+        ...arrayDisplayData.expenseArray.map(row => row.map(cell => cell.amount?.toString() ||cell.display)),
+
+        arrayDisplayData.grandTotal.map(cell => cell.amount?.toString() ||cell.display),
+    ] 
     return <div>
         <CloseableDialog show={!!showDetail} title='Item Details' setShow={() => setShowDetail(null)}>
                     <div className="modal-body">                        
@@ -250,6 +263,11 @@ export default function CashFlowReport() {
                     }} curDisplayValue={curOwner.label}
                     opts={{ placeHolder: 'Select Owner' }}
                 ></EditTextDropdown></div>        
+            <div className="col-sm-3">
+                            {
+                                <CreateSaveButton content={DoubleAryToCsv(exportData)} />
+                            }
+                        </div>
         </div>
         <div className="row">
             <table className="table table-striped table-bordered table-hover">
@@ -257,82 +275,46 @@ export default function CashFlowReport() {
                     <tr><th colSpan={selectedHouses.length + 2}>Income</th></tr>
                 </thead>
                 <thead>
-                    <tr><th>Houses</th><th>Total</th>{
-                        selectedHouses.map(house => <th>{house.address}</th>)
+                    <tr><th>Houses</th><th className='accounting-alright'>Total</th>{
+                        selectedHouses.map(house => <th className='accounting-alright'>{house.address}</th>)
                     }</tr>
-                </thead>
-                <tbody>
+                </thead>                
+                <tbody>                                        
                     {
-                        paymentTypes.map((pType, i) => {
-                            return <tr key={i}><td key='paymentType'>{pType}</td><td key='total' className="accounting-alright">{amtDsp(selectedHouses.reduce((acc, house) => {
-                                const monthData = allRentReportData[house.houseID]?.income[pType];
-                                const amt = monthData?.amount || 0;
-                                acc = round2(acc + amt);
-                                return acc;
-                            }, 0))}</td>
-                                {
-                                    selectedHouses.map(house => {
-                                        const monthData = allRentReportData[house.houseID]?.income[pType];
-                                        const amt = monthData?.amount || 0;
-                                        return <td key={house.houseID} className="accounting-alright" onClick={() => {
-                                            setShowDetail(monthData);
-                                        }}>{amtDsp(amt)}</td>
-                                    })
-                                }
-                            </tr>
-                        })                        
-                    }     
-                    <tr>
-                        <td>Total</td>
-                        {
-                            incomeTotals.map((total, i) => {
-                                return <td key={i} className="accounting-alright">{amtDsp(total)}</td>
-                            })
-                        }
-                    </tr>
+                        arrayDisplayData.incomeArray.slice(1).map((cells, i) => {
+                            return <tr key={'tr' + i}>{
+                                cells.map((cell, j) => {
+                                    return <td key={'td' + i + j} className={j === 0 ? '' : 'accounting-alright'}>{cell.display}</td>
+                                })
+                            }</tr>
+                        })
+                    }
+
                 </tbody>
                 <thead></thead>
                 <thead>
                     <tr><th colSpan={selectedHouses.length + 2}>Expenses</th></tr>
                 </thead>
                 <tbody>
+
                     {
-                        expenseCats.map((expCat, i) => {
-                            return <tr key={i}><td>{expCat}</td><td className="accounting-alright">{
-                                amtDsp(selectedHouses.reduce((acc, house) => {
-                                    const aggData = expenseReportData[house.houseID]?.expense[expCat];
-                                    const amt = aggData?.amount || 0;
-                                    acc = round2(acc + amt);
-                                    return acc;
-                                },0))
-                            }</td>
-                                {
-                                    selectedHouses.map(house => {
-                                        const aggData = expenseReportData[house.houseID]?.expense[expCat];
-                                        const amt = aggData?.amount || 0;
-                                        return <td key={house.houseID} className="accounting-alright" onClick={() => {
-                                            //setShowDetail(aggData);
-                                        }}>{amtDsp(amt)}</td>
+                        //This is the by expense category and last row is total columns
+                            arrayDisplayData.expenseArray.map((cells, i) => {
+                                return <tr key={'tr' + i}>{
+                                    cells.map((cell, j) => {
+                                        return <td key={'td' + i + j} className={j === 0 ? '' : 'accounting-alright'}>{cell.display}</td>
                                     })
-                                }
-                            </tr>
-                        })
-                    }
-                    <tr>
-                        <td>Total</td>
-                        {
-                            expenseTotals.map((total, i) => {
-                                return <td key={i} className="accounting-alright">{amtDsp(total)}</td>
+                                }</tr>
                             })
                         }
-                    </tr>
+                    
                 </tbody>
-                <thead>
+                <thead>                    
                     <tr>
-                        <td>Grand Total</td>
                         {
-                            incomeTotals.map((total, i) => {
-                                return <td key={i} className="accounting-alright">{amtDsp(total - expenseTotals[i])}</td>
+                            //Grand Total column generated by generateExportArray
+                            arrayDisplayData.grandTotal.map((total, i) => {                                
+                                return <td key={i} className={i === 0?'':'accounting-alright'}>{total.display}</td>
                             })
                         }
                     </tr>
@@ -344,3 +326,100 @@ export default function CashFlowReport() {
 
 
 
+type DspCellData = {
+    display: string;
+    amount?: number;
+    paymentInfo?: RentReportCellData
+    expenseInfo?: ExpenseCellData;
+}
+
+function generateExportArray(selectedHouses: IHouseInfo[], paymentTypes: string[], allRentReportData: AllRentReportData,
+    incomeTotals: number[],
+    expenseCats: string[], expenseReportData: ExpenseReportData, expenseTotals: number[]
+) {
+    const incomeArray: DspCellData[][] = [];
+    incomeArray.push(['', 'Total'].concat(selectedHouses.map(house => house.address)).map(display => ({ display })));
+    paymentTypes.map((pType, i) => {
+        const total = selectedHouses.reduce((acc, house) => {
+            const monthData = allRentReportData[house.houseID]?.income[pType];
+            const amt = monthData?.amount || 0;
+            acc = round2(acc + amt);
+            return acc;
+        }, 0);
+        incomeArray.push([
+            {
+                display: pType,
+            },
+            {
+                display: amtDsp(total).toString(),
+                amount: total,
+            },
+            ...selectedHouses.map(house => {
+                const monthData = allRentReportData[house.houseID]?.income[pType];
+                const amt = monthData?.amount || 0;
+                return {
+                    display: amtDsp(amt).toString(),
+                    amount: amt,
+                    paymentInfo: monthData,
+                }
+            })
+        ]);
+        incomeArray.push([
+            { display: 'Total' },
+            ...incomeTotals.map((total) => {
+                return {
+                    display: amtDsp(total).toString(),
+                    amount: total
+                }
+            })
+        ]);
+    });
+
+    const expenseArray: DspCellData[][] = expenseCats.map((expCat, i) => {
+        const total = selectedHouses.reduce((acc, house) => {
+            const aggData = expenseReportData[house.houseID]?.expense[expCat];
+            const amt = aggData?.amount || 0;
+            acc = round2(acc + amt);
+            return acc;
+        }, 0);
+        return [{ display: expCat },
+        {
+            display: amtDsp(total).toString(),
+            amount: total,
+        },
+        ...selectedHouses.map(house => {
+            const aggData = expenseReportData[house.houseID]?.expense[expCat];
+            const amt = aggData?.amount || 0;
+
+            return {
+                display: amtDsp(amt).toString(),
+                amount: amt,
+                expenseInfo: aggData,
+            }
+        })
+        ]
+    });
+    expenseArray.push([
+        { display: 'Total' },
+        ...expenseTotals.map((total, i) => {
+            return {
+                display: amtDsp(total).toString(),
+                amount: total,
+            }
+        })
+    ]);
+
+    return {
+        incomeArray,
+        expenseArray,
+        grandTotal: [{
+            display: 'Grand Total',
+        }].concat(incomeTotals.map((total, i) => {
+            const amount = round2(total - expenseTotals[i]);
+            return {
+                display: amtDsp(amount).toString(),
+                amount,
+            }
+        })) as DspCellData[],
+    }
+}
