@@ -169,8 +169,8 @@ export default function RentReport() {
         <div className="row">
             <table className="table table-striped table-bordered table-hover">
                 <thead>
-                    <tr><td>HouseName</td>{
-                        selectedMonths.map(mon => <td key={mon}>{mon}</td>)
+                    <tr><th>Houses</th>{
+                        selectedMonths.map(mon => <th key={mon}>{mon}</th>)
                     }</tr>
                 </thead>
                 <tbody>
