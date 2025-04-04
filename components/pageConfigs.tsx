@@ -20,7 +20,6 @@ import { LeaseReport } from './page/reports/lease'
 
 import type { JSX } from "react";
 import { TableNames } from './types'
-import { PaymentExpenseStateWrapper } from './states/PaymentExpenseState'
 
 import GoogleSheetConfigPage from '../pages/config/googleSheetConfig'
 
@@ -30,13 +29,7 @@ type LocalPageInfo = {
     table?: TableNames;
 }
 
-function doWrap(ele: JSX.Element) {
-    return <PaymentExpenseStateWrapper>
-        {
-            ele
-        }
-    </PaymentExpenseStateWrapper>
-}
+
 const inputPages: LocalPageInfo[] = [
     {
         name: 'House Info',
@@ -87,7 +80,7 @@ const allSections = [
             },
             {
                 name: 'Lease Report',
-                page: doWrap(<LeaseReport/>),
+                page: <LeaseReport/>,
             },
             {
                 name: 'Yearly 1099 Report',

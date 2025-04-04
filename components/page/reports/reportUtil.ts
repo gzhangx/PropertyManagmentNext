@@ -1,7 +1,7 @@
 import moment from 'moment';
 import { sortBy, sum } from 'lodash';
 import { IExpenseData, IHouseInfo, IPayment, IPaymentCalcOpts } from '../../reportTypes';
-import { TOTALCOLNAME, fMoneyformat } from '../../states/PaymentExpenseState';
+import { TOTALCOLNAME, fMoneyformat } from '../../states/PaymentExpenseState.notUsed';
 
 
 export interface IAmountAndPmtRecords {

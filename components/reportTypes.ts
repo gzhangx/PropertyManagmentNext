@@ -52,7 +52,7 @@ export interface IHouseInfo {
     city: string;
     state: string;
     zip: string;
-    disabled: 'Y' | 'N' | undefined | null;
+    disabled?: 'Y' | 'N' | null;
 }
 
 
