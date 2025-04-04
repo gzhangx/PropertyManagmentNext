@@ -11,7 +11,7 @@ import { useRootPageContext } from "../../components/states/RootState";
 import { IEditTextDropdownItem } from "../../components/generic/GenericDropdown";
 import { CloseableDialog } from "../../components/generic/basedialog";
 import { orderBy } from "lodash";
-import { formatAccounting, getMonthAry, IPaymentWithDateMonthPaymentType, loadPayment, MonthSelections } from "../../components/utils/reportUtils";
+import { formatAccounting, getMonthAry, IPaymentWithDateMonthPaymentType, loadDataWithMonthRange, loadPayment, MonthSelections } from "../../components/utils/reportUtils";
 
 
 const amtDsp = (amt: number) => {
@@ -58,25 +58,25 @@ export default function RentReport() {
         if (selectedMonths.length === 0) return;
 
         mainCtx.showLoadingDlg('Loading Rent Report...');
-        const startDate = mainCtx.browserTimeToUTCDBTime(selectedMonths[0] + '-01');
-        const endDate = mainCtx.browserTimeToUTCDBTime(moment(selectedMonths[selectedMonths.length - 1] + '-01'));
-        console.log(`loadData for rent report startDate: ${startDate}, endDate: ${endDate}`);
-        const paymentData: IPaymentWithDateMonthPaymentType[] = await loadPayment(rootCtx, mainCtx, {
-            whereArray: [
-                {
-                    field: 'receivedDate',
-                    op: '>=',
-                    val: startDate,
-                },
-                {
-                    field: 'receivedDate',
-                    op: '<',
-                    val: endDate,
-                }
-            ],
-        });
+        //const startDate = mainCtx.browserTimeToUTCDBTime(selectedMonths[0] + '-01');
+        //const endDate = mainCtx.browserTimeToUTCDBTime(moment(selectedMonths[selectedMonths.length - 1] + '-01'));
+        //console.log(`loadData for rent report startDate: ${startDate}, endDate: ${endDate}`);
+        //const paymentData: IPaymentWithDateMonthPaymentType[] = await loadPayment(rootCtx, mainCtx, {
+        //    whereArray: [
+        //        {
+        //            field: 'receivedDate',
+        //            op: '>=',
+        //            val: startDate,
+        //        },
+        //        {
+        //            field: 'receivedDate',
+        //            op: '<',
+        //            val: endDate,
+        //        }
+        //    ],
+        //});
         //setAllPaymentData(paymentData);
-        
+        const paymentData: IPaymentWithDateMonthPaymentType[] = await loadDataWithMonthRange(rootCtx, mainCtx, loadPayment, selectedMonths, 'receivedDate', 'Rent Payment');
         const ownerDc = paymentData.reduce((acc, pmt) => {
             const ownerName = pmt.addressObj?.ownerName;
             if (!acc.dict[ownerName]) {

@@ -71,6 +71,8 @@ export interface IExpenseData {
     workerFirstName: string;
     workerLastName: string;
     month: string;
+
+    utcDate?: string;  //if set, that means we converted date to local
 }
 
 export interface IExpenseCategory {
