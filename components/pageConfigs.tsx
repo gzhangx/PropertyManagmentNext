@@ -1,7 +1,7 @@
 import { IMainSideBarSection } from './page/sidebar'
 import { HouseList } from './page/inputs/houseList'
 import { RentpaymentInfo } from './page/inputs/rentpaymentInfo'
-import { CashFlowReport } from './page/reports/cashflow'
+import { CashFlowReport } from './page/reports/cashflow-old'
 import { OwnerList } from './page/inputs/ownerList'
 
 import { TenantList } from './page/inputs/tenantList'
@@ -11,6 +11,7 @@ import { MaintenanceRecords } from './page/inputs/maintenanceList'
 
 import YearlyMaintenanceReport from '../pages/reports/yearlyMaintenanceReport';
 import RentReport from '../pages/reports/rentReport';
+import CashFlowRpt from '../pages/reports/cashFlowReport';
 import { getLeasePage } from '../pages/reports/autoAssignLeases'
 import { RenterEmailConfig } from './page/inputs/renterEmailConfig'
 
@@ -80,6 +81,10 @@ const allSections = [
             {
                 name: 'Cash Flow',
                 page: doWrap(<CashFlowReport />),
+            },
+            {
+                name: 'Cash Flow Report',
+                page: <CashFlowRpt />,
             },
             {
                 name: 'Rent Report',
