@@ -111,3 +111,10 @@ export function formatAccounting(number: number | string) {
   
     return num < 0 ? `(${formatted.replace('-', '')})` : formatted;
   }
+
+  export function formatDate(date) {
+    let month = (date.getMonth() + 1).toString().padStart(2, '0');
+    let day = date.getDate().toString().padStart(2, '0');
+    let year = date.getFullYear();
+    return `${month}/${day}/${year}`;
+}
