@@ -41,8 +41,11 @@ export default withRouter(function MainDashboard(props) {
           <div id="content-wrapper" className="d-flex flex-column">
             <div id="content">
               <TopBar />
-            {
-              page || <OriginalDashboard />}
+              <div style={{margin:'30px'}}>
+              {
+              page || <OriginalDashboard />
+              }
+              </div>
             </div>
             <Footer />
           </div>        
