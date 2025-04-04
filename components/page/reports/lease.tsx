@@ -4,6 +4,8 @@ import { getLeases} from '../../api'
 import { getLeaseUtilForHouse, ILeaseInfoWithPmtInfo } from '../../utils/leaseUtil';
 import { usePageRelatedContext } from '../../states/PageRelatedState';
 import { EditTextDropdown } from '../../generic/EditTextDropdown';
+import moment from 'moment';
+import { formatAccounting } from '../../utils/reportUtils';
 
 
 
@@ -179,7 +181,16 @@ export function LeaseReport() {
                                                         }
                                                     });
                                                 }}>E</button></td>
-                                            }                                            
+                                            }  else if (lf.field === 'startDate' || lf.field ==='endDate') {
+                                                return < td key={key} className='tdCenter' > {
+                                                    moment(lease[lf.field]).format('MM/DD/YYYY')
+                                                }</td>
+                                            }    
+                                            else if (lf.field === 'monthlyRent') {
+                                                return < td key={key} className='tdCenter' > {
+                                                    formatAccounting(lease[lf.field])
+                                                }</td>  
+                                            }                                    
                                             return < td key={key} className='tdCenter' > {
                                                 lease[lf.field]
                                             }</td>
