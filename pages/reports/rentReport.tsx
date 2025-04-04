@@ -2,31 +2,16 @@ import React, { useState, useEffect } from "react";
 
 import { EditTextDropdown  } from '../../components/generic/EditTextDropdown';
 import {    
-    IPayment,
-    IPageRelatedState,
-    IHelperOpts,
     IHouseInfo,
 } from '../../components/reportTypes';
 
 import moment from 'moment'
-import { round2 } from "../../components/report/util/utils";
 import { usePageRelatedContext } from "../../components/states/PageRelatedState";
-import { createAndLoadHelper } from "../../components/uidatahelpers/datahelpers";
-import { IRootPageState, useRootPageContext } from "../../components/states/RootState";
-import { IDBFieldDef } from "../../components/types";
+import { useRootPageContext } from "../../components/states/RootState";
 import { IEditTextDropdownItem } from "../../components/generic/GenericDropdown";
-import { all } from "bluebird";
 import { CloseableDialog } from "../../components/generic/basedialog";
 import { orderBy } from "lodash";
-
-interface IShowDetailsData {
-    amount: number;
-    address: string;
-    houseID: string;
-    notes: string;
-    date: string;
-}
-
+import { getMonthAry, IPaymentWithDateMonthPaymentType, loadPayment, MonthSelections } from "../../components/utils/reportUtils";
 
 
 const amtDsp = (amt: number) => {
@@ -37,13 +22,6 @@ const amtDsp = (amt: number) => {
 
 
 
-export type IPaymentWithDateMonthPaymentType = IPayment & {
-    date: string;
-    month: string;
-    paymentTypeName: string;
-    address: string;
-    addressObj: IHouseInfo;
-}
 
 type RentReportCellData = {
     amount: number;
@@ -58,54 +36,13 @@ type AllRentReportData = {
     [houseID: string]: RentReportMonthRowData;
 }
 
-export async function loadPayment(rootCtx: IRootPageState, mainCtx: IPageRelatedState, opts: IHelperOpts) {
-    const helper = await createAndLoadHelper(rootCtx, mainCtx, {
-        table: 'rentPaymentInfo'
-    });
-    await helper.loadModel();
-    const fieldToDefDict = helper.getModelFields().reduce((acc, f) => {
-        acc[f.field] = f;
-        return acc;
-    }, {} as {[field: string]: IDBFieldDef});
-    await mainCtx.checkLoadForeignKeyForTable('rentPaymentInfo');
-    
-    const paymentData: IPaymentWithDateMonthPaymentType[] = await helper.loadData(opts).then(async res => {        
-        return res.rows.map(r => {
-            const paymentTypeName = r.paymentTypeName || r.paymentTypeID;
-            const date = mainCtx.utcDbTimeToZonedTime(r.receivedDate);
-
-            const pmt: IPaymentWithDateMonthPaymentType = {
-                ...r,
-                paymentTypeName,
-                date,
-                month: moment(date).format('YYYY-MM'),
-                amount: r.receivedAmount,
-            };
-            ['receivedDate'].forEach(f => {
-                const tmField = fieldToDefDict['houseID'];
-                if (tmField.foreignKey && tmField.foreignKey.resolvedToField) {
-                    const houseInfo = mainCtx.translateForeignLeuColumnToObject(tmField, r);
-                    pmt[tmField.foreignKey.resolvedToField] = houseInfo as IHouseInfo;
-
-                    if (typeof houseInfo === 'string') {
-                        pmt.address = 'NonReslvedAddr ' + houseInfo
-                    } else {
-                        pmt.address = houseInfo.address as string;
-                    }
-                }
-            });            
-            return pmt;
-        })
-    });
-    return paymentData;
-}
 
 export default function RentReport() {
     const rootCtx = useRootPageContext();
     const mainCtx = usePageRelatedContext();
 
-    const [selectedMonths, setSelectedMonths] = useState<string[]>([]);
     const [curMonthSelection, setCurMonthSelection] = useState<MonthSelections>('Y2D');
+    const [selectedMonths, setSelectedMonths] = useState<string[]>(getMonthAry(curMonthSelection));
     const [curOwner, setCurOwner] = useState<IEditTextDropdownItem>({
         label: 'All',
         value: ''
@@ -164,11 +101,11 @@ export default function RentReport() {
         //const allHouses = mainCtx.getAllForeignKeyLookupItems('houseInfo') as IHouseInfo[];
         //selectedMonths
 
-        paymentData.forEach(pmt => {            
-            let houseMOnth = allRentReportData[pmt.houseID];
+        const allRentReportData: AllRentReportData = paymentData.reduce((acc,pmt) => {            
+            let houseMOnth = acc[pmt.houseID];
             if (!houseMOnth) {
                 houseMOnth = {};
-                allRentReportData[pmt.houseID] = houseMOnth;
+                acc[pmt.houseID] = houseMOnth;
             }
             let monthData = houseMOnth[pmt.month];
             if (!monthData) {   
@@ -180,7 +117,8 @@ export default function RentReport() {
             }
             monthData.amount += pmt.amount;
             monthData.payments.push(pmt);
-        });
+            return acc;
+        }, {} as AllRentReportData);
 
         setAllRentReportData(allRentReportData);
         
@@ -243,7 +181,9 @@ export default function RentReport() {
                                     selectedMonths.map(mon => {
                                         const monthData = allRentReportData[house.houseID]?.[mon];
                                         const amt = monthData?.amount || 0;
-                                        return <td key={mon} className="text-end">{amtDsp(amt)}</td>
+                                        return <td key={mon} className="text-end" onClick={() => {
+                                            setShowDetail(monthData);
+                                        }}>{amtDsp(amt)}</td>
                                     })
                                 }
                             </tr>
@@ -257,41 +197,3 @@ export default function RentReport() {
 
 
 
-
-
-type MonthSelections = 'LastMonth' | 'Last3Month' | 'Y2D' | 'LastYear' | 'All';
-function getMonthAry(monSel: MonthSelections) {
-    
-    let lm: string;
-    switch (monSel) {
-        case 'LastMonth':
-            return [moment().subtract(1, 'month').format('YYYY-MM')];
-        case 'Last3Month':
-            return [0, 1, 2].map(sub => moment().subtract(sub, 'month').format('YYYY-MM'))
-                                        
-        case 'Y2D':
-            {
-                let start = moment().startOf('year');
-                const now = moment();
-                const result: string[] = [];
-                while (start.isSameOrBefore(now)) {
-                    result.push(start.format('YYYY-MM'));
-                    start.add(1, 'month');
-                }
-                return result;
-            }
-        case 'LastYear':
-            {
-                const end = moment().startOf('year');
-                const start = moment().subtract(1, 'year').endOf('year');
-                const result: string[] = [];
-                while (start.isBefore(end)) {
-                    result.push(start.format('YYYY-MM'));
-                    start.add(1, 'month');
-                }
-                break;
-            }
-        default:
-            return [];
-    }
-}
