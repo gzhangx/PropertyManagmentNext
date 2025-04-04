@@ -24,7 +24,7 @@
     "next-env.d.ts",
     "**/*.ts",
     "**/*.tsx"
-, "components/page/reports/expenseByWorkerReport.notused", "pages/reports/MonthlyComp.notused"  ],
+, "components/page/reports/expenseByWorkerReport.notused", "pages/reports/MonthlyComp.notused", "components/page/reports/cashflow-old.dontuse"  ],
   "exclude": [
     "node_modules"
   ]

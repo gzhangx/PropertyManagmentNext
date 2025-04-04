@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 
 import { EditTextDropdown  } from '../../components/generic/EditTextDropdown';
 import {    
+    IExpenseData,
     IHouseInfo,
 } from '../../components/reportTypes';
 
@@ -11,7 +12,7 @@ import { useRootPageContext } from "../../components/states/RootState";
 import { IEditTextDropdownItem } from "../../components/generic/GenericDropdown";
 import { CloseableDialog } from "../../components/generic/basedialog";
 import { orderBy } from "lodash";
-import { getMonthAry, IPaymentWithDateMonthPaymentType, loadDataWithMonthRange, loadPayment, MonthSelections } from "../../components/utils/reportUtils";
+import { getMonthAry, IPaymentWithDateMonthPaymentType, loadDataWithMonthRange, loadMaintenanceData, loadPayment, MonthSelections } from "../../components/utils/reportUtils";
 
 
 const amtDsp = (amt: number) => {
@@ -37,6 +38,17 @@ type AllRentReportData = {
 }
 
 
+type ExpenseCellData = {
+    amount: number;
+    expenses: IExpenseData[];
+}
+type RentReportExpenseRowData = {
+    expense: { [paymentType: string]: ExpenseCellData };
+}
+type ExpenseReportData = {
+    [houseID: string]: RentReportExpenseRowData;
+}
+
 export default function CashFlowReport() {
     const rootCtx = useRootPageContext();
     const mainCtx = usePageRelatedContext();
@@ -51,6 +63,8 @@ export default function CashFlowReport() {
     //const [allPaymentData, setAllPaymentData] = useState<IPaymentWithDateMonthPaymentType[]>([]);
 
     const [allRentReportData, setAllRentReportData] = useState<AllRentReportData>({});
+    const [expenseReportData, setExpenseReportData] = useState<ExpenseReportData>({});
+    const [expenseCats, setExpenseCats] = useState<string[]>([]);
 
     const [showDetail, setShowDetail] = useState<RentReportCellData | null>(null);   
 
@@ -58,8 +72,7 @@ export default function CashFlowReport() {
 
     const loadData = async () => {        
         if (selectedMonths.length === 0) return;
-
-        mainCtx.showLoadingDlg('Loading Rent Report...');
+        
         
         const paymentData: IPaymentWithDateMonthPaymentType[] = await loadDataWithMonthRange(rootCtx, mainCtx, loadPayment, selectedMonths, 'receivedDate', 'Rent Payment');
         //setAllPaymentData(paymentData);
@@ -83,8 +96,7 @@ export default function CashFlowReport() {
             value: o,
         }))));
 
-
-        mainCtx.showLoadingDlg('');
+        
         //const allHouses = mainCtx.getAllForeignKeyLookupItems('houseInfo') as IHouseInfo[];
         //selectedMonths        
         
@@ -126,8 +138,57 @@ export default function CashFlowReport() {
         setAllRentReportData(allRentReportDataAndMisc.rptData);
         setPaymentTypes(allRentReportDataAndMisc.paymentTypeData.paymentTypes);
     }
+
+
+    async function loadExpenseData() {
+        const expenseData: IExpenseData[] = await loadDataWithMonthRange(rootCtx, mainCtx, loadMaintenanceData, selectedMonths, 'date', 'ExpenseData');
+        const expenseRes = expenseData.reduce((acc, exp) => {
+            let houseExp = acc.expenseData[exp.houseID];
+            if (!houseExp) {
+                houseExp = {
+                    expense: {},
+                };
+                acc.expenseData[exp.houseID] = houseExp;
+            }
+
+            let expCatData = houseExp.expense[exp.expenseCategoryName];
+            if (!expCatData) {
+                expCatData = {
+                    amount: 0,
+                    expenses: [],
+                };
+                houseExp.expense[exp.expenseCategoryName] = expCatData;
+            }
+
+            expCatData.amount += exp.amount;
+            expCatData.expenses.push(exp);
+
+            if (!acc.expenseCatData.existing[exp.expenseCategoryName]) {
+                acc.expenseCatData.expenseCats.push(exp.expenseCategoryName);
+                acc.expenseCatData.existing[exp.expenseCategoryName] = true;
+            }
+            return acc;
+        }, {
+            expenseData: {} as ExpenseReportData,
+            expenseCatData: {
+                existing: {} as { [expenseCat: string]: boolean; },
+                expenseCats: [] as string[],
+            }
+        });
+
+        setExpenseReportData(expenseRes.expenseData);
+        setExpenseCats(expenseRes.expenseCatData.expenseCats.sort());
+    }
+
+    async function loadAll() {
+        await mainCtx.checkLoadForeignKeyForTable('maintenanceRecords');
+        await loadData();
+        await loadExpenseData();
+        mainCtx.showLoadingDlg('');        
+    }
     useEffect(() => {
-        loadData();
+        mainCtx.showLoadingDlg('Loading Rent Report...');
+        loadAll();
     }, [selectedMonths.join(',')]);
     
     const allHouses = (mainCtx.getAllForeignKeyLookupItems('houseInfo') || []) as IHouseInfo[];
@@ -200,6 +261,23 @@ export default function CashFlowReport() {
                 <thead>
                     <tr><th colSpan={allHouses.filter(h => h.ownerName === curOwner.value || !curOwner.value).length + 1}>Expenses</th></tr>
                 </thead>
+                <tbody>
+                    {
+                        expenseCats.map((expCat, i) => {
+                            return <tr key={i}><td>{expCat}</td>
+                                {
+                                    allHouses.filter(h => h.ownerName === curOwner.value || !curOwner.value).map(house => {
+                                        const aggData = expenseReportData[house.houseID]?.expense[expCat];
+                                        const amt = aggData?.amount || 0;
+                                        return <td key={house.houseID} className="text-end" onClick={() => {
+                                            //setShowDetail(aggData);
+                                        }}>{amtDsp(amt)}</td>
+                                    })
+                                }
+                            </tr>
+                        })
+                    }
+                </tbody>
             </table>
         </div>
     </div>

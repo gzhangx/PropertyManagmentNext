@@ -1,7 +1,6 @@
 import { IMainSideBarSection } from './page/sidebar'
 import { HouseList } from './page/inputs/houseList'
 import { RentpaymentInfo } from './page/inputs/rentpaymentInfo'
-import { CashFlowReport } from './page/reports/cashflow-old'
 import { OwnerList } from './page/inputs/ownerList'
 
 import { TenantList } from './page/inputs/tenantList'
@@ -77,11 +76,7 @@ const inputPages: LocalPageInfo[] = [
 const allSections = [
     {
         name: 'PM Reports',
-        pages: [
-            {
-                name: 'Cash Flow',
-                page: doWrap(<CashFlowReport />),
-            },
+        pages: [            
             {
                 name: 'Cash Flow Report',
                 page: <CashFlowRpt />,

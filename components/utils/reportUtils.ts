@@ -76,7 +76,7 @@ export async function loadMaintenanceData(rootCtx: IRootPageState, mainCtx: IPag
     });
 }
 
-export async function loadDataWithMonthRange(rootCtx: IRootPageState, mainCtx: IPageRelatedState, loader: GenLoaderFunc, selectedMonths: string[], dateField: 'receivedDate', comment: string) {
+export async function loadDataWithMonthRange(rootCtx: IRootPageState, mainCtx: IPageRelatedState, loader: GenLoaderFunc, selectedMonths: string[], dateField: 'receivedDate' | 'date', comment: string) {
     const startDate = mainCtx.browserTimeToUTCDBTime(selectedMonths[0] + '-01');
     const endDate = mainCtx.browserTimeToUTCDBTime(moment(selectedMonths[selectedMonths.length - 1] + '-01'));
     console.log(`loadData for ${comment} startDate: ${startDate}, endDate: ${endDate}`);
