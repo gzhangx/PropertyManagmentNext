@@ -12,12 +12,13 @@ import { useRootPageContext } from "../../components/states/RootState";
 import { IEditTextDropdownItem } from "../../components/generic/GenericDropdown";
 import { CloseableDialog } from "../../components/generic/basedialog";
 import { orderBy } from "lodash";
-import { getMonthAry, IPaymentWithDateMonthPaymentType, loadDataWithMonthRange, loadMaintenanceData, loadPayment, MonthSelections } from "../../components/utils/reportUtils";
+import { formatAccounting, getMonthAry, IPaymentWithDateMonthPaymentType, loadDataWithMonthRange, loadMaintenanceData, loadPayment, MonthSelections } from "../../components/utils/reportUtils";
+import { round2 } from "../../components/report/util/utils";
 
 
 const amtDsp = (amt: number) => {
     if (!amt) return 0;
-    return amt.toFixed(2);
+    return formatAccounting(amt);
 }
 
 
@@ -31,6 +32,7 @@ type RentReportCellData = {
 
 type RentReportIncomeExpenseRowData = {
     income: { [paymentType: string]: RentReportCellData };
+    totalIncome: number;
 }
 
 type AllRentReportData = {
@@ -44,6 +46,7 @@ type ExpenseCellData = {
 }
 type RentReportExpenseRowData = {
     expense: { [paymentType: string]: ExpenseCellData };
+    totalExpense: number;
 }
 type ExpenseReportData = {
     [houseID: string]: RentReportExpenseRowData;
@@ -105,6 +108,7 @@ export default function CashFlowReport() {
             if (!houseIcomExp) {
                 houseIcomExp = {
                     income: {},
+                    totalIncome: 0,
                 };
                 acc.rptData[pmt.houseID] = houseIcomExp;
             }
@@ -116,8 +120,9 @@ export default function CashFlowReport() {
                 };
                 houseIcomExp.income[pmt.paymentTypeName] = pmpTypeData;
             }
-            pmpTypeData.amount += pmt.amount;
+            pmpTypeData.amount = round2(pmpTypeData.amount + pmt.amount);
             pmpTypeData.payments.push(pmt);
+            houseIcomExp.totalIncome = round2(houseIcomExp.totalIncome + pmt.amount);
 
             if (!acc.paymentTypeData.existing[pmt.paymentTypeName]) {
                 acc.paymentTypeData.paymentTypes.push(pmt.paymentTypeName);
@@ -147,6 +152,7 @@ export default function CashFlowReport() {
             if (!houseExp) {
                 houseExp = {
                     expense: {},
+                    totalExpense: 0,
                 };
                 acc.expenseData[exp.houseID] = houseExp;
             }
@@ -160,7 +166,8 @@ export default function CashFlowReport() {
                 houseExp.expense[exp.expenseCategoryName] = expCatData;
             }
 
-            expCatData.amount += exp.amount;
+            expCatData.amount = round2(expCatData.amount + exp.amount);
+            houseExp.totalExpense = round2(houseExp.totalExpense + exp.amount);
             expCatData.expenses.push(exp);
 
             if (!acc.expenseCatData.existing[exp.expenseCategoryName]) {
@@ -192,6 +199,20 @@ export default function CashFlowReport() {
     }, [selectedMonths.join(',')]);
     
     const allHouses = (mainCtx.getAllForeignKeyLookupItems('houseInfo') || []) as IHouseInfo[];
+    const selectedHouses = allHouses.filter(h => h.ownerName === curOwner.value || !curOwner.value);
+    const incomeTotals: number[] = new Array(selectedHouses.length + 1).fill(0);
+    const expenseTotals: number[] = new Array(selectedHouses.length + 1).fill(0);
+    selectedHouses.forEach((house, i) => {
+        if (!allRentReportData[house.houseID]) return;
+        const allHouseIncome = allRentReportData[house.houseID].totalIncome;
+        incomeTotals[i + 1] = allHouseIncome;
+        incomeTotals[0] = round2(incomeTotals[0] + allHouseIncome);
+
+        if (!expenseReportData[house.houseID]) return;
+        const allHouseExpense = expenseReportData[house.houseID].totalExpense;
+        expenseTotals[i + 1] = allHouseExpense;
+        expenseTotals[0] = round2(expenseTotals[0] + allHouseExpense);
+    });
     return <div>
         <CloseableDialog show={!!showDetail} title='Item Details' setShow={() => setShowDetail(null)}>
                     <div className="modal-body">                        
@@ -233,43 +254,63 @@ export default function CashFlowReport() {
         <div className="row">
             <table className="table table-striped table-bordered table-hover">
                 <thead>
-                    <tr><th colSpan={allHouses.filter(h => h.ownerName === curOwner.value || !curOwner.value).length + 1}>Income</th></tr>
+                    <tr><th colSpan={selectedHouses.length + 2}>Income</th></tr>
                 </thead>
                 <thead>
-                    <tr><th>Houses</th>{
-                        allHouses.filter(h => h.ownerName === curOwner.value || !curOwner.value).map(house => <th>{house.address}</th>)
+                    <tr><th>Houses</th><th>Total</th>{
+                        selectedHouses.map(house => <th>{house.address}</th>)
                     }</tr>
                 </thead>
                 <tbody>
                     {
                         paymentTypes.map((pType, i) => {
-                            return <tr key={i}><td>{pType}</td>
+                            return <tr key={i}><td key='paymentType'>{pType}</td><td key='total' className="accounting-alright">{amtDsp(selectedHouses.reduce((acc, house) => {
+                                const monthData = allRentReportData[house.houseID]?.income[pType];
+                                const amt = monthData?.amount || 0;
+                                acc = round2(acc + amt);
+                                return acc;
+                            }, 0))}</td>
                                 {
-                                    allHouses.filter(h => h.ownerName === curOwner.value || !curOwner.value).map(house => {
+                                    selectedHouses.map(house => {
                                         const monthData = allRentReportData[house.houseID]?.income[pType];
                                         const amt = monthData?.amount || 0;
-                                        return <td key={house.houseID} className="text-end" onClick={() => {
+                                        return <td key={house.houseID} className="accounting-alright" onClick={() => {
                                             setShowDetail(monthData);
                                         }}>{amtDsp(amt)}</td>
                                     })
                                 }
                             </tr>
-                        })
-                    }                    
+                        })                        
+                    }     
+                    <tr>
+                        <td>Total</td>
+                        {
+                            incomeTotals.map((total, i) => {
+                                return <td key={i} className="accounting-alright">{amtDsp(total)}</td>
+                            })
+                        }
+                    </tr>
                 </tbody>
                 <thead></thead>
                 <thead>
-                    <tr><th colSpan={allHouses.filter(h => h.ownerName === curOwner.value || !curOwner.value).length + 1}>Expenses</th></tr>
+                    <tr><th colSpan={selectedHouses.length + 2}>Expenses</th></tr>
                 </thead>
                 <tbody>
                     {
                         expenseCats.map((expCat, i) => {
-                            return <tr key={i}><td>{expCat}</td>
+                            return <tr key={i}><td>{expCat}</td><td className="accounting-alright">{
+                                amtDsp(selectedHouses.reduce((acc, house) => {
+                                    const aggData = expenseReportData[house.houseID]?.expense[expCat];
+                                    const amt = aggData?.amount || 0;
+                                    acc = round2(acc + amt);
+                                    return acc;
+                                },0))
+                            }</td>
                                 {
-                                    allHouses.filter(h => h.ownerName === curOwner.value || !curOwner.value).map(house => {
+                                    selectedHouses.map(house => {
                                         const aggData = expenseReportData[house.houseID]?.expense[expCat];
                                         const amt = aggData?.amount || 0;
-                                        return <td key={house.houseID} className="text-end" onClick={() => {
+                                        return <td key={house.houseID} className="accounting-alright" onClick={() => {
                                             //setShowDetail(aggData);
                                         }}>{amtDsp(amt)}</td>
                                     })
@@ -277,7 +318,25 @@ export default function CashFlowReport() {
                             </tr>
                         })
                     }
+                    <tr>
+                        <td>Total</td>
+                        {
+                            expenseTotals.map((total, i) => {
+                                return <td key={i} className="accounting-alright">{amtDsp(total)}</td>
+                            })
+                        }
+                    </tr>
                 </tbody>
+                <thead>
+                    <tr>
+                        <td>Grand Total</td>
+                        {
+                            incomeTotals.map((total, i) => {
+                                return <td key={i} className="accounting-alright">{amtDsp(total - expenseTotals[i])}</td>
+                            })
+                        }
+                    </tr>
+                </thead>
             </table>
         </div>
     </div>
