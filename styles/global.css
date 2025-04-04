@@ -33,3 +33,8 @@ tr:nth-child(odd) {
 tr:nth-child(even) {
     background-color: #d4d2d2;
 }
+.td-center {
+    text-align: center;
+    vertical-align: middle;
+}
+

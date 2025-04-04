@@ -95,3 +95,19 @@ export function getMonthAry(monSel: MonthSelections) {
             return [];
     }
 }
+
+
+export function formatAccounting(number: number | string) {
+    const num = Number(number);
+    if (isNaN(num)) {
+      return 'Invalid Input';
+    }
+  
+    const formatted = new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: 'USD',
+      currencyDisplay: 'symbol',
+    }).format(num);
+  
+    return num < 0 ? `(${formatted.replace('-', '')})` : formatted;
+  }

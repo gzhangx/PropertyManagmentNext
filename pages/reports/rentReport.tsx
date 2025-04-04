@@ -11,12 +11,12 @@ import { useRootPageContext } from "../../components/states/RootState";
 import { IEditTextDropdownItem } from "../../components/generic/GenericDropdown";
 import { CloseableDialog } from "../../components/generic/basedialog";
 import { orderBy } from "lodash";
-import { getMonthAry, IPaymentWithDateMonthPaymentType, loadPayment, MonthSelections } from "../../components/utils/reportUtils";
+import { formatAccounting, getMonthAry, IPaymentWithDateMonthPaymentType, loadPayment, MonthSelections } from "../../components/utils/reportUtils";
 
 
 const amtDsp = (amt: number) => {
     if (!amt) return 0;
-    return amt.toFixed(2);
+    return formatAccounting(amt);
 }
 
 
@@ -170,7 +170,7 @@ export default function RentReport() {
             <table className="table table-striped table-bordered table-hover">
                 <thead>
                     <tr><th>Houses</th>{
-                        selectedMonths.map(mon => <th key={mon}>{mon}</th>)
+                        selectedMonths.map(mon => <th key={mon}  className="text-end td-center">{mon}</th>)
                     }</tr>
                 </thead>
                 <tbody>
@@ -181,7 +181,7 @@ export default function RentReport() {
                                     selectedMonths.map(mon => {
                                         const monthData = allRentReportData[house.houseID]?.[mon];
                                         const amt = monthData?.amount || 0;
-                                        return <td key={mon} className="text-end" onClick={() => {
+                                        return <td key={mon} className="text-end td-center" onClick={() => {
                                             setShowDetail(monthData);
                                         }}>{amtDsp(amt)}</td>
                                     })
