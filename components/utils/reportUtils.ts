@@ -1,5 +1,5 @@
 import moment from "moment";
-import { IHelperOpts, IHouseInfo, IPageRelatedState, IPayment } from "../reportTypes";
+import { IExpenseData, IHelperOpts, IHouseInfo, IMaintenanceRawData, IPageRelatedState, IPayment } from "../reportTypes";
 import { IRootPageState } from "../states/RootState";
 import { IDBFieldDef } from "../types";
 import { createAndLoadHelper } from "../uidatahelpers/datahelpers";
@@ -56,6 +56,46 @@ export async function loadPayment(rootCtx: IRootPageState, mainCtx: IPageRelated
     return paymentData;
 }
 
+
+type GenLoaderFunc = (rootCtx: IRootPageState, mainCtx: IPageRelatedState, opts: IHelperOpts) => Promise<any[]>;
+export async function loadMaintenanceData(rootCtx: IRootPageState, mainCtx: IPageRelatedState, opts: IHelperOpts) {
+    const helper = await createAndLoadHelper(rootCtx, mainCtx, {
+        table: 'maintenanceRecords'
+    });
+    await helper.loadModel();
+    await mainCtx.checkLoadForeignKeyForTable('maintenanceRecords');
+    const data = await helper.loadData(opts);
+    return data.rows.map(r => {
+        const expenseCategoryName = r.expenseCategoryName || r.expenseCategoryId;
+        return {
+            ...r,
+            utcDate: r.date,
+            date: mainCtx.utcDbTimeToZonedTime(r.date),
+            expenseCategoryName,
+        } as IExpenseData
+    });
+}
+
+export async function loadDataWithMonthRange(rootCtx: IRootPageState, mainCtx: IPageRelatedState, loader: GenLoaderFunc, selectedMonths: string[], dateField: 'receivedDate', comment: string) {
+    const startDate = mainCtx.browserTimeToUTCDBTime(selectedMonths[0] + '-01');
+    const endDate = mainCtx.browserTimeToUTCDBTime(moment(selectedMonths[selectedMonths.length - 1] + '-01'));
+    console.log(`loadData for ${comment} startDate: ${startDate}, endDate: ${endDate}`);
+    const data = await loader(rootCtx, mainCtx, {
+        whereArray: [
+            {
+                field: dateField,
+                op: '>=',
+                val: startDate,
+            },
+            {
+                field: dateField,
+                op: '<',
+                val: endDate,
+            }
+        ],
+    });
+    return data;
+}
 
 
 
