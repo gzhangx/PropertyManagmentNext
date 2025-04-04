@@ -5,7 +5,6 @@ import {
     IHouseInfo,
 } from '../../components/reportTypes';
 
-import moment from 'moment'
 import { usePageRelatedContext } from "../../components/states/PageRelatedState";
 import { useRootPageContext } from "../../components/states/RootState";
 import { IEditTextDropdownItem } from "../../components/generic/GenericDropdown";
@@ -128,6 +127,7 @@ export default function RentReport() {
     }, [selectedMonths.join(',')]);
     
     const allHouses = (mainCtx.getAllForeignKeyLookupItems('houseInfo') || []) as IHouseInfo[];
+    const selectedHouses = allHouses.filter(h => (h.ownerName === curOwner.value || !curOwner.value) && h.disabled !== 'Y');
     return <div>
         <CloseableDialog show={!!showDetail} title='Item Details' setShow={() => setShowDetail(null)}>
                     <div className="modal-body">                        
@@ -175,7 +175,7 @@ export default function RentReport() {
                 </thead>
                 <tbody>
                     {
-                        allHouses.filter(h=>h.ownerName === curOwner.value || !curOwner.value).map(house => {
+                        selectedHouses.map(house => {
                             return <tr key={house.houseID}><td>{house.address}</td>
                                 {
                                     selectedMonths.map(mon => {

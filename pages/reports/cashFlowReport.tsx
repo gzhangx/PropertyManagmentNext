@@ -199,7 +199,7 @@ export default function CashFlowReport() {
     }, [selectedMonths.join(',')]);
     
     const allHouses = (mainCtx.getAllForeignKeyLookupItems('houseInfo') || []) as IHouseInfo[];
-    const selectedHouses = allHouses.filter(h => h.ownerName === curOwner.value || !curOwner.value);
+    const selectedHouses = allHouses.filter(h => (h.ownerName === curOwner.value || !curOwner.value) && h.disabled !== 'Y');
     const incomeTotals: number[] = new Array(selectedHouses.length + 1).fill(0);
     const expenseTotals: number[] = new Array(selectedHouses.length + 1).fill(0);
     selectedHouses.forEach((house, i) => {
