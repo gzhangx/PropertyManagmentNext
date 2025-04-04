@@ -40,7 +40,7 @@ export default withRouter(function MainDashboard(props) {
         <MainSideBar sections={sections} otherPages={otherPages}></MainSideBar>        
           <div id="content-wrapper" className="d-flex flex-column">
             <div id="content">
-              <TopBar />
+            {(rstate.sideBarStates['showNotSousedTopBar'] || mainCtx.topBarMessagesCfg.items.length > 0 || mainCtx.topBarErrorsCfg.items.length > 0) &&  <TopBar />}
               <div style={{margin:'30px'}}>
               {
               page || <OriginalDashboard />

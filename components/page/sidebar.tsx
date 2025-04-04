@@ -169,6 +169,11 @@ export function MainSideBar(props : IMainSideBarProps) {
         {
             false && Removed()
         }
+        <div className="sidebar-card d-none d-lg-flex">
+            <img className="sidebar-card-illustration mb-2" src="/img/undraw_rocket.svg" alt="..." width={100} height={100} onClick={() => {
+                rs.setSideBarStates({ ...rs.sideBarStates, showNotSousedTopBar: !rs.sideBarStates.showNotSousedTopBar });
+            }} />            
+        </div>
     </ul>
 }
 
