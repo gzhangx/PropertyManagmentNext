@@ -2,7 +2,6 @@ import { IMainSideBarSection } from './page/sidebar'
 import { HouseList } from './page/inputs/houseList'
 import { RentpaymentInfo } from './page/inputs/rentpaymentInfo'
 import { CashFlowReport } from './page/reports/cashflow'
-import { ExpenseByWorkerReport } from './page/reports/expenseByWorkerReport'
 import { OwnerList } from './page/inputs/ownerList'
 
 import { TenantList } from './page/inputs/tenantList'
@@ -18,7 +17,6 @@ import { RenterEmailConfig } from './page/inputs/renterEmailConfig'
 import * as dev2 from '../pages/util/dev2'
 
 import { LeaseReport } from './page/reports/lease'
-import MonthlyComp from '../pages/reports/MonthlyComp'
 
 import type { JSX } from "react";
 import { TableNames } from './types'
@@ -90,14 +88,6 @@ const allSections = [
             {
                 name: 'Lease Report',
                 page: doWrap(<LeaseReport/>),
-            },
-            {
-                name: 'Comp Report',
-                page: doWrap(<MonthlyComp/>),
-            },
-            {
-                name: '1099 Report',
-                page: doWrap(<ExpenseByWorkerReport />),
             },
             {
                 name: 'Yearly 1099 Report',
