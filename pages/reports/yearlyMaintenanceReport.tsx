@@ -21,6 +21,8 @@ import { IEditTextDropdownItem } from "../../components/generic/GenericDropdown"
 import { exportMultiple1099, exportOne1099, I1099Info } from "../../components/report/util/1099";
 import { round2 } from "../../components/report/util/utils";
 import { usePageRelatedContext } from "../../components/states/PageRelatedState";
+import { formatAccounting } from "../../components/utils/reportUtils";
+import { TextAlignment } from "pdf-lib";
 
 interface IShowDetailsData {
     amount: number;
@@ -81,7 +83,7 @@ interface IYearlyMaintenanceReportState {
 
 const amtDsp = (amt: number) => {
     if (!amt) return 0;
-    return amt.toFixed(2);
+    return formatAccounting(amt);
 }
 
 function DoubleAryToCsv(data: string[][]): string {
@@ -146,7 +148,7 @@ function GenerateByCatData(state: IYearlyMaintenanceReportState, setShowDetail: 
             { !showv1 && <table className="table">
                 <thead>
                     <tr>
-                        <th scope="col">#</th>
+                        <th scope="col">Contractors</th>
                         {
                             workerIds.map((n, keyi) => {
                                 const wkrCat = state.byWorkerByCat.byWorkerTotal[n];
@@ -160,7 +162,7 @@ function GenerateByCatData(state: IYearlyMaintenanceReportState, setShowDetail: 
                     {
                         catIds.map((catId, tri) => {
                             return <tr key={tri}>
-                                <th scope="row">{catId}</th>
+                                <td scope="row">{catId}</td>
                                 {
                                     workerIds.map((workerName, keyi) => {
                                         const wkrCat = dataBy[catId][workerName];
@@ -193,11 +195,11 @@ function GenerateByCatData(state: IYearlyMaintenanceReportState, setShowDetail: 
             <table className="table">
                 <thead>
                     <tr>
-                        <th scope="col">#</th>
-                        <th>Total</th>
+                        <th scope="col">Contractors</th>
+                        <th className='td-center'>Total</th>
                         {
                             catIds.map((catId, tri) => {
-                                return <th key={tri}>{catId}</th>
+                                return <th  className='td-center' key={tri}>{catId}</th>
                             })
                         }                        
                     </tr>
@@ -207,12 +209,12 @@ function GenerateByCatData(state: IYearlyMaintenanceReportState, setShowDetail: 
                         workerIds.map((workerId, keyi) => {
                             const wkrCat = state.byWorkerByCat.byWorkerTotal[workerId];                            
                             return <tr key={keyi} style={get1099Color(wkrCat)} >
-                                <th scope="row" onClick={() => showDetail(wkrCat, workerId)}>{state.lookUpWorkerName(workerId)}</th>
-                                <td key={'total' + keyi}>{amtDsp(state.byWorkerByCat.byWorkerTotal[workerId]?.total)}</td>
+                                <td scope="row" onClick={() => showDetail(wkrCat, workerId)}>{state.lookUpWorkerName(workerId)}</td>
+                                <td className='td-center' key={'total' + keyi}>{amtDsp(state.byWorkerByCat.byWorkerTotal[workerId]?.total)}</td>
                                 {
                                     catIds.map((catId, tri) => {                                        
                                         const wkrCat = dataBy[catId][workerId];
-                                        return <td scope="col" key={tri} onClick={()=>showDetail(wkrCat, '')}>{
+                                        return <td className='td-center' scope="col" key={tri} onClick={()=>showDetail(wkrCat, '')}>{
                                                 amtDsp(wkrCat?.total)
                                         }</td>
                                     })
@@ -222,17 +224,17 @@ function GenerateByCatData(state: IYearlyMaintenanceReportState, setShowDetail: 
                     }
                     {                        
                         <tr>
-                            <th>Grand Total:</th>
+                            <th style={{textAlign:'right'}}>Grand Total:</th>
                             {
                                 catIds.map((catId, keyi) => {
                                     const wkrCat = state.byWorkerByCat.byCatTotal[catId];
 
-                                    return <td scope="col" style={get1099Color(wkrCat)} key={keyi}>{
+                                    return <td className='td-center' scope="col" style={get1099Color(wkrCat)} key={keyi}>{
                                         amtDsp(wkrCat?.total)
                                     }</td>
                                 })
                             }
-                            <td>{amtDsp(state.byWorkerByCat?.total)}</td>
+                            <td className='td-center'>{amtDsp(state.byWorkerByCat?.total)}</td>
                         </tr>
                     }
                 </tbody>
