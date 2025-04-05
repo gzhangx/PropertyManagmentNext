@@ -104,10 +104,17 @@ export async function genericPageLoader(prms: IPageParms, pageState: IPageStates
             await prms.pageCtx.loadForeignKeyLookup(fd.foreignKey.table);
         }
     }
+
+    const canHaveNullPrimaryIdTables = {
+        'rentPaymentInfo': true,
+        'maintenanceRecords': true,
+
+    }
+
     stdProcessSheetData(pageDetails.dataRows, {
         ...pageState,
         ...hi,
-    }, prms.pageCtx, pageState.curPage.table === 'rentPaymentInfo');
+    }, prms.pageCtx, canHaveNullPrimaryIdTables[pageState.curPage.table]);
 
     const mappingColumnInfo = getMappingColumnInfo(pageState.curPage);
     const rowComparer: IRowComparer =

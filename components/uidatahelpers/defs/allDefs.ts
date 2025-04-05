@@ -77,6 +77,7 @@ export const maintenanceInfoDef: ITableAndSheetMappingInfo = {
         sheetName: 'MaintainessRecord',
         range: 'A1:G',
         mapping: [
+            'maintenanceID',
             'date',
             'description',
             'amount',
