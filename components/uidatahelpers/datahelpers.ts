@@ -317,13 +317,6 @@ export function createHelper(rootCtx: RootState.IRootPageState, ctx: IPageRelate
                 }
             }
             return deleteRes;
-        },
-        backFillId: async (ids: string[]) => {
-            if (!sheetMapping) return;
-            return await updateSheet('update', googleSheetId, sheetMapping.sheetName, {
-                row: 1,
-                values: ids.map(id => [id]),
-            });
         }
     }
 

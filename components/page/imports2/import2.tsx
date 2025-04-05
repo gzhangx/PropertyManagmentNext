@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useReducer, type JSX } from 'react';
-import { getTenants, saveGoodSheetAuthInfo, } from '../../api'
+import { getTenants, saveGoodSheetAuthInfo, updateSheet, } from '../../api'
 import { EditTextDropdown } from '../../generic/EditTextDropdown'
 import { IIncomeExpensesContextValue, IPageRelatedState } from '../../reportTypes';
 import { keyBy,  } from 'lodash'
@@ -362,15 +362,24 @@ function displayBackFillOptions(pagePrms: IPageParms, curPageState: IPageStates)
         .filter(x => ((x.needBackUpdateSheetWithId)) && belongsToOwner(x.importSheetData))  //!x.sheetDataInvalidDontShowReason && add this to not show bad data
             
     if (!needBackFillItems.length) return null;
-    const rootCtx = useRootPageContext();
+    //const rootCtx = useRootPageContext();
     return <>
         <tr><td>DB Extras</td></tr>
         <tr><td>
-            <button className='btn btn-primary' onClick={async () => {                
-                const helper = await createAndLoadHelper(rootCtx, pagePrms.pageCtx, {
-                    table: curPageState.curPage.table,
-                });
-                await helper.backFillId(curPageState.pageDetails.dataRows.map(x => x.needBackUpdateSheetWithId || ''));
+            <button className='btn btn-primary' onClick={async () => {             
+                if (!curPageState.sheetId) {
+                    console.log('no sheetId in backfill');
+                    return;
+                }
+                const ids = curPageState.pageDetails.dataRows.map(x => x.needBackUpdateSheetWithId || '');
+                return await updateSheet('update', curPageState.sheetId, curPageState.curPage.sheetMapping.sheetName, {
+                    row: 1,
+                    values: ids.map(id => [id]),
+                }).then(res => {
+                    console.log('done with res', res);
+                }).catch(err => {
+                    console.log('err', err)
+                });                
             }} >Back fillIds { needBackFillItems.length}</button>
         </td></tr>
     </>
