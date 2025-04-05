@@ -10,7 +10,7 @@ import { matchItems, loadPageSheetDataRaw, stdProcessSheetData, getHouseState } 
 //const sheetId = '1UU9EYL7ZYpfHV6Jmd2CvVb6oBuQ6ekTR7AWXIlMvNCg';
 
 import * as inserter from './loads/inserter';
-import { deleteById } from '../../api';
+import { deleteById, updateSheet } from '../../api';
 import { IDBFieldDef, TableNames } from '../../types';
 import { stdFormatValue } from '../../uidatahelpers/datahelpers';
 
@@ -257,7 +257,7 @@ export function getDisplayHeaders(params: IPageParms, curPageState: IPageStates)
                                     //await createEntity(params, sheetRow, dbInserter, curPageState.curPage.allFields!);
                                     await updateRowData(params, table, sheetRow); 
                                 }  else {
-                                    console.log('Found error during process all for page',err, sheetRow);    
+                                    console.log('Found error during process all for page',err, sheetRow);
                                     params.setErrorStr(err);
                                     //break;
                                 }
@@ -278,6 +278,22 @@ export function getDisplayHeaders(params: IPageParms, curPageState: IPageStates)
                         params.showProgress(`processing deletes ${i}/${deleteActions.length}`);
                         await delAct.deleteFunction();
                     }
+
+                    await backFillSheetIds(curPageState);
+
+                    params.dispatchCurPageState(state => ({
+                        ...state,
+                        pageDetails: {
+                            ...state.pageDetails,
+                            dataRows: state.pageDetails.dataRows.map((x) => {                                
+                                const res: ISheetRowData = {
+                                    ...x,
+                                    needBackUpdateSheetWithId: '',
+                                }                         
+                                return res;
+                            })
+                        }
+                    }))
                     params.showProgress('done');
                 }}>Process All Imports</button></>
             }
@@ -287,6 +303,24 @@ export function getDisplayHeaders(params: IPageParms, curPageState: IPageStates)
         }</td>
     })
             
+}
+
+export async function backFillSheetIds(curPageState: IPageStates) {
+    if (!curPageState.sheetId) {
+        console.log('no sheetId in backfill');
+        return;
+    }
+    const ids = curPageState.pageDetails.dataRows.map(x => x.needBackUpdateSheetWithId || x.matchedToId || '');
+    return await updateSheet('update', curPageState.sheetId, curPageState.curPage.sheetMapping.sheetName, {
+        row: 1,
+        values: ids.map(id => [id]),
+    }).then(res => {
+        console.log('done with res', res);
+        return res;
+    }).catch(err => {
+        console.log('err', err)
+        return err;
+    });
 }
 
 

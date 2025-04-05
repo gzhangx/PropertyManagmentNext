@@ -8,7 +8,7 @@ import { useRouter } from 'next/router'
 
 import { BaseDialog } from '../../generic/basedialog'
 import {  IPageStates, IStringDict, IPageParms, ISheetRowData, IDisplayColumnInfo, IPageInfo, IDbInserter } from './types'
-import { genericPageLoader, getDeleteExtraFromDbItems, getDisplayHeaders, getMappingColumnInfo, updateRowData } from './helpers'
+import { backFillSheetIds, genericPageLoader, getDeleteExtraFromDbItems, getDisplayHeaders, getMappingColumnInfo, updateRowData } from './helpers'
 import { getPageDefs } from './pageDefs'
 
 
@@ -370,20 +370,9 @@ function displayBackFillOptions(pagePrms: IPageParms, curPageState: IPageStates)
         <tr><td>Back Fill Id</td></tr>
         <tr><td>
             <button className='btn btn-primary' onClick={async () => {             
-                if (!curPageState.sheetId) {
-                    console.log('no sheetId in backfill');
-                    return;
-                }
-                const ids = curPageState.pageDetails.dataRows.map(x => x.needBackUpdateSheetWithId || x.matchedToId || '');
-                return await updateSheet('update', curPageState.sheetId, curPageState.curPage.sheetMapping.sheetName, {
-                    row: 1,
-                    values: ids.map(id => [id]),
-                }).then(res => {
-                    console.log('done with res', res);
-                }).catch(err => {
-                    console.log('err', err)
-                });                
+               await backFillSheetIds(curPageState); 
             }} >Back fillIds { needBackFillItems.length}</button>
         </td></tr>
     </>
 }
+
