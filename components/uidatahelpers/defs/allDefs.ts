@@ -20,15 +20,15 @@ export const paymentInfoDef: ITableAndSheetMappingInfo = {
     table: 'rentPaymentInfo',
     sheetMapping: {
         sheetName: 'PaymentRecord',
-        range: 'A1:F',
+        range: 'A1:G',
         mapping: [
             'paymentID',
             'receivedDate',
             'receivedAmount',
             'houseID',
             'paymentTypeName',
-            'notes',
             'paymentProcessor',
+            'notes',            
             //'paidBy',        
             //'created',
             //'modified',                
