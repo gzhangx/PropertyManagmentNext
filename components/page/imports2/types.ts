@@ -74,6 +74,7 @@ export interface ISheetRowData {
     dataType: ROWDataType;
     matchToKey: string;
     matchedToId: string; //if it is matched to an id.
+    needBackUpdateSheetWithId: string;  //has id in db but not in sheet (for example payment), need to update sheet with id
     matched: IDbSaveData;
     matcherName: string;
     displayData: IStringDict;

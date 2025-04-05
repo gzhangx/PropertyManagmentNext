@@ -65,6 +65,7 @@ export async function loadPageSheetDataRaw(sheetId: string, pageState: IPageStat
                 invalid: '',
                 matchToKey: '',
                 matchedToId: '',
+                needBackUpdateSheetOnId: false,
                 importSheetData,
                 matched: null,
                 matcherName: '',
@@ -177,6 +178,9 @@ export function matchItems(pageDetails: IPageDataDetails, dbData: IDbSaveData[],
                 sd.matcherName = cmp.name;
                 sd.needUpdate = false;
                 matched.matchedToKey = key;
+                if (sheetIdField) {
+                    sd.needBackUpdateSheetWithId = matched.dbItemData[sheetIdField] as string;
+                }
             }
         } else {
             {
