@@ -73,6 +73,7 @@ export interface ISheetRowData {
     invalid: string;
     dataType: ROWDataType;
     matchToKey: string;
+    matchedToId: string; //if it is matched to an id.
     matched: IDbSaveData;
     matcherName: string;
     displayData: IStringDict;

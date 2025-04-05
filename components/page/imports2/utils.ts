@@ -64,6 +64,7 @@ export async function loadPageSheetDataRaw(sheetId: string, pageState: IPageStat
                 dataType: 'Sheet',
                 invalid: '',
                 matchToKey: '',
+                matchedToId: '',
                 importSheetData,
                 matched: null,
                 matcherName: '',
@@ -155,12 +156,14 @@ export function matchItems(pageDetails: IPageDataDetails, dbData: IDbSaveData[],
                 const matchedItemById = dbDataKeyedById[id]
                 if (matchedItemById) {
                     sd.matchToKey = id;
+                    sd.matchedToId = id;
                     sd.matched = matchedItemById.dbItemData;
                     sd.matcherName = cmp.name + '_byId';
                     matchedItemById.matchedToKey = id;
                     if (matchedAll && matchedAll.length) {
                         sd.needUpdate = false;        
                     }
+                    return;
                 }
             }
         }
