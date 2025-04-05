@@ -253,9 +253,10 @@ export function getDisplayHeaders(params: IPageParms, curPageState: IPageStates)
                                 }
                                 const err = validRow(sheetRow.importSheetData);
                                 console.log('createntity', err, sheetRow.invalid);                                   
-                                if (!err)
-                                    await createEntity(params, sheetRow, dbInserter, curPageState.curPage.allFields!);
-                                else {
+                                if (!err) {
+                                    //await createEntity(params, sheetRow, dbInserter, curPageState.curPage.allFields!);
+                                    await updateRowData(params, table, sheetRow); 
+                                }  else {
                                     console.log('Found error during process all for page',err, sheetRow);    
                                     params.setErrorStr(err);
                                     //break;
@@ -289,11 +290,13 @@ export function getDisplayHeaders(params: IPageParms, curPageState: IPageStates)
 }
 
 
-export async function updateRowData(params: IPageParms, table: TableNames, sheetRow: ISheetRowData, doCreate: boolean) {
-    params.showProgress('processing');
+export async function updateRowData(params: IPageParms, table: TableNames, sheetRow: ISheetRowData) {
+    const doCreate = sheetRow.matchedToId ? false : true;
+    params.showProgress(`processing ${sheetRow.matchedToId || ''} create=${doCreate}`);
     const dbInserter: IDbInserter = inserter.getDbInserter(params.pageCtx, table, doCreate);
+    let res: any = null;
     try {
-        await dbInserter.createEntity(sheetRow.importSheetData);
+        res = await dbInserter.createEntity(sheetRow.importSheetData);
         sheetRow.needUpdate = false;
         params.dispatchCurPageState(state => ({
             ...state,
@@ -305,7 +308,11 @@ export async function updateRowData(params: IPageParms, table: TableNames, sheet
         console.log(err);
         params.showProgress('');
         params.setErrorStr(errStr);
+        res = {
+            error: errStr,
+        }
     }
+    return res;
 }
 
 type DeleteExtraDbItemRet = {
