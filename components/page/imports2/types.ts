@@ -81,7 +81,7 @@ export interface ISheetRowData {
     sheetIdField: SheetIdFieldNames;
     sheetDataInvalidDontShowReason?: string;
 
-    matchedById: SheetIdFieldNames; //when it is matched by Id for items that has an id on sheet
+    //matchedById: SheetIdFieldNames; //when it is matched by Id for items that has an id on sheet, replaced with MatchedToId, actual id, not just name of id field
 }
 
 export interface IDbRowMatchData {

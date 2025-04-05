@@ -233,11 +233,14 @@ function stdTryDisplayItemForCreate(params: IPageParms, state: IPageStates, shee
         if (!sheetRow.needUpdate) invalidInfo = 'No Need to update ';
         if (sheetRow.invalid) invalidInfo += ' Invalid: ' + sheetRow.invalid; 
         if (sheetRow.sheetDataInvalidDontShowReason) invalidInfo += sheetRow.sheetDataInvalidDontShowReason;
+        const doCreate = sheetRow.matchedToId ? false : true;
+        const debugTitle = `(fieldNme=${field} val=${itemVal}) ${invalidInfo} ${sheetRow.sheetDataInvalidDontShowReason}`;
+        const title = doCreate ? `Click to Create ${debugTitle}` : `Click to Update ${debugTitle}`;
         return <button disabled={!sheetRow.needUpdate || !!sheetRow.invalid} onClick={async () => {
             //setProgressStr('processing')
             if (sheetRow.invalid || !sheetRow.needUpdate) return;
-            params.showProgress('processing');            
-            await updateRowData(params, state.curPage.table, sheetRow, sheetRow.matchedById?false:true)
+            params.showProgress('processing');
+            await updateRowData(params, state.curPage.table, sheetRow, doCreate)
             // try {
             //     await dbInserter.createEntity(sheetRow.importSheetData);
             //     sheetRow.needUpdate = false;
@@ -254,7 +257,7 @@ function stdTryDisplayItemForCreate(params: IPageParms, state: IPageStates, shee
             // }
             //setDlgContent(createPaymentFunc(state, all, rowInd))
 
-        }}> Click to create (field={ field} val={itemVal}) {invalidInfo} {sheetRow.sheetDataInvalidDontShowReason}</button>
+        }}> {title}</button>
     }
     if (sheetRow.invalid) {
         if (showCreateBtn) {
@@ -364,7 +367,7 @@ function displayBackFillOptions(pagePrms: IPageParms, curPageState: IPageStates)
     if (!needBackFillItems.length) return null;
     //const rootCtx = useRootPageContext();
     return <>
-        <tr><td>DB Extras</td></tr>
+        <tr><td>Back Fill Id</td></tr>
         <tr><td>
             <button className='btn btn-primary' onClick={async () => {             
                 if (!curPageState.sheetId) {

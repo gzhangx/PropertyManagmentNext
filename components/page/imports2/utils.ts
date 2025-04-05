@@ -48,7 +48,6 @@ export async function loadPageSheetDataRaw(sheetId: string, pageState: IPageStat
         //     }
         // })        
         const dataRows: ISheetRowData[] = r.values.slice(1).map(rr => {
-            let matchedById = '';
             const importSheetData = curPage.sheetMapping.mapping.reduce((acc, f, ind) => {
                 if (f) {
                     acc[f] = rr[ind];
@@ -71,7 +70,6 @@ export async function loadPageSheetDataRaw(sheetId: string, pageState: IPageStat
                 matcherName: '',
                 displayData: {},
                 sheetIdField,
-                matchedById,
             } as ISheetRowData;
         }).filter(x => x.importSheetData[curPage.sheetMustExistField]);
         if (sheetIdField) {
@@ -151,7 +149,7 @@ export function matchItems(pageDetails: IPageDataDetails, dbData: IDbSaveData[],
         const matchedAll = dbDataKeyed[key];
 
         if (sheetIdField) {
-            const id = sd.importSheetData[sheetIdField] as string;
+            const id = sd.importSheetData[sheetIdField] as SheetIdFieldNames;
             if (id) {
                 //match id against db
                 const matchedItemById = dbDataKeyedById[id]
@@ -206,7 +204,8 @@ export function matchItems(pageDetails: IPageDataDetails, dbData: IDbSaveData[],
                 const id: string = sd.importSheetData[sheetIdField] as string;
                 const matchedItemById = dbIds.get(id);
                 if (matchedItemById) {
-                    sd.matchedById = sheetIdField;
+                    //sd.matchedById = sheetIdField;
+                    sd.matchedToId = id;
                     sd.matched = matchedItemById.dbItemData;
                     matchedItemById.dbExtraNotDeleteButUpdate = sd;
                 }
