@@ -371,7 +371,7 @@ function displayBackFillOptions(pagePrms: IPageParms, curPageState: IPageStates)
                     console.log('no sheetId in backfill');
                     return;
                 }
-                const ids = curPageState.pageDetails.dataRows.map(x => x.needBackUpdateSheetWithId || '');
+                const ids = curPageState.pageDetails.dataRows.map(x => x.needBackUpdateSheetWithId || x.matchedToId || '');
                 return await updateSheet('update', curPageState.sheetId, curPageState.curPage.sheetMapping.sheetName, {
                     row: 1,
                     values: ids.map(id => [id]),
