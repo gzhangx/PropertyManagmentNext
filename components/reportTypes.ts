@@ -211,6 +211,7 @@ export type IHelper = {
     }>;
     saveData: (data: any, id: FieldValueType, saveToSheet: boolean, foreignKeyLookup: IForeignKeyLookupMap) => Promise<any>;
     deleteData: (ids: string[], foreignKeyLookup: IForeignKeyLookupMap, data: ItemTypeDict) => Promise<ISqlDeleteResponse>;
+    backFillId: (ids: string[]) => Promise<any>;
 }
 
 export type TableNameToHelper = Map<TableNames, IHelper>;

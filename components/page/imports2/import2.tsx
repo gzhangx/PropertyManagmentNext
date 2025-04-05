@@ -16,6 +16,8 @@ import { sortBy } from 'lodash';
 import { IDBFieldDef } from '../../types';
 import { ALLFieldNames } from '../../uidatahelpers/datahelperTypes';
 import { usePageRelatedContext } from '../../states/PageRelatedState';
+import { createAndLoadHelper } from '../../uidatahelpers/datahelpers';
+import { useRootPageContext } from '../../states/RootState';
 
 function getSheetId(mainCtx: IPageRelatedState) : string {
     return mainCtx.googleSheetAuthInfo.googleSheetId;
@@ -206,6 +208,9 @@ export function ImportPage() {
                     {
                         displayExtraDbItems(pagePrms, curPageState)
                     }
+                    {
+                        displayBackFillOptions(pagePrms, curPageState)
+                    }
                 </tbody>
             </table>
             
@@ -340,4 +345,33 @@ function displayExtraDbItems(pagePrms: IPageParms, curPageState: IPageStates) {
 
     const combinedDsp = sortBy(dbDsp, d => d.sort).map(d => d.dsp);
     return combinedDsp;
+}
+
+
+function displayBackFillOptions(pagePrms: IPageParms, curPageState: IPageStates) {
+    if (!curPageState.pageDetails) return;
+
+    const belongsToOwner = (data: IStringDict) => {
+        const dataOwner = data['ownerID'];
+        if (dataOwner) {
+            return true; //TODO add filtering
+        }
+        return true;
+    }
+    const needBackFillItems = curPageState.pageDetails.dataRows
+        .filter(x => ((x.needBackUpdateSheetWithId)) && belongsToOwner(x.importSheetData))  //!x.sheetDataInvalidDontShowReason && add this to not show bad data
+            
+    if (!needBackFillItems.length) return null;
+    const rootCtx = useRootPageContext();
+    return <>
+        <tr><td>DB Extras</td></tr>
+        <tr><td>
+            <button className='btn btn-primary' onClick={async () => {                
+                const helper = await createAndLoadHelper(rootCtx, pagePrms.pageCtx, {
+                    table: curPageState.curPage.table,
+                });
+                await helper.backFillId(curPageState.pageDetails.dataRows.map(x => x.needBackUpdateSheetWithId || ''));
+            }} >Back fillIds { needBackFillItems.length}</button>
+        </td></tr>
+    </>
 }
