@@ -110,21 +110,26 @@ export function matchItems(pageDetails: IPageDataDetails, dbData: IDbSaveData[],
     const sheetIdField = pageDetails.sheetIdField;
     const dbIds: Map<string, IDbRowMatchData> = new Map();
     let debugItems: string[][] = [];
+    const dbDataKeyedById: {[id:string]: IDbRowMatchData} = {};
     const dbDataKeyed = dbMatchData.reduce((acc, d) => {
-        const key = cmp.getRowKey(d.dbItemData, 'DB');
+        
         debugItems.push(cmp.getRowKeys(d.dbItemData, 'DB'));
         if (sheetIdField) {
             const id = d.dbItemData[sheetIdField] as string;
             if (id) {
+                dbDataKeyedById[id] = d;
                 dbIds.set(id, d);
             }
         }
-        let cont = acc[key];
-        if (!cont) {
-            cont = [];
-            acc[key] = cont;
-        }
-        cont.push(d);
+        [true, false].forEach(makeIdNull => {
+            const key = cmp.getRowKey(d.dbItemData, makeIdNull, 'DB');
+            let cont = acc[key];
+            if (!cont) {
+                cont = [];
+                acc[key] = cont;
+            }
+            cont.push(d);
+        });
         return acc;
     }, {} as {
         [key: string]: IDbRowMatchData[];
@@ -139,8 +144,28 @@ export function matchItems(pageDetails: IPageDataDetails, dbData: IDbSaveData[],
             sd.sheetDataInvalidDontShowReason = errors;
             return;
         }
-        const key = cmp.getRowKey(sd.importSheetData, 'Sheet');
+
+        const key = cmp.getRowKey(sd.importSheetData, false, 'Sheet');  //don't make id null, assume we have id
         const matchedAll = dbDataKeyed[key];
+
+        if (sheetIdField) {
+            const id = sd.importSheetData[sheetIdField] as string;
+            if (id) {
+                //match id against db
+                const matchedItemById = dbDataKeyedById[id]
+                if (matchedItemById) {
+                    sd.matchToKey = id;
+                    sd.matched = matchedItemById.dbItemData;
+                    sd.matcherName = cmp.name + '_byId';
+                    matchedItemById.matchedToKey = id;
+                    if (matchedAll && matchedAll.length) {
+                        sd.needUpdate = false;        
+                    }
+                }
+            }
+        }
+        
+        
         if (matchedAll && matchedAll.length) {
             const matched = matchedAll.find(m => !m.matchedToKey);
             if (matched) {
@@ -190,7 +215,7 @@ function toResolvedForeignKeyIdName(fieldName: string) {
     return `${fieldName}_resolvedForeignKeyDesc`;
 }
 
-export function stdProcessSheetData(sheetData: ICompRowData[], pageState: IPageStates, mainCtx: IPageRelatedState): IStringDict[] {
+export function stdProcessSheetData(sheetData: ICompRowData[], pageState: IPageStates, mainCtx: IPageRelatedState, allowNullIds?: boolean): IStringDict[] {
     const allFields = pageState.curPage.allFields;
     const fieldNames = pageState.curPage.sheetMapping.mapping.filter(f => f);
     const getDef = (name: string) => allFields.find(f => f.field === name);
@@ -204,6 +229,9 @@ export function stdProcessSheetData(sheetData: ICompRowData[], pageState: IPageS
                 return;
             }
             if ((v === undefined || v === null || v === '') && def.required) {
+                if (allowNullIds && def.isId) {
+                    return;
+                }
                 sd.invalid = `${fieldName}::=>${v} stdProcessSheetData: Required field`;
                 acc.invalidDesc = `${fieldName}::=>${v} stdProcessSheetData: Required field`;
                 return;

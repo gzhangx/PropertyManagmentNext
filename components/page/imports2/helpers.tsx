@@ -107,14 +107,17 @@ export async function genericPageLoader(prms: IPageParms, pageState: IPageStates
     stdProcessSheetData(pageDetails.dataRows, {
         ...pageState,
         ...hi,
-    }, prms.pageCtx);
+    }, prms.pageCtx, pageState.curPage.table === 'rentPaymentInfo');
 
     const mappingColumnInfo = getMappingColumnInfo(pageState.curPage);
     const rowComparer: IRowComparer =
     {
         name: 'Payment Row Comparer',
-        getRowKey: (data: IDbSaveData, source: 'DB' | 'Sheet') => {
+        getRowKey: (data: IDbSaveData, makeIdFieldNull: boolean, source: 'DB' | 'Sheet') => {
             const parts = mappingColumnInfo.map(fd => {
+                if (fd.isId && makeIdFieldNull) {
+                    return '';
+                }
                 switch (fd.type) {
                     case 'date':
                     case 'datetime':

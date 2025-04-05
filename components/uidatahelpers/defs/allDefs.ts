@@ -22,6 +22,7 @@ export const paymentInfoDef: ITableAndSheetMappingInfo = {
         sheetName: 'PaymentRecord',
         range: 'A1:F',
         mapping: [
+            'paymentID',
             'receivedDate',
             'receivedAmount',
             'houseID',

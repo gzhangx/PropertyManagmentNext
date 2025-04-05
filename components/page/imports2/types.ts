@@ -139,7 +139,7 @@ export interface IPageParms {
 
 export interface IRowComparer {
     name: string;
-    getRowKey: (data: IDbSaveData, source: 'DB' | 'Sheet') => string;
+    getRowKey: (data: IDbSaveData, makeIdFieldNull: boolean, source: 'DB' | 'Sheet') => string;
     getRowKeys: (data: IDbSaveData, source: 'DB' | 'Sheet') => string[];
     getSheetInvalidValues: (data: IDbSaveData) => string;
     //checkRowValid?: (data: IDbSaveData) => string | null;
