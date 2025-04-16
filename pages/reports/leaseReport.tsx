@@ -183,7 +183,18 @@ export function LeaseReport() {
     
     //const houseById = keyBy(ctx.allHouses, h => h.houseID)
     return <div>
-        
+        <div className="row">                    
+                    <div className="col-sm-3">
+                        <EditTextDropdown items={allOwners.map(o => ({
+                            ...o,
+                            selected: o.value === curOwner.value
+                        }))} onSelectionChanged={sel => {
+                            //selected={state.curSelectedOwner} 
+                            setCurOwner(sel);
+                            }} curDisplayValue={curOwner.label}
+                            opts={{ placeHolder: 'Select Owner' }}
+                        ></EditTextDropdown></div>                            
+                </div>
         <div className="modal-body">            
             <div className='row'>
                 <table className='table'>
