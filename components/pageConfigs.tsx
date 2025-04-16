@@ -23,6 +23,8 @@ import { TableNames } from './types'
 
 import GoogleSheetConfigPage from '../pages/config/googleSheetConfig'
 
+import {LeaseReport as NewLeaseReport} from '../pages/reports/leaseReport'
+
 type LocalPageInfo = {
     name: string;
     page: JSX.Element;
@@ -81,6 +83,10 @@ const allSections = [
             {
                 name: 'Lease Report',
                 page: <LeaseReport/>,
+            },
+            {
+                name: 'New Lease Report',
+                page: <NewLeaseReport />,
             },
             {
                 name: 'Yearly 1099 Report',

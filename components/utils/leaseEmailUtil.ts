@@ -205,7 +205,7 @@ function doReplace(text: string, house: HouseWithLease, tenants: ITenantInfo[], 
     return output;
 }
 
-async function getTenantsForHouse(mainCtx: IPageRelatedState, house: HouseWithLease) {
+export async function getTenantsForHouse(mainCtx: IPageRelatedState, house: HouseWithLease) {
     const mailToIds = [];
     for (let i = 1; i <= 5; i++) {
         const id = house.lease['tenant' + i];
