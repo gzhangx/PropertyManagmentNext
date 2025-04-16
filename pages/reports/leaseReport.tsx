@@ -97,7 +97,9 @@ export function LeaseReport() {
                             return <tr key={key}>
                                 <td>{h.address}</td>
                                 <td>{moment(h.lease?.endDate).format('YYYY-MM-DD')}</td>
-                                <td>{ h.tenants.map(t=>t.fullName).join(',') }</td>
+                                <td onClick={() => {
+                                    mainCtx.showLoadingDlg(`Tenant emails: ${h.tenants.map(t => t.email).join(',')}`);
+                                }}>{ h.tenants.map(t=>t.fullName).join(',') }</td>
                             </tr>
                         })
                     }
