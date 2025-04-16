@@ -108,6 +108,7 @@ export async function genericPageLoader(prms: IPageParms, pageState: IPageStates
     const canHaveNullPrimaryIdTables = {
         'rentPaymentInfo': true,
         'maintenanceRecords': true,
+        'leaseInfo': true,
 
     }
 
