@@ -24,10 +24,14 @@ export function LeaseReport() {
     
     const [allHouses, setAllHouses] = useState<HouseWithTenants[]>([]);
     useEffect(() => {        
+        mainCtx.showLoadingDlg('Loading house info...');
         mainCtx.loadForeignKeyLookup('houseInfo').then(async () => {
+            mainCtx.showLoadingDlg('Loading tenant info...');
             await mainCtx.loadForeignKeyLookup('tenantInfo');
 
+            mainCtx.showLoadingDlg('Loading leasse info...');
             const leases = await getLeases();
+            mainCtx.showLoadingDlg('');
 
             const allHouses = (mainCtx.getAllForeignKeyLookupItems('houseInfo') || []) as IHouseInfo[];
             const ownerDc = allHouses.reduce((acc, house) => {
@@ -96,7 +100,8 @@ export function LeaseReport() {
                         selectedHouses.map((h, key) => {                                                        
                             return <tr key={key}>
                                 <td>{h.address}</td>
-                                <td>{moment(h.lease?.endDate).format('YYYY-MM-DD')}</td>
+                                <td>{moment(h.lease?.startDate).format('YYYY-MM-DD') +
+                                    ' '+moment(h.lease?.endDate).format('YYYY-MM-DD')}</td>
                                 <td onClick={() => {
                                     mainCtx.showLoadingDlg(`Tenant emails: ${h.tenants.map(t => t.email).join(',')}`);
                                 }}>{ h.tenants.map(t=>t.fullName).join(',') }</td>
