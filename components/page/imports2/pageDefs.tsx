@@ -38,7 +38,7 @@ export function getPageDefs() {
         {
             ...allDefs.leaseInfoDef,            
             dbLoader: () => theApi.getLeases().then(r => r as any as IDbSaveData[]),
-            sheetMustExistField: 'leaseID',
+            sheetMustExistField: 'houseID',
             showCreateButtonColumn: 'houseID',
         },
         tenantLoader.tenantPageInfo,        
