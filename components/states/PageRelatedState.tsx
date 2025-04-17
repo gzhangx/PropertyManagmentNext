@@ -146,7 +146,7 @@ export function PageRelatedContextWrapper(props: {
                 parser.descGetter = (obj) => obj.fullName;
                 break;
             case 'leaseInfo':
-                parser.descGetter = (obj: ILeaseInfo) => obj.houseID+'-'+obj.startDate.substring(0,10) + '-' + obj.endDate.substring(0,10)+'-'+obj.leaseID;
+                parser.descGetter = (obj: ILeaseInfo) => obj.houseID+'-'+obj.startDate?.substring(0,10) + '-' + obj.endDate?.substring(0,10)+'-'+obj.leaseID;
                 res.specialOptionGenerator = (row) => {                     
                     const leases = orderBy((res.rows as (ILeaseInfo & { id: string; desc: string; })[]).filter(r=>r.houseID === row.houseID), l=>l.startDate, 'desc');
                     

@@ -10,5 +10,8 @@ export function RentpaymentInfo(props) {
             { field: 'paymentTypeName', 'desc': 'type' },
             { field: 'notes', 'desc': 'Notes' },
         ]}
+        sortFields={
+            ['receivedDate', 'houseID']
+        }
     /> 
 }

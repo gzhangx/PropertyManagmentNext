@@ -16,7 +16,7 @@ export function getPageSorts(pageState: IPageState, table: string): ISqlOrderDef
     const { pageProps,
         //setPageProps
     } = pageState;
-    return get(pageProps.pagePropsTableInfo, [table, 'sorts'], []);
+    return get(pageProps.pagePropsTableInfo, [table, 'sorts']);
 }
 export function getPageFilters(pageState: IPageState, table: string): IPageFilter[] {
     const { pageProps,
@@ -169,7 +169,7 @@ export const GenCrud = (props: IGenGrudProps) => {
             '': 'asc',
         }
         //const fieldFilter = get(pageProps, [table, field, 'filter']) || {};
-        const fieldSorts = getPageSorts(pageState, table); //get(pageProps, [table, 'sorts'], []);
+        const fieldSorts = getPageSorts(pageState, table) || []; //get(pageProps, [table, 'sorts'], []);
         const fieldSortFound = fieldSorts.filter(s => s.name === field)[0];
         const fieldSort = fieldSortFound || ({} as ISqlOrderDef);
         const getShortDesc = (op:string) => opToDesc[op] || 'NS';

@@ -41,6 +41,7 @@ export interface IGenListProps  { //copied from gencrud, need combine and refact
     setPaggingInfo: any;
     */
     title?: string;
+    sortFields?: string[];
     //doAdd: (data: ItemType, id: FieldValueType) => Promise<{ id: string; }>;
 
     //sheetMapping?: DataToDbSheetMapping;

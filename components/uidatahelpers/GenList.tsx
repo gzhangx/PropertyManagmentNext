@@ -35,7 +35,22 @@ export function GenList(props: IGenListProps) {
     }
     const reload = async () => {
         let whereArray = (getPageFilters(pageState, table) as any) as ISqlRequestWhereItem[];
-        const order = getPageSorts(pageState, table);
+        const order = getPageSorts(pageState, table);        
+        console.log('proosssss', props.displayFields, order, props.sortFields)
+        if (!order && props.sortFields) {            
+            console.log('proosssss', props.displayFields, order)
+            pageState.pageProps.pagePropsTableInfo[table] = {
+                filters: [],
+                sorts: props.sortFields.map(f => { 
+                    return {
+                        name: f,
+                        op: 'desc',
+                        shortDesc: 'DSC',
+                    }
+                })
+                                    ,
+            }
+        }
         //helper will conver date back from utc to local
         await helper.loadData({
             whereArray,
