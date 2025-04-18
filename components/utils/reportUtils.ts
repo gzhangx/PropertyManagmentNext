@@ -1,7 +1,7 @@
 import moment from "moment";
 import { IExpenseData, IHelperOpts, IHouseInfo, IMaintenanceRawData, IPageRelatedState, IPayment } from "../reportTypes";
 import { IRootPageState } from "../states/RootState";
-import { IDBFieldDef } from "../types";
+import { IDBFieldDef, ISqlRequestWhereItem } from "../types";
 import { createAndLoadHelper } from "../uidatahelpers/datahelpers";
 
 
@@ -77,17 +77,18 @@ export async function loadMaintenanceData(rootCtx: IRootPageState, mainCtx: IPag
 }
 
 export async function loadDataWithMonthRange(rootCtx: IRootPageState, mainCtx: IPageRelatedState, loader: GenLoaderFunc, selectedMonths: string[], dateField: 'receivedDate' | 'date', comment: string) {    
-    const startDate = mainCtx.browserTimeToUTCDBTime(selectedMonths[0] + '-01');
-    let endDateMoment = moment(selectedMonths[selectedMonths.length - 1] + '-01')
-    if (selectedMonths.length === 1) {
-        //last month selection, only 1 element is there which is last month
-        endDateMoment.add(1, 'month')
-    }
-    const endDate = mainCtx.browserTimeToUTCDBTime(endDateMoment);
+    let whereArray: ISqlRequestWhereItem[];
+    if (selectedMonths.length > 0) {
+        const startDate = mainCtx.browserTimeToUTCDBTime(selectedMonths[0] + '-01');
+        let endDateMoment = moment(selectedMonths[selectedMonths.length - 1] + '-01')
+        if (selectedMonths.length === 1) {
+            //last month selection, only 1 element is there which is last month
+            endDateMoment.add(1, 'month')
+        }
+        const endDate = mainCtx.browserTimeToUTCDBTime(endDateMoment);
     
-    console.log(`loadData for ${comment} startDate: ${startDate}, endDate: ${endDate}`);
-    const data = await loader(rootCtx, mainCtx, {
-        whereArray: [
+        console.log(`loadData for ${comment} startDate: ${startDate}, endDate: ${endDate}`);
+        whereArray = [
             {
                 field: dateField,
                 op: '>=',
@@ -98,7 +99,10 @@ export async function loadDataWithMonthRange(rootCtx: IRootPageState, mainCtx: I
                 op: '<',
                 val: endDate,
             }
-        ],
+        ];
+    }
+    const data = await loader(rootCtx, mainCtx, {
+        whereArray,
     });
     return data;
 }

@@ -54,7 +54,7 @@ export default function RentReport() {
     const [showDetail, setShowDetail] = useState<RentReportCellData | null>(null);   
 
     const loadData = async () => {        
-        if (selectedMonths.length === 0) return;
+        //if (selectedMonths.length === 0) return;
 
         mainCtx.showLoadingDlg('Loading Rent Report...');
         //const startDate = mainCtx.browserTimeToUTCDBTime(selectedMonths[0] + '-01');
@@ -100,6 +100,10 @@ export default function RentReport() {
         //const allHouses = mainCtx.getAllForeignKeyLookupItems('houseInfo') as IHouseInfo[];
         //selectedMonths
 
+        const monthInfos = {
+            monthAry: [] as string[],
+            monthDict: {} as { [month: string]: boolean; },
+        }
         const allRentReportData: AllRentReportData = paymentData.reduce((acc,pmt) => {            
             let houseMOnth = acc[pmt.houseID];
             if (!houseMOnth) {
@@ -116,15 +120,27 @@ export default function RentReport() {
             }
             monthData.amount += pmt.amount;
             monthData.payments.push(pmt);
+
+
+            if (!monthInfos.monthDict[pmt.month]) {                
+                monthInfos.monthDict[pmt.month] = true;
+                monthInfos.monthAry.push(pmt.month);                
+            }
             return acc;
         }, {} as AllRentReportData);
 
         setAllRentReportData(allRentReportData);
+
+        if (curMonthSelection === 'All') {
+            monthInfos.monthAry.sort((a,b)=> -a.localeCompare(b));
+            setSelectedMonths(monthInfos.monthAry);
+        }
         
     }
+    
     useEffect(() => {
         loadData();
-    }, [selectedMonths.join(',')]);
+    }, [curMonthSelection]);
     
     const allHouses = (mainCtx.getAllForeignKeyLookupItems('houseInfo') || []) as IHouseInfo[];
     const selectedHouses = allHouses.filter(h => (h.ownerName === curOwner.value || !curOwner.value) && h.disabled !== 'Y');
