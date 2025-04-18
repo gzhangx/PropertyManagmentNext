@@ -488,6 +488,7 @@ export function getGenListParms(ctx: IPageRelatedState, table: TableNames): ITab
     const def = tableNameToDefinitions.get(table);
     const allFields = ctx.modelsProp.models.get(table).fields;
     return {
+        ...def,
         table,
         allFields,
         displayFields: allFields.map(f => {
@@ -501,6 +502,6 @@ export function getGenListParms(ctx: IPageRelatedState, table: TableNames): ITab
             if (f.isId) return null;
             return f;
         }).filter(x=>x),
-        sheetMapping: def.sheetMapping,
+        //sheetMapping: def.sheetMapping,
     };
 }

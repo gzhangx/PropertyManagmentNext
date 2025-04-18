@@ -35,7 +35,10 @@ export const paymentInfoDef: ITableAndSheetMappingInfo = {
             //'month',                
             //'ownerID',
         ],
-    }
+    },
+
+    sortFields: ['receivedDate'],
+    title: 'RentPaymentt Records',
 };
 
 export const houseInfoDef: ITableAndSheetMappingInfo = {    
@@ -86,7 +89,10 @@ export const maintenanceInfoDef: ITableAndSheetMappingInfo = {
             'workerID',
             'comment'
         ],
-    }
+    },
+
+    sortFields: ['date', 'houseID'],
+    title: 'Maintenance Records',
 }
 
 

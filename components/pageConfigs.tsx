@@ -6,7 +6,6 @@ import { OwnerList } from './page/inputs/ownerList'
 import { TenantList } from './page/inputs/tenantList'
 import { LeaseList } from './page/inputs/leaseList'
 
-import { MaintenanceRecords } from './page/inputs/maintenanceList'
 
 import YearlyMaintenanceReport from '../pages/reports/yearlyMaintenanceReport';
 import RentReport from '../pages/reports/rentReport';
@@ -27,7 +26,7 @@ import {LeaseReport as NewLeaseReport} from '../pages/reports/leaseReport'
 
 type LocalPageInfo = {
     name: string;
-    page: JSX.Element;
+    page?: JSX.Element;
     table?: TableNames;
 }
 
@@ -41,16 +40,16 @@ const inputPages: LocalPageInfo[] = [
     {
         name: 'Payments',
         page: <RentpaymentInfo />,
-        //table: 'rentPaymentInfo',
+        //table: 'rentPaymentInfo',  don't specify table, it will be generated in dashboard.tsx
     },
     {
         name: 'MaintenanceRecords',
-        page: <MaintenanceRecords />,
+        //page: <MaintenanceRecords />,
         table: 'maintenanceRecords',
     },
     {
         name: 'Tenants',
-        page: <TenantList />,
+        //page: <TenantList />,
         table: 'tenantInfo',
     },
     {
@@ -60,7 +59,7 @@ const inputPages: LocalPageInfo[] = [
     },
     {
         name: 'Owners',
-        page: <OwnerList />,
+        //page: <OwnerList />,
         table: 'ownerInfo'
     }, {
         name: 'AutoAssignLeases',
