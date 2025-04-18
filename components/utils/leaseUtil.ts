@@ -122,6 +122,7 @@ export async function getLeaseUtilForHouse(houseID: string) {
         }
         const result: ILeaseInfoWithPmtInfo = lps.reduce((acc, pmt) => {
             if (pmt.paymentTypeName !== 'Rent') return acc;
+            if (moment(pmt.receivedDate).isBefore(moment(l.startDate))) return acc;
             const paymentMonth = pmt.receivedDate.substring(0, 7);
             if (finalMonthStr && strToNum(paymentMonth) <= strToNum(finalMonthStr)) { //issue with firefox
                 if (!acc.lastPaymentAmount) {
