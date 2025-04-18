@@ -24,7 +24,7 @@
     "next-env.d.ts",
     "**/*.ts",
     "**/*.tsx"
-, "components/page/reports/expenseByWorkerReport.notused", "pages/reports/MonthlyComp.notused", "components/page/reports/cashflow-old.dontuse", "components/states/PaymentExpenseState.notUsed"  ],
+, "components/page/reports/expenseByWorkerReport.notused", "pages/reports/MonthlyComp.notused", "components/page/reports/cashflow-old.dontuse", "components/states/PaymentExpenseState.notUsed", "components/page/reports/lease.tsx.notused"  ],
   "exclude": [
     "node_modules"
   ]

@@ -76,9 +76,15 @@ export async function loadMaintenanceData(rootCtx: IRootPageState, mainCtx: IPag
     });
 }
 
-export async function loadDataWithMonthRange(rootCtx: IRootPageState, mainCtx: IPageRelatedState, loader: GenLoaderFunc, selectedMonths: string[], dateField: 'receivedDate' | 'date', comment: string) {
+export async function loadDataWithMonthRange(rootCtx: IRootPageState, mainCtx: IPageRelatedState, loader: GenLoaderFunc, selectedMonths: string[], dateField: 'receivedDate' | 'date', comment: string) {    
     const startDate = mainCtx.browserTimeToUTCDBTime(selectedMonths[0] + '-01');
-    const endDate = mainCtx.browserTimeToUTCDBTime(moment(selectedMonths[selectedMonths.length - 1] + '-01'));
+    let endDateMoment = moment(selectedMonths[selectedMonths.length - 1] + '-01')
+    if (selectedMonths.length === 1) {
+        //last month selection, only 1 element is there which is last month
+        endDateMoment.add(1, 'month')
+    }
+    const endDate = mainCtx.browserTimeToUTCDBTime(endDateMoment);
+    
     console.log(`loadData for ${comment} startDate: ${startDate}, endDate: ${endDate}`);
     const data = await loader(rootCtx, mainCtx, {
         whereArray: [
@@ -107,7 +113,7 @@ export function getMonthAry(monSel: MonthSelections) {
         case 'LastMonth':
             return [moment().subtract(1, 'month').format('YYYY-MM')];
         case 'Last3Month':
-            return [0, 1, 2].map(sub => moment().subtract(sub, 'month').format('YYYY-MM'))
+            return [2, 1, 0].map(sub => moment().subtract(sub, 'month').format('YYYY-MM'))
 
         case 'Y2D':
             {
