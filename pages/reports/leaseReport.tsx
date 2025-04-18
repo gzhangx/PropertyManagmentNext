@@ -109,10 +109,11 @@ export function LeaseReport() {
                     <tr>
                         <th>House</th>
                             <th>Lease Term</th>
-                            <th className='accounting-alright'>Balance</th>
-                            <th className='accounting-alright'>lastPaymentAmount</th>
-                            <th className='accounting-alright'>Last Payment Date</th>
-                        <th>Owners</th>
+                            <th>Owners</th>
+                            <th className='accounting-alright, td-center'>Balance</th>
+                            <th className='accounting-alright,td-center'>Last Payment<br></br>Amount</th>
+                            <th className='accounting-alright, td-center'>Last Payment<br></br> Received Date</th>
+                        
                     </tr>
                     </thead>
                     {
@@ -133,12 +134,13 @@ export function LeaseReport() {
                                 <td className='td-center'>{h.address}</td>
                                 <td className='td-center'>{moment(h.lease?.startDate).format('MM/DD/YYYY') +
                                     ' --- ' + moment(h.lease?.endDate).format('MM/DD/YYYY')}</td>
-                                <td className='accounting-alright'>{totalBalance}</td>
-                                <td className='accounting-alright'>{lastPaymentAmount}</td>
-                                <td className='accounting-alright'>{lastPaymentDate}</td>
-                                <td >{ h.tenants.map(t=>`${t.fullName} ${t.phone}   ${t.email}` ).map(t=>{
+                                    <td >{ h.tenants.map(t=>`${t.fullName} ${t.phone}   ${t.email}` ).map(t=>{
                                     return <>{t}<br></br></>;
                                     }) } </td>
+                                <td className='accounting-alright'>${totalBalance}</td>
+                                <td className='accounting-alright'>${lastPaymentAmount}</td>
+                                <td className='accounting-alright'>{lastPaymentDate}</td>
+                                
                             </tr>
                         })
                     }
