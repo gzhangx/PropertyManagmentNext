@@ -1,7 +1,7 @@
 import moment from 'moment';
 import { getUserOptions } from '../api'
 import { IHouseInfo, ILeaseInfo, IPageRelatedState, ITenantInfo } from '../reportTypes';
-import { ILeaseInfoWithPmtInfo } from './leaseUtil';
+import { HouseWithLease, ILeaseInfoWithPmtInfo } from './leaseUtil';
 import { IStringLogger } from '../types';
 
 
@@ -26,10 +26,7 @@ export async function getPaymentEmailConfig() {
 }
 
 
-export type HouseWithLease = IHouseInfo & {
-    lease?: ILeaseInfo;
-    leaseInfo?: ILeaseInfoWithPmtInfo;
-}
+
 
 
 

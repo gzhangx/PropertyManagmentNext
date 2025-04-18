@@ -1,10 +1,10 @@
 import * as api from '../../components/api'
-import { getLeaseUtilForHouse, ILeaseInfoWithPmtInfo } from '../../components/utils/leaseUtil';
+import { gatherLeaseInfomation, getLeaseUtilForHouse, HouseWithLease, ILeaseInfoWithPmtInfo } from '../../components/utils/leaseUtil';
 import { IHouseInfo, ILeaseInfo } from '../../components/reportTypes';
 import { useEffect, useState } from 'react';
 import { usePageRelatedContext } from '../../components/states/PageRelatedState';
 import Link from 'next/link';
-import { formateEmail, HouseWithLease } from '../../components/utils/leaseEmailUtil';
+import { formateEmail } from '../../components/utils/leaseEmailUtil';
 import { CloseableDialog } from '../../components/generic/basedialog';
 
 
@@ -385,21 +385,3 @@ export default function AutoAssignLeases() {
 
 
 
-async function gatherLeaseInfomation(house: HouseWithLease, date?: Date) {
-    const finder = await getLeaseUtilForHouse(house.houseID);
-    const lease = await finder.findLeaseForDate(date || new Date());
-
-    if (!lease) {        
-        return 'Lease not found';
-    }    
-    const payments = await finder.loadLeasePayments(lease);
-    const leaseBalance = finder.calculateLeaseBalances(lease, payments, 3, new Date());
-
-    leaseBalance.monthlyInfo.reverse();
-    house.lease = lease;
-    house.leaseInfo = leaseBalance;
-    return {
-        lease,
-        leaseBalance,
-    };
-}

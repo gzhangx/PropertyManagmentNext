@@ -1,9 +1,13 @@
 import { orderBy } from 'lodash';
 import * as api from '../api'
 import moment from 'moment';
-import { ILeaseInfo, IPayment } from '../reportTypes';
+import { IHouseInfo, ILeaseInfo, IPayment } from '../reportTypes';
 import { round2 } from '../report/util/utils';
 
+export type HouseWithLease = IHouseInfo & {
+    lease?: ILeaseInfo;
+    leaseInfo?: ILeaseInfoWithPmtInfo;
+}
 
 interface IPaymentOfMonth {
     paid: number;
@@ -195,4 +199,24 @@ export async function getLeaseUtilForHouse(houseID: string) {
             return all;
         }
     }
+}
+
+
+export async function gatherLeaseInfomation(house: HouseWithLease, date?: Date) {
+    const finder = await getLeaseUtilForHouse(house.houseID);
+    const lease = await finder.findLeaseForDate(date || new Date());
+
+    if (!lease) {
+        return 'Lease not found';
+    }
+    const payments = await finder.loadLeasePayments(lease);
+    const leaseBalance = finder.calculateLeaseBalances(lease, payments, 3, new Date());
+
+    leaseBalance.monthlyInfo.reverse();
+    house.lease = lease;
+    house.leaseInfo = leaseBalance;
+    return {
+        lease,
+        leaseBalance,
+    };
 }
