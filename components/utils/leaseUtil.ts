@@ -129,7 +129,7 @@ export async function getLeaseUtilForHouse(houseID: string) {
             if (moment(pmt.receivedDate).isBefore(moment(l.startDate))) return acc;
             const paymentMonth = pmt.receivedDate.substring(0, 7);
             if (finalMonthStr && strToNum(paymentMonth) <= strToNum(finalMonthStr)) { //issue with firefox
-                if (!acc.lastPaymentAmount) {
+                if (!acc.lastPaymentAmount || moment(pmt.receivedDate).isAfter(acc.lastPaymentDate)) {
                     acc.lastPaymentDate = pmt.receivedDate;
                     acc.lastPaymentAmount = pmt.receivedAmount;
                 }
