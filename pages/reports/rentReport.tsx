@@ -145,6 +145,7 @@ export default function RentReport() {
     const allHouses = (mainCtx.getAllForeignKeyLookupItems('houseInfo') || []) as IHouseInfo[];
     const selectedHouses = allHouses.filter(h => (h.ownerName === curOwner.value || !curOwner.value) && h.disabled !== 'Y');
     return <div>
+        <div>Rent reporttt</div>
         <CloseableDialog show={!!showDetail} title='Item Details' setShow={() => setShowDetail(null)}>
                     <div className="modal-body">                        
                     <table>

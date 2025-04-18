@@ -6,11 +6,13 @@ import { EditTextDropdown } from '../../components/generic/EditTextDropdown';
 import moment from 'moment';
 import { IEditTextDropdownItem } from '../../components/generic/GenericDropdown';
 import { orderBy } from 'lodash';
-import { getTenantsForHouse, HouseWithLease } from '../../components/utils/leaseEmailUtil';
+import { getTenantsForHouse } from '../../components/utils/leaseEmailUtil';
+import { gatherLeaseInfomation, HouseWithLease, ILeaseInfoWithPmtInfo } from '../../components/utils/leaseUtil';
 
 
 interface HouseWithTenants extends HouseWithLease {
     tenants: ITenantInfo[];
+    leaseBal?: ILeaseInfoWithPmtInfo;
 }
 //old, moved toautoAssignLeases
 export function LeaseReport() {    
@@ -66,6 +68,16 @@ export function LeaseReport() {
                 label: o,
                 value: o,
             }))));
+
+            for (const h of ht) {
+                console.log('gatherLeaseInfomation', h.address);
+                const hlInfo = await gatherLeaseInfomation(h);
+                if (hlInfo !== 'Lease not found') {
+                    console.log('gatherLeaseInfomation done', h.address);
+                    h.leaseBal = hlInfo.leaseBalance;
+                    setAllHouses([...ht]);
+                }
+            }
         });
 
     }, []);
@@ -76,6 +88,7 @@ export function LeaseReport() {
     
     //const houseById = keyBy(ctx.allHouses, h => h.houseID)
     return <div>
+        <div>Lease reportt</div>
         <div className="row">                    
                     <div className="col-sm-3">
                         <EditTextDropdown items={allOwners.map(o => ({
@@ -95,16 +108,22 @@ export function LeaseReport() {
                         
                     <tr>
                         <th>House</th>
-                        <th>Lease Term</th>
+                            <th>Lease Term</th>
+                            <th>Balance</th>
                         <th>Owners</th>
                     </tr>
                     </thead>
                     {
                         selectedHouses.map((h, key) => {                                                        
+                            let totalBalance = '';
+                            if (h.leaseBal) {
+                                totalBalance = 'Balance ' + h.leaseBal.totalBalance.toFixed(2);
+                            }
                             return <tr key={key}>
                                 <td className='td-center'>{h.address}</td>
                                 <td className='td-center'>{moment(h.lease?.startDate).format('MM/DD/YYYY') +
-                                    ' --- '+moment(h.lease?.endDate).format('MM/DD/YYYY')}</td>
+                                    ' --- ' + moment(h.lease?.endDate).format('MM/DD/YYYY')}</td>
+                                <td>{ totalBalance}</td>
                                 <td >{ h.tenants.map(t=>`${t.fullName} ${t.phone}   ${t.email}` ).map(t=>{
                                     return <>{t}<br></br></>;
                                     }) } </td>
