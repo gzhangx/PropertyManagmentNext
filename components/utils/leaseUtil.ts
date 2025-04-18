@@ -210,7 +210,7 @@ export async function gatherLeaseInfomation(house: HouseWithLease, date?: Date) 
         return 'Lease not found';
     }
     const payments = await finder.loadLeasePayments(lease);
-    const leaseBalance = finder.calculateLeaseBalances(lease, payments, 3, new Date());
+    const leaseBalance = finder.calculateLeaseBalances(lease, payments, 5, new Date());
 
     leaseBalance.monthlyInfo.reverse();
     house.lease = lease;
