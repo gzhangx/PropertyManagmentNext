@@ -1,5 +1,5 @@
 import React, {useEffect, useState} from 'react';
-import { IHouseInfo, ITenantInfo } from '../../components/reportTypes';
+import { IHouseInfo, IPayment, ITenantInfo } from '../../components/reportTypes';
 import { getLeases} from '../../components/api'
 import { usePageRelatedContext } from '../../components/states/PageRelatedState';
 import { EditTextDropdown } from '../../components/generic/EditTextDropdown';
@@ -7,12 +7,13 @@ import moment from 'moment';
 import { IEditTextDropdownItem } from '../../components/generic/GenericDropdown';
 import { orderBy } from 'lodash';
 import { getTenantsForHouse } from '../../components/utils/leaseEmailUtil';
-import { gatherLeaseInfomation, HouseWithLease, ILeaseInfoWithPmtInfo } from '../../components/utils/leaseUtil';
+import { gatherLeaseInfomation, getAllPaymentForHouse, HouseWithLease, ILeaseInfoWithPmtInfo } from '../../components/utils/leaseUtil';
 
 
 interface HouseWithTenants extends HouseWithLease {
     tenants: ITenantInfo[];
     leaseBal?: ILeaseInfoWithPmtInfo;
+    payments?: IPayment[];
 }
 //old, moved toautoAssignLeases
 export function LeaseReport() {    
@@ -25,6 +26,8 @@ export function LeaseReport() {
     const [allOwners, setAllOwners] = useState<{ label: string; value: string; }[]>([]);
     
     const [allHouses, setAllHouses] = useState<HouseWithTenants[]>([]);
+
+    const [leaseExpanded, setLeaseExpanded] = useState<{ [key: string]: boolean }>({});
     useEffect(() => {        
         mainCtx.showLoadingDlg('Loading house info...');
         mainCtx.loadForeignKeyLookup('houseInfo').then(async () => {
@@ -72,11 +75,20 @@ export function LeaseReport() {
             for (const h of ht) {
                 console.log('gatherLeaseInfomation', h.address);
                 const hlInfo = await gatherLeaseInfomation(h);
+                const payments = await getAllPaymentForHouse(h.houseID);
+                h.payments = payments;
                 if (hlInfo !== 'Lease not found') {
                     console.log('gatherLeaseInfomation done', h.address);
-                    h.leaseBal = hlInfo.leaseBalance;
+                    h.leaseBal = hlInfo.leaseBalance;                    
+                }
+
+                if (h.payments) {
+                    h.payments = orderBy(h.payments, p=>p.receivedDate, 'desc');
+                }
+                if (h.leaseBal || h.payments) {
                     setAllHouses([...ht]);
                 }
+                
             }
         });
 
@@ -129,8 +141,12 @@ export function LeaseReport() {
                                 }
                             }
 
-                            return <tr key={key}>
-                                <td className='td-center'>{h.address}</td>
+                            return <><tr key={key}>
+                                <td className='td-center' onClick={async () => {
+                                    setLeaseExpanded({ ...leaseExpanded, [h.houseID]: !leaseExpanded[h.houseID] });
+                                    const hlInfo = await gatherLeaseInfomation(h);
+                                    console.log('debugremove hlinfo', hlInfo);
+                                }}>{h.address}  { leaseExpanded[h.houseID]?'Y':'N'}</td>
                                 <td className='td-center'>{moment(h.lease?.startDate).format('MM/DD/YYYY') +
                                     ' --- ' + moment(h.lease?.endDate).format('MM/DD/YYYY')}</td>
                                 <td className='accounting-alright'>{totalBalance}</td>
@@ -140,6 +156,47 @@ export function LeaseReport() {
                                     return <>{t}<br></br></>;
                                     }) } </td>
                             </tr>
+                                {
+                                    leaseExpanded[h.houseID] && h.leaseInfo && <tr>
+                                        <td colSpan={4}>
+                                            <div className="card shadow mb-4">
+                                                <div className="card-header py-3">
+                                                    <h6 className="m-0 font-weight-bold text-primary">Details</h6>                                                                                                        
+                                                </div>
+                                                <div className="card-body">
+                                                    <table className='table'>
+                                                        <tbody>
+                                                            <tr><td colSpan={2}> lease.totalPayments</td><td colSpan={2}> lease.totalMissing</td></tr>
+                                                            <tr><td colSpan={2}>{h.leaseInfo.totalPayments}</td><td colSpan={2}>{h.leaseInfo.totalBalance}</td></tr>
+                                                            <tr><td>month</td><td>Paid</td><td>Balance</td></tr>
+                                                            {
+                                                                h.leaseInfo.monthlyInfo.map(info => {
+                                                                    return <tr><td>{info.month}</td><td>{info.paid}</td><td>{info.balance}</td></tr>
+                                                                })
+                                                            }
+                                                        </tbody>
+                                                    </table>
+                                                </div>
+
+                                                <div className="card-header py-3">
+                                                    <h6 className="m-0 font-weight-bold text-primary">Payments</h6>
+                                                </div>
+                                                <div className="card-body">
+                                                    <table className='table'>
+                                                        <tbody>                                                                                                                        
+                                                            {
+                                                                (h.payments || []).map(pmt => {
+                                                                    return <tr><td>{pmt.receivedDate}</td><td>{pmt.receivedAmount}</td><td>{pmt.leaseID}</td></tr>
+                                                                })
+                                                            }
+                                                        </tbody>
+                                                    </table>
+                                                </div>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                }
+                            </>
                         })
                     }
                 </table>
