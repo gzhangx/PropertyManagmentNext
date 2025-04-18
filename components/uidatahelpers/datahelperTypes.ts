@@ -28,6 +28,11 @@ export interface ITableAndSheetMappingInfo {
     allFields?: IDBFieldDef[];  //TODO: check who is using this
     displayFields?: IDBFieldDef[];
     sheetMapping?: DataToDbSheetMapping;  //how googleSheet maps to db, used to save data to sheet
+
+
+    initialPageSize?: number; //default page size for the list
+    title?: string;
+    sortFields?: string[];
 }
 
 export type ItemTypeDict = { [p in ALLFieldNames]?: FieldValueType; };

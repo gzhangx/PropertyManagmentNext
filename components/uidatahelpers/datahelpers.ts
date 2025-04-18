@@ -21,31 +21,31 @@ import { ItemType } from './GenCrudAdd';
 
 
 
-//extends ITableAndSheetMappingInfo
-export interface IGenListProps  { //copied from gencrud, need combine and refactor later
-    table: TableNames;
+//changed to ITableAndSheetMappingInfo
+// export interface IGenListProps  { //copied from gencrud, need combine and refactor later
+//     table: TableNames;
 
-    displayFields?: IDBFieldDef[];
+//     displayFields?: IDBFieldDef[];
 
-    //table: TableNames;
-    //columnInfo: IColumnInfo[];    //auto populated
-    //displayFields?: IDisplayFieldType;
-    initialPageSize?: number;        
-    /*
-    paggingInfo: {
-        total: number;
-        PageSize: number;
-        lastPage: number;
-        pos: number;
-    };
-    setPaggingInfo: any;
-    */
-    title?: string;
-    sortFields?: string[];
-    //doAdd: (data: ItemType, id: FieldValueType) => Promise<{ id: string; }>;
+//     //table: TableNames;
+//     //columnInfo: IColumnInfo[];    //auto populated
+//     //displayFields?: IDisplayFieldType;
+//     initialPageSize?: number;        
+//     /*
+//     paggingInfo: {
+//         total: number;
+//         PageSize: number;
+//         lastPage: number;
+//         pos: number;
+//     };
+//     setPaggingInfo: any;
+//     */
+//     title?: string;
+//     sortFields?: string[];
+//     //doAdd: (data: ItemType, id: FieldValueType) => Promise<{ id: string; }>;
 
-    //sheetMapping?: DataToDbSheetMapping;
-}
+//     //sheetMapping?: DataToDbSheetMapping;
+// }
 
 
 /// if ctx exists, means it is from DB and need update zone

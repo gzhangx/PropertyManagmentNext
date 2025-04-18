@@ -1,16 +1,16 @@
 import React,{useState,useEffect} from 'react';
 import { GenCrud, getPageSorts, getPageFilters } from './GenCrud';
 import { ItemType } from './GenCrudAdd';
-import { createHelper, IGenListProps } from './datahelpers';
+import { createHelper } from './datahelpers';
 
 import * as RootState from '../states/RootState'
 import { FieldValueType, IDBFieldDef, ISqlRequestWhereItem } from '../types';
 import { usePageRelatedContext } from '../states/PageRelatedState';
-import { ItemTypeDict } from './datahelperTypes';
+import { ITableAndSheetMappingInfo, ItemTypeDict } from './datahelperTypes';
 
 
 //props: table and displayFields [fieldNames]
-export function GenList(props: IGenListProps) {
+export function GenList(props: ITableAndSheetMappingInfo) {
     const { table, initialPageSize } = props;
     const secCtx = usePageRelatedContext();
     const rootCtx = RootState.useRootPageContext();
