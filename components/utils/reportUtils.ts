@@ -80,11 +80,7 @@ export async function loadDataWithMonthRange(rootCtx: IRootPageState, mainCtx: I
     let whereArray: ISqlRequestWhereItem[];
     if (selectedMonths.length > 0) {
         const startDate = mainCtx.browserTimeToUTCDBTime(selectedMonths[0] + '-01');
-        let endDateMoment = moment(selectedMonths[selectedMonths.length - 1] + '-01')
-        if (selectedMonths.length === 1) {
-            //last month selection, only 1 element is there which is last month
-            endDateMoment.add(1, 'month')
-        }
+        const endDateMoment = moment(selectedMonths[selectedMonths.length - 1] + '-01').add(1, 'month');
         const endDate = mainCtx.browserTimeToUTCDBTime(endDateMoment);
     
         console.log(`loadData for ${comment} startDate: ${startDate}, endDate: ${endDate}`);
@@ -117,7 +113,7 @@ export function getMonthAry(monSel: MonthSelections) {
         case 'LastMonth':
             return [moment().subtract(1, 'month').format('YYYY-MM')];
         case 'Last3Month':
-            return [2, 1, 0].map(sub => moment().subtract(sub, 'month').format('YYYY-MM'))
+            return [2, 1, 0].map(sub => moment().startOf('month').subtract(sub, 'month').format('YYYY-MM'))
 
         case 'Y2D':
             {
@@ -135,7 +131,7 @@ export function getMonthAry(monSel: MonthSelections) {
                 const end = moment().startOf('year');
                 const start = end.clone().subtract(1, 'year');
                 const result: string[] = [];
-                while (start.isBefore(end)) {
+                for (let i = 0; i < 12; i++) {
                     result.push(start.format('YYYY-MM'));
                     start.add(1, 'month');
                 }
