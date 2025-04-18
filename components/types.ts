@@ -84,6 +84,8 @@ export interface IDBFieldDef {
         resolvedToField?: 'addressObj';
     };
     allowBadForeignKey?: boolean;
+
+    autoYYYYMMFromDateField?: string; //if field is automatically clculated yyyymmdd, this will be populated with the field name to get the date from
 }
 
 export interface IGetModelReturn {

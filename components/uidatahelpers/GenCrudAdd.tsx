@@ -187,9 +187,9 @@ export const GenCrudAdd = (props: IGenGrudAddProps) => {
         })
     }
 
-    return <div className={dspClassName} tabIndex={-1} role="dialog">
+    return <div className={dspClassName} tabIndex={-1} role="dialog" >
         <Dialog dialogInfo={errDlgPrm}></Dialog>
-        <div className="modal-dialog" role="document">
+        <div className="modal-dialog" role="document" style={{ maxWidth: '60%' }}>
         <div className="modal-content">
             <div className="modal-header">
                     <h5 className="modal-title">{desc}</h5>
@@ -197,7 +197,7 @@ export const GenCrudAdd = (props: IGenGrudAddProps) => {
                         <span aria-hidden="true" onClick={internalCancel}>&times;</span>
                 </button>
             </div>                
-                <div className='container-fluid'>
+                <table>
                 {
                     columnInfo.map((c, cind) => {
                         if (operation === 'Add') { //  !editItem
@@ -258,19 +258,25 @@ export const GenCrudAdd = (props: IGenGrudAddProps) => {
                             foreignSel = createSelection(optKey, c.field);
                         }
 
-                        return <div className='row' key={cind}>
-                            <div>{c.desc}</div>
-                            <div className={checkErrorInd(c)}>
+                        if (c.userSecurityField) return null;
+                        if (c.autoYYYYMMFromDateField) return null;
+                        const style = {} as React.CSSProperties;
+                        if (c.foreignKey) {
+                            style.width = '400px';
+                        }
+                        return <tr key={cind}>
+                            <td>{c.desc}</td>
+                            <td className={checkErrorInd(c)} style={style}>
                                 {
                                     foreignSel || <input type="text" className="form-control bg-light border-0 small" placeholder={c.field}                
                                         value={editItem[c.field]} name={c.field} onChange={handleChange} />
                                 }
-                            </div>
-                            <div className={checkErrorInd(c)}>{checkErrorInd(c) && '*'}</div>
-                        </div>
+                            </td>
+                            <td className={checkErrorInd(c)}>{checkErrorInd(c) && '*'}</td>
+                        </tr>
                     })
                 }
-                </div>
+                </table>
             {                
                     <div className="modal-footer">
                         <button type="button" className="btn btn-primary" data-dismiss="modal" onClick={handleSubmit}>{addUpdateLabel}</button>
