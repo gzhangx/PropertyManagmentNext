@@ -15,8 +15,6 @@ import { RenterEmailConfig } from './page/inputs/renterEmailConfig'
 
 import * as dev2 from '../pages/util/dev2'
 
-import { LeaseReport } from './page/reports/lease'
-
 import type { JSX } from "react";
 import { TableNames } from './types'
 
@@ -78,13 +76,9 @@ const allSections = [
             {
                 name: 'Rent Report',
                 page: <RentReport />,
-            },
+            },            
             {
                 name: 'Lease Report',
-                page: <LeaseReport/>,
-            },
-            {
-                name: 'New Lease Report',
                 page: <NewLeaseReport />,
             },
             {
