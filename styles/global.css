@@ -65,3 +65,10 @@ tr:nth-child(even) {
   padding: 0px;
     
   }
+  .divReportHeader{
+  
+    text-align: center;
+    font-weight: bold;
+    font-size:40px;
+    color:black;
+  }

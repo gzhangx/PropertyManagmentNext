@@ -368,7 +368,7 @@ function generateExportArray(selectedHouses: IHouseInfo[], paymentTypes: string[
             })
         ]);
         incomeArray.push([
-            { display: 'Total' },
+            { display: 'Sub Total' },
             ...incomeTotals.map((total) => {
                 return {
                     display: amtDsp(total).toString(),
@@ -403,7 +403,7 @@ function generateExportArray(selectedHouses: IHouseInfo[], paymentTypes: string[
         ]
     });
     expenseArray.push([
-        { display: 'Total' },
+        { display: 'Sub Total' },
         ...expenseTotals.map((total, i) => {
             return {
                 display: amtDsp(total).toString(),

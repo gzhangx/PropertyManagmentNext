@@ -88,7 +88,7 @@ export function LeaseReport() {
     
     //const houseById = keyBy(ctx.allHouses, h => h.houseID)
     return <div>
-        <div>Lease reportt</div>
+        <div className='divReportHeader'>Lease Report</div><br></br>
         <div className="row">                    
                     <div className="col-sm-3">
                         <EditTextDropdown items={allOwners.map(o => ({
