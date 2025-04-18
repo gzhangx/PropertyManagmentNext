@@ -91,20 +91,23 @@ export function LeaseReport() {
         <div className="modal-body">            
             <div className='row'>
                 <table className='table'>
+                    <thead>
+                        
                     <tr>
-                        <td>House</td>
-                        <td>Lease</td>
-                        <td>Owners</td>
+                        <th>House</th>
+                        <th>Lease Term</th>
+                        <th>Owners</th>
                     </tr>
+                    </thead>
                     {
                         selectedHouses.map((h, key) => {                                                        
                             return <tr key={key}>
-                                <td>{h.address}</td>
-                                <td>{moment(h.lease?.startDate).format('YYYY-MM-DD') +
-                                    ' '+moment(h.lease?.endDate).format('YYYY-MM-DD')}</td>
-                                <td onClick={() => {
-                                    mainCtx.showLoadingDlg(`Tenant emails: ${h.tenants.map(t => t.email).join(',')}`);
-                                }}>{ h.tenants.map(t=>t.fullName).join(',') }</td>
+                                <td className='td-center'>{h.address}</td>
+                                <td className='td-center'>{moment(h.lease?.startDate).format('MM/DD/YYYY') +
+                                    ' --- '+moment(h.lease?.endDate).format('MM/DD/YYYY')}</td>
+                                <td >{ h.tenants.map(t=>`${t.fullName} ${t.phone}   ${t.email}` ).map(t=>{
+                                    return <>{t}<br></br></>;
+                                    }) } </td>
                             </tr>
                         })
                     }

@@ -55,6 +55,7 @@ tr:nth-child(even) {
     color:black;
   }
   .td-middle-only {
+    text-align: center;
   
   }
 

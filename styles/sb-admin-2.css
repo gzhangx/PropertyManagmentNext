@@ -1485,7 +1485,7 @@ pre code {
 .table {
   width: 100%;
   margin-bottom: 1rem;
-  color: #858796;
+  color: #000000;
 }
 
 .table th,
@@ -9664,11 +9664,11 @@ a.text-dark:hover, a.text-dark:focus {
 }
 
 .text-body {
-  color: #858796 !important;
+  color: #000000 !important;
 }
 
 .text-muted {
-  color: #858796 !important;
+  color: #000000 !important;
 }
 
 .text-black-50 {

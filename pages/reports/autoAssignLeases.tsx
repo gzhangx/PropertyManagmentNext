@@ -190,7 +190,7 @@ export default function AutoAssignLeases() {
     };
 
     return <div>
-        <CloseableDialog show={!!emailPreview.html}
+            <CloseableDialog show={!!emailPreview.html}
             rootDialogStyle={{
                 maxWidth: '1000px'
             }}

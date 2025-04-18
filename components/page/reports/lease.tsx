@@ -128,7 +128,6 @@ export function LeaseReport() {
 
     //const houseById = keyBy(ctx.allHouses, h => h.houseID)
     return <div>
-        
         <div className="modal-body">            
             <div className='row'>
                 <table className='table'>
