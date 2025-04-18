@@ -129,7 +129,7 @@ export async function getLeaseUtilForHouse(houseID: string) {
             if (moment(pmt.receivedDate).isBefore(moment(l.startDate))) return acc;
             const paymentMonth = pmt.receivedDate.substring(0, 7);
             if (finalMonthStr && strToNum(paymentMonth) <= strToNum(finalMonthStr)) { //issue with firefox
-                if (!acc.lastPaymentAmount) {
+                if (!acc.lastPaymentAmount || moment(pmt.receivedDate).isAfter(acc.lastPaymentDate)) {
                     acc.lastPaymentDate = pmt.receivedDate;
                     acc.lastPaymentAmount = pmt.receivedAmount;
                 }
@@ -210,7 +210,7 @@ export async function gatherLeaseInfomation(house: HouseWithLease, date?: Date) 
         return 'Lease not found';
     }
     const payments = await finder.loadLeasePayments(lease);
-    const leaseBalance = finder.calculateLeaseBalances(lease, payments, 3, new Date());
+    const leaseBalance = finder.calculateLeaseBalances(lease, payments, 5, new Date());
 
     leaseBalance.monthlyInfo.reverse();
     house.lease = lease;
