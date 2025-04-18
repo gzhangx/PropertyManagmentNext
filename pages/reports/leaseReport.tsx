@@ -109,21 +109,33 @@ export function LeaseReport() {
                     <tr>
                         <th>House</th>
                             <th>Lease Term</th>
-                            <th>Balance</th>
+                            <th className='accounting-alright'>Balance</th>
+                            <th className='accounting-alright'>lastPaymentAmount</th>
+                            <th className='accounting-alright'>Last Payment Date</th>
                         <th>Owners</th>
                     </tr>
                     </thead>
                     {
                         selectedHouses.map((h, key) => {                                                        
                             let totalBalance = '';
+                            let lastPaymentAmount = '';
+                            let lastPaymentDate = '';
                             if (h.leaseBal) {
-                                totalBalance = 'Balance ' + h.leaseBal.totalBalance.toFixed(2);
+                                totalBalance = h.leaseBal.totalBalance.toFixed(2);
+                                lastPaymentAmount = h.leaseBal.lastPaymentAmount.toFixed(2);
+                                lastPaymentDate = moment(h.leaseBal.lastPaymentDate).format('MM/DD/YYYY');
+                                if (!moment(h.leaseBal.lastPaymentDate).isValid()) {
+                                    lastPaymentDate = h.leaseBal.lastPaymentDate;
+                                }
                             }
+
                             return <tr key={key}>
                                 <td className='td-center'>{h.address}</td>
                                 <td className='td-center'>{moment(h.lease?.startDate).format('MM/DD/YYYY') +
                                     ' --- ' + moment(h.lease?.endDate).format('MM/DD/YYYY')}</td>
-                                <td>{ totalBalance}</td>
+                                <td className='accounting-alright'>{totalBalance}</td>
+                                <td className='accounting-alright'>{lastPaymentAmount}</td>
+                                <td className='accounting-alright'>{lastPaymentDate}</td>
                                 <td >{ h.tenants.map(t=>`${t.fullName} ${t.phone}   ${t.email}` ).map(t=>{
                                     return <>{t}<br></br></>;
                                     }) } </td>
