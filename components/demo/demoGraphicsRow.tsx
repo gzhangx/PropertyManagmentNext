@@ -1,6 +1,22 @@
 import { EarningsGraph, RevenueSourceGraph } from './earningsGraph'
 import DropdownTiny from './dropdownTiny'
+import { useRootPageContext } from '../states/RootState';
+import { usePageRelatedContext } from '../states/PageRelatedState';
+import { getMonthAry, IPaymentWithDateMonthPaymentType, loadDataWithMonthRange, loadPayment } from '../utils/reportUtils';
+import { useEffect, useState } from 'react';
 export default function DemoGraphicsRow() {
+    const rootCtx = useRootPageContext();
+    const mainCtx = usePageRelatedContext();
+    const [payments, setPayments] = useState<IPaymentWithDateMonthPaymentType[]>([]);
+    async function load() {
+        const selectedMonths = getMonthAry('Y2D');
+        const paymentData: IPaymentWithDateMonthPaymentType[] = await loadDataWithMonthRange(rootCtx, mainCtx, loadPayment, selectedMonths, 'receivedDate', 'Rent Payment');
+        setPayments(paymentData);
+    }
+
+    useEffect(() => {
+        load()
+    });
     return <div className="row">
         <div className="col-xl-8 col-lg-7">
             <div className="card shadow mb-4">
@@ -18,7 +34,7 @@ export default function DemoGraphicsRow() {
                 </div>
                 <div className="card-body">
                     <div className="chart-area">
-                        <EarningsGraph />
+                        <EarningsGraph payments={payments} />
                     </div>
                 </div>
             </div>
@@ -46,7 +62,7 @@ export default function DemoGraphicsRow() {
                 </div>
                 <div className="card-body">
                     <div className="chart-pie pt-4 pb-2">
-                        <RevenueSourceGraph />
+                        <RevenueSourceGraph payments={payments} />
                     </div>
                     <div className="mt-4 text-center small">
                         <span className="mr-2">

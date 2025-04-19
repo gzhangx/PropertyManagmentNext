@@ -206,43 +206,23 @@ type MonthAndData = {
     dataDict: RentReportMonthRowData;
     dataAry: number[];
 }
-export function EarningsGraph() {
-    const rootCtx = useRootPageContext();
-    const mainCtx = usePageRelatedContext();
+
+export interface PropWithPayments {
+    payments: IPaymentWithDateMonthPaymentType[];
+}
+
+
+export function EarningsGraph(props: PropWithPayments) {    
+
     const [monthAndData, setMonthAndData] = useState<MonthAndData>({
         months: [],
         dataDict: {},
         dataAry: [],
     });
     const loadData = async () => {
-        //if (selectedMonths.length === 0) return;
+        const paymentData: IPaymentWithDateMonthPaymentType[] = props.payments;
     
-        mainCtx.showLoadingDlg('Loading Rent Report...');
-        //const startDate = mainCtx.browserTimeToUTCDBTime(selectedMonths[0] + '-01');
-        //const endDate = mainCtx.browserTimeToUTCDBTime(moment(selectedMonths[selectedMonths.length - 1] + '-01'));
-        //console.log(`loadData for rent report startDate: ${startDate}, endDate: ${endDate}`);
-        //const paymentData: IPaymentWithDateMonthPaymentType[] = await loadPayment(rootCtx, mainCtx, {
-        //    whereArray: [
-        //        {
-        //            field: 'receivedDate',
-        //            op: '>=',
-        //            val: startDate,
-        //        },
-        //        {
-        //            field: 'receivedDate',
-        //            op: '<',
-        //            val: endDate,
-        //        }
-        //    ],
-        //});
-        //setAllPaymentData(paymentData);
-        const selectedMonths = getMonthAry('Y2D');
-        const paymentData: IPaymentWithDateMonthPaymentType[] = await loadDataWithMonthRange(rootCtx, mainCtx, loadPayment, selectedMonths, 'receivedDate', 'Rent Payment');
-    
-    
-        mainCtx.showLoadingDlg('');
-        //const allHouses = mainCtx.getAllForeignKeyLookupItems('houseInfo') as IHouseInfo[];
-        //selectedMonths
+
     
         const monthInfos = {
             monthAry: [] as string[],
@@ -345,11 +325,76 @@ export function EarningsGraph() {
     return <Line data={defData} options={options}></Line>
 }
 
-export function RevenueSourceGraph() {
+
+type RentReportHouseRowData = {
+    address: string;
+    amount: number;
+}
+
+type HouseAndData = {
+    houseIds: string[];    
+    dataDict: { [houseId: string]: RentReportHouseRowData };
+    dataAry: number[];
+    address: string[];
+}
+
+
+export function RevenueSourceGraph(props: PropWithPayments) {
+    const [houseData, setHouseData] = useState<HouseAndData>({
+        houseIds: [],        
+        dataDict: {},
+        dataAry: [], 
+        address: [],
+
+    });
+    const loadData = async () => {
+        const paymentData: IPaymentWithDateMonthPaymentType[] = props.payments;
+        const houseAndData: HouseAndData = paymentData.reduce((acc, pmt) => {
+            let hData = acc.dataDict[pmt.houseID];
+            if (!hData) {
+                hData = {
+                    amount: 0,
+                    address: pmt.address,
+                };
+                acc.dataDict[pmt.houseID] = hData;
+                acc.houseIds.push(pmt.houseID);                
+            }
+            hData.amount += pmt.amount;                        
+            return acc;
+        }, {
+            houseIds: [],
+            dataDict: {},
+            dataAry: [],
+            address: [],
+        } as HouseAndData);
+
+
+        houseAndData.dataAry = houseAndData.houseIds.map(m => {
+            const monthData = houseAndData.dataDict[m];
+            if (monthData) {
+                return monthData.amount;
+            }
+            return 0;
+        });
+        houseAndData.address = houseAndData.houseIds.map(m => {
+            const monthData = houseAndData.dataDict[m];
+            if (monthData) {
+                return monthData.address;
+            }
+            return '';
+        });
+
+        setHouseData(houseAndData);
+
+    }
+
+    useEffect(() => {
+        loadData();
+    }, []);
     return <Pie data={{
-        labels: ["Direct", "Referral", "Social"],
+        labels:  houseData.address, //["Direct", "Referral", "Social"],
         datasets: [{
-            data: [55, 30, 15],
+            data: houseData.dataAry, //[55, 30, 15],
             backgroundColor: ['#4e73df', '#1cc88a', '#36b9cc'],
             hoverBackgroundColor: ['#2e59d9', '#17a673', '#2c9faf'],
             hoverBorderColor: "rgba(234, 236, 244, 1)",
