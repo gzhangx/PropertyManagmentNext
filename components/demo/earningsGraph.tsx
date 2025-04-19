@@ -13,7 +13,7 @@ import {
     BarController,
     PieController,
 } from 'chart.js';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useRootPageContext } from '../states/RootState';
 import { usePageRelatedContext } from '../states/PageRelatedState';
 import { getMonthAry, IPaymentWithDateMonthPaymentType, loadDataWithMonthRange, loadPayment } from '../utils/reportUtils';
@@ -203,14 +203,16 @@ type RentReportMonthRowData = {
 
 type MonthAndData = {
     months: string[];
-    data: RentReportMonthRowData;
+    dataDict: RentReportMonthRowData;
+    dataAry: number[];
 }
 export function EarningsGraph() {
     const rootCtx = useRootPageContext();
     const mainCtx = usePageRelatedContext();
     const [monthAndData, setMonthAndData] = useState<MonthAndData>({
         months: [],
-        data: {},
+        dataDict: {},
+        dataAry: [],
     });
     const loadData = async () => {
         //if (selectedMonths.length === 0) return;
@@ -247,13 +249,13 @@ export function EarningsGraph() {
             monthDict: {} as { [month: string]: boolean; },
         }
         const allRentReportData: MonthAndData = paymentData.reduce((acc, pmt) => {
-            let monthData = acc.data[pmt.month];
+            let monthData = acc.dataDict[pmt.month];
             if (!monthData) {
                 monthData = {
                     amount: 0,
                     payments: [],
                 };
-                acc.data[pmt.month] = monthData;
+                acc.dataDict[pmt.month] = monthData;
             }
             monthData.amount += pmt.amount;
             monthData.payments.push(pmt);
@@ -267,14 +269,26 @@ export function EarningsGraph() {
             return acc;
         }, {
             months: [],
-            data: {},
+            dataDict: {},
         } as MonthAndData);
-    
+
+
+        allRentReportData.dataAry = allRentReportData.months.map(m => {
+            const monthData = allRentReportData.dataDict[m];
+            if (monthData) {
+                return monthData.amount;
+            }
+            return 0;
+        });
         setMonthAndData(allRentReportData);
             
     }
+
+    useEffect(() => {
+        loadData();
+    }, []);
     const defData = {
-        labels: ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"],
+        labels:  monthAndData.months, //["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"],
         datasets: [{
             label: "Earnings",
             lineTension: 0.3,
@@ -288,7 +302,8 @@ export function EarningsGraph() {
             pointHoverBorderColor: "rgba(78, 115, 223, 1)",
             pointHitRadius: 10,
             pointBorderWidth: 2,
-            data: [0, 10000, 5000, 15000, 10000, 20000, 15000, 25000, 20000, 30000, 25000, 40000],
+            //data: [0, 10000, 5000, 15000, 10000, 20000, 15000, 25000, 20000, 30000, 25000, 40000],
+            data: monthAndData.dataAry,
         }],
     };
     const options = {
