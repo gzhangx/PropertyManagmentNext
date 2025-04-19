@@ -1,3 +1,4 @@
+import moment from "moment";
 import { TableNames } from "../../types";
 import { ITableAndSheetMappingInfo } from "../datahelperTypes";
 
@@ -39,6 +40,17 @@ export const paymentInfoDef: ITableAndSheetMappingInfo = {
 
     sortFields: ['receivedDate'],
     title: 'RentPaymentt Records',
+    //this class is defined by components/page/inputs/rentpaymentInfo.tsx
+    customDisplayFunc: (value, fieldDef) => {
+        if(fieldDef.field === 'receivedDate') {
+            let str = moment(value).format('YYYY-MM-DD HH:mm:ss'); 
+            while (str.endsWith(':00')) {
+                str = str.substring(0, str.length - 3);
+            }
+            return str;
+        }
+        return value;
+    }
 };
 
 export const houseInfoDef: ITableAndSheetMappingInfo = {    

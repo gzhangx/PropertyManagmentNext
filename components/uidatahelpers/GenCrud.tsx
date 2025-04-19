@@ -50,6 +50,8 @@ export interface IGenGrudProps {
     doDelete: (ids: string[], data: ItemTypeDict) => void;
     idCol?: { field: string; }
     reload?: () => Promise<void>;
+
+    customDisplayFunc?: (value: any, fieldDef: IDBFieldDef) => React.JSX.Element;
 }
 
 export const GenCrud = (props: IGenGrudProps) => {
@@ -330,7 +332,10 @@ export const GenCrud = (props: IGenGrudProps) => {
                                                                 dsp = 'NOTMAPPED_' + val;
                                                             }
                                                         }
-                                                    }                                                                                                        
+                                                    }
+                                                    if (props.customDisplayFunc) {
+                                                        dsp = props.customDisplayFunc(dsp, def);
+                                                    }
                                                     return <td key={find}>{dsp}</td>
                                                 })
                                             }
