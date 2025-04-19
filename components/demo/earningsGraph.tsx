@@ -13,7 +13,10 @@ import {
     BarController,
     PieController,
 } from 'chart.js';
-import React from 'react';
+import React, { useState } from 'react';
+import { useRootPageContext } from '../states/RootState';
+import { usePageRelatedContext } from '../states/PageRelatedState';
+import { getMonthAry, IPaymentWithDateMonthPaymentType, loadDataWithMonthRange, loadPayment } from '../utils/reportUtils';
 
 
 ChartJS.register(
@@ -27,7 +30,7 @@ ChartJS.register(
     Legend
 );
 
-function number_format(number, decimals, dec_point, thousands_sep) {
+function number_format(number: number | string, decimals?: number, dec_point?: string, thousands_sep?: string) {
     // *     example: number_format(1234.56, 2, ',', ' ');
     // *     return: '1 234,56'
     number = (number + '').replace(',', '').replace(' ', '');
@@ -41,15 +44,15 @@ function number_format(number, decimals, dec_point, thousands_sep) {
             return '' + Math.round(n * k) / k;
         };
     // Fix for IE parseFloat(0.55).toFixed(0) = 0;
-    s = (prec ? toFixedFix(n, prec) : '' + Math.round(n)).split('.');
-    if (s[0].length > 3) {
-        s[0] = s[0].replace(/\B(?=(?:\d{3})+(?!\d))/g, sep);
+    const ss = (prec ? toFixedFix(n, prec) : '' + Math.round(n)).split('.');
+    if (ss[0].length > 3) {
+        ss[0] = s[0].replace(/\B(?=(?:\d{3})+(?!\d))/g, sep);
     }
-    if ((s[1] || '').length < prec) {
-        s[1] = s[1] || '';
-        s[1] += new Array(prec - s[1].length + 1).join('0');
+    if ((ss[1] || '').length < prec) {
+        ss[1] = s[1] || '';
+        ss[1] += new Array(prec - s[1].length + 1).join('0');
     }
-    return s.join(dec);
+    return ss.join(dec);
 }
 
 // all from react-char-js, can't get to install so copied
@@ -88,24 +91,24 @@ function setDatasets(currentData, nextDatasets) {
     });
 }
 function cloneData(data) {
-    let datasetIdKey = arguments.length > 1 && arguments[1] !== void 0 ? arguments[1] : defaultDatasetIdKey;
+    //let datasetIdKey = arguments.length > 1 && arguments[1] !== void 0 ? arguments[1] : defaultDatasetIdKey;
     const nextData = {
         labels: [],
         datasets: []
     };
     setLabels(nextData, data.labels);
-    setDatasets(nextData, data.datasets, datasetIdKey);
+    setDatasets(nextData, data.datasets); //,datasetIdKey
     return nextData;
 }
 function ChartComponent(props, ref) {
     const { height = 150, width = 300, redraw = false, datasetIdKey, type, data, options, plugins = [], fallbackContent, updateMode, ...canvasProps } = props;
     const canvasRef = React.useRef(null);
-    const chartRef = React.useRef();
+    const chartRef = React.useRef(null);
     const renderChart = () => {
         if (!canvasRef.current) return;
         chartRef.current = new ChartJS(canvasRef.current, {
             type,
-            data: cloneData(data, datasetIdKey),
+            data: cloneData(data), //datasetIdKey
             options: options && {
                 ...options
             },
@@ -138,7 +141,7 @@ function ChartComponent(props, ref) {
     ]);
     React.useEffect(() => {
         if (!redraw && chartRef.current && data.datasets) {
-            setDatasets(chartRef.current.config.data, data.datasets, datasetIdKey);
+            setDatasets(chartRef.current.config.data, data.datasets); //datasetIdKey
         }
     }, [
         redraw,
@@ -181,7 +184,7 @@ const Chart = /*#__PURE__*/ React.forwardRef(ChartComponent);
 
 function createTypedChart(type, registerables) {
     ChartJS.register(registerables);
-    return /*#__PURE__*/ React.forwardRef((props, ref) =>/*#__PURE__*/ React.createElement(Chart, Object.assign({}, props, {
+    return /*#__PURE__*/ React.forwardRef((props: any, ref) =>/*#__PURE__*/ React.createElement(Chart, Object.assign({}, props, {
         ref: ref,
         type: type
     })));
@@ -189,8 +192,87 @@ function createTypedChart(type, registerables) {
 const Line = /* #__PURE__ */ createTypedChart("line", LineController);
 const Bar = /* #__PURE__ */ createTypedChart("bar", BarController);
 const Pie = /* #__PURE__ */ createTypedChart("pie", PieController);
+type RentReportCellData = {
+    amount: number;
+    payments: IPaymentWithDateMonthPaymentType[];
+}
 
+type RentReportMonthRowData = {
+    [month: string]: RentReportCellData;
+}
+
+type MonthAndData = {
+    months: string[];
+    data: RentReportMonthRowData;
+}
 export function EarningsGraph() {
+    const rootCtx = useRootPageContext();
+    const mainCtx = usePageRelatedContext();
+    const [monthAndData, setMonthAndData] = useState<MonthAndData>({
+        months: [],
+        data: {},
+    });
+    const loadData = async () => {
+        //if (selectedMonths.length === 0) return;
+    
+        mainCtx.showLoadingDlg('Loading Rent Report...');
+        //const startDate = mainCtx.browserTimeToUTCDBTime(selectedMonths[0] + '-01');
+        //const endDate = mainCtx.browserTimeToUTCDBTime(moment(selectedMonths[selectedMonths.length - 1] + '-01'));
+        //console.log(`loadData for rent report startDate: ${startDate}, endDate: ${endDate}`);
+        //const paymentData: IPaymentWithDateMonthPaymentType[] = await loadPayment(rootCtx, mainCtx, {
+        //    whereArray: [
+        //        {
+        //            field: 'receivedDate',
+        //            op: '>=',
+        //            val: startDate,
+        //        },
+        //        {
+        //            field: 'receivedDate',
+        //            op: '<',
+        //            val: endDate,
+        //        }
+        //    ],
+        //});
+        //setAllPaymentData(paymentData);
+        const selectedMonths = getMonthAry('Y2D');
+        const paymentData: IPaymentWithDateMonthPaymentType[] = await loadDataWithMonthRange(rootCtx, mainCtx, loadPayment, selectedMonths, 'receivedDate', 'Rent Payment');
+    
+    
+        mainCtx.showLoadingDlg('');
+        //const allHouses = mainCtx.getAllForeignKeyLookupItems('houseInfo') as IHouseInfo[];
+        //selectedMonths
+    
+        const monthInfos = {
+            monthAry: [] as string[],
+            monthDict: {} as { [month: string]: boolean; },
+        }
+        const allRentReportData: MonthAndData = paymentData.reduce((acc, pmt) => {
+            let monthData = acc.data[pmt.month];
+            if (!monthData) {
+                monthData = {
+                    amount: 0,
+                    payments: [],
+                };
+                acc.data[pmt.month] = monthData;
+            }
+            monthData.amount += pmt.amount;
+            monthData.payments.push(pmt);
+    
+    
+            if (!monthInfos.monthDict[pmt.month]) {
+                monthInfos.monthDict[pmt.month] = true;
+                monthInfos.monthAry.push(pmt.month);
+                acc.months.push(pmt.month);
+            }
+            return acc;
+        }, {
+            months: [],
+            data: {},
+        } as MonthAndData);
+    
+        setMonthAndData(allRentReportData);
+            
+    }
     const defData = {
         labels: ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"],
         datasets: [{
