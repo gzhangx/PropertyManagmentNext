@@ -266,7 +266,7 @@ export function EarningsGraph(props: PropWithPayments) {
 
     useEffect(() => {
         loadData();
-    }, []);
+    }, [props.payments.length]);
     const defData = {
         labels:  monthAndData.months, //["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"],
         datasets: [{
@@ -390,7 +390,7 @@ export function RevenueSourceGraph(props: PropWithPayments) {
 
     useEffect(() => {
         loadData();
-    }, []);
+    }, [props.payments.length]);
     return <Pie data={{
         labels:  houseData.address, //["Direct", "Referral", "Social"],
         datasets: [{
