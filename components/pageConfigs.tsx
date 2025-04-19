@@ -37,8 +37,8 @@ const inputPages: LocalPageInfo[] = [
     },
     {
         name: 'Payments',
-        page: <RentpaymentInfo />,
-        //table: 'rentPaymentInfo',  don't specify table, it will be generated in dashboard.tsx
+        //page: <RentpaymentInfo />,
+        table: 'rentPaymentInfo',  //don't specify table, it will be generated in dashboard.tsx
     },
     {
         name: 'MaintenanceRecords',

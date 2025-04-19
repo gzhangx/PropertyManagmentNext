@@ -491,7 +491,7 @@ export function getGenListParms(ctx: IPageRelatedState, table: TableNames): ITab
         ...def,
         table,
         allFields,
-        displayFields: allFields.map(f => {
+        displayFields: def.displayFields || allFields.map(f => {
             if (f.foreignKey && f.foreignKey.field === 'houseID') {
                 return {
                     ...f,

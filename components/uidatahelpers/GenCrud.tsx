@@ -334,7 +334,11 @@ export const GenCrud = (props: IGenGrudProps) => {
                                                         }
                                                     }
                                                     if (props.customDisplayFunc) {
-                                                        dsp = props.customDisplayFunc(dsp, def);
+                                                        if (def) {
+                                                            dsp = props.customDisplayFunc(dsp, def);
+                                                        } else {
+                                                            console.log('Cant find field def for ', fn, dsp);
+                                                        }
                                                     }
                                                     return <td key={find}>{dsp}</td>
                                                 })

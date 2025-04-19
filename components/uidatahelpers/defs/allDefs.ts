@@ -38,7 +38,6 @@ export const paymentInfoDef: ITableAndSheetMappingInfo = {
         ],
     },
 
-    sortFields: ['receivedDate'],
     title: 'RentPaymentt Records',
     //this class is defined by components/page/inputs/rentpaymentInfo.tsx
     customDisplayFunc: (value, fieldDef) => {
@@ -50,7 +49,16 @@ export const paymentInfoDef: ITableAndSheetMappingInfo = {
             return str;
         }
         return value;
-    }
+    },
+    displayFields:
+        [
+        { field: 'receivedDate', 'desc': 'ReceivedDate', type: 'date' },
+        { field: 'receivedAmount', 'desc': 'Amount', type: 'decimal' },
+        { field: 'houseID', 'desc': 'Address' },
+        { field: 'paymentTypeName', 'desc': 'type' },
+        { field: 'notes', 'desc': 'Notes' },
+        ],
+    sortFields:        ['receivedDate', 'houseID'],
 };
 
 export const houseInfoDef: ITableAndSheetMappingInfo = {    
