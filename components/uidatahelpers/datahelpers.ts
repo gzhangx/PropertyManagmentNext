@@ -13,7 +13,6 @@ import { IForeignKeyCombo, IForeignKeyLookupMap, IHelper, IHelperOpts, IPageRela
 import * as RootState from '../states/RootState'
 import { tableNameToDefinitions } from './defs/allDefs';
 import { ALLFieldNames, DataToDbSheetMapping, ITableAndSheetMappingInfo, ItemTypeDict } from './datahelperTypes';
-import { checkLoginExpired } from '../states/RootState';
 import { ItemType } from './GenCrudAdd';
 
 
@@ -165,7 +164,7 @@ export function createHelper(rootCtx: RootState.IRootPageState, ctx: IPageRelate
                 rows: any[];
                 error?: string;
                 };
-            checkLoginExpired(rootCtx, res);
+            if (rootCtx.checkLoginExpired(res)) return res;
             if (res.rows) {
                 res.rows.forEach(row => {
                     accModelFields().forEach(mf => {

@@ -11,6 +11,10 @@ export default function DemoGraphicsRow() {
     async function load() {
         const selectedMonths = getMonthAry('Y2D');
         const paymentData: IPaymentWithDateMonthPaymentType[] = await loadDataWithMonthRange(rootCtx, mainCtx, loadPayment, selectedMonths, 'receivedDate', 'Rent Payment');
+        if (rootCtx.checkLoginExpired(paymentData)) {
+            console.log('Login expired, reload page');
+            return;
+        }
         setPayments(paymentData);
     }
 

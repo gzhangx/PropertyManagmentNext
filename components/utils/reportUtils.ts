@@ -25,7 +25,11 @@ export async function loadPayment(rootCtx: IRootPageState, mainCtx: IPageRelated
     }, {} as {[field: string]: IDBFieldDef});
     await mainCtx.checkLoadForeignKeyForTable('rentPaymentInfo');
     
-    const paymentData: IPaymentWithDateMonthPaymentType[] = await helper.loadData(opts).then(async res => {        
+    const paymentData: IPaymentWithDateMonthPaymentType[] = await helper.loadData(opts).then(async res => {
+        if (rootCtx.checkLoginExpired(res)) {
+            console.log('Login expired, reload page');
+            return [];
+        }
         return res.rows.map(r => {
             const paymentTypeName = r.paymentTypeName || r.paymentTypeID;
             const date = mainCtx.utcDbTimeToZonedTime(r.receivedDate);
