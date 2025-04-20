@@ -50,7 +50,8 @@ export const paymentInfoDef: ITableAndSheetMappingInfo = {
         }
         return value;
     },
-    customAddNewDefaults: async (columnInfo, editItem) => {
+    customAddNewDefaults: async (mainCtx, columnInfo, editItem) => {
+        await mainCtx.loadForeignKeyLookup('leaseInfo');
         for (const c of columnInfo) {
             if (c.field === 'paymentTypeName') {
                 editItem[c.field] = 'Rent';

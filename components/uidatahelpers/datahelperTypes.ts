@@ -1,4 +1,5 @@
 
+import { IPageRelatedState } from "../reportTypes";
 import { FieldValueType, IDBFieldDef, TableNames } from "../types";
 
 export type PageNames = 'Tenants Info' | 'Lease Info' | 'PaymentRecord' | 'House Info' | 'MaintainessRecord' | 'Workers Info';
@@ -35,7 +36,7 @@ export interface ITableAndSheetMappingInfo {
     sortFields?: string[];
 
     customDisplayFunc?: (value: any, fieldDef: IDBFieldDef) => React.JSX.Element; //function to display data in the list, if not provided, default is to use the field name
-    customAddNewDefaults?: (columnInfo: IDBFieldDef[], editItem: ItemTypeDict) => Promise<void>;  //edit item is actuall ItemType
+    customAddNewDefaults?: (mainCtx: IPageRelatedState, columnInfo: IDBFieldDef[], editItem: ItemTypeDict) => Promise<void>;  //edit item is actuall ItemType
 }
 
 export type ItemTypeDict = { [p in ALLFieldNames]?: FieldValueType; };
