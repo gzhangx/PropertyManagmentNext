@@ -10,7 +10,6 @@ import { orderBy } from 'lodash';
 
 
 interface HouseWithTenants extends HouseWithLease {
-    leaseBal?: ILeaseInfoWithPmtInfo;
     payments?: IPayment[];
 }
 
@@ -56,14 +55,14 @@ export function OriginalDashboard() {
                     h.payments = payments;
                     if (hlInfo !== 'Lease not found') {
                         console.log('gatherLeaseInfomation done', h.address);
-                        h.leaseBal = hlInfo.leaseBalance;                    
+                        h.leaseInfo = hlInfo.leaseBalance;                    
                     }
     
                     if (h.payments) {
                         h.payments = orderBy(h.payments, p=>p.receivedDate, 'desc');
                     }
-                    if (h.leaseBal || h.payments) {
-                        const h = orderBy([...ht], h=>h.leaseBal?.totalBalance || 0, 'desc');
+                    if (h.leaseInfo || h.payments) {
+                        const h = orderBy([...ht], h => h.leaseInfo?.totalBalance || 0, 'desc');
                         setAllHouses([...h]);
                     }
                     
@@ -83,7 +82,7 @@ export function OriginalDashboard() {
         <div className="row">
             {
                 allHouses.filter(h=>!h.disabled).map((h, index) => {
-                    return <BoardItemHalfSmall key={index} title={h.address} value={h.leaseBal?.totalBalance || 0}
+                    return <BoardItemHalfSmall key={index} title={h.address} value={h.leaseInfo?.totalBalance || 0}
                         iconName="fa-home" mainClsName='border-left-primary'
                         textClsName='text-primary' />
                 })
@@ -122,7 +121,7 @@ export function OriginalDashboard() {
 
         <DemoGraphicsRow />
 
-        <DemoRow></DemoRow>
+        <DemoRow houses={allHouses}></DemoRow>
 
     </div>
 }
