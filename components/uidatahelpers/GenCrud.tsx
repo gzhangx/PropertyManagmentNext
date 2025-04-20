@@ -5,7 +5,7 @@ import { EditTextDropdown } from '../generic/EditTextDropdown';
 import { GenCrudAdd, ItemType } from './GenCrudAdd';
 import { ISqlOrderDef, SortOps, IPageFilter, IPageState, IDBFieldDef, TableNames, SQLOPS, FieldValueType } from '../types'
 //import { IFKDefs} from './GenCrudTableFkTrans'
-import { ItemTypeDict } from './datahelperTypes';
+import { ITableAndSheetMappingInfo, ItemTypeDict } from './datahelperTypes';
 import { usePageRelatedContext } from '../states/PageRelatedState';
 import moment from 'moment';
 
@@ -26,7 +26,7 @@ export function getPageFilters(pageState: IPageState, table: string): IPageFilte
 }
 
 
-export interface IGenGrudProps {
+export interface IGenGrudProps extends ITableAndSheetMappingInfo {
     columnInfo: IDBFieldDef[];
     displayFields: IDBFieldDef[];
     rows: any[];
@@ -51,7 +51,7 @@ export interface IGenGrudProps {
     idCol?: { field: string; }
     reload?: () => Promise<void>;
 
-    customDisplayFunc?: (value: any, fieldDef: IDBFieldDef) => React.JSX.Element;
+    //customDisplayFunc?: (value: any, fieldDef: IDBFieldDef) => React.JSX.Element;
 }
 
 export const GenCrud = (props: IGenGrudProps) => {
@@ -145,12 +145,17 @@ export const GenCrud = (props: IGenGrudProps) => {
 
     const idCols = columnInfo.filter(c => c.isId);
 
-    const addNew = () => {
+    const addNew = async () => {
         columnInfo.map((c, cind) => {
             if (c.type === 'date' || c.type === 'datetime') {
                 editItem[c.field] = moment().format('YYYY-MM-DD');
+            } else {
+                editItem[c.field] = '';
             }
         });
+        if (props.customAddNewDefaults) {
+            props.customAddNewDefaults(columnInfo, editItem);
+        }
         setEditItem({
             ...editItem,
         })
