@@ -50,6 +50,13 @@ export const paymentInfoDef: ITableAndSheetMappingInfo = {
         }
         return value;
     },
+    customAddNewDefaults: async (columnInfo, editItem) => {
+        for (const c of columnInfo) {
+            if (c.field === 'paymentTypeName') {
+                editItem[c.field] = 'Rent';
+            }
+        }
+    },
     displayFields:
         [
         { field: 'receivedDate', 'desc': 'ReceivedDate', type: 'date' },

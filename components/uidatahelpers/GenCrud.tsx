@@ -154,7 +154,7 @@ export const GenCrud = (props: IGenGrudProps) => {
             }
         });
         if (props.customAddNewDefaults) {
-            props.customAddNewDefaults(columnInfo, editItem);
+            await props.customAddNewDefaults(columnInfo, editItem);
         }
         setEditItem({
             ...editItem,
