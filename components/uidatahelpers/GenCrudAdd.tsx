@@ -9,7 +9,7 @@ import { IEditTextDropdownItem } from '../generic/GenericDropdown';
 import { IGenGrudProps } from './GenCrud';
 import * as RootState from '../states/RootState'
 import moment from 'moment';
-import { ALLFieldNames, DataToDbSheetMapping, ItemTypeDict } from './datahelperTypes';
+import { ALLFieldNames, DataToDbSheetMapping, ILeaseToTenantCustOptions, ItemTypeDict } from './datahelperTypes';
 import { usePageRelatedContext } from '../states/PageRelatedState';
 import { IHelper } from '../reportTypes';
 
@@ -46,6 +46,8 @@ export const GenCrudAdd = (props: IGenGrudAddProps) => {
         operation,
     }
         = props;
+    
+    const [leaseToTenantMap, setLeaseToTenantMap] = useState<ILeaseToTenantCustOptions>({});
         
     //const getForeignKeyProcessor = fk => get(fkDefs, [fk, 'processForeignKey']);
     //let id:string|number = '';
@@ -234,19 +236,32 @@ export const GenCrudAdd = (props: IGenGrudAddProps) => {
                             //    selected: false,
                             //})
                             const options = selOptions;
-                            const curSelection = options.filter(o => o.value === get(editItem, colField))[0];
-                            if (curSelection) {
-                                curSelection.selected = true;
-                            }                            
+                            return createSelectionFromOptions(options, colField);
+                        };
+
+                        const createSelectionFromOptions = (options: IEditTextDropdownItem[], colField: string) => {                            
+                            
+                            if (props.operation === 'Add' && options.length > 0) {
+                                options[0].selected = true;
+                            } else {
+                                const curSelection = options.filter(o => o.value === get(editItem, colField))[0];
+                                if (curSelection) {
+                                    curSelection.selected = true;
+                                }
+                            }
                             return <>
-                                
+
                                 <EditTextDropdown items={options}
                                     onSelectionChanged={
-                                        (s: IEditTextDropdownItem) => {                                            
+                                        async (s: IEditTextDropdownItem) => {
                                             //if (s.value === 'AddNew') {
                                             //    setAddNewForField(colField);
                                             //} else
-                                            setEditItem({ ...editItem, [colField]: s.value });    //, [colField+'_labelDesc']: s.label
+                                            const newItem = { ...editItem, [colField]: s.value };
+                                            setEditItem(newItem);    //, [colField+'_labelDesc']: s.label
+                                            if (props.customEditItemOnChange) {
+                                                await props.customEditItemOnChange(mainCtx, colField, setLeaseToTenantMap, newItem);
+                                            }
                                         }
                                     }
                                 ></EditTextDropdown>
@@ -256,6 +271,10 @@ export const GenCrudAdd = (props: IGenGrudAddProps) => {
                         if (c.foreignKey) {
                             const optKey = c.foreignKey.table;
                             foreignSel = createSelection(optKey, c.field);
+                        }
+                        const specialFeighKey = leaseToTenantMap[c.field];
+                        if (specialFeighKey) {
+                            foreignSel = createSelectionFromOptions(specialFeighKey.options, c.field);
                         }
 
                         if (c.userSecurityField) return null;

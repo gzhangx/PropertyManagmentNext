@@ -1,6 +1,8 @@
 import moment from "moment";
 import { TableNames } from "../../types";
 import { ITableAndSheetMappingInfo } from "../datahelperTypes";
+import { ILeaseInfo, ITenantInfo } from "../../reportTypes";
+import { IEditTextDropdownItem } from "../../generic/GenericDropdown";
 
 
 export const workerInfoDef: ITableAndSheetMappingInfo = {
@@ -50,13 +52,61 @@ export const paymentInfoDef: ITableAndSheetMappingInfo = {
         }
         return value;
     },
-    customAddNewDefaults: async (mainCtx, columnInfo, editItem) => {
-        await mainCtx.loadForeignKeyLookup('leaseInfo');
+    customAddNewDefaults: async (mainCtx, columnInfo, editItem) => {        
         for (const c of columnInfo) {
             if (c.field === 'paymentTypeName') {
                 editItem[c.field] = 'Rent';
             }
         }
+    },
+    customEditItemOnChange: async (mainCtx, fieldName: string, setCustomFieldMapping, editItem) => {        
+        if (fieldName === 'leaseID') {
+            await mainCtx.loadForeignKeyLookup('leaseInfo');
+            await mainCtx.loadForeignKeyLookup('tenantInfo');
+            const fkObj = mainCtx.translateForeignLeuColumnToObject({
+                field: 'leaseID',
+                foreignKey: {
+                    table: 'leaseInfo',
+                    field: 'leaseID',
+                }
+            }, editItem);
+            console.log('fkObj', fkObj);
+            if (fkObj) {
+                const lease = fkObj as ILeaseInfo;
+                const options: IEditTextDropdownItem[] = [];
+                for (let ti = 1; ti <= 5; ti++) {
+                    const tenantId = lease[`tenant${ti}`];
+                    if (tenantId) {
+                        const tenantTranslated = mainCtx.translateForeignLeuColumnToObject({
+                            field: 'tenantID',
+                            foreignKey: {
+                                table: 'tenantInfo',
+                                field: 'tenantID',
+                            }
+                        }, {
+                            tenantID: tenantId,
+                        }) as ITenantInfo;
+                        if (tenantTranslated) {
+                            console.log('tenantTranslated', tenantTranslated);
+                            options.push({
+                                label: tenantTranslated.fullName,
+                                value: tenantTranslated.fullName,
+                            })
+                        }
+                    }   
+                }
+                setCustomFieldMapping(prev => {
+                    return {
+                        ...prev,
+                        'paidBy': {
+                            options,                            
+                        }
+                    }
+                });
+
+            }
+        }
+        
     },
     displayFields:
         [

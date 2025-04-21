@@ -1,4 +1,5 @@
 
+import { IEditTextDropdownItem } from "../generic/GenericDropdown";
 import { IPageRelatedState } from "../reportTypes";
 import { FieldValueType, IDBFieldDef, TableNames } from "../types";
 
@@ -24,6 +25,12 @@ export type DataToDbSheetMapping ={
 }
 
 
+export interface ILeaseToTenantCustOptions {
+    [fromEditItemField: string]: {  //ie. if lease Changes, table will be tenantInfo to match tenants
+        options: IEditTextDropdownItem[];
+    };
+};
+    
 export interface ITableAndSheetMappingInfo {
     table: TableNames;
     allFields?: IDBFieldDef[];  //TODO: check who is using this
@@ -37,6 +44,7 @@ export interface ITableAndSheetMappingInfo {
 
     customDisplayFunc?: (value: any, fieldDef: IDBFieldDef) => React.JSX.Element; //function to display data in the list, if not provided, default is to use the field name
     customAddNewDefaults?: (mainCtx: IPageRelatedState, columnInfo: IDBFieldDef[], editItem: ItemTypeDict) => Promise<void>;  //edit item is actuall ItemType
+    customEditItemOnChange?: (mainCtx: IPageRelatedState, fieldName: string, setCustomFieldMapping: React.Dispatch<React.SetStateAction<ILeaseToTenantCustOptions>>, editItem: ItemTypeDict) => Promise<void>;  //edit item is actuall ItemType
 }
 
 export type ItemTypeDict = { [p in ALLFieldNames]?: FieldValueType; };
