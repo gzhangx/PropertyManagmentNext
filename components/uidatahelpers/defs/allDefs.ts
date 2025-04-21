@@ -3,6 +3,7 @@ import { TableNames } from "../../types";
 import { ITableAndSheetMappingInfo } from "../datahelperTypes";
 import { ILeaseInfo, ITenantInfo } from "../../reportTypes";
 import { IEditTextDropdownItem } from "../../generic/GenericDropdown";
+import { orderBy } from "lodash";
 
 
 export const workerInfoDef: ITableAndSheetMappingInfo = {
@@ -116,7 +117,14 @@ export const paymentInfoDef: ITableAndSheetMappingInfo = {
         { field: 'paymentTypeName', 'desc': 'type' },
         { field: 'notes', 'desc': 'Notes' },
         ],
-    sortFields:        ['receivedDate', 'houseID'],
+    sortFields: ['receivedDate', 'houseID'],
+    orderColunmInfo(cols) {
+        const orders = ['houseID', 'receivedDate', 'receivedAmount', 'paymentTypeName','notes'];
+        
+        const firsts = orders.map(o => cols.find(c => c.field === o)).filter(c => c);
+        const lasts = cols.filter(c => !orders.includes(c.field));
+        return firsts.concat(lasts);
+    },
 };
 
 export const houseInfoDef: ITableAndSheetMappingInfo = {    

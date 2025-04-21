@@ -72,7 +72,11 @@ export function GenList(props: ITableAndSheetMappingInfo) {
         //if (!helper) return;
         const ld=async () => {                        
             await helper.loadModel();
-            setColumnInf(helper.getModelFields() as IDBFieldDef[]);
+            let columnInfo = helper.getModelFields() as IDBFieldDef[];
+            if (props.orderColunmInfo) {
+                columnInfo = props.orderColunmInfo(columnInfo);
+            }
+            setColumnInf(columnInfo);
             //if(columnInfo) {
             //    setColumnInf(columnInfo);
             //}
