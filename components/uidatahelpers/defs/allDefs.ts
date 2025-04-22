@@ -109,9 +109,12 @@ export const paymentInfoDef: ITableAndSheetMappingInfo = {
                 setCustomFieldMapping(prev => {
                     return {
                         ...prev,
-                        'paidBy': {
-                            options,                            
-                        }
+                        leaseToTenantCustOptions: {
+                            ...prev.leaseToTenantCustOptions,
+                            'paidBy': {
+                                options,
+                            }
+                        }                        
                     }
                 });
 

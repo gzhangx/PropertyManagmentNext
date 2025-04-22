@@ -9,7 +9,7 @@ import { IEditTextDropdownItem } from '../generic/GenericDropdown';
 import { IGenGrudProps } from './GenCrud';
 import * as RootState from '../states/RootState'
 import moment from 'moment';
-import { ALLFieldNames, DataToDbSheetMapping, ILeaseToTenantCustOptions, ItemTypeDict } from './datahelperTypes';
+import { ALLFieldNames, DataToDbSheetMapping, ICrudAddCustomObj, ItemTypeDict } from './datahelperTypes';
 import { usePageRelatedContext } from '../states/PageRelatedState';
 import { IHelper } from '../reportTypes';
 
@@ -47,7 +47,9 @@ export const GenCrudAdd = (props: IGenGrudAddProps) => {
     }
         = props;
     
-    const [leaseToTenantMap, setLeaseToTenantMap] = useState<ILeaseToTenantCustOptions>({});
+    const [leaseToTenantMap, setLeaseToTenantMap] = useState<ICrudAddCustomObj>({
+        leaseToTenantCustOptions: {},
+    });
         
     //const getForeignKeyProcessor = fk => get(fkDefs, [fk, 'processForeignKey']);
     //let id:string|number = '';
