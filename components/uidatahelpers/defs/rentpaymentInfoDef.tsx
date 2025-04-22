@@ -130,10 +130,15 @@ export const paymentInfoDef: ITableAndSheetMappingInfo = {
         const emailPreviewDef = {
             html: 'testtest',
             subject: 'testsub',
-            to: 'testot',
+            to: ['testot'],
             edit: false,
         };
-        const emailPreview: any = cust.paymentUIRelated || emailPreviewDef;
+        const emailPreview: {
+            html: string;
+            subject: string;
+            to: string[];
+            edit: boolean;
+        } = cust.paymentUIRelated || emailPreviewDef;
         const closePreview = () => {
             setCustomFieldMapping(prev => {
                 return {
@@ -152,7 +157,7 @@ export const paymentInfoDef: ITableAndSheetMappingInfo = {
             setShow={closePreview}
             footer={<div className="modal-footer">
                 <button type="button" className="btn btn-secondary" data-dismiss="modal" onClick={async () => {
-                    await api.sendEmail(emailPreview.to.split(','), emailPreview.subject, emailPreview.html);
+                    await api.sendEmail(emailPreview.to, emailPreview.subject, emailPreview.html);
                 }}>Send</button>
                 <button type="button" className="btn btn-secondary" data-dismiss="modal" onClick={async () => {
                     setCustomFieldMapping(prev => {
@@ -172,12 +177,12 @@ export const paymentInfoDef: ITableAndSheetMappingInfo = {
                 <div className="container-fluid">
                     <div className="row">
                         <div className="card bg-primary text-white shadow">
-                            <div className="card-body">
+                            <div className="card-body">                                
                                 <input type='text'
                                     className="form-control "
                                     placeholder='Email To'
-                                    size={emailPreview.to.length}
-                                    value={emailPreview.to} onChange={e => {
+                                    size={(emailPreview.to.join(',').length || 0) < 20 ? 20 : emailPreview.to.length}
+                                    value={emailPreview.to.join(',')} onChange={e => {
                                         setCustomFieldMapping(prev => {
                                             return {
                                                 ...prev,
