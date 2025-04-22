@@ -254,7 +254,20 @@ export const paymentInfoDef: ITableAndSheetMappingInfo = {
                     }]
                 })
             });
-            console.log('custfooterfinderles', leaseInfo, formatedData)
+            console.log('custfooterfinderles', leaseInfo, formatedData);
+            setCustomFieldMapping(prev => {
+                return {
+                    ...prev,
+                    paymentUIRelated: {
+                        html: formatedData.body,
+                        subject: formatedData.subject,
+                        to: formatedData.mailtos,
+                        edit: false,
+                        showRenterConfirmationScreen: true,
+                    }
+                }
+            })
+
         }}>Email</button>
     },
 };
