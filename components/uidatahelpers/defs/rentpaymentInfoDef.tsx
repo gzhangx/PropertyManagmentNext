@@ -160,7 +160,7 @@ export const paymentInfoDef: ITableAndSheetMappingInfo = {
                             ...prev,
                             paymentUIRelated: {
                                 ...(prev.paymentUIRelated || emailPreviewDef),
-                                edit: (cust.paymentUIRelated as any)?.edit,
+                                edit: !(cust.paymentUIRelated)?.edit,
                             }
                         }
                     })
