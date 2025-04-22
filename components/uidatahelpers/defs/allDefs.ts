@@ -1,6 +1,6 @@
 import moment from "moment";
 import { TableNames } from "../../types";
-import { ITableAndSheetMappingInfo } from "../datahelperTypes";
+import { ITableAndSheetMappingInfo, ItemTypeDict } from "../datahelperTypes";
 import { ILeaseInfo, ITenantInfo } from "../../reportTypes";
 import { IEditTextDropdownItem } from "../../generic/GenericDropdown";
 import { orderBy } from "lodash";
@@ -57,14 +57,17 @@ export const paymentInfoDef: ITableAndSheetMappingInfo = {
         return value;
     },
     customAddNewDefaults: async (mainCtx, columnInfo, editItem) => {        
+        await mainCtx.loadForeignKeyLookup('leaseInfo');
+        await mainCtx.loadForeignKeyLookup('tenantInfo');
         for (const c of columnInfo) {
             if (c.field === 'paymentTypeName') {
                 editItem[c.field] = 'Rent';
             }
         }
     },
-    customEditItemOnChange: async (mainCtx, fieldName: string, setCustomFieldMapping, editItem) => {        
-        if (fieldName === 'leaseID') {
+    customEditItemOnChange: async (mainCtx, fieldName: string, setCustomFieldMapping, editItem) => {       
+        const ret: ItemTypeDict = { [fieldName]: editItem[fieldName] };
+        if (fieldName === 'houseID' || fieldName === 'leaseID') {
             await mainCtx.loadForeignKeyLookup('leaseInfo');
             await mainCtx.loadForeignKeyLookup('tenantInfo');
             const fkObj = mainCtx.translateForeignLeuColumnToObject({
@@ -77,6 +80,10 @@ export const paymentInfoDef: ITableAndSheetMappingInfo = {
             console.log('fkObj', fkObj);
             if (fkObj) {
                 const lease = fkObj as ILeaseInfo;
+                if (lease.monthlyRent) {                    
+                    ret['receivedAmount'] = lease.monthlyRent;                    
+                    ret.leaseID = lease.leaseID;
+                }
                 const options: IEditTextDropdownItem[] = [];
                 for (let ti = 1; ti <= 5; ti++) {
                     const tenantId = lease[`tenant${ti}`];
@@ -110,6 +117,7 @@ export const paymentInfoDef: ITableAndSheetMappingInfo = {
 
             }
         }
+        return ret;
         
     },
     displayFields:

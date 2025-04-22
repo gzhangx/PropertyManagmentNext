@@ -257,11 +257,16 @@ export const GenCrudAdd = (props: IGenGrudAddProps) => {
                                             //if (s.value === 'AddNew') {
                                             //    setAddNewForField(colField);
                                             //} else
-                                            const newItem = { ...editItem, [colField]: s.value };
-                                            setEditItem(newItem);    //, [colField+'_labelDesc']: s.label
+                                            let newItem: ItemTypeDict = { ...editItem, [colField]: s.value };                                            
                                             if (props.customEditItemOnChange) {
-                                                await props.customEditItemOnChange(mainCtx, colField, setLeaseToTenantMap, newItem);
+                                                newItem = await props.customEditItemOnChange(mainCtx, colField, setLeaseToTenantMap, newItem);
                                             }
+                                            setEditItem(prev => {
+                                                return {
+                                                    ...prev,
+                                                    ...newItem,
+                                                };
+                                            });    //, [colField+'_labelDesc']: s.label
                                         }
                                     }
                                 ></EditTextDropdown>

@@ -20,7 +20,7 @@ export default function DemoGraphicsRow() {
 
     useEffect(() => {
         load()
-    });
+    },['once']);
     return <div className="row">
         <div className="col-xl-8 col-lg-7">
             <div className="card shadow mb-4">
