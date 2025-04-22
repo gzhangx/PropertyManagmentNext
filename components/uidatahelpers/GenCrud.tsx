@@ -5,7 +5,7 @@ import { EditTextDropdown } from '../generic/EditTextDropdown';
 import { GenCrudAdd, ItemType } from './GenCrudAdd';
 import { ISqlOrderDef, SortOps, IPageFilter, IPageState, IDBFieldDef, TableNames, SQLOPS, FieldValueType } from '../types'
 //import { IFKDefs} from './GenCrudTableFkTrans'
-import { ITableAndSheetMappingInfo, ItemTypeDict } from './datahelperTypes';
+import { ICrudAddCustomObj, ITableAndSheetMappingInfo, ItemTypeDict } from './datahelperTypes';
 import { usePageRelatedContext } from '../states/PageRelatedState';
 import moment from 'moment';
 import { BaseDialog } from '../generic/basedialog';
@@ -80,6 +80,10 @@ export const GenCrud = (props: IGenGrudProps) => {
         showDeleteConfirmation: false,
         deleteIds: [],
         deleteRowData: {},
+    });
+    
+    const [crudAddCustomObjMap, setCrudAddCustomObjMap] = useState<ICrudAddCustomObj>({
+        leaseToTenantCustOptions: {},
     });
     
     const { pageProps, setPageProps } = pageState;
@@ -429,13 +433,20 @@ export const GenCrud = (props: IGenGrudProps) => {
                         </tbody>
                     </table>
                 </div>
-            }
-
+            }            
             {
                 (dspState === 'Add' || dspState === 'Update') &&
-            <GenCrudAdd {...props} show={true} operation={dspState} editItem={editItem} setEditItem={setEditItem}  onCancel={r => {
+                <GenCrudAdd {...{
+                    ...props,
+                        crudAddCustomObjMap, setCrudAddCustomObjMap,
+                        editItem, setEditItem,
+                }
+            } show={true} operation={dspState}  onCancel={r => {
                 setDspState('dsp')
             }}></GenCrudAdd>            
+            }
+            {
+                props.customScreen && crudAddCustomObjMap.paymentUIRelated?.showRenterConfirmationScreen && props.customScreen(crudAddCustomObjMap, setCrudAddCustomObjMap)
             }
         </div>
     )

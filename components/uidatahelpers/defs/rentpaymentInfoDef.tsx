@@ -257,8 +257,7 @@ export const paymentInfoDef: ITableAndSheetMappingInfo = {
                         text: err,
                     }]
                 })
-            });
-            console.log('custfooterfinderles', leaseInfo, formatedData);
+            });       
             setCustomFieldMapping(prev => {
                 return {
                     ...prev,

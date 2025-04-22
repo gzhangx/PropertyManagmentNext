@@ -107,7 +107,7 @@ export function GenList(props: ITableAndSheetMappingInfo) {
     return <div>
         <p className='subHeader'>{props.title}</p>
         {
-            (loading||!columnInf)? <p>Loading</p>:
+            (!columnInf)? <p>Loading</p>:
                 <div>
                     <GenCrud
                         //fkDefs={getFKDefs()}

@@ -30,6 +30,9 @@ export interface IGenGrudAddProps extends IGenGrudProps {
     show: boolean;
     desc?: string;    
     sheetMapping?: DataToDbSheetMapping;
+
+    crudAddCustomObjMap: ICrudAddCustomObj;
+    setCrudAddCustomObjMap: React.Dispatch<React.SetStateAction<ICrudAddCustomObj>>;
 }
 export const GenCrudAdd = (props: IGenGrudAddProps) => {
 
@@ -44,12 +47,11 @@ export const GenCrudAdd = (props: IGenGrudAddProps) => {
         desc,
         //fkDefs,
         operation,
+
+        crudAddCustomObjMap, setCrudAddCustomObjMap,
     }
         = props;
     
-    const [crudAddCustomObjMap, setCrudAddCustomObjMap] = useState<ICrudAddCustomObj>({
-        leaseToTenantCustOptions: {},
-    });
         
     //const getForeignKeyProcessor = fk => get(fkDefs, [fk, 'processForeignKey']);
     //let id:string|number = '';
@@ -192,10 +194,7 @@ export const GenCrudAdd = (props: IGenGrudAddProps) => {
     }
 
     return <div className={dspClassName} tabIndex={-1} role="dialog" >
-        <Dialog dialogInfo={errDlgPrm}></Dialog>
-        {
-            props.customScreen && props.customScreen(crudAddCustomObjMap, setCrudAddCustomObjMap)
-        }
+        <Dialog dialogInfo={errDlgPrm}></Dialog>        
         <div className="modal-dialog" role="document" style={{ maxWidth: '60%' }}>
         <div className="modal-content">
             <div className="modal-header">
