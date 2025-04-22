@@ -47,7 +47,7 @@ export const GenCrudAdd = (props: IGenGrudAddProps) => {
     }
         = props;
     
-    const [leaseToTenantMap, setLeaseToTenantMap] = useState<ICrudAddCustomObj>({
+    const [crudAddCustomObjMap, setCrudAddCustomObjMap] = useState<ICrudAddCustomObj>({
         leaseToTenantCustOptions: {},
     });
         
@@ -194,7 +194,7 @@ export const GenCrudAdd = (props: IGenGrudAddProps) => {
     return <div className={dspClassName} tabIndex={-1} role="dialog" >
         <Dialog dialogInfo={errDlgPrm}></Dialog>
         {
-            props.customScreen && props.customScreen(leaseToTenantMap, setLeaseToTenantMap)
+            props.customScreen && props.customScreen(crudAddCustomObjMap, setCrudAddCustomObjMap)
         }
         <div className="modal-dialog" role="document" style={{ maxWidth: '60%' }}>
         <div className="modal-content">
@@ -264,7 +264,7 @@ export const GenCrudAdd = (props: IGenGrudAddProps) => {
                                             //} else
                                             let newItem: ItemTypeDict = { ...editItem, [colField]: s.value };                                            
                                             if (props.customEditItemOnChange) {
-                                                newItem = await props.customEditItemOnChange(mainCtx, colField, setLeaseToTenantMap, newItem);
+                                                newItem = await props.customEditItemOnChange(mainCtx, colField, setCrudAddCustomObjMap, newItem);
                                             }
                                             setEditItem(prev => {
                                                 return {
@@ -282,7 +282,7 @@ export const GenCrudAdd = (props: IGenGrudAddProps) => {
                             const optKey = c.foreignKey.table;
                             foreignSel = createSelection(optKey, c.field);
                         }
-                        const specialFeighKey = leaseToTenantMap[c.field];
+                        const specialFeighKey = crudAddCustomObjMap[c.field];
                         if (specialFeighKey) {
                             foreignSel = createSelectionFromOptions(specialFeighKey.options, c.field);
                         }
@@ -308,12 +308,12 @@ export const GenCrudAdd = (props: IGenGrudAddProps) => {
                 </table>
             {                
                     <div className="modal-footer">
-                        {addUpdateLabel === 'Update' && props.customFooterButton && props.customFooterButton(mainCtx, leaseToTenantMap, setLeaseToTenantMap, editItem).customFooterUI}
+                        {addUpdateLabel === 'Update' && props.customFooterButton && props.customFooterButton(mainCtx, crudAddCustomObjMap, setCrudAddCustomObjMap, editItem).customFooterUI}
                         <button type="button" className="btn btn-primary" data-dismiss="modal" onClick={
                             async e => {
                                 await handleSubmit(e);
                                 if (props.customFooterButton) {
-                                    await props.customFooterButton(mainCtx, leaseToTenantMap, setLeaseToTenantMap, editItem).customFooterFunc();
+                                    await props.customFooterButton(mainCtx, crudAddCustomObjMap, setCrudAddCustomObjMap, editItem).customFooterFunc();
                                 }
                             }
                         }>{addUpdateLabel}</button>
