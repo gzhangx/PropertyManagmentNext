@@ -308,7 +308,7 @@ export const GenCrudAdd = (props: IGenGrudAddProps) => {
                 </table>
             {                
                     <div className="modal-footer">
-                        { props.customFooterButton && props.customFooterButton(mainCtx, leaseToTenantMap, setLeaseToTenantMap, editItem)}
+                        {addUpdateLabel === 'Update' && props.customFooterButton && props.customFooterButton(mainCtx, leaseToTenantMap, setLeaseToTenantMap, editItem)}
                         <button type="button" className="btn btn-primary" data-dismiss="modal" onClick={handleSubmit}>{addUpdateLabel}</button>
                         <button type="button" className="btn btn-secondary" data-dismiss="modal" onClick={internalCancel}>Cancel</button>
                     </div>             
