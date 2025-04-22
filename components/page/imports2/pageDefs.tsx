@@ -24,7 +24,7 @@ export function getPageDefs() {
     //const basicDef = getBasicPageDefs();
     const pages: IPageInfo[] = [
         {
-            ...allDefs.paymentInfoDef,            
+            ...allDefs.paymentInfoDefinition,            
             dbLoader: () => getPaymentRecords().then(r => r as any as IDbSaveData[]),
             //dbItemIdField: 'paymentID',
             sheetMustExistField: 'receivedDate',

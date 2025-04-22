@@ -106,6 +106,8 @@ const ownerInfoDef: ITableAndSheetMappingInfo = {
 
 import { paymentInfoDef } from './rentpaymentInfoDef'
 
+export const paymentInfoDefinition = paymentInfoDef;
+
 export const tableNameToDefinitions = [tenantInfoDef, houseInfoDef, paymentInfoDef, workerInfoDef, maintenanceInfoDef,
     leaseInfoDef,
     ownerInfoDef,
