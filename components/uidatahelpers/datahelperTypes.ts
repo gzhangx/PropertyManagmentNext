@@ -52,7 +52,10 @@ export interface ITableAndSheetMappingInfo {
     orderColunmInfo?: (cols: IDBFieldDef[]) => IDBFieldDef[];
 
     customScreen?: (cust: ICrudAddCustomObj, setCustomFieldMapping: React.Dispatch<React.SetStateAction<ICrudAddCustomObj>>) => React.JSX.Element;
-    customFooterButton?: (mainCtx: IPageRelatedState, cust: ICrudAddCustomObj, setCustomFieldMapping: React.Dispatch<React.SetStateAction<ICrudAddCustomObj>>, editItem: ItemTypeDict) => React.JSX.Element;
+    customFooterButton?: (mainCtx: IPageRelatedState, cust: ICrudAddCustomObj, setCustomFieldMapping: React.Dispatch<React.SetStateAction<ICrudAddCustomObj>>, editItem: ItemTypeDict) => {
+        customFooterFunc: () => Promise<void>;
+        customFooterUI: React.JSX.Element;
+    }
 }
 
 export type ItemTypeDict = { [p in ALLFieldNames]?: FieldValueType; };

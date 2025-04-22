@@ -244,8 +244,7 @@ export const paymentInfoDef: ITableAndSheetMappingInfo = {
         </CloseableDialog>
     },
     customFooterButton(mainCtx, cust, setCustomFieldMapping, item) {
-        return <button type="button" className="btn btn-primary" data-dismiss="modal" onClick={async e => {
-            e.preventDefault();
+        const customFooterFunc = async () => {
             const houseID = item.houseID as string;
             if (!houseID) return;
             const house: HouseWithLease = {
@@ -272,7 +271,14 @@ export const paymentInfoDef: ITableAndSheetMappingInfo = {
                     }
                 }
             })
-
+        };
+        const customFooterUI = <button type="button" className="btn btn-primary" data-dismiss="modal" onClick={async e => {
+            e.preventDefault();
+            await customFooterFunc();
         }}>Email</button>
+        return {
+            customFooterFunc,
+            customFooterUI,
+        }
     },
 };
