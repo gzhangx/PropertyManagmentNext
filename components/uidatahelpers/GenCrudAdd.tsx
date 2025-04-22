@@ -193,6 +193,9 @@ export const GenCrudAdd = (props: IGenGrudAddProps) => {
 
     return <div className={dspClassName} tabIndex={-1} role="dialog" >
         <Dialog dialogInfo={errDlgPrm}></Dialog>
+        {
+            props.customScreen && props.customScreen(leaseToTenantMap, setLeaseToTenantMap)
+        }
         <div className="modal-dialog" role="document" style={{ maxWidth: '60%' }}>
         <div className="modal-content">
             <div className="modal-header">
@@ -305,6 +308,7 @@ export const GenCrudAdd = (props: IGenGrudAddProps) => {
                 </table>
             {                
                     <div className="modal-footer">
+                        { props.customFooterButton && props.customFooterButton(mainCtx, leaseToTenantMap, setLeaseToTenantMap, editItem)}
                         <button type="button" className="btn btn-primary" data-dismiss="modal" onClick={handleSubmit}>{addUpdateLabel}</button>
                         <button type="button" className="btn btn-secondary" data-dismiss="modal" onClick={internalCancel}>Cancel</button>
                     </div>             

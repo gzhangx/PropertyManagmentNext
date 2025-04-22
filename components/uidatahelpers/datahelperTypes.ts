@@ -26,6 +26,7 @@ export type DataToDbSheetMapping ={
 
 
 export interface ICrudAddCustomObj {
+    paymentUIRelated?: any;
     leaseToTenantCustOptions: {
         [fromEditItemField: string]: {  //ie. if lease Changes, table will be tenantInfo to match tenants
             options: IEditTextDropdownItem[];
@@ -49,6 +50,9 @@ export interface ITableAndSheetMappingInfo {
     customEditItemOnChange?: (mainCtx: IPageRelatedState, fieldName: string, setCustomFieldMapping: React.Dispatch<React.SetStateAction<ICrudAddCustomObj>>, editItem: ItemTypeDict) => Promise<ItemTypeDict>;  //edit item is actuall ItemType
 
     orderColunmInfo?: (cols: IDBFieldDef[]) => IDBFieldDef[];
+
+    customScreen?: (cust: ICrudAddCustomObj, setCustomFieldMapping: React.Dispatch<React.SetStateAction<ICrudAddCustomObj>>) => React.JSX.Element;
+    customFooterButton?: (mainCtx: IPageRelatedState, cust: ICrudAddCustomObj, setCustomFieldMapping: React.Dispatch<React.SetStateAction<ICrudAddCustomObj>>, editItem: ItemTypeDict) => React.JSX.Element;
 }
 
 export type ItemTypeDict = { [p in ALLFieldNames]?: FieldValueType; };
