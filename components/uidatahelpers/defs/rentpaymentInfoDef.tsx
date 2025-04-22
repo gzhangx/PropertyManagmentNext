@@ -181,7 +181,7 @@ export const paymentInfoDef: ITableAndSheetMappingInfo = {
                                 <input type='text'
                                     className="form-control "
                                     placeholder='Email To'
-                                    size={(emailPreview.to.join(',').length || 0) < 20 ? 20 : emailPreview.to.length}
+                                    size={(emailPreview.to.join(',').length)}
                                     value={emailPreview.to.join(',')} onChange={e => {
                                         setCustomFieldMapping(prev => {
                                             return {
