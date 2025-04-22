@@ -16,7 +16,7 @@ interface HouseWithTenants extends HouseWithLease {
     payments?: IPayment[];
 }
 //old, moved toautoAssignLeases
-export function LeaseReport() {    
+export default function LeaseReport() {    
     const mainCtx = usePageRelatedContext();
     
     const [curOwner, setCurOwner] = useState<IEditTextDropdownItem>({

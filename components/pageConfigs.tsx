@@ -20,7 +20,7 @@ import { TableNames } from './types'
 
 import GoogleSheetConfigPage from '../pages/config/googleSheetConfig'
 
-import {LeaseReport as NewLeaseReport} from '../pages/reports/leaseReport'
+import NewLeaseReport from '../pages/reports/leaseReport'
 
 type LocalPageInfo = {
     name: string;
