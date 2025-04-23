@@ -145,7 +145,7 @@ export function OriginalDashboard() {
 
                     <div className="card shadow mb-4">
                         <div className="card-header py-3">
-                            <h6 className="m-0 font-weight-bold text-primary">Last payments</h6>
+                            <h6 className="m-0 font-weight-bold text-primary">All payments { selectedHouse.address}</h6>
                         </div>
                         <div className="card-body">
                             {
