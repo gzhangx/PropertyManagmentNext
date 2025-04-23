@@ -175,3 +175,13 @@ export function DoubleAryToCsv(data: string[][]): string {
         return ss.join(',');
     }).join('\r\n');
 }
+
+export function removeZeroHourMinuteSeconds(str: string) {
+    while (str.endsWith(':00')) {
+        str = str.substring(0, str.length - 3);
+    }
+    if (str.endsWith(' 00')) {
+        str = str.substring(0, str.length - 3);
+    }
+    return str;
+}
