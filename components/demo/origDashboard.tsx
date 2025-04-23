@@ -6,7 +6,7 @@ import { IHouseInfo, IPayment, ITenantInfo } from '../reportTypes';
 import { usePageRelatedContext } from '../states/PageRelatedState';
 import { useEffect, useState } from 'react';
 import { getLeases } from '../api';
-import { orderBy } from 'lodash';
+import { orderBy, set } from 'lodash';
 
 
 interface HouseWithTenants extends HouseWithLease {
@@ -16,59 +16,62 @@ interface HouseWithTenants extends HouseWithLease {
 export function OriginalDashboard() {
     const mainCtx = usePageRelatedContext();
     const [allHouses, setAllHouses] = useState<HouseWithTenants[]>([]);
-    useEffect(() => {        
-            mainCtx.showLoadingDlg('Loading house info...');
-            mainCtx.loadForeignKeyLookup('houseInfo').then(async () => {
-                mainCtx.showLoadingDlg('Loading tenant info...');
-                await mainCtx.loadForeignKeyLookup('tenantInfo');
+    const [curProgressText, setCurProgressText] = useState<string>('');
+    useEffect(() => {
+        //mainCtx.showLoadingDlg('Loading house info...');
+        setCurProgressText('Loading house info...');
+        mainCtx.loadForeignKeyLookup('houseInfo').then(async () => {
+            //mainCtx.showLoadingDlg('Loading tenant info...');
+            await mainCtx.loadForeignKeyLookup('tenantInfo');
     
-                mainCtx.showLoadingDlg('Loading leasse info...');
-                const leases = await getLeases();
-                mainCtx.showLoadingDlg('');
+            //mainCtx.showLoadingDlg('Loading leasse info...');
+            const leases = await getLeases();
+            //mainCtx.showLoadingDlg('');
     
-                const allHouses = (mainCtx.getAllForeignKeyLookupItems('houseInfo') || []) as IHouseInfo[];
-                const ownerDc = allHouses.reduce((acc, house) => {
-                    const ownerName = house.ownerName;
-                    if (!acc.dict[ownerName]) {
-                        acc.owners.push(ownerName);
-                        acc.dict[ownerName] = true;
-                    }
-                    return acc;
-                }, {
-                    dict: {} as { [owner: string]: boolean; },
-                    owners: [] as string[],
-                });
-    
-                const ht: HouseWithTenants[] = allHouses.map(h => ({ ...h, tenants:[] } as HouseWithTenants));;
-                for (const h of ht) {
-                    const allLeases = orderBy(leases.filter(l => l.houseID === h.houseID), l => l.endDate, 'desc');
-                    const lastLease = allLeases[0];
-                    if (lastLease) {
-                        h.lease = lastLease;                        
-                    }
+            const allHouses = (mainCtx.getAllForeignKeyLookupItems('houseInfo') || []) as IHouseInfo[];
+            const ownerDc = allHouses.reduce((acc, house) => {
+                const ownerName = house.ownerName;
+                if (!acc.dict[ownerName]) {
+                    acc.owners.push(ownerName);
+                    acc.dict[ownerName] = true;
                 }
-                    
-                for (const h of ht) {
-                    console.log('gatherLeaseInfomation', h.address);
-                    const hlInfo = await gatherLeaseInfomation(h);
-                    const payments = await getAllPaymentForHouse(h.houseID);
-                    h.payments = payments;
-                    if (hlInfo !== 'Lease not found') {
-                        console.log('gatherLeaseInfomation done', h.address);
-                        h.leaseInfo = hlInfo.leaseBalance;                    
-                    }
-    
-                    if (h.payments) {
-                        h.payments = orderBy(h.payments, p=>p.receivedDate, 'desc');
-                    }
-                    if (h.leaseInfo || h.payments) {
-                        const h = orderBy([...ht], h => h.leaseInfo?.totalBalance || 0, 'desc');
-                        setAllHouses([...h]);
-                    }
-                    
-                }
+                return acc;
+            }, {
+                dict: {} as { [owner: string]: boolean; },
+                owners: [] as string[],
             });
     
+            const ht: HouseWithTenants[] = allHouses.map(h => ({ ...h, tenants: [] } as HouseWithTenants));;
+            for (const h of ht) {
+                setCurProgressText(`Loading ${h.address}`);
+                const allLeases = orderBy(leases.filter(l => l.houseID === h.houseID), l => l.endDate, 'desc');
+                const lastLease = allLeases[0];
+                if (lastLease) {
+                    h.lease = lastLease;
+                }
+            }
+                    
+            for (const h of ht) {
+                console.log('gatherLeaseInfomation', h.address);
+                const hlInfo = await gatherLeaseInfomation(h);
+                const payments = await getAllPaymentForHouse(h.houseID);
+                h.payments = payments;
+                if (hlInfo !== 'Lease not found') {
+                    console.log('gatherLeaseInfomation done', h.address);
+                    h.leaseInfo = hlInfo.leaseBalance;
+                }
+    
+                if (h.payments) {
+                    h.payments = orderBy(h.payments, p => p.receivedDate, 'desc');
+                }
+                if (h.leaseInfo || h.payments) {
+                    const h = orderBy([...ht], h => h.leaseInfo?.totalBalance || 0, 'desc');
+                    setAllHouses([...h]);
+                }
+                    
+            }
+            setCurProgressText('...');
+        });    
     }, []);
     
     return <div className="container-fluid">
@@ -76,7 +79,7 @@ export function OriginalDashboard() {
         <div className="d-sm-flex align-items-center justify-content-between mb-4">
             <h1 className="h3 mb-0 text-gray-800">Dashboard</h1>
             <a href="#" className="d-none d-sm-inline-block btn btn-sm btn-primary shadow-sm"><i
-                className="fas fa-download fa-sm text-white-50"></i> Generate Report</a>
+                className="fas fa-download fa-sm text-white-50"></i> Generate Report {curProgressText}</a>
         </div>
 
         <div className="row">
