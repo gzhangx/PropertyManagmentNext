@@ -87,7 +87,7 @@ export function OriginalDashboard() {
         <div className="row">
             {
                 allHouses.filter(h=>!h.disabled).map((h, index) => {
-                    return <BoardItemHalfSmall key={index} title={h.address} value={h.leaseInfo?.totalBalance || 0}
+                    return <BoardItemHalfSmall key={index} title={h.address} value={h.leaseInfo?.totalBalance ?? 'Loading'}
                         onClick={() => {
                             setSelectedHouse(h);                          
                         }}
