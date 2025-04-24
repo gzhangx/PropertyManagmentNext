@@ -291,19 +291,23 @@ export const paymentInfoDef: ITableAndSheetMappingInfo = {
         }
         if (field === 'houseID') {
             const allHouses = mainCtx.getAllForeignKeyLookupItems('houseInfo');
-            return <div>
-                <EditTextDropdown items={allHouses.map(h => {
-                    return {
-                        label: h.address as string,
-                        value: h.houseID,
+            const items: IEditTextDropdownItem[] = allHouses.map(h => {
+                return {
+                    label: h.address as string,
+                    value: h.houseID,
 
-                    }
-                })}
+                }
+            })
+            const allItm: IEditTextDropdownItem[] = [{
+                label: 'All',
+                value: '',
+            }];
+            const all = allItm.concat(items);            
+            return <div>
+                <EditTextDropdown items={all}
                     onSelectionChanged={async (item) => {
                         const id = `CUST_FILTER_${table}_${field}_HIDDX`; 
-                        if (!item.value) return; //TODO: remove cust filters
-                        const origFilters: IPageFilter[] = get(pageProps, [table, 'filters']) || [];
-                        const newFilters = origFilters.filter(f=>f.id !== id).concat([
+                        let newFil: IPageFilter[] = [
                             {
                                 id,
                                 table,
@@ -311,7 +315,12 @@ export const paymentInfoDef: ITableAndSheetMappingInfo = {
                                 op: '=',
                                 val: item.value,
                             }
-                        ]);
+                        ];
+                        if (!item.value) {
+                            newFil = [];
+                        }
+                        const origFilters: IPageFilter[] = get(pageProps, [table, 'filters']) || [];
+                        const newFilters = origFilters.filter(f=>f.id !== id).concat(newFil);
                         set(pageProps, [table, 'filters'], newFilters);
                         forceUpdateFilterVals();
                     }}
