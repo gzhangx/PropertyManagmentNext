@@ -1,7 +1,7 @@
 
 import { IEditTextDropdownItem } from "../generic/GenericDropdown";
 import { IPageRelatedState } from "../reportTypes";
-import { FieldValueType, IDBFieldDef, TableNames } from "../types";
+import { FieldValueType, IDBFieldDef, IPageState, TableNames } from "../types";
 
 export type PageNames = 'Tenants Info' | 'Lease Info' | 'PaymentRecord' | 'House Info' | 'MaintainessRecord' | 'Workers Info';
 export type ALLFieldNames = '' | 'address' | 'city' | 'zip' | 'ownerName' | 'receivedDate' | 'receivedAmount' | 'amount' | 'houseID' | 'paymentTypeName' | 'paymentProcessor' | 'notes'
@@ -55,7 +55,8 @@ export interface ITableAndSheetMappingInfo {
     customFooterButton?: (mainCtx: IPageRelatedState, cust: ICrudAddCustomObj, setCustomFieldMapping: React.Dispatch<React.SetStateAction<ICrudAddCustomObj>>, editItem: ItemTypeDict) => {
         customFooterFunc: () => Promise<void>;
         customFooterUI: React.JSX.Element;
-    }
+    };
+    customHeaderFilterFunc?: (mainCtx: IPageRelatedState, pageState: IPageState, field:string) => React.JSX.Element | null;
 }
 
 export type ItemTypeDict = { [p in ALLFieldNames]?: FieldValueType; };

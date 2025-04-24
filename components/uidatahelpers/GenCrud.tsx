@@ -86,6 +86,11 @@ export const GenCrud = (props: IGenGrudProps) => {
         leaseToTenantCustOptions: {},
     });
     
+
+    const [customFiltersEnabled, setCustomFiltersEnabled] = useState<{
+        [tableName: string]: {
+            [field: string]: boolean;
+    }}>({});
     const { pageProps, setPageProps } = pageState;
     const mainCtx = usePageRelatedContext();
     useEffect(() => {
@@ -360,7 +365,24 @@ export const GenCrud = (props: IGenGrudProps) => {
                                     displayFieldsStripped.map((name, ind) => {
                                         return <th key={ind}>
                                             <div>{columnMap[name] ? columnMap[name].desc : `****Column ${JSON.stringify(name)} not mapped`}</div>
-                                            <div>{getFieldSort(name)}</div>
+                                            <div>{getFieldSort(name)}
+                                                {
+                                                    props.customHeaderFilterFunc && <><a style={{ marginLeft: '3px' }} onClick={e => {
+                                                        e.preventDefault();
+                                                        const newCustomFiltersEnabled = { ...customFiltersEnabled };
+                                                        if (!newCustomFiltersEnabled[table]) {
+                                                            newCustomFiltersEnabled[table] = {};
+                                                        }
+                                                        newCustomFiltersEnabled[table][name] = !newCustomFiltersEnabled[table][name];
+                                                        setCustomFiltersEnabled(newCustomFiltersEnabled);
+                                                    }}>Cust</a></>
+                                                }
+                                            </div>
+                                            
+                                            {
+                                                customFiltersEnabled[table] && customFiltersEnabled[table][name] &&
+                                                props.customHeaderFilterFunc(mainCtx, pageState, name)
+                                            }
                                         </th>
                                     })
                                 }

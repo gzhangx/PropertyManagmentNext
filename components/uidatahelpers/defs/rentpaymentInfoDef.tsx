@@ -6,9 +6,13 @@ import { gatherLeaseInfomation, HouseWithLease } from "../../utils/leaseUtil";
 import { ICrudAddCustomObj, ITableAndSheetMappingInfo, ItemTypeDict } from "../datahelperTypes";
 import * as api from '../../api'
 import { formateEmail } from "../../utils/leaseEmailUtil";
+import { EditTextDropdown } from "../../generic/EditTextDropdown";
+import { get, set } from "lodash";
+import { IPageFilter } from "../../types";
 
+const table = 'rentPaymentInfo';
 export const paymentInfoDef: ITableAndSheetMappingInfo = {
-    table: 'rentPaymentInfo',
+    table,
     sheetMapping: {
         sheetName: 'PaymentRecord',
         range: 'A1:G',
@@ -279,5 +283,41 @@ export const paymentInfoDef: ITableAndSheetMappingInfo = {
             customFooterFunc,
             customFooterUI,
         }
+    },
+    customHeaderFilterFunc: (mainCtx, pageState, field) => {
+        const { pageProps, setPageProps } = pageState;
+        const forceUpdateFilterVals = () => {
+            setPageProps({ ...pageProps, reloadCount: (pageProps.reloadCount || 0) + 1 });
+        }
+        if (field === 'houseID') {
+            const allHouses = mainCtx.getAllForeignKeyLookupItems('houseInfo');
+            return <div>
+                <EditTextDropdown items={allHouses.map(h => {
+                    return {
+                        label: h.address as string,
+                        value: h.houseID,
+
+                    }
+                })}
+                    onSelectionChanged={async (item) => {
+                        const id = `CUST_FILTER_${table}_${field}_HIDDX`; 
+                        if (!item.value) return; //TODO: remove cust filters
+                        const origFilters: IPageFilter[] = get(pageProps, [table, 'filters']) || [];
+                        const newFilters = origFilters.filter(f=>f.id !== id).concat([
+                            {
+                                id,
+                                table,
+                                field: 'houseID',
+                                op: '=',
+                                val: item.value,
+                            }
+                        ]);
+                        set(pageProps, [table, 'filters'], newFilters);
+                        forceUpdateFilterVals();
+                    }}
+                ></EditTextDropdown>
+            </div>
+        }
+        return <div>field='{field}'</div>
     },
 };
