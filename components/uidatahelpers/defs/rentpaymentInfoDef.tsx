@@ -9,6 +9,7 @@ import { formateEmail } from "../../utils/leaseEmailUtil";
 import { EditTextDropdown } from "../../generic/EditTextDropdown";
 import { get, set } from "lodash";
 import { IPageFilter } from "../../types";
+import { genericCustomHeaderFilterFunc } from "./util";
 
 const table = 'rentPaymentInfo';
 export const paymentInfoDef: ITableAndSheetMappingInfo = {
@@ -327,6 +328,7 @@ export const paymentInfoDef: ITableAndSheetMappingInfo = {
                 ></EditTextDropdown>
             </div>
         }
+        return genericCustomHeaderFilterFunc(pageState, colInfo, table);
         return <div>field='{colInfo.field} ' type={colInfo.type}</div>
     },
 };

@@ -84,7 +84,7 @@ export function GenList(props: ITableAndSheetMappingInfo) {
         }
         
         ld();        
-    },[table || 'NA', pageState.pageProps.reloadCount, paggingInfo.pos, paggingInfo.total, secCtx.googleSheetAuthInfo.googleSheetId]);
+    }, [table || 'NA', pageState.pageProps.reloadCount, secCtx.googleSheetAuthInfo.googleSheetId]); //paggingInfo.pos, paggingInfo.total
 
     const doAdd = (data: ItemType, id: FieldValueType) => {        
         return helper.saveData(data,id, true, secCtx.foreignKeyLoopkup).then(res => {
