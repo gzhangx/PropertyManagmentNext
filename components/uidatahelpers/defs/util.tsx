@@ -20,6 +20,15 @@ export function getOriginalFilters(pageState: IPageState, table: TableNames): IP
     return origFilters;
 }
 
+function isValid(val: string, colInfo: IDBFieldDef): boolean {
+    if (colInfo.type === 'date' || colInfo.type === 'datetime') {
+        return moment(val).isValid();
+    } else if (colInfo.type === 'decimal') {
+        return !isNaN(Number(val));
+    } 
+    return true;
+}
+
 function stdOnChange(pageState: IPageState, colInfo: IDBFieldDef, table: TableNames, e: React.ChangeEvent<HTMLInputElement>, id, valObj?: IPageFilter) {
     const { pageProps } = pageState;
     const origFilters: IPageFilter[] = getOriginalFilters(pageState, table);
@@ -33,7 +42,9 @@ function stdOnChange(pageState: IPageState, colInfo: IDBFieldDef, table: TableNa
         origFilters.push({ id, field: colInfo.field, val: e.target.value, op: '>=', table });
         set(pageProps, [table, 'filters'], origFilters);
     }
-    if (!moment(e.target.value).isValid()) {
+
+
+    if (!isValid(e.target.value, colInfo)) {
         set(pageProps, [table, 'filterErrors', id], true);
         return updateFilterValsNoSubmit(pageState);
     }
@@ -42,7 +53,7 @@ function stdOnChange(pageState: IPageState, colInfo: IDBFieldDef, table: TableNa
 }
 export function genericCustomHeaderFilterFunc(pageState: IPageState, colInfo: IDBFieldDef, table: TableNames): (React.JSX.Element | null) {
     const { pageProps, setPageProps } = pageState;
-    if (colInfo.type === 'date' || colInfo.type === 'datetime') {
+    if (colInfo.type === 'date' || colInfo.type === 'datetime' || colInfo.type === 'decimal') {
         const origFilters: IPageFilter[] = getOriginalFilters(pageState, table);
         const fromId = `${CUST_FILTER_HEADER}_${table}_${colInfo.field}_from`;
         const toId = `${CUST_FILTER_HEADER}_${table}_${colInfo.field}_to`;
