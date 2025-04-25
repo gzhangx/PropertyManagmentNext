@@ -381,7 +381,7 @@ export const GenCrud = (props: IGenGrudProps) => {
                                             
                                             {
                                                 customFiltersEnabled[table] && customFiltersEnabled[table][name] &&
-                                                props.customHeaderFilterFunc(mainCtx, pageState, name)
+                                                props.customHeaderFilterFunc(mainCtx, pageState, columnMap[name])
                                             }
                                         </th>
                                     })

@@ -284,12 +284,12 @@ export const paymentInfoDef: ITableAndSheetMappingInfo = {
             customFooterUI,
         }
     },
-    customHeaderFilterFunc: (mainCtx, pageState, field) => {
+    customHeaderFilterFunc: (mainCtx, pageState, colInfo) => {
         const { pageProps, setPageProps } = pageState;
         const forceUpdateFilterVals = () => {
             setPageProps({ ...pageProps, reloadCount: (pageProps.reloadCount || 0) + 1 });
         }
-        if (field === 'houseID') {
+        if (colInfo.field === 'houseID') {
             const allHouses = mainCtx.getAllForeignKeyLookupItems('houseInfo');
             const items: IEditTextDropdownItem[] = allHouses.map(h => {
                 return {
@@ -306,7 +306,7 @@ export const paymentInfoDef: ITableAndSheetMappingInfo = {
             return <div>
                 <EditTextDropdown items={all}
                     onSelectionChanged={async (item) => {
-                        const id = `CUST_FILTER_${table}_${field}_HIDDX`; 
+                        const id = `CUST_FILTER_${table}_${colInfo.field}_HIDDX`; 
                         let newFil: IPageFilter[] = [
                             {
                                 id,
@@ -327,6 +327,6 @@ export const paymentInfoDef: ITableAndSheetMappingInfo = {
                 ></EditTextDropdown>
             </div>
         }
-        return <div>field='{field}'</div>
+        return <div>field='{colInfo.field} ' type={colInfo.type}</div>
     },
 };

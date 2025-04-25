@@ -56,7 +56,7 @@ export interface ITableAndSheetMappingInfo {
         customFooterFunc: () => Promise<void>;
         customFooterUI: React.JSX.Element;
     };
-    customHeaderFilterFunc?: (mainCtx: IPageRelatedState, pageState: IPageState, field:string) => React.JSX.Element | null;
+    customHeaderFilterFunc?: (mainCtx: IPageRelatedState, pageState: IPageState, field:IDBFieldDef) => React.JSX.Element | null;
 }
 
 export type ItemTypeDict = { [p in ALLFieldNames]?: FieldValueType; };
