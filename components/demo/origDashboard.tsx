@@ -7,7 +7,7 @@ import { usePageRelatedContext } from '../states/PageRelatedState';
 import { useEffect, useState } from 'react';
 import { getLeases } from '../api';
 import { orderBy, set } from 'lodash';
-import { removeZeroHourMinuteSeconds } from '../utils/reportUtils';
+import { formatAccounting, removeZeroHourMinuteSeconds } from '../utils/reportUtils';
 import { getTenantsForHouse } from '../utils/leaseEmailUtil';
 
 
@@ -95,7 +95,7 @@ export function OriginalDashboard() {
         <div className="row">
             {
                 allHouses.filter(h=>!h.disabled).map((h, index) => {
-                    return <BoardItemHalfSmall key={index} title={h.address} value={h.leaseInfo?.totalBalance ?? 'Loading'}
+                    return <BoardItemHalfSmall key={index} title={h.address} value={formatAccounting(h.leaseInfo?.totalBalance) ?? 'Loading'}
                         onClick={() => {
                             setSelectedHouse(h);                          
                         }}
@@ -135,7 +135,7 @@ export function OriginalDashboard() {
             }
         </div>
 
-        <DemoGraphicsRow />
+        { false && <DemoGraphicsRow />}
 
         {false && <DemoRow houses={allHouses}></DemoRow>} 
 
@@ -149,9 +149,9 @@ export function OriginalDashboard() {
                         </div>
                         <div className="card-body">
                             {
-                                selectedHouse.leaseInfo?.payments.map((p, index) => {
+                                selectedHouse.leaseInfo?.payments.reverse().map((p, index) => {
                                     return <><h4 className="small font-weight-bold" key={index}>{removeZeroHourMinuteSeconds(mainCtx.utcDbTimeToZonedTime(p.receivedDate))} <span
-                                        className="float-right">{p.receivedAmount}</span>
+                                        className="float-right">{formatAccounting(p.receivedAmount)}</span>
                                     </h4>
                                         <div className="progress mb-4">
                                             <div className="progress-bar bg-danger" style={{ width: selectedHouse.leaseInfo?.totalBalance ? '0%' : '100%' }}
