@@ -161,6 +161,7 @@ export async function getLeaseUtilForHouse(houseID: string) {
             if (balance !== mon.balance) {
                 console.log(`Error!!!! should not have a different balance ${balance} ${mon.balance}`);
             }
+            result.totalBalance = balance;
             acc.last = mon;
             return acc;
         }, {
