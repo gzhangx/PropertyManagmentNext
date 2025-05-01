@@ -96,11 +96,13 @@ export function OriginalDashboard() {
             {
                 allHouses.filter(h=>!h.disabled).map((h, index) => {
                     return <BoardItemHalfSmall key={index} title={h.address} value={formatAccounting(h.leaseInfo?.totalBalance) ?? 'Loading'}
+                        valueClsName={h.leaseInfo?.totalBalance > 0 ? 'text-danger' : ''}
                         onClick={() => {
                             setSelectedHouse(h);                          
                         }}
                         iconName="fa-home" mainClsName='border-left-primary'
-                        textClsName='text-primary' />
+                        textClsName='text-primary'
+                         />
                 })
             }
             {false && <>
