@@ -137,7 +137,7 @@ export function OriginalDashboard() {
             }
         </div>
 
-        { false && <DemoGraphicsRow />}
+        {!selectedHouse && <DemoGraphicsRow />}
 
         {false && <DemoRow houses={allHouses}></DemoRow>} 
 
