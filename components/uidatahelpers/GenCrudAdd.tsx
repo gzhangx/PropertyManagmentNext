@@ -9,7 +9,7 @@ import { IEditTextDropdownItem } from '../generic/GenericDropdown';
 import { IGenGrudProps } from './GenCrud';
 import * as RootState from '../states/RootState'
 import moment from 'moment';
-import { ALLFieldNames, DataToDbSheetMapping, ItemTypeDict } from './datahelperTypes';
+import { ALLFieldNames, DataToDbSheetMapping, ICrudAddCustomObj, ItemTypeDict } from './datahelperTypes';
 import { usePageRelatedContext } from '../states/PageRelatedState';
 import { IHelper } from '../reportTypes';
 
@@ -30,6 +30,9 @@ export interface IGenGrudAddProps extends IGenGrudProps {
     show: boolean;
     desc?: string;    
     sheetMapping?: DataToDbSheetMapping;
+
+    crudAddCustomObjMap: ICrudAddCustomObj;
+    setCrudAddCustomObjMap: React.Dispatch<React.SetStateAction<ICrudAddCustomObj>>;
 }
 export const GenCrudAdd = (props: IGenGrudAddProps) => {
 
@@ -44,8 +47,11 @@ export const GenCrudAdd = (props: IGenGrudAddProps) => {
         desc,
         //fkDefs,
         operation,
+
+        crudAddCustomObjMap, setCrudAddCustomObjMap,
     }
         = props;
+    
         
     //const getForeignKeyProcessor = fk => get(fkDefs, [fk, 'processForeignKey']);
     //let id:string|number = '';
@@ -188,7 +194,7 @@ export const GenCrudAdd = (props: IGenGrudAddProps) => {
     }
 
     return <div className={dspClassName} tabIndex={-1} role="dialog" >
-        <Dialog dialogInfo={errDlgPrm}></Dialog>
+        <Dialog dialogInfo={errDlgPrm}></Dialog>        
         <div className="modal-dialog" role="document" style={{ maxWidth: '60%' }}>
         <div className="modal-content">
             <div className="modal-header">
@@ -234,19 +240,37 @@ export const GenCrudAdd = (props: IGenGrudAddProps) => {
                             //    selected: false,
                             //})
                             const options = selOptions;
-                            const curSelection = options.filter(o => o.value === get(editItem, colField))[0];
-                            if (curSelection) {
-                                curSelection.selected = true;
-                            }                            
+                            return createSelectionFromOptions(options, colField);
+                        };
+
+                        const createSelectionFromOptions = (options: IEditTextDropdownItem[], colField: string) => {                            
+                            
+                            if (props.operation === 'Add' && options.length > 0) {
+                                options[0].selected = true;
+                            } else {
+                                const curSelection = options.filter(o => o.value === get(editItem, colField))[0];
+                                if (curSelection) {
+                                    curSelection.selected = true;
+                                }
+                            }
                             return <>
-                                
+
                                 <EditTextDropdown items={options}
                                     onSelectionChanged={
-                                        (s: IEditTextDropdownItem) => {                                            
+                                        async (s: IEditTextDropdownItem) => {
                                             //if (s.value === 'AddNew') {
                                             //    setAddNewForField(colField);
                                             //} else
-                                            setEditItem({ ...editItem, [colField]: s.value });    //, [colField+'_labelDesc']: s.label
+                                            let newItem: ItemTypeDict = { ...editItem, [colField]: s.value };                                            
+                                            if (props.customEditItemOnChange) {
+                                                newItem = await props.customEditItemOnChange(mainCtx, colField, setCrudAddCustomObjMap, newItem);
+                                            }
+                                            setEditItem(prev => {
+                                                return {
+                                                    ...prev,
+                                                    ...newItem,
+                                                };
+                                            });    //, [colField+'_labelDesc']: s.label
                                         }
                                     }
                                 ></EditTextDropdown>
@@ -256,6 +280,10 @@ export const GenCrudAdd = (props: IGenGrudAddProps) => {
                         if (c.foreignKey) {
                             const optKey = c.foreignKey.table;
                             foreignSel = createSelection(optKey, c.field);
+                        }
+                        const specialFeighKey = crudAddCustomObjMap[c.field];
+                        if (specialFeighKey) {
+                            foreignSel = createSelectionFromOptions(specialFeighKey.options, c.field);
                         }
 
                         if (c.userSecurityField) return null;
@@ -279,7 +307,15 @@ export const GenCrudAdd = (props: IGenGrudAddProps) => {
                 </table>
             {                
                     <div className="modal-footer">
-                        <button type="button" className="btn btn-primary" data-dismiss="modal" onClick={handleSubmit}>{addUpdateLabel}</button>
+                        {addUpdateLabel === 'Update' && props.customFooterButton && props.customFooterButton(mainCtx, crudAddCustomObjMap, setCrudAddCustomObjMap, editItem).customFooterUI}
+                        <button type="button" className="btn btn-primary" data-dismiss="modal" onClick={
+                            async e => {
+                                await handleSubmit(e);
+                                if (props.customFooterButton) {
+                                    await props.customFooterButton(mainCtx, crudAddCustomObjMap, setCrudAddCustomObjMap, editItem).customFooterFunc();
+                                }
+                            }
+                        }>{addUpdateLabel}</button>
                         <button type="button" className="btn btn-secondary" data-dismiss="modal" onClick={internalCancel}>Cancel</button>
                     </div>             
             }

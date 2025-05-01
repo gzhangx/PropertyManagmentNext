@@ -1,7 +1,6 @@
 import { TableNames } from "../../types";
 import { ITableAndSheetMappingInfo } from "../datahelperTypes";
 
-
 export const workerInfoDef: ITableAndSheetMappingInfo = {
     table: 'workerInfo',
     sheetMapping: {
@@ -16,30 +15,7 @@ export const workerInfoDef: ITableAndSheetMappingInfo = {
     }
 }
 
-export const paymentInfoDef: ITableAndSheetMappingInfo = {
-    table: 'rentPaymentInfo',
-    sheetMapping: {
-        sheetName: 'PaymentRecord',
-        range: 'A1:G',
-        mapping: [
-            'paymentID',
-            'receivedDate',
-            'receivedAmount',
-            'houseID',
-            'paymentTypeName',
-            'paymentProcessor',
-            'notes',            
-            //'paidBy',        
-            //'created',
-            //'modified',                
-            //'month',                
-            //'ownerID',
-        ],
-    },
 
-    sortFields: ['receivedDate'],
-    title: 'RentPaymentt Records',
-};
 
 export const houseInfoDef: ITableAndSheetMappingInfo = {    
     table: 'houseInfo',
@@ -128,6 +104,9 @@ const ownerInfoDef: ITableAndSheetMappingInfo = {
     table: 'ownerInfo'
 }
 
+import { paymentInfoDef } from './rentpaymentInfoDef'
+
+export const paymentInfoDefinition = paymentInfoDef;
 
 export const tableNameToDefinitions = [tenantInfoDef, houseInfoDef, paymentInfoDef, workerInfoDef, maintenanceInfoDef,
     leaseInfoDef,

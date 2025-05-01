@@ -101,7 +101,7 @@ export function RenterEmailConfig() {
         </div>
         <div className="form-group bg-gray-100 text-gray-900">
             <div className="container">
-                <div className="row">Usage:  { `Rent Payment of $PAID Was Received `}</div>
+                <div className="row">Usage:  { `Rent Payment of $LastPaymentAmount Was Received `}</div>
                 <div className="row">{ `Dear $Renters, <br>
 
 Your Rent Payment of $LastPaymentAmount was received on $LastPaymentDate{MM/DD/YYYY}.

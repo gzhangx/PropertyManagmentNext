@@ -20,7 +20,7 @@ import { TableNames } from './types'
 
 import GoogleSheetConfigPage from '../pages/config/googleSheetConfig'
 
-import {LeaseReport as NewLeaseReport} from '../pages/reports/leaseReport'
+import NewLeaseReport from '../pages/reports/leaseReport'
 
 type LocalPageInfo = {
     name: string;
@@ -37,8 +37,8 @@ const inputPages: LocalPageInfo[] = [
     },
     {
         name: 'Payments',
-        page: <RentpaymentInfo />,
-        //table: 'rentPaymentInfo',  don't specify table, it will be generated in dashboard.tsx
+        //page: <RentpaymentInfo />,
+        table: 'rentPaymentInfo',  //don't specify table, it will be generated in dashboard.tsx
     },
     {
         name: 'MaintenanceRecords',

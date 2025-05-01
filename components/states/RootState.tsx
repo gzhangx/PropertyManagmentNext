@@ -11,6 +11,8 @@ export interface IRootPageState {
     setUserInfo: Dispatch<SetStateAction<ILoginResponse>>;
     isLoggedIn: () => boolean;
     doLogout: () => void;
+
+    checkLoginExpired: (apiRes:any) => boolean;
 }
 
 
@@ -78,7 +80,19 @@ export function RootPageStateWrapper({ children }) {
                 id: '',
                 token: '',
             });            
-        }
+        },
+        checkLoginExpired: (apiRes) => {
+            if (apiRes.error === 'not authorized') {
+                setUserInfo(old => {
+                    return {
+                        ...old,
+                        id: '',
+                        token: ''
+                    };
+                });
+                return true;
+            }
+        },
     }
     return (
         <PageNavContext.Provider value= { defVal } >
@@ -89,17 +103,4 @@ export function RootPageStateWrapper({ children }) {
 
 export function useRootPageContext(): IRootPageState {
     return useContext(PageNavContext);
-}
-
-
-export function checkLoginExpired(rootCtx: IRootPageState, res: {error?: string}) {
-    if (res.error === 'not authorized') {
-        rootCtx.setUserInfo(old => {
-            return {
-                ...old,
-                id: '',
-                token: ''
-            };
-        })
-    }
 }

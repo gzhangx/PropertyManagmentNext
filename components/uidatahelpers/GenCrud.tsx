@@ -5,9 +5,10 @@ import { EditTextDropdown } from '../generic/EditTextDropdown';
 import { GenCrudAdd, ItemType } from './GenCrudAdd';
 import { ISqlOrderDef, SortOps, IPageFilter, IPageState, IDBFieldDef, TableNames, SQLOPS, FieldValueType } from '../types'
 //import { IFKDefs} from './GenCrudTableFkTrans'
-import { ItemTypeDict } from './datahelperTypes';
+import { ICrudAddCustomObj, ITableAndSheetMappingInfo, ItemTypeDict } from './datahelperTypes';
 import { usePageRelatedContext } from '../states/PageRelatedState';
 import moment from 'moment';
+import { BaseDialog } from '../generic/basedialog';
 
 
 
@@ -26,7 +27,7 @@ export function getPageFilters(pageState: IPageState, table: string): IPageFilte
 }
 
 
-export interface IGenGrudProps {
+export interface IGenGrudProps extends ITableAndSheetMappingInfo {
     columnInfo: IDBFieldDef[];
     displayFields: IDBFieldDef[];
     rows: any[];
@@ -50,6 +51,8 @@ export interface IGenGrudProps {
     doDelete: (ids: string[], data: ItemTypeDict) => void;
     idCol?: { field: string; }
     reload?: () => Promise<void>;
+
+    //customDisplayFunc?: (value: any, fieldDef: IDBFieldDef) => React.JSX.Element;
 }
 
 export const GenCrud = (props: IGenGrudProps) => {
@@ -68,6 +71,26 @@ export const GenCrud = (props: IGenGrudProps) => {
     });
     const [showFilter, setShowFilter] = useState(false);
     const [filterVals, setFilterVals] = useState<IPageFilter[]>([]);
+
+    const [deleteConfirm, setDeleteConfirm] = useState<{
+        showDeleteConfirmation: boolean;
+        deleteIds: string[];
+        deleteRowData: ItemTypeDict;
+    }>({
+        showDeleteConfirmation: false,
+        deleteIds: [],
+        deleteRowData: {},
+    });
+    
+    const [crudAddCustomObjMap, setCrudAddCustomObjMap] = useState<ICrudAddCustomObj>({
+        leaseToTenantCustOptions: {},
+    });
+    
+
+    const [customFiltersEnabled, setCustomFiltersEnabled] = useState<{
+        [tableName: string]: {
+            [field: string]: boolean;
+    }}>({});
     const { pageProps, setPageProps } = pageState;
     const mainCtx = usePageRelatedContext();
     useEffect(() => {
@@ -143,12 +166,17 @@ export const GenCrud = (props: IGenGrudProps) => {
 
     const idCols = columnInfo.filter(c => c.isId);
 
-    const addNew = () => {
+    const addNew = async () => {
         columnInfo.map((c, cind) => {
             if (c.type === 'date' || c.type === 'datetime') {
                 editItem[c.field] = moment().format('YYYY-MM-DD');
+            } else {
+                editItem[c.field] = '';
             }
         });
+        if (props.customAddNewDefaults) {
+            await props.customAddNewDefaults(mainCtx, columnInfo, editItem);
+        }
         setEditItem({
             ...editItem,
         })
@@ -295,7 +323,41 @@ export const GenCrud = (props: IGenGrudProps) => {
                                 </tr>
                             </table>
                         }
-                    </div>
+                        </div>
+                        
+                        <BaseDialog show={deleteConfirm.showDeleteConfirmation}>
+                                <>
+                                    <div className="modal-dialog-scrollable">
+                                        <div className="modal-content">
+                                            {
+                                                props.title && <div className="modal-header">
+                                                    <h5 className="modal-title">{props.title}</h5>
+                                                    <button type="button" className="close">
+                                                        <span aria-hidden="true" onClick={()=>{}}>&times;</span>
+                                                    </button>
+                                                </div>
+                                            }                                            
+                                        </div>
+                                    </div>                                    
+                                <div className="modal-footer">
+                                    <button type="button" className="btn btn-secondary" data-dismiss="modal" onClick={() => {
+                                        setDeleteConfirm({
+                                            deleteIds: [],
+                                            deleteRowData: {},
+                                            showDeleteConfirmation: false
+                                        });
+                                        props.doDelete(deleteConfirm.deleteIds, deleteConfirm.deleteRowData);
+                                    }}>Delete</button>
+                                    <button type="button" className="btn btn-secondary" data-dismiss="modal" onClick={() => {
+                                        setDeleteConfirm({
+                                            deleteIds: [],
+                                            deleteRowData: {},
+                                            showDeleteConfirmation: false
+                                        });                                        
+                                    }}>Cancel</button>
+                                        </div>                                    
+                                </>
+                            </BaseDialog>
                     <table  className="table bordered hover sm">
                         <thead>
                             <tr>
@@ -303,7 +365,24 @@ export const GenCrud = (props: IGenGrudProps) => {
                                     displayFieldsStripped.map((name, ind) => {
                                         return <th key={ind}>
                                             <div>{columnMap[name] ? columnMap[name].desc : `****Column ${JSON.stringify(name)} not mapped`}</div>
-                                            <div>{getFieldSort(name)}</div>
+                                            <div>{getFieldSort(name)}
+                                                {
+                                                    props.customHeaderFilterFunc && <><a style={{ marginLeft: '3px' }} onClick={e => {
+                                                        e.preventDefault();
+                                                        const newCustomFiltersEnabled = { ...customFiltersEnabled };
+                                                        if (!newCustomFiltersEnabled[table]) {
+                                                            newCustomFiltersEnabled[table] = {};
+                                                        }
+                                                        newCustomFiltersEnabled[table][name] = !newCustomFiltersEnabled[table][name];
+                                                        setCustomFiltersEnabled(newCustomFiltersEnabled);
+                                                    }}>Cust</a></>
+                                                }
+                                            </div>
+                                            
+                                            {
+                                                customFiltersEnabled[table] && customFiltersEnabled[table][name] &&
+                                                props.customHeaderFilterFunc(mainCtx, pageState, columnMap[name])
+                                            }
                                         </th>
                                     })
                                 }
@@ -330,7 +409,14 @@ export const GenCrud = (props: IGenGrudProps) => {
                                                                 dsp = 'NOTMAPPED_' + val;
                                                             }
                                                         }
-                                                    }                                                                                                        
+                                                    }
+                                                    if (props.customDisplayFunc) {
+                                                        if (def) {
+                                                            dsp = props.customDisplayFunc(dsp, def);
+                                                        } else {
+                                                            console.log('Cant find field def for ', fn, dsp);
+                                                        }
+                                                    }
                                                     return <td key={find}>{dsp}</td>
                                                 })
                                             }
@@ -345,7 +431,16 @@ export const GenCrud = (props: IGenGrudProps) => {
                                                 }
                                                 {' ' //className="btn-xs"
                                                 }
-                                                {idCols.length && <button className="btn btn-primary outline-danger" type="button"  onClick={() => props.doDelete(idCols.map(c=>row[c.field]), row)}>Delete</button>}
+                                                {idCols.length && <button className="btn btn-primary outline-danger" type="button" onClick={
+                                                    () => {
+                                                        setDeleteConfirm({
+                                                            showDeleteConfirmation: true,
+                                                            deleteIds: idCols.map(c => row[c.field]),
+                                                            deleteRowData: row,
+                                                        });
+                                                        //props.doDelete(idCols.map(c => row[c.field]), row)
+                                                    }
+                                                }>Delete</button>}
                                             </td>
                                         </tr>
                                     )
@@ -360,13 +455,20 @@ export const GenCrud = (props: IGenGrudProps) => {
                         </tbody>
                     </table>
                 </div>
-            }
-
+            }            
             {
                 (dspState === 'Add' || dspState === 'Update') &&
-            <GenCrudAdd {...props} show={true} operation={dspState} editItem={editItem} setEditItem={setEditItem}  onCancel={r => {
+                <GenCrudAdd {...{
+                    ...props,
+                        crudAddCustomObjMap, setCrudAddCustomObjMap,
+                        editItem, setEditItem,
+                }
+            } show={true} operation={dspState}  onCancel={r => {
                 setDspState('dsp')
             }}></GenCrudAdd>            
+            }
+            {
+                props.customScreen && crudAddCustomObjMap.paymentUIRelated?.showRenterConfirmationScreen && props.customScreen(crudAddCustomObjMap, setCrudAddCustomObjMap)
             }
         </div>
     )

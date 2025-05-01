@@ -82,10 +82,10 @@ export async function getLeaseUtilForHouse(houseID: string) {
     function calculateLeaseBalances(l: ILeaseInfo, payments: IPaymentForLease[], monthlyDueDate: number, today: string | Date | moment.Moment) {        
         const monthlyInfo: IPaymentOfMonth[] = [];
         const now = moment.utc(today);
-        const dueDate = now.startOf('month').add(monthlyDueDate, 'days');
+        const dueDate = now.clone().startOf('month').add(monthlyDueDate, 'days');
         let curMon = moment.utc(l.startDate);
         let shouldAccumatled = 0;
-        const lastDueMonth = now.isAfter(dueDate) ? now : now.add(-1, 'month').startOf('month');
+        const lastDueMonth = now.isAfter(dueDate) ? now : now.clone().add(-1, 'month').startOf('month');
         const monthInfoLookup: { [mon: string]: IPaymentOfMonth } = {};
         const YYYYMMFormat = 'YYYY-MM';
         //const firstMonthStr = curMon.format(YYYYMMFormat);
@@ -219,4 +219,17 @@ export async function gatherLeaseInfomation(house: HouseWithLease, date?: Date) 
         lease,
         leaseBalance,
     };
+}
+
+export async function getAllPaymentForHouse(houseID: string) {
+    const allPayments = await api.getPaymnents({
+        whereArray: [
+            {
+                field: 'houseID',
+                op: '=',
+                val: houseID,
+            }
+        ]
+    });
+    return allPayments;
 }

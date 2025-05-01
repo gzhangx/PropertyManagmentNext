@@ -272,30 +272,3 @@ export interface IPageRelatedState {
     loadingDlgTitle: string;
 }
 
-export interface IIncomeExpensesContextValue extends IPageRelatedState {
-    //pageState: IPageState;    
-    //googleSheetAuthInfo: IGoogleSheetAuthInfo;  
-    //setGoogleSheetAuthinfo: (auth: IGoogleSheetAuthInfo) => void;
-    //reloadGoogleSheetAuthInfo: () => Promise<IGoogleSheetAuthInfo>;
-    //loginError: string;
-    //setLoginError: (s: string) => void;
-    //allOwners: IOwnerInfo[];
-    rawExpenseData: IExpenseData[];
-    payments: IPayment[];
-    allMonthes: string[];    
-    allHouses: IHouseInfo[];
-    monthes: string[];
-    setMonthes: (a: string[]) => void;
-    curMonthSelection: any;
-    setCurMonthSelection: (a: IEditTextDropdownItem) => void;
-    selectedMonths: { [mon: string]: boolean };
-    setSelectedMonths: (a: { [mon: string]: boolean }) => void;
-    selectedHouses: {[id:string]:boolean};
-    setSelectedHouses: (a: any) => void;
-    beginReLoadPaymentData: () => Promise<void>;
-    paymentCalcOpts: IPaymentCalcOpts;
-
-    //modelsProp: IModelsProps;
-
-    //forceReload: () => void;
-}

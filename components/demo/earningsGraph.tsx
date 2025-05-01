@@ -13,7 +13,10 @@ import {
     BarController,
     PieController,
 } from 'chart.js';
-import React from 'react';
+import React, { useEffect, useState } from 'react';
+import { useRootPageContext } from '../states/RootState';
+import { usePageRelatedContext } from '../states/PageRelatedState';
+import { getMonthAry, IPaymentWithDateMonthPaymentType, loadDataWithMonthRange, loadPayment } from '../utils/reportUtils';
 
 
 ChartJS.register(
@@ -27,7 +30,7 @@ ChartJS.register(
     Legend
 );
 
-function number_format(number, decimals, dec_point, thousands_sep) {
+function number_format(number: number | string, decimals?: number, dec_point?: string, thousands_sep?: string) {
     // *     example: number_format(1234.56, 2, ',', ' ');
     // *     return: '1 234,56'
     number = (number + '').replace(',', '').replace(' ', '');
@@ -41,15 +44,15 @@ function number_format(number, decimals, dec_point, thousands_sep) {
             return '' + Math.round(n * k) / k;
         };
     // Fix for IE parseFloat(0.55).toFixed(0) = 0;
-    s = (prec ? toFixedFix(n, prec) : '' + Math.round(n)).split('.');
-    if (s[0].length > 3) {
-        s[0] = s[0].replace(/\B(?=(?:\d{3})+(?!\d))/g, sep);
+    const ss = (prec ? toFixedFix(n, prec) : '' + Math.round(n)).split('.');
+    if (ss[0].length > 3) {
+        ss[0] = s[0].replace(/\B(?=(?:\d{3})+(?!\d))/g, sep);
     }
-    if ((s[1] || '').length < prec) {
-        s[1] = s[1] || '';
-        s[1] += new Array(prec - s[1].length + 1).join('0');
+    if ((ss[1] || '').length < prec) {
+        ss[1] = s[1] || '';
+        ss[1] += new Array(prec - s[1].length + 1).join('0');
     }
-    return s.join(dec);
+    return ss.join(dec);
 }
 
 // all from react-char-js, can't get to install so copied
@@ -88,24 +91,24 @@ function setDatasets(currentData, nextDatasets) {
     });
 }
 function cloneData(data) {
-    let datasetIdKey = arguments.length > 1 && arguments[1] !== void 0 ? arguments[1] : defaultDatasetIdKey;
+    //let datasetIdKey = arguments.length > 1 && arguments[1] !== void 0 ? arguments[1] : defaultDatasetIdKey;
     const nextData = {
         labels: [],
         datasets: []
     };
     setLabels(nextData, data.labels);
-    setDatasets(nextData, data.datasets, datasetIdKey);
+    setDatasets(nextData, data.datasets); //,datasetIdKey
     return nextData;
 }
 function ChartComponent(props, ref) {
     const { height = 150, width = 300, redraw = false, datasetIdKey, type, data, options, plugins = [], fallbackContent, updateMode, ...canvasProps } = props;
     const canvasRef = React.useRef(null);
-    const chartRef = React.useRef();
+    const chartRef = React.useRef(null);
     const renderChart = () => {
         if (!canvasRef.current) return;
         chartRef.current = new ChartJS(canvasRef.current, {
             type,
-            data: cloneData(data, datasetIdKey),
+            data: cloneData(data), //datasetIdKey
             options: options && {
                 ...options
             },
@@ -138,7 +141,7 @@ function ChartComponent(props, ref) {
     ]);
     React.useEffect(() => {
         if (!redraw && chartRef.current && data.datasets) {
-            setDatasets(chartRef.current.config.data, data.datasets, datasetIdKey);
+            setDatasets(chartRef.current.config.data, data.datasets); //datasetIdKey
         }
     }, [
         redraw,
@@ -181,7 +184,7 @@ const Chart = /*#__PURE__*/ React.forwardRef(ChartComponent);
 
 function createTypedChart(type, registerables) {
     ChartJS.register(registerables);
-    return /*#__PURE__*/ React.forwardRef((props, ref) =>/*#__PURE__*/ React.createElement(Chart, Object.assign({}, props, {
+    return /*#__PURE__*/ React.forwardRef((props: any, ref) =>/*#__PURE__*/ React.createElement(Chart, Object.assign({}, props, {
         ref: ref,
         type: type
     })));
@@ -189,10 +192,83 @@ function createTypedChart(type, registerables) {
 const Line = /* #__PURE__ */ createTypedChart("line", LineController);
 const Bar = /* #__PURE__ */ createTypedChart("bar", BarController);
 const Pie = /* #__PURE__ */ createTypedChart("pie", PieController);
+type RentReportCellData = {
+    amount: number;
+    payments: IPaymentWithDateMonthPaymentType[];
+}
 
-export function EarningsGraph() {
+type RentReportMonthRowData = {
+    [month: string]: RentReportCellData;
+}
+
+type MonthAndData = {
+    months: string[];
+    dataDict: RentReportMonthRowData;
+    dataAry: number[];
+}
+
+export interface PropWithPayments {
+    payments: IPaymentWithDateMonthPaymentType[];
+}
+
+
+export function EarningsGraph(props: PropWithPayments) {    
+
+    const [monthAndData, setMonthAndData] = useState<MonthAndData>({
+        months: [],
+        dataDict: {},
+        dataAry: [],
+    });
+    const loadData = async () => {
+        const paymentData: IPaymentWithDateMonthPaymentType[] = props.payments;
+    
+
+    
+        const monthInfos = {
+            monthAry: [] as string[],
+            monthDict: {} as { [month: string]: boolean; },
+        }
+        const allRentReportData: MonthAndData = paymentData.reduce((acc, pmt) => {
+            let monthData = acc.dataDict[pmt.month];
+            if (!monthData) {
+                monthData = {
+                    amount: 0,
+                    payments: [],
+                };
+                acc.dataDict[pmt.month] = monthData;
+            }
+            monthData.amount += pmt.amount;
+            monthData.payments.push(pmt);
+    
+    
+            if (!monthInfos.monthDict[pmt.month]) {
+                monthInfos.monthDict[pmt.month] = true;
+                monthInfos.monthAry.push(pmt.month);
+                acc.months.push(pmt.month);
+            }
+            return acc;
+        }, {
+            months: [],
+            dataDict: {},
+        } as MonthAndData);
+
+
+        allRentReportData.dataAry = allRentReportData.months.map(m => {
+            const monthData = allRentReportData.dataDict[m];
+            if (monthData) {
+                return monthData.amount;
+            }
+            return 0;
+        });
+        setMonthAndData(allRentReportData);
+            
+    }
+
+    useEffect(() => {
+        loadData();
+    }, [props.payments.length]);
     const defData = {
-        labels: ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"],
+        labels:  monthAndData.months, //["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"],
         datasets: [{
             label: "Earnings",
             lineTension: 0.3,
@@ -206,7 +282,8 @@ export function EarningsGraph() {
             pointHoverBorderColor: "rgba(78, 115, 223, 1)",
             pointHitRadius: 10,
             pointBorderWidth: 2,
-            data: [0, 10000, 5000, 15000, 10000, 20000, 15000, 25000, 20000, 30000, 25000, 40000],
+            //data: [0, 10000, 5000, 15000, 10000, 20000, 15000, 25000, 20000, 30000, 25000, 40000],
+            data: monthAndData.dataAry,
         }],
     };
     const options = {
@@ -248,11 +325,76 @@ export function EarningsGraph() {
     return <Line data={defData} options={options}></Line>
 }
 
-export function RevenueSourceGraph() {
+
+type RentReportHouseRowData = {
+    address: string;
+    amount: number;
+}
+
+type HouseAndData = {
+    houseIds: string[];    
+    dataDict: { [houseId: string]: RentReportHouseRowData };
+    dataAry: number[];
+    address: string[];
+}
+
+
+export function RevenueSourceGraph(props: PropWithPayments) {
+    const [houseData, setHouseData] = useState<HouseAndData>({
+        houseIds: [],        
+        dataDict: {},
+        dataAry: [], 
+        address: [],
+
+    });
+    const loadData = async () => {
+        const paymentData: IPaymentWithDateMonthPaymentType[] = props.payments;
+        const houseAndData: HouseAndData = paymentData.reduce((acc, pmt) => {
+            let hData = acc.dataDict[pmt.houseID];
+            if (!hData) {
+                hData = {
+                    amount: 0,
+                    address: pmt.address,
+                };
+                acc.dataDict[pmt.houseID] = hData;
+                acc.houseIds.push(pmt.houseID);                
+            }
+            hData.amount += pmt.amount;                        
+            return acc;
+        }, {
+            houseIds: [],
+            dataDict: {},
+            dataAry: [],
+            address: [],
+        } as HouseAndData);
+
+
+        houseAndData.dataAry = houseAndData.houseIds.map(m => {
+            const monthData = houseAndData.dataDict[m];
+            if (monthData) {
+                return monthData.amount;
+            }
+            return 0;
+        });
+        houseAndData.address = houseAndData.houseIds.map(m => {
+            const monthData = houseAndData.dataDict[m];
+            if (monthData) {
+                return monthData.address;
+            }
+            return '';
+        });
+
+        setHouseData(houseAndData);
+
+    }
+
+    useEffect(() => {
+        loadData();
+    }, [props.payments.length]);
     return <Pie data={{
-        labels: ["Direct", "Referral", "Social"],
+        labels:  houseData.address, //["Direct", "Referral", "Social"],
         datasets: [{
-            data: [55, 30, 15],
+            data: houseData.dataAry, //[55, 30, 15],
             backgroundColor: ['#4e73df', '#1cc88a', '#36b9cc'],
             hoverBackgroundColor: ['#2e59d9', '#17a673', '#2c9faf'],
             hoverBorderColor: "rgba(234, 236, 244, 1)",

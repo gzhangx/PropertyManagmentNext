@@ -76,6 +76,10 @@ export function GenericDropdown(props: IGenericDropdownProps) {
 
     useEffect(() => {
         setCurDisplayValue(getSelectedText());
+        const selectedItem = items.find(itm => itm.selected);
+        if (selectedItem) {
+            props.onSelectionChanged(selectedItem);
+        }
     }, [getSelectedText()])
     const showClass = `dropdown-list ${className || 'dropdown-menu dropdown-menu-right shadow animated--grow-in'} ${show && 'show'}`;
     

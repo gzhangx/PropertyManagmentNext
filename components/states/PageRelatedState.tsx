@@ -12,7 +12,7 @@ import {
     IWorkerInfo,
     TopBarIconNotifyCfg,
 } from '../reportTypes';
-import { checkLoginExpired, useRootPageContext } from './RootState';
+import { useRootPageContext } from './RootState';
 import { NotifyIconItem } from '../page/tinyIconNotify';
 import moment from 'moment';
 import { IEditTextDropdownItem } from '../generic/GenericDropdown';
@@ -71,7 +71,7 @@ export function PageRelatedContextWrapper(props: {
     function reloadGoogleSheetAuthInfo() {
         return getSheetAuthInfo().then(auth => {
             if (auth.error) {
-                checkLoginExpired(rootCtx, auth);
+                rootCtx.checkLoginExpired(auth);
             } else {            
                 setGoogleSheetAuthinfo(auth);
             }
@@ -119,7 +119,10 @@ export function PageRelatedContextWrapper(props: {
             rows: any[];
             error?: string;
         };
-        checkLoginExpired(rootCtx, sqlRes);        
+        if (rootCtx.checkLoginExpired(sqlRes)) {
+            console.log('Login expired, reload page');
+            return;
+        }
         const idField = fields.filter(f => f.isId && !f.userSecurityField)[0].field;
         const parser = {
             idGetter: a => a[idField],

@@ -72,7 +72,11 @@ export function GenList(props: ITableAndSheetMappingInfo) {
         //if (!helper) return;
         const ld=async () => {                        
             await helper.loadModel();
-            setColumnInf(helper.getModelFields() as IDBFieldDef[]);
+            let columnInfo = helper.getModelFields() as IDBFieldDef[];
+            if (props.orderColunmInfo) {
+                columnInfo = props.orderColunmInfo(columnInfo);
+            }
+            setColumnInf(columnInfo);
             //if(columnInfo) {
             //    setColumnInf(columnInfo);
             //}
@@ -80,7 +84,7 @@ export function GenList(props: ITableAndSheetMappingInfo) {
         }
         
         ld();        
-    },[table || 'NA', pageState.pageProps.reloadCount, paggingInfo.pos, paggingInfo.total, secCtx.googleSheetAuthInfo.googleSheetId]);
+    }, [table || 'NA', pageState.pageProps.reloadCount, secCtx.googleSheetAuthInfo.googleSheetId]); //paggingInfo.pos, paggingInfo.total
 
     const doAdd = (data: ItemType, id: FieldValueType) => {        
         return helper.saveData(data,id, true, secCtx.foreignKeyLoopkup).then(res => {
@@ -103,7 +107,7 @@ export function GenList(props: ITableAndSheetMappingInfo) {
     return <div>
         <p className='subHeader'>{props.title}</p>
         {
-            (loading||!columnInf)? <p>Loading</p>:
+            (!columnInf)? <p>Loading</p>:
                 <div>
                     <GenCrud
                         //fkDefs={getFKDefs()}

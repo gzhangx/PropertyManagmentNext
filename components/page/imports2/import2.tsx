@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useReducer, type JSX } from 'react';
 import { getTenants, saveGoodSheetAuthInfo, updateSheet, } from '../../api'
 import { EditTextDropdown } from '../../generic/EditTextDropdown'
-import { IIncomeExpensesContextValue, IPageRelatedState } from '../../reportTypes';
+import { IPageRelatedState } from '../../reportTypes';
 import { keyBy,  } from 'lodash'
 import { GetInfoDialogHelper } from '../../generic/basedialog';
 import { useRouter } from 'next/router'

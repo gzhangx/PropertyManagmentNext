@@ -25,7 +25,11 @@ export async function loadPayment(rootCtx: IRootPageState, mainCtx: IPageRelated
     }, {} as {[field: string]: IDBFieldDef});
     await mainCtx.checkLoadForeignKeyForTable('rentPaymentInfo');
     
-    const paymentData: IPaymentWithDateMonthPaymentType[] = await helper.loadData(opts).then(async res => {        
+    const paymentData: IPaymentWithDateMonthPaymentType[] = await helper.loadData(opts).then(async res => {
+        if (rootCtx.checkLoginExpired(res)) {
+            console.log('Login expired, reload page');
+            return [];
+        }
         return res.rows.map(r => {
             const paymentTypeName = r.paymentTypeName || r.paymentTypeID;
             const date = mainCtx.utcDbTimeToZonedTime(r.receivedDate);
@@ -170,4 +174,14 @@ export function DoubleAryToCsv(data: string[][]): string {
     return data.map(ss => {
         return ss.join(',');
     }).join('\r\n');
+}
+
+export function removeZeroHourMinuteSeconds(str: string) {
+    while (str.endsWith(':00')) {
+        str = str.substring(0, str.length - 3);
+    }
+    if (str.endsWith(' 00')) {
+        str = str.substring(0, str.length - 3);
+    }
+    return str;
 }
