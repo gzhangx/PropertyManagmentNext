@@ -1,8 +1,8 @@
 import BoardItemHalfSmall from './boardItemHaflSmall'
 import DemoRow from './demorow'
 import DemoGraphicsRow from './demoGraphicsRow'
-import { gatherLeaseInfomation, getAllPaymentForHouse, HouseWithLease, ILeaseInfoWithPmtInfo } from '../utils/leaseUtil';
-import { IHouseInfo, IPayment, ITenantInfo } from '../reportTypes';
+import { gatherLeaseInfomation, getAllMaintenanceForHouse, getAllPaymentForHouse, HouseWithLease, ILeaseInfoWithPmtInfo } from '../utils/leaseUtil';
+import { IExpenseData, IHouseInfo, IPayment, ITenantInfo } from '../reportTypes';
 import { usePageRelatedContext } from '../states/PageRelatedState';
 import { useEffect, useState } from 'react';
 import { getLeases } from '../api';
@@ -13,6 +13,7 @@ import { getTenantsForHouse } from '../utils/leaseEmailUtil';
 
 interface HouseWithTenants extends HouseWithLease {
     payments?: IPayment[];
+    expenses?: IExpenseData[];
     tenants: ITenantInfo[];
 }
 
@@ -67,6 +68,11 @@ export function OriginalDashboard() {
     
                 if (h.payments) {
                     h.payments = orderBy(h.payments, p => p.receivedDate, 'desc');
+                }
+
+                h.expenses = await getAllMaintenanceForHouse(h.houseID);
+                if (h.expenses) {
+                    h.expenses = orderBy(h.expenses, p => p.date, 'asc');
                 }
 
                 if (h.lease) {
@@ -162,6 +168,30 @@ export function OriginalDashboard() {
                                     </>
                                 })
                             }                           
+                        </div>
+                    </div>
+                </div>
+                <div className="col-lg-6 mb-4">
+
+                    <div className="card shadow mb-4">
+                        <div className="card-header py-3">
+                            <h6 className="m-0 font-weight-bold text-primary">All Expenses {selectedHouse.address}</h6>
+                        </div>
+                        <div className="card-body">
+                            {
+                                selectedHouse.expenses?.map((p, index) => {
+                                    return <><h4 className="small font-weight-bold" key={index}>{removeZeroHourMinuteSeconds(mainCtx.utcDbTimeToZonedTime(p.date))} <span
+                                        className="float-right">{formatAccounting(p.amount)}</span>
+                                    </h4>
+                                        <div className="mb-4">
+                                            <span>{p.category}</span>
+                                        </div>
+                                        <div className="mb-4">
+                                            <span>{p.comment}</span>
+                                        </div>
+                                    </>
+                                })
+                            }
                         </div>
                     </div>
                 </div>

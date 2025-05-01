@@ -234,3 +234,17 @@ export async function getAllPaymentForHouse(houseID: string) {
     });
     return allPayments;
 }
+
+
+export async function getAllMaintenanceForHouse(houseID: string) {
+    const allPayments = await api.getMaintenance({
+        whereArray: [
+            {
+                field: 'houseID',
+                op: '=',
+                val: houseID,
+            }
+        ]
+    });
+    return allPayments;
+}
