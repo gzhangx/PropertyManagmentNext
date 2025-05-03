@@ -1,7 +1,115 @@
 
 import { ChangeEvent, useRef, useState } from "react";
-import { parsePdfFile, PdfScript } from "../../components/utils/pdfFileUtil";
+import { IPdfTextItem, parsePdfFile, PdfScript } from "../../components/utils/pdfFileUtil";
 
+
+function getPdfLocTracker() {
+    const mat = {
+        allYs: [] as number[],
+        matrix: {} as {
+            [y: number]: IPdfTextItem[];
+        },        
+    };
+    function addToMatrix(obj: IPdfTextItem) {
+        const { x, y, } = obj;
+        let row = mat.matrix[y];
+        if (!row) {
+            row = mat.matrix[y] = [];
+            mat.allYs.push(y);
+        }
+        
+        row.push(obj);                
+    }
+    function endFix() {
+        mat.allYs.sort((a,b)=> a - b);
+    }
+
+    function mergeY() {
+        mat.allYs.sort((a, b) => a - b);
+        const yKeysToDelete = [];
+        const combineYDist = 1;
+        let lastValToUse: number = null;
+        let lastY: number = null;
+        for (const y of mat.allYs) {
+            const row = mat.matrix[y];
+            if (lastValToUse === null) {
+                lastY = y;
+                lastValToUse = y;
+            } else {
+                if (y - lastY <= combineYDist) {
+                    // merge rows                    
+                    yKeysToDelete.push(y);
+                    //lastY = y;
+                    mat.matrix[lastValToUse] = mat.matrix[lastValToUse].concat(row);
+                } else {
+                    // keep the last row as is
+                    lastY = y;
+                    lastValToUse = y;
+                }
+            }
+        }
+        for (const y of yKeysToDelete) {
+            delete mat.matrix[y];
+            mat.allYs = mat.allYs.filter(v => v !== y);
+        }
+    }
+    function print(pageWidth: number, pageHeight: number) {
+        mergeY();
+        ////if (getRTS(item) === '0,11,1,0')
+        const getRTS = cell => {
+            if (cell.R && cell.R[0] && cell.R[0].TS) {
+                return cell.R[0].TS.join(',');
+            }
+            return '';
+        }
+        const combineXDist = 4;
+
+        const eachPad = 8;
+        const columnSepAt = pageWidth/6; //if prev x is < 6 but this item >  6, they belong to different columns
+        for (const y of mat.allYs.sort((a, b) => a - b)) {
+            const row = mat.matrix[y];
+            let firstY = 0;
+            const prints = [];
+            const items: IPdfTextItem[] = [];
+            let lastItem: IPdfTextItem = null;
+            for (const item of row.sort((a, b) => a.x - b.x)) {                
+                    firstY = item.y;
+                    if (item.x > pageWidth/3) continue;
+
+                     if (!lastItem || item.x - lastItem.x > combineXDist || (lastItem.x < columnSepAt && item.x > columnSepAt)) {
+                         lastItem = { ...item, };
+                         items.push(lastItem);
+                     } else {
+                         lastItem.str = lastItem.str + ' ' + item.str;
+                         lastItem.x = item.x;
+                         //lastItem = { ...item, };
+                         //items.push(lastItem);
+                     }
+                    //process.stdout.write('['+item.x.toFixed(2).padStart(' ', eachPad) + '] ' + item.text + ' '+ JSON.stringify(item, null, 2).padEnd(' ', eachPad) + ' ');
+                    //if (getRTS(item) === '0,11,1,0')
+
+                    //console.log('['+item.x.toFixed(2).padStart(' ', eachPad) + '] ' + item.text + ' '+ JSON.stringify(item, null, 2).padEnd(' ', eachPad) + ' ');                     
+            }
+            if (items.length) {
+                const allDsps: string[] = [];
+                allDsps.push('[' + firstY.toFixed(2) + '] ');
+                for (const item of items) {
+                    allDsps.push('[' + item.x.toFixed(2) + '] ' + item.str + ' ');
+                }
+                console.log(allDsps.join(''), );
+            }
+        }
+
+
+
+    }
+    return {
+        mat,
+        addToMatrix,
+        endFix,
+        print,
+    }
+}
 
 
 
@@ -30,27 +138,33 @@ export default function TaxReport() {
             const contents = e.target?.result;
             if (contents) {
                 const arrayBuffer = contents as ArrayBuffer;
-                const byteArray = new Uint8Array(arrayBuffer);                
+                const byteArray = new Uint8Array(arrayBuffer);
                 //console.log(byteArray); // Do something with the byte array
                 try {
                     
                     const pdfP = await parsePdfFile(byteArray);
-                    const pdf = pdfP.pdf;
-                    console.log('after before doc')
-                    console.log('num pagses', pdf.numPages);                    
-                    for (let i = 1; i <= pdf.numPages; i++) {
-                        const page = await pdf.getPage(i);
-                        const textContent = await page.getTextContent();
-                        console.log('textContent', textContent, page);
-                        textContent.items.forEach((item) => {
-                            console.log(item); // Do something with the text content
-                        });                        
+                    console.log('num pagses', pdfP.numPages);
+                    const tracker = getPdfLocTracker();
+                    let pageWidth = 0, pageHeight = 0;
+                    for (let i = 1; i <= pdfP.numPages; i++) {
+                        const page = await pdfP.getPage(i);
+                        console.log('page', page.width, page.height);
+                        pageWidth = page.width;
+                        pageHeight = page.height;
+                        page.items.forEach((item) => {
+                            if (item.y >= 220 && item.y < 235 && item.x < pageWidth/3) {
+                                console.log(item); // Do something with the text content
+                            }
+                            tracker.addToMatrix(item);
+                        });
                         break;
                     }
+                    tracker.endFix();
+                    tracker.print(pageWidth, pageHeight);
+                    console.log('page', pageWidth, pageHeight);
                 } catch (error) {
                     console.error('Error loading PDF:', error);
                 }
-
             }
             // const text = contents as string;
         }
