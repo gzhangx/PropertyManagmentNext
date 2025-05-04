@@ -1,6 +1,9 @@
 import { get, set } from 'lodash'
 import { IDBFieldDef, IPageFilter, IPageState, TableNames } from "../../types";
 import moment from 'moment';
+import { IPageRelatedState } from '../../reportTypes';
+import { IEditTextDropdownItem } from '../../generic/GenericDropdown';
+import { EditTextDropdown } from '../../generic/EditTextDropdown';
 
 
 export const CUST_FILTER_HEADER = 'CUST_FILTER_HEADER';
@@ -75,4 +78,51 @@ export function genericCustomHeaderFilterFunc(pageState: IPageState, colInfo: ID
         </div>;
     }
     return null;
+}
+
+
+export function customHeaderFilterFuncWithHouseIDLookup(mainCtx: IPageRelatedState, pageState: IPageState, colInfo: IDBFieldDef, table: TableNames): React.JSX.Element | null {
+    const { pageProps, setPageProps } = pageState;
+    const forceUpdateFilterVals = () => {
+        setPageProps({ ...pageProps, reloadCount: (pageProps.reloadCount || 0) + 1 });
+    }
+    if (colInfo.field === 'houseID') {
+        const allHouses = mainCtx.getAllForeignKeyLookupItems('houseInfo');
+        const items: IEditTextDropdownItem[] = allHouses.map(h => {
+            return {
+                label: h.address as string,
+                value: h.houseID,
+    
+            }
+        })
+        const allItm: IEditTextDropdownItem[] = [{
+            label: 'All',
+            value: '',
+        }];
+        const all = allItm.concat(items);
+        return <div>
+            <EditTextDropdown items={all}
+                onSelectionChanged={async (item) => {
+                    const id = `CUST_FILTER_${table}_${colInfo.field}_HIDDX`;
+                    let newFil: IPageFilter[] = [
+                        {
+                            id,
+                            table,
+                            field: 'houseID',
+                            op: '=',
+                            val: item.value,
+                        }
+                    ];
+                    if (!item.value) {
+                        newFil = [];
+                    }
+                    const origFilters: IPageFilter[] = get(pageProps, [table, 'filters']) || [];
+                    const newFilters = origFilters.filter(f => f.id !== id).concat(newFil);
+                    set(pageProps, [table, 'filters'], newFilters);
+                    forceUpdateFilterVals();
+                }}
+            ></EditTextDropdown>
+        </div>
+    }
+    return genericCustomHeaderFilterFunc(pageState, colInfo, table);
 }

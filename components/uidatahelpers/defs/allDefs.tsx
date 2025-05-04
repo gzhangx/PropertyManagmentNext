@@ -67,8 +67,20 @@ export const maintenanceInfoDef: ITableAndSheetMappingInfo = {
         ],
     },
 
+    displayFields: [
+        { field: 'date', 'desc': 'Date', type: 'date' },
+        { field: 'description', 'desc': 'Notes' },
+        { field: 'amount', 'desc': 'Amount', type: 'decimal' },
+        { field: 'houseID', 'desc': 'Address' },
+        { field: 'expenseCategoryId', 'desc': 'Category', type: 'string' },
+        { field: 'workerID', 'desc': 'Worker' },
+        { field: 'comment', 'desc': 'Comment', type: 'string' },
+    ],
     sortFields: ['date', 'houseID'],
     title: 'Maintenance Records',
+    customHeaderFilterFunc: (mainCtx, pageState, colInfo) => {
+        return customHeaderFilterFuncWithHouseIDLookup(mainCtx, pageState, colInfo, 'maintenanceRecords');
+        },
 }
 
 
@@ -105,6 +117,7 @@ const ownerInfoDef: ITableAndSheetMappingInfo = {
 }
 
 import { paymentInfoDef } from './rentpaymentInfoDef'
+import { customHeaderFilterFuncWithHouseIDLookup } from "./util";
 
 export const paymentInfoDefinition = paymentInfoDef;
 

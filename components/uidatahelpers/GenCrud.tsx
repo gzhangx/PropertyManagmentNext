@@ -375,7 +375,7 @@ export const GenCrud = (props: IGenGrudProps) => {
                                                         }
                                                         newCustomFiltersEnabled[table][name] = !newCustomFiltersEnabled[table][name];
                                                         setCustomFiltersEnabled(newCustomFiltersEnabled);
-                                                    }}>Cust</a></>
+                                                    }}>CustFilter</a></>
                                                 }
                                             </div>
                                             
