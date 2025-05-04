@@ -120,8 +120,8 @@ export const paymentInfoDef: ITableAndSheetMappingInfo = {
             { field: 'receivedDate', 'desc': 'ReceivedDate', type: 'date' },
             { field: 'receivedAmount', 'desc': 'Amount', type: 'decimal' },
             { field: 'houseID', 'desc': 'Address' },
-            { field: 'paymentTypeName', 'desc': 'type' },
-            { field: 'notes', 'desc': 'Notes' },
+            { field: 'paymentTypeName', 'desc': 'type', type: 'string' },
+            { field: 'notes', 'desc': 'Notes', type: 'string' },
         ],
     sortFields: ['receivedDate', 'houseID'],
     orderColunmInfo(cols) {

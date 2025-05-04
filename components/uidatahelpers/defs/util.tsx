@@ -1,5 +1,5 @@
 import { get, set } from 'lodash'
-import { IDBFieldDef, IPageFilter, IPageState, TableNames } from "../../types";
+import { IDBFieldDef, IPageFilter, IPageState, SQLOPS, TableNames } from "../../types";
 import moment from 'moment';
 import { IPageRelatedState } from '../../reportTypes';
 import { IEditTextDropdownItem } from '../../generic/GenericDropdown';
@@ -32,7 +32,7 @@ function isValid(val: string, colInfo: IDBFieldDef): boolean {
     return true;
 }
 
-function stdOnChange(pageState: IPageState, colInfo: IDBFieldDef, table: TableNames, e: React.ChangeEvent<HTMLInputElement>, id, valObj?: IPageFilter) {
+function stdOnChange(pageState: IPageState, colInfo: IDBFieldDef, table: TableNames, e: React.ChangeEvent<HTMLInputElement>, id, valObj?: IPageFilter, op: SQLOPS = '>=') {
     const { pageProps } = pageState;
     const origFilters: IPageFilter[] = getOriginalFilters(pageState, table);
     if (valObj) {
@@ -41,8 +41,8 @@ function stdOnChange(pageState: IPageState, colInfo: IDBFieldDef, table: TableNa
             origFilters.splice(origFilters.indexOf(valObj), 1);
             set(pageProps, [table, 'filters'], origFilters);
         }        
-    } else {
-        origFilters.push({ id, field: colInfo.field, val: e.target.value, op: '>=', table });
+    } else {        
+        origFilters.push({ id, field: colInfo.field, val: e.target.value, op, table });
         set(pageProps, [table, 'filters'], origFilters);
     }
 
@@ -74,6 +74,18 @@ export function genericCustomHeaderFilterFunc(pageState: IPageState, colInfo: ID
             <input type="text" className="form-control bg-light border-0 small" placeholder={colInfo.field + ' to'} style={{ border: toError ? '2px solid red' : 'black' }}
                 value={toValObj?.val || ''} name={colInfo.field} onChange={e => {
                     stdOnChange(pageState, colInfo, table, e, toId, toValObj);
+                }} />
+        </div>;
+    }
+    if (colInfo.type === 'string') {
+        const origFilters: IPageFilter[] = getOriginalFilters(pageState, table);
+        const id = `${CUST_FILTER_HEADER}_${table}_${colInfo.field}_string_eq`;
+        const valObj = origFilters.find((f) => f.id === id);
+        const error = get(pageProps, [table, 'filterErrors', id]);
+        return <div className="flex flex-row gap-2">
+            <input type="text" className="form-control bg-light border-0 small" placeholder={colInfo.field} style={{ border: error ? '2px solid red' : 'black' }}
+                value={valObj?.val || ''} name={colInfo.field} onChange={e => {
+                    stdOnChange(pageState, colInfo, table, e, id, valObj,'=');
                 }} />
         </div>;
     }

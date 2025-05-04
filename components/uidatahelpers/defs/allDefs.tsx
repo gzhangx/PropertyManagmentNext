@@ -69,7 +69,7 @@ export const maintenanceInfoDef: ITableAndSheetMappingInfo = {
 
     displayFields: [
         { field: 'date', 'desc': 'Date', type: 'date' },
-        { field: 'description', 'desc': 'Notes' },
+        { field: 'description', 'desc': 'Notes', type: 'string' },
         { field: 'amount', 'desc': 'Amount', type: 'decimal' },
         { field: 'houseID', 'desc': 'Address' },
         { field: 'expenseCategoryId', 'desc': 'Category', type: 'string' },
