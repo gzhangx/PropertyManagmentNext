@@ -78,18 +78,23 @@ export function genericCustomHeaderFilterFunc(pageState: IPageState, colInfo: ID
         </div>;
     }
     if (colInfo.type === 'string') {
-        const origFilters: IPageFilter[] = getOriginalFilters(pageState, table);
-        const id = `${CUST_FILTER_HEADER}_${table}_${colInfo.field}_string_eq`;
-        const valObj = origFilters.find((f) => f.id === id);
-        const error = get(pageProps, [table, 'filterErrors', id]);
-        return <div className="flex flex-row gap-2">
-            <input type="text" className="form-control bg-light border-0 small" placeholder={colInfo.field} style={{ border: error ? '2px solid red' : 'black' }}
-                value={valObj?.val || ''} name={colInfo.field} onChange={e => {
-                    stdOnChange(pageState, colInfo, table, e, id, valObj,'like');
-                }} />
-        </div>;
+        return genericCustomerHeaderFilterFuncForString(pageState, colInfo, table);
     }
     return null;
+}
+
+export function genericCustomerHeaderFilterFuncForString(pageState: IPageState, colInfo: IDBFieldDef, table: TableNames) {
+    const { pageProps, setPageProps } = pageState;
+    const origFilters: IPageFilter[] = getOriginalFilters(pageState, table);
+    const id = `${CUST_FILTER_HEADER}_${table}_${colInfo.field}_string_eq`;
+    const valObj = origFilters.find((f) => f.id === id);
+    const error = get(pageProps, [table, 'filterErrors', id]);
+    return <div className="flex flex-row gap-2">
+        <input type="text" className="form-control bg-light border-0 small" placeholder={colInfo.field} style={{ border: error ? '2px solid red' : 'black' }}
+            value={valObj?.val || ''} name={colInfo.field} onChange={e => {
+                stdOnChange(pageState, colInfo, table, e, id, valObj, 'like');
+            }} />
+    </div>;
 }
 
 

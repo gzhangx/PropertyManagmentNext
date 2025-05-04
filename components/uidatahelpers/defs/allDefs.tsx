@@ -12,7 +12,10 @@ export const workerInfoDef: ITableAndSheetMappingInfo = {
             'email',
             'phone',
         ]
-    }
+    },
+    customHeaderFilterFunc: (mainCtx, pageState, colInfo) => {
+        return genericCustomerHeaderFilterFuncForString(pageState, colInfo, 'houseInfo');
+    },
 }
 
 
@@ -30,7 +33,10 @@ export const houseInfoDef: ITableAndSheetMappingInfo = {
             '', //sqrt
             'ownerName'
         ],
-    }
+    },
+    customHeaderFilterFunc: (mainCtx, pageState, colInfo) => {
+        return genericCustomerHeaderFilterFuncForString(pageState, colInfo, 'houseInfo');
+    },
 }
 
 export const tenantInfoDef: ITableAndSheetMappingInfo = {
@@ -47,7 +53,10 @@ export const tenantInfoDef: ITableAndSheetMappingInfo = {
             'email',
             'comment',
         ],
-    }
+    },
+    customHeaderFilterFunc: (mainCtx, pageState, colInfo) => {
+        return genericCustomerHeaderFilterFuncForString(pageState, colInfo, 'tenantInfo');
+    },
 }
 
 export const maintenanceInfoDef: ITableAndSheetMappingInfo = {
@@ -117,7 +126,7 @@ const ownerInfoDef: ITableAndSheetMappingInfo = {
 }
 
 import { paymentInfoDef } from './rentpaymentInfoDef'
-import { customHeaderFilterFuncWithHouseIDLookup } from "./util";
+import { customHeaderFilterFuncWithHouseIDLookup, genericCustomerHeaderFilterFuncForString, genericCustomHeaderFilterFunc } from "./util";
 
 export const paymentInfoDefinition = paymentInfoDef;
 
