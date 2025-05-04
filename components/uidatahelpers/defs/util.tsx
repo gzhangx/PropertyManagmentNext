@@ -85,7 +85,7 @@ export function genericCustomHeaderFilterFunc(pageState: IPageState, colInfo: ID
         return <div className="flex flex-row gap-2">
             <input type="text" className="form-control bg-light border-0 small" placeholder={colInfo.field} style={{ border: error ? '2px solid red' : 'black' }}
                 value={valObj?.val || ''} name={colInfo.field} onChange={e => {
-                    stdOnChange(pageState, colInfo, table, e, id, valObj,'=');
+                    stdOnChange(pageState, colInfo, table, e, id, valObj,'like');
                 }} />
         </div>;
     }
