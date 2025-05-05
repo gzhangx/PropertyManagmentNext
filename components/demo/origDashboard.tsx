@@ -9,6 +9,7 @@ import { getLeases } from '../api';
 import { orderBy, set } from 'lodash';
 import { formatAccounting, removeZeroHourMinuteSeconds } from '../utils/reportUtils';
 import { getTenantsForHouse } from '../utils/leaseEmailUtil';
+import moment from 'moment';
 
 
 interface HouseWithTenants extends HouseWithLease {
@@ -101,13 +102,10 @@ export function OriginalDashboard() {
         <div className="row">
             {
                 allHouses.filter(h=>!h.disabled).map((h, index) => {
-                    return <BoardItemHalfSmall key={index} title={h.address} value={formatAccounting(h.leaseInfo?.totalBalance) ?? 'Loading'}
-                        valueClsName={h.leaseInfo?.totalBalance > 0 ? 'text-danger' : ''}
+                    return <HouseWithRenterAndLeaseInfo key={index} house={h}                         
                         onClick={() => {
                             setSelectedHouse(h);                          
-                        }}
-                        iconName="fa-home" mainClsName='border-left-primary'
-                        textClsName='text-primary'
+                        }}                        
                          />
                 })
             }
@@ -228,5 +226,55 @@ export function OriginalDashboard() {
                 }
             </div>
         }
+    </div>
+}
+
+
+
+function HouseWithRenterAndLeaseInfo(props: {
+    house: HouseWithTenants
+    onClick?: () => void;
+}) {
+    //title = { h.address }
+    //value = { formatAccounting(h.leaseInfo?.totalBalance) ?? 'Loading'    
+    const iconClassName = `fas fa-calendar fa-2x text-gray-300 fa - calendar`
+    const mainClsName = `card shadow h-100 py-2 border-left-primary`;
+    const textClsName = `text-xs font-weight-bold text-uppercase mb-1 text-primary`;
+    const h = props.house;
+
+    const valueClsName = h.leaseInfo?.totalBalance > 0 ? 'text-danger' : '';
+
+    function showLeaseDate(date: string, who: string) {
+        if (!date) return `Unknown ${who}Date`;
+        const str = moment(date).format('YYYY-MM-DD');
+        if (who === 'Start') {
+            return str;
+        }
+        if (moment().isAfter(moment(str).subtract(2, 'months'))) {
+            return <div style={ {color:'red'}}>{str}</div>;
+        }
+        return str;
+    }
+    return <div className="col-xl-3 col-md-6 mb-4" onClick={() => {
+        if (props.onClick) {
+            props.onClick()
+        }
+    }}>
+        <div className={mainClsName}>
+            <div className="card-body">
+                <div className="row no-gutters align-items-center">
+                    <div className="col mr-2">
+                        <div className={textClsName}>{h.address}</div>
+                        <div className={"h5 mb-0 font-weight-bold  " + (valueClsName || 'text-gray-800')}>{formatAccounting(h.leaseInfo?.totalBalance) ?? 'Loading'}</div>
+                    </div>
+                    <div className="col-auto">
+                        <i className='fas fa-home'>{showLeaseDate(h.lease?.startDate, 'Start')}{ '->'}{showLeaseDate(h.lease?.endDate, 'End')}</i>
+                    </div>
+                </div>
+                <div className="row no-gutters align-items-center">
+                    <div className='col mr-2'>{ h.tenants? h.tenants.map(t=>t.email).join(','):''}</div>                    
+                </div>                
+            </div>
+        </div>
     </div>
 }
