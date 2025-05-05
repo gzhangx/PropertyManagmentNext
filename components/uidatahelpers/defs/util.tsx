@@ -3,9 +3,9 @@ import { IDBFieldDef, IPageFilter, IPageState, SQLOPS, TableNames } from "../../
 import moment from 'moment';
 import { IPageRelatedState } from '../../reportTypes';
 import { IEditTextDropdownItem } from '../../generic/GenericDropdown';
-import { EditTextDropdown } from '../../generic/EditTextDropdown';
 import GrkEditableDropdown from '../../generic/GrkEditableDropdown';
-
+import DatePicker from 'react-datepicker';
+import 'react-datepicker/dist/react-datepicker.css';
 
 export const CUST_FILTER_HEADER = 'CUST_FILTER_HEADER';
 export const forceUpdateFilterVals = (pageState: IPageState) => {
@@ -33,22 +33,22 @@ function isValid(val: string, colInfo: IDBFieldDef): boolean {
     return true;
 }
 
-function stdOnChange(pageState: IPageState, colInfo: IDBFieldDef, table: TableNames, e: React.ChangeEvent<HTMLInputElement>, id, valObj?: IPageFilter, op: SQLOPS) {
+function stdOnChange(pageState: IPageState, colInfo: IDBFieldDef, table: TableNames, val: string, id, valObj: IPageFilter, op: SQLOPS) {
     const { pageProps } = pageState;
     const origFilters: IPageFilter[] = getOriginalFilters(pageState, table);
     if (valObj) {
-        valObj.val = e.target.value;
-        if (!e.target.value) {
+        valObj.val = val;
+        if (!val) {            
             origFilters.splice(origFilters.indexOf(valObj), 1);
             set(pageProps, [table, 'filters'], origFilters);
         }        
     } else {        
-        origFilters.push({ id, field: colInfo.field, val: e.target.value, op, table });
+        origFilters.push({ id, field: colInfo.field, val, op, table });
         set(pageProps, [table, 'filters'], origFilters);
     }
 
 
-    if (!isValid(e.target.value, colInfo)) {
+    if (val && !isValid(val, colInfo)) {
         set(pageProps, [table, 'filterErrors', id], true);
         return updateFilterValsNoSubmit(pageState);
     }
@@ -67,14 +67,28 @@ export function genericCustomHeaderFilterFunc(pageState: IPageState, colInfo: ID
 
         const fromError = get(pageProps, [table, 'filterErrors', fromId]);
         const toError = get(pageProps, [table, 'filterErrors', toId]);
+        if (colInfo.type === 'date' || colInfo.type === 'datetime') {
+            return <div className="flex flex-row gap-2">
+                <div>
+                    <DatePicker selectsMultiple={null} selected={fromValObj?.val ? moment(fromValObj.val).toDate() : null} onChange={(date) => {
+                    stdOnChange(pageState, colInfo, table, date?moment(date as any).format('YYYY-MM-DD'):null, fromId, fromValObj, '>=');
+                    }}></DatePicker>
+                </div>
+                <div>
+                    <DatePicker selectsMultiple={null} selected={toValObj?.val ? moment(toValObj.val).toDate() : null} onChange={(date) => {
+                    stdOnChange(pageState, colInfo, table, date?moment(date as any).format('YYYY-MM-DD'):null, toId, toValObj, '<');
+                    }}></DatePicker>
+                </div>
+            </div>;
+        }
         return <div className="flex flex-row gap-2">
             <input type="text" className="form-control bg-light border-0 small" placeholder={colInfo.field + ' from'} style={{ border: fromError ? '2px solid red' : 'black' }}
                 value={fromValObj?.val || ''} name={colInfo.field} onChange={e => {
-                    stdOnChange(pageState, colInfo, table, e, fromId, fromValObj, '>=');
+                    stdOnChange(pageState, colInfo, table, e.target.value, fromId, fromValObj, '>=');
                 }} />
             <input type="text" className="form-control bg-light border-0 small" placeholder={colInfo.field + ' to'} style={{ border: toError ? '2px solid red' : 'black' }}
                 value={toValObj?.val || ''} name={colInfo.field} onChange={e => {
-                    stdOnChange(pageState, colInfo, table, e, toId, toValObj, '<');
+                    stdOnChange(pageState, colInfo, table, e.target.value, toId, toValObj, '<');
                 }} />
         </div>;
     }
@@ -93,7 +107,7 @@ export function genericCustomerHeaderFilterFuncForString(pageState: IPageState, 
     return <div className="flex flex-row gap-2">
         <input type="text" className="form-control bg-light border-0 small" placeholder={colInfo.field} style={{ border: error ? '2px solid red' : 'black' }}
             value={valObj?.val || ''} name={colInfo.field} onChange={e => {
-                stdOnChange(pageState, colInfo, table, e, id, valObj, 'like');
+                stdOnChange(pageState, colInfo, table, e.target.value, id, valObj, 'like');
             }} />
     </div>;
 }
