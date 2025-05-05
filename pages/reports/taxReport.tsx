@@ -2,7 +2,11 @@
 import { ChangeEvent, useRef, useState } from "react";
 import { IPdfTextItem, parsePdfFile, PdfScript } from "../../components/utils/pdfFileUtil";
 
-
+interface W2Info {
+    income: number;
+    fedTax: number;
+    stateTax: number;
+}
 function getPdfLocTracker() {
     const mat = {
         allYs: [] as number[],
@@ -27,7 +31,7 @@ function getPdfLocTracker() {
     function mergeY() {
         mat.allYs.sort((a, b) => a - b);
         const yKeysToDelete = [];
-        const combineYDist = 1;
+        const combineYDist = 3;
         let lastValToUse: number = null;
         let lastY: number = null;
         for (const y of mat.allYs) {
@@ -53,7 +57,7 @@ function getPdfLocTracker() {
             mat.allYs = mat.allYs.filter(v => v !== y);
         }
     }
-    function print(pageWidth: number, pageHeight: number) {
+    function getLinesAsArray(pageWidth: number) {
         mergeY();
         ////if (getRTS(item) === '0,11,1,0')
         const getRTS = cell => {
@@ -64,12 +68,12 @@ function getPdfLocTracker() {
         }
         const combineXDist = 4;
 
-        const eachPad = 8;
-        const columnSepAt = pageWidth/6; //if prev x is < 6 but this item >  6, they belong to different columns
+        const columnSepAt = pageWidth / 6; //if prev x is < 6 but this item >  6, they belong to different columns
+        
+        const allResultLines: string[][] = [];
         for (const y of mat.allYs.sort((a, b) => a - b)) {
             const row = mat.matrix[y];
             let firstY = 0;
-            const prints = [];
             const items: IPdfTextItem[] = [];
             let lastItem: IPdfTextItem = null;
             for (const item of row.sort((a, b) => a.x - b.x)) {                
@@ -93,21 +97,63 @@ function getPdfLocTracker() {
             if (items.length) {
                 const allDsps: string[] = [];
                 allDsps.push('[' + firstY.toFixed(2) + '] ');
+                const curRet: string[] = [];
                 for (const item of items) {
-                    allDsps.push('[' + item.x.toFixed(2) + '] ' + item.str + ' ');
+                    if (item.str.trim()) {
+                        allDsps.push('[' + item.x.toFixed(2) + '] ' + item.str + ' ');
+                        curRet.push(item.str);
+                    }
                 }
-                console.log(allDsps.join(''), );
+                //console.log(allDsps.join(''),);
+                if (curRet.length) {                    
+                    allResultLines.push(curRet);
+                }
             }
         }
-
-
-
+        return allResultLines;
+    }
+    function parseW2(lines: string[][]): W2Info {
+        let state: 'find-fed' | 'fed' | 'find-state' | 'state' | 'done' = 'find-fed';
+        const res = {
+            income: 0,
+            fedTax: 0,
+            stateTax: 0,
+        }
+        for (const line of lines) {
+            switch (state) {
+                case 'find-fed':
+                    console.log('find-fed', line);
+                    if (line.find(l => l === 'Wages, tips, other comp.')) {
+                        console.log('found fed');
+                        state = 'fed';
+                    }
+                    break;
+                case 'fed':
+                    console.log('fed', line);
+                    const feds = line.filter(l => l && !isNaN(parseFloat(l))).map(l => parseFloat(l));
+                    console.log('feds', feds);
+                    res.income = feds[0];
+                    res.fedTax = feds[1];
+                    state = 'find-state';
+                    break;
+                case 'find-state':
+                    if (line.find(l => l === 'State wages, tips, etc.')) {
+                        state = 'state';
+                    }
+                    break;
+                case 'state':
+                    res.stateTax = parseFloat(line[2]);
+                    return res;
+            }                    
+        }
+        return res;
     }
     return {
         mat,
         addToMatrix,
         endFix,
-        print,
+        getLinesAsArray,
+        parseW2,
     }
 }
 
@@ -118,6 +164,7 @@ function getPdfLocTracker() {
 export default function TaxReport() {
     const [file, setFile] = useState<File>();    
 
+    const [w2s, setW2s] = useState<W2Info[]>([]);
     const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
         if (e.target.files) {
             setFile(e.target.files[0]);
@@ -160,8 +207,11 @@ export default function TaxReport() {
                         break;
                     }
                     tracker.endFix();
-                    tracker.print(pageWidth, pageHeight);
-                    console.log('page', pageWidth, pageHeight);
+                    const printRes = tracker.getLinesAsArray(pageWidth);
+                    //console.log('printRes', printRes);
+                    const w2Res = tracker.parseW2(printRes);
+                    console.log('page', pageWidth, pageHeight, w2Res);
+                    setW2s([...w2s, w2Res]);
                 } catch (error) {
                     console.error('Error loading PDF:', error);
                 }
@@ -178,30 +228,47 @@ export default function TaxReport() {
     };
 
     return (
-        <div>            
-            <PdfScript/>
-            <h1>Tax Report</h1>
-            <input type="file" onChange={handleFileChange} />
+        <div className="container-fluid">            
+            <div className="row">
+                <PdfScript/>
+                <h1>Tax Report</h1>
+                <input type="file" onChange={handleFileChange} />
 
-            <div>{file && `${file.name} - ${file.type}`}</div>
+                <div>{file && `${file.name} - ${file.type}`}</div>
 
-            <button onClick={handleUploadClick}>Upload</button>
-            <FileUploader handleFile={f => {
-                const reader = new FileReader(); // built in API
+                <button onClick={handleUploadClick}>Upload</button>
+                <FileUploader handleFile={f => {
+                    const reader = new FileReader(); // built in API
 
-                reader.onload = (e) => {
-                    const contents = e.target?.result;
-                    if (contents) {
-                        const arrayBuffer = contents as ArrayBuffer;   
+                    reader.onload = (e) => {
+                        const contents = e.target?.result;
+                        if (contents) {
+                            const arrayBuffer = contents as ArrayBuffer;   
+                        }
+                        // const text = contents as string;
                     }
-                    // const text = contents as string;
-                }
 
 
 
-                // Read the file as text.
-                reader.readAsArrayBuffer(f); 
-            }} />
+                    // Read the file as text.
+                    reader.readAsArrayBuffer(f); 
+                    }} />
+            </div>
+            <div className="row">
+                {w2s.map((w2, i) => {
+                    return <div key={i}>
+                        <h3>W2 {i}</h3>
+                        <div>Income: {w2.income}</div>
+                        <div>Fed Tax: {w2.fedTax}</div>
+                        <div>State Tax: {w2.stateTax}</div>
+                        <div><button className="btn btn-primary" onClick={() => {
+                            const newW2s = [...w2s];
+                            newW2s.splice(i, 1);
+                            setW2s(newW2s);
+                        }}>delete</button></div>
+                    </div>;
+                })}
+            </div>
         </div>
     );
 }
