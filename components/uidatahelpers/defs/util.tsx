@@ -70,12 +70,16 @@ export function genericCustomHeaderFilterFunc(pageState: IPageState, colInfo: ID
         if (colInfo.type === 'date' || colInfo.type === 'datetime') {
             return <div className="flex flex-row gap-2">
                 <div>
-                    <DatePicker selectsMultiple={null} selected={fromValObj?.val ? moment(fromValObj.val).toDate() : null} onChange={(date) => {
+                    <DatePicker selectsMultiple={null} selected={fromValObj?.val ? moment(fromValObj.val).toDate() : null}
+                        monthsShown={2} isClearable={true} showYearDropdown={false} showMonthDropdown={false} dateFormat="yyyy-MM-dd" placeholderText={colInfo.field + ' from'}
+                        onChange={(date) => {
                     stdOnChange(pageState, colInfo, table, date?moment(date as any).format('YYYY-MM-DD'):null, fromId, fromValObj, '>=');
                     }}></DatePicker>
                 </div>
                 <div>
-                    <DatePicker selectsMultiple={null} selected={toValObj?.val ? moment(toValObj.val).toDate() : null} onChange={(date) => {
+                    <DatePicker selectsMultiple={null} selected={toValObj?.val ? moment(toValObj.val).toDate() : null}
+                        monthsShown={2} isClearable={true} showYearDropdown={false} showMonthDropdown={false} dateFormat="yyyy-MM-dd" placeholderText={colInfo.field + '  to'}
+                        onChange={(date) => {
                     stdOnChange(pageState, colInfo, table, date?moment(date as any).format('YYYY-MM-DD'):null, toId, toValObj, '<');
                     }}></DatePicker>
                 </div>
