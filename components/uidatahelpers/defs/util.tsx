@@ -33,7 +33,7 @@ function isValid(val: string, colInfo: IDBFieldDef): boolean {
     return true;
 }
 
-function stdOnChange(pageState: IPageState, colInfo: IDBFieldDef, table: TableNames, e: React.ChangeEvent<HTMLInputElement>, id, valObj?: IPageFilter, op: SQLOPS = '>=') {
+function stdOnChange(pageState: IPageState, colInfo: IDBFieldDef, table: TableNames, e: React.ChangeEvent<HTMLInputElement>, id, valObj?: IPageFilter, op: SQLOPS) {
     const { pageProps } = pageState;
     const origFilters: IPageFilter[] = getOriginalFilters(pageState, table);
     if (valObj) {
@@ -70,11 +70,11 @@ export function genericCustomHeaderFilterFunc(pageState: IPageState, colInfo: ID
         return <div className="flex flex-row gap-2">
             <input type="text" className="form-control bg-light border-0 small" placeholder={colInfo.field + ' from'} style={{ border: fromError ? '2px solid red' : 'black' }}
                 value={fromValObj?.val || ''} name={colInfo.field} onChange={e => {
-                    stdOnChange(pageState, colInfo, table, e, fromId, fromValObj);
+                    stdOnChange(pageState, colInfo, table, e, fromId, fromValObj, '>=');
                 }} />
             <input type="text" className="form-control bg-light border-0 small" placeholder={colInfo.field + ' to'} style={{ border: toError ? '2px solid red' : 'black' }}
                 value={toValObj?.val || ''} name={colInfo.field} onChange={e => {
-                    stdOnChange(pageState, colInfo, table, e, toId, toValObj);
+                    stdOnChange(pageState, colInfo, table, e, toId, toValObj, '<');
                 }} />
         </div>;
     }
