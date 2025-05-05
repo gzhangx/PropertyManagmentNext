@@ -1,0 +1,67 @@
+.gg-editable-dropdown-container {
+    position: relative;
+    width: 208px;
+    font-family: Arial, sans-serif;
+}
+
+.gg-editable-dropdown-input {
+    width: 100%;
+    padding: 2px 2px 2px 2px;
+    font-size: 0.8em;
+    border: 1px solid #d1d5db;
+    border-radius: 4px;
+    box-sizing: border-box;
+}
+
+.gg-editable-dropdown-input:focus {
+    outline: none;
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.5);
+}
+
+.gg-editable-dropdown-icon {
+    position: absolute;
+    right: 8px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 16px;
+    height: 16px;
+    color: #4b5563;
+    cursor: pointer;
+}
+
+.gg-editable-dropdown-list {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: white;
+    color: black;
+    border: 1px solid #d1d5db;
+    border-radius: 4px;
+    margin-top: 4px;
+    max-height: 192px;
+    overflow-y: auto;
+    z-index: 10;
+    list-style: none;
+    padding: 0;
+    font-size: 0.8em;
+
+    text-align: left;
+    font-weight: normal;
+}
+
+.gg-editable-dropdown-list li {
+    padding: 8px;
+    cursor: pointer;
+}
+
+.gg-editable-dropdown-list li:hover,
+.gg-editable-dropdown-list li.highlighted {
+    background-color: #f3f4f6;
+}
+
+.gg-editable-dropdown-list li.no-options {
+    padding: 8px;
+    color: #6b7280;
+}

@@ -4,6 +4,7 @@ import moment from 'moment';
 import { IPageRelatedState } from '../../reportTypes';
 import { IEditTextDropdownItem } from '../../generic/GenericDropdown';
 import { EditTextDropdown } from '../../generic/EditTextDropdown';
+import GrkEditableDropdown from '../../generic/GrkEditableDropdown';
 
 
 export const CUST_FILTER_HEADER = 'CUST_FILTER_HEADER';
@@ -118,7 +119,7 @@ export function customHeaderFilterFuncWithHouseIDLookup(mainCtx: IPageRelatedSta
         }];
         const all = allItm.concat(items);
         return <div>
-            <EditTextDropdown items={all}
+            <GrkEditableDropdown items={all}
                 onSelectionChanged={async (item) => {
                     const id = `CUST_FILTER_${table}_${colInfo.field}_HIDDX`;
                     let newFil: IPageFilter[] = [
@@ -138,7 +139,7 @@ export function customHeaderFilterFuncWithHouseIDLookup(mainCtx: IPageRelatedSta
                     set(pageProps, [table, 'filters'], newFilters);
                     forceUpdateFilterVals();
                 }}
-            ></EditTextDropdown>
+            ></GrkEditableDropdown>
         </div>
     }
     return genericCustomHeaderFilterFunc(pageState, colInfo, table);
