@@ -14,7 +14,7 @@ export interface ISqlOrderDef {
     shortDesc: string;
 }
 
-export type SQLOPS = '>' | '>=' | '=' | '<' | '<=' | '!=' | '<>' | 'in' | 'isNULL';
+export type SQLOPS = '>' | '>=' | '=' | '<' | '<=' | '!=' | '<>' | 'in' | 'isNULL' | 'like';
 //copied from sql.ts
 export interface ISqlRequestFieldDef {
     field: string;

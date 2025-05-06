@@ -12,6 +12,7 @@ import moment from 'moment';
 import { ALLFieldNames, DataToDbSheetMapping, ICrudAddCustomObj, ItemTypeDict } from './datahelperTypes';
 import { usePageRelatedContext } from '../states/PageRelatedState';
 import { IHelper } from '../reportTypes';
+import GrkEditableDropdown from '../generic/GrkEditableDropdown';
 
 
 
@@ -255,7 +256,7 @@ export const GenCrudAdd = (props: IGenGrudAddProps) => {
                             }
                             return <>
 
-                                <EditTextDropdown items={options}
+                                <GrkEditableDropdown items={options}
                                     onSelectionChanged={
                                         async (s: IEditTextDropdownItem) => {
                                             //if (s.value === 'AddNew') {
@@ -273,7 +274,7 @@ export const GenCrudAdd = (props: IGenGrudAddProps) => {
                                             });    //, [colField+'_labelDesc']: s.label
                                         }
                                     }
-                                ></EditTextDropdown>
+                                ></GrkEditableDropdown>
                             </>
                         };
                         let foreignSel = null;

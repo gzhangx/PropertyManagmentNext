@@ -12,7 +12,10 @@ export const workerInfoDef: ITableAndSheetMappingInfo = {
             'email',
             'phone',
         ]
-    }
+    },
+    customHeaderFilterFunc: (mainCtx, pageState, colInfo) => {
+        return genericCustomerHeaderFilterFuncForString(pageState, colInfo, 'houseInfo');
+    },
 }
 
 
@@ -30,7 +33,10 @@ export const houseInfoDef: ITableAndSheetMappingInfo = {
             '', //sqrt
             'ownerName'
         ],
-    }
+    },
+    customHeaderFilterFunc: (mainCtx, pageState, colInfo) => {
+        return genericCustomerHeaderFilterFuncForString(pageState, colInfo, 'houseInfo');
+    },
 }
 
 export const tenantInfoDef: ITableAndSheetMappingInfo = {
@@ -47,7 +53,10 @@ export const tenantInfoDef: ITableAndSheetMappingInfo = {
             'email',
             'comment',
         ],
-    }
+    },
+    customHeaderFilterFunc: (mainCtx, pageState, colInfo) => {
+        return genericCustomerHeaderFilterFuncForString(pageState, colInfo, 'tenantInfo');
+    },
 }
 
 export const maintenanceInfoDef: ITableAndSheetMappingInfo = {
@@ -67,8 +76,20 @@ export const maintenanceInfoDef: ITableAndSheetMappingInfo = {
         ],
     },
 
+    displayFields: [
+        { field: 'date', 'desc': 'Date', type: 'date' },
+        { field: 'description', 'desc': 'Notes', type: 'string' },
+        { field: 'amount', 'desc': 'Amount', type: 'decimal' },
+        { field: 'houseID', 'desc': 'Address' },
+        { field: 'expenseCategoryId', 'desc': 'Category', type: 'string' },
+        { field: 'workerID', 'desc': 'Worker' },
+        { field: 'comment', 'desc': 'Comment', type: 'string' },
+    ],
     sortFields: ['date', 'houseID'],
     title: 'Maintenance Records',
+    customHeaderFilterFunc: (mainCtx, pageState, colInfo) => {
+        return customHeaderFilterFuncWithHouseIDLookup(mainCtx, pageState, colInfo, 'maintenanceRecords');
+        },
 }
 
 
@@ -105,6 +126,7 @@ const ownerInfoDef: ITableAndSheetMappingInfo = {
 }
 
 import { paymentInfoDef } from './rentpaymentInfoDef'
+import { customHeaderFilterFuncWithHouseIDLookup, genericCustomerHeaderFilterFuncForString, genericCustomHeaderFilterFunc } from "./util";
 
 export const paymentInfoDefinition = paymentInfoDef;
 

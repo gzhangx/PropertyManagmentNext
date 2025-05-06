@@ -9,7 +9,7 @@ import { formateEmail } from "../../utils/leaseEmailUtil";
 import { EditTextDropdown } from "../../generic/EditTextDropdown";
 import { get, set } from "lodash";
 import { IPageFilter } from "../../types";
-import { genericCustomHeaderFilterFunc } from "./util";
+import { customHeaderFilterFuncWithHouseIDLookup, genericCustomHeaderFilterFunc } from "./util";
 
 const table = 'rentPaymentInfo';
 export const paymentInfoDef: ITableAndSheetMappingInfo = {
@@ -120,8 +120,8 @@ export const paymentInfoDef: ITableAndSheetMappingInfo = {
             { field: 'receivedDate', 'desc': 'ReceivedDate', type: 'date' },
             { field: 'receivedAmount', 'desc': 'Amount', type: 'decimal' },
             { field: 'houseID', 'desc': 'Address' },
-            { field: 'paymentTypeName', 'desc': 'type' },
-            { field: 'notes', 'desc': 'Notes' },
+            { field: 'paymentTypeName', 'desc': 'type', type: 'string' },
+            { field: 'notes', 'desc': 'Notes', type: 'string' },
         ],
     sortFields: ['receivedDate', 'houseID'],
     orderColunmInfo(cols) {
@@ -286,49 +286,6 @@ export const paymentInfoDef: ITableAndSheetMappingInfo = {
         }
     },
     customHeaderFilterFunc: (mainCtx, pageState, colInfo) => {
-        const { pageProps, setPageProps } = pageState;
-        const forceUpdateFilterVals = () => {
-            setPageProps({ ...pageProps, reloadCount: (pageProps.reloadCount || 0) + 1 });
-        }
-        if (colInfo.field === 'houseID') {
-            const allHouses = mainCtx.getAllForeignKeyLookupItems('houseInfo');
-            const items: IEditTextDropdownItem[] = allHouses.map(h => {
-                return {
-                    label: h.address as string,
-                    value: h.houseID,
-
-                }
-            })
-            const allItm: IEditTextDropdownItem[] = [{
-                label: 'All',
-                value: '',
-            }];
-            const all = allItm.concat(items);            
-            return <div>
-                <EditTextDropdown items={all}
-                    onSelectionChanged={async (item) => {
-                        const id = `CUST_FILTER_${table}_${colInfo.field}_HIDDX`; 
-                        let newFil: IPageFilter[] = [
-                            {
-                                id,
-                                table,
-                                field: 'houseID',
-                                op: '=',
-                                val: item.value,
-                            }
-                        ];
-                        if (!item.value) {
-                            newFil = [];
-                        }
-                        const origFilters: IPageFilter[] = get(pageProps, [table, 'filters']) || [];
-                        const newFilters = origFilters.filter(f=>f.id !== id).concat(newFil);
-                        set(pageProps, [table, 'filters'], newFilters);
-                        forceUpdateFilterVals();
-                    }}
-                ></EditTextDropdown>
-            </div>
-        }
-        return genericCustomHeaderFilterFunc(pageState, colInfo, table);
-        return <div>field='{colInfo.field} ' type={colInfo.type}</div>
+        return customHeaderFilterFuncWithHouseIDLookup(mainCtx, pageState, colInfo, table);
     },
 };

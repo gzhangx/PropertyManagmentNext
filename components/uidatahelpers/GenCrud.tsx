@@ -50,8 +50,7 @@ export interface IGenGrudProps extends ITableAndSheetMappingInfo {
     //fkDefs?: IFKDefs;
     doDelete: (ids: string[], data: ItemTypeDict) => void;
     idCol?: { field: string; }
-    reload?: () => Promise<void>;
-
+    reload?: () => Promise<void>;    
     //customDisplayFunc?: (value: any, fieldDef: IDBFieldDef) => React.JSX.Element;
 }
 
@@ -70,6 +69,7 @@ export const GenCrud = (props: IGenGrudProps) => {
         _vdOriginalRecord: null,
     });
     const [showFilter, setShowFilter] = useState(false);
+    const [enableAllCustFilters, setEnableAllCustFilters] = useState(false);
     const [filterVals, setFilterVals] = useState<IPageFilter[]>([]);
 
     const [deleteConfirm, setDeleteConfirm] = useState<{
@@ -164,6 +164,17 @@ export const GenCrud = (props: IGenGrudProps) => {
         return f.field;
     });
 
+    useEffect(() => {
+        displayFieldsStripped.forEach((name) => {                                        
+            const newCustomFiltersEnabled = { ...customFiltersEnabled };
+            if (!newCustomFiltersEnabled[table]) {
+                newCustomFiltersEnabled[table] = {};
+            }
+            newCustomFiltersEnabled[table][name] = !enableAllCustFilters;
+            setCustomFiltersEnabled(newCustomFiltersEnabled);
+        })
+    }, [enableAllCustFilters]);
+
     const idCols = columnInfo.filter(c => c.isId);
 
     const addNew = async () => {
@@ -250,7 +261,11 @@ export const GenCrud = (props: IGenGrudProps) => {
                         </div>
                     }
                     <div>
-                        <a href="" onClick={filterClick}>{showFilter ? 'Hide' : 'Filter'}</a>
+                            <a href="" onClick={filterClick}>{showFilter ? 'Hide' : 'Filter'}</a>{' '}
+                            <a href="" onClick={(e) => {
+                                e.preventDefault();
+                                setEnableAllCustFilters(!enableAllCustFilters);
+                            }}>{showFilter ? 'Hide All Filter' : 'All Filter'}</a>
                         {
                             showFilter && <table>
                                 {
@@ -375,7 +390,7 @@ export const GenCrud = (props: IGenGrudProps) => {
                                                         }
                                                         newCustomFiltersEnabled[table][name] = !newCustomFiltersEnabled[table][name];
                                                         setCustomFiltersEnabled(newCustomFiltersEnabled);
-                                                    }}>Cust</a></>
+                                                    }}>CustFilter</a></>
                                                 }
                                             </div>
                                             

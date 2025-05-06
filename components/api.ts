@@ -240,6 +240,24 @@ export async function getMaintenanceReport(): Promise<{ rows: IExpenseData[], er
     });    
 }
 
+
+export async function getMaintenance(inp: QueryConstraints = {}): Promise<IExpenseData[]> {
+    return sqlGet({
+        table: 'maintenanceRecords',
+        ...inp,
+    }).then((r: { rows: IExpenseData[] }) => {
+        if (!r.rows) return r as any;
+        return r.rows.map(r => {
+            const expenseCategoryName = r.expenseCategoryName || r.expenseCategoryId;
+            return {
+                ...r,
+                expenseCategoryName,
+                category: expenseCategoryName,
+            }
+        });
+    })
+}
+
 export async function getHouseInfo(): Promise<IHouseInfo[]> {
     return sqlGet({
         fields: ['houseID','address','city','zip', 'ownerName'],

@@ -1,5 +1,6 @@
 
 import '../styles/sb-admin-2.css'
+import '../styles/gg-editable-dropdown.css'
 import '../styles/global.css'
 //import '../public/fontawesome-free/css/all.css'
 
