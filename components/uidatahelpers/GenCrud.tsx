@@ -72,9 +72,7 @@ export const GenCrud = (props: IGenGrudProps) => {
     });
     const [showFilter, setShowFilter] = useState(false);
     const [enableAllCustFilters, setEnableAllCustFilters] = useState(false);
-    const [filterVals, setFilterVals] = useState<IPageFilter[]>([]);
-
-    const [tags, setTags] = useState<string[]>([]);
+    const [filterVals, setFilterVals] = useState<IPageFilter[]>([]);    
 
     const [deleteConfirm, setDeleteConfirm] = useState<{
         showDeleteConfirmation: boolean;
@@ -94,7 +92,10 @@ export const GenCrud = (props: IGenGrudProps) => {
     const [customFiltersEnabled, setCustomFiltersEnabled] = useState<{
         [tableName: string]: {
             [field: string]: boolean;
-    }}>({});
+        }
+    }>({});
+    
+    const [workingOnFilterIndex, setWorkingOnFilterIndex] = useState(-1);
     const { pageProps, setPageProps } = pageState;
     const mainCtx = usePageRelatedContext();
     useEffect(() => {
@@ -275,8 +276,37 @@ export const GenCrud = (props: IGenGrudProps) => {
                                     return `${tag.field} ${tag.op} ${tag.val}`;
                                 }}
                                 onTagAdded={t => {
-                                setTags([...tags, t]);
-                            }}
+                                    if (workingOnFilterIndex < 0) {
+                                        if (!pageProps.pagePropsTableInfo[table]) {
+                                            pageProps.pagePropsTableInfo[table] = {
+                                                filters: [],
+                                                sorts: [],
+                                            };
+                                        }
+                                        pageProps.pagePropsTableInfo[table].filters.push({
+                                            id: v1(),
+                                            field: t,
+                                            op: '' as SQLOPS,
+                                            val: '',
+                                            table,
+                                        });
+                                        setWorkingOnFilterIndex(pageProps.pagePropsTableInfo[table].filters.length - 1);
+                                        forceUpdatePageProps();
+                                        return;
+                                    }
+                                    const lastFilter = pageProps.pagePropsTableInfo[table].filters[workingOnFilterIndex];
+                                    if (!lastFilter.op) {
+                                        lastFilter.op = t as SQLOPS;
+                                        forceUpdatePageProps();
+                                        return;
+                                    }
+                                    if (!lastFilter.val) {
+                                        lastFilter.val = t;
+                                        setWorkingOnFilterIndex(-1);
+                                        forceUpdatePageProps();
+                                        return;
+                                    }
+                                }}
                                 onTagRemoved={t => {
                                     pageProps.pagePropsTableInfo[table].filters = pageProps.pagePropsTableInfo[table].filters.filter(f => f.id !== t.id);
                                     forceUpdatePageProps();

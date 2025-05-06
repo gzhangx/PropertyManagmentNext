@@ -41,6 +41,7 @@ export function TagsInput<T>(props: ITagProps<T>) {
                       // If the trimmed value is not an empty string
                       if (tagContent !== '') {
                           props.onTagAdded(tagContent); // Call the onTagAdded function passed as a prop
+                          (event.target as HTMLInputElement).value = '';
                       }
                   }
               }}
