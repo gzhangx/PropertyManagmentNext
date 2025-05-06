@@ -239,19 +239,19 @@ function HouseWithRenterAndLeaseInfo(props: {
     //value = { formatAccounting(h.leaseInfo?.totalBalance) ?? 'Loading'    
     const iconClassName = `fas fa-calendar fa-2x text-gray-300 fa - calendar`
     const mainClsName = `card shadow h-100 py-2 border-left-primary`;
-    const textClsName = `text-xs font-weight-bold text-uppercase mb-1 text-primary`;
+    const textClsName = ` text-xs font-weight-bold text-uppercase mb-1 text-primary`;
     const h = props.house;
 
     const valueClsName = h.leaseInfo?.totalBalance > 0 ? 'text-danger' : '';
 
     function showLeaseDate(date: string, who: string) {
         if (!date) return `Unknown ${who}Date`;
-        const str = moment(date).format('YYYY-MM-DD');
+        const str = moment(date).format('MM/DD/YYYY');
         if (who === 'Start') {
             return str;
         }
         if (moment().isAfter(moment(str).subtract(2, 'months'))) {
-            return <div style={ {color:'red'}}>{str}</div>;
+            return <span style={ {color:'red'}}>{str}</span>;
         }
         return str;
     }
@@ -263,17 +263,27 @@ function HouseWithRenterAndLeaseInfo(props: {
         <div className={mainClsName}>
             <div className="card-body">
                 <div className="row no-gutters align-items-center">
-                    <div className="col mr-2">
-                        <div className={textClsName}>{h.address}</div>
+                  
+                    
+                     <div className="col mr-2">
+                         <div className={' font-weight-bold text-uppercase mb-1 text-primary fas fa-home'}>{h.address}</div> 
                         <div className={"h5 mb-0 font-weight-bold  " + (valueClsName || 'text-gray-800')}>{formatAccounting(h.leaseInfo?.totalBalance) ?? 'Loading'}</div>
-                    </div>
-                    <div className="col-auto">
-                        <i className='fas fa-home'>{showLeaseDate(h.lease?.startDate, 'Start')}{ '->'}{showLeaseDate(h.lease?.endDate, 'End')}</i>
-                    </div>
+                     
+                     </div>
+                    
+                     
+
                 </div>
                 <div className="row no-gutters align-items-center">
-                    <div className='col mr-2'>{ h.tenants? h.tenants.map(t=>t.email).join(','):''}</div>                    
-                </div>                
+                <div className=" col row-auto">
+                      Lease Term: <i>{showLeaseDate(h.lease?.startDate, 'Start')}{ ' --  '}{showLeaseDate(h.lease?.endDate, 'End')}</i>
+                     </div>
+
+                </div>
+                <div className="row no-gutters align-items-center">
+                    <div className='col mr-2'>{ h.tenants? h.tenants.map(t=>(<>{t.email}  {t.phone}</>)).map(e=>(<>{e}<br></br></>)):''}</div>                    
+                </div>              
+
             </div>
         </div>
     </div>
