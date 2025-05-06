@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { TagsInput } from "../generic/TagsInput";
 import { IPageFilter, IPageState, SQLOPS, TableNames } from "../types";
-import { getOriginalFilters } from "./defs/util";
+import { getOriginalFilters, getPageFilterSorterErrors } from "./defs/util";
 
 import * as uuid from 'uuid';
 
@@ -15,30 +15,25 @@ export function CrudFilter(props: ICrudTagFilterProps) {
     const [workingOnFilterIndex, setWorkingOnFilterIndex] = useState(-1);
     const { table, pageState, forceUpdatePageProps } = props;
     const { pageProps } = pageState;
-    return <TagsInput tags={getOriginalFilters(props.pageState, props.table)}
+    const pageFilterSortErrors = getPageFilterSorterErrors(pageState, table);
+    return <TagsInput tags={pageFilterSortErrors.filters}
         displayTags={tag => {
             return `${tag.field} ${tag.op} ${tag.val}`;
         }}
         onTagAdded={t => {
-            if (workingOnFilterIndex < 0) {
-                if (!pageProps.pagePropsTableInfo[table]) {
-                    pageProps.pagePropsTableInfo[table] = {
-                        filters: [],
-                        sorts: [],
-                    };
-                }
-                pageProps.pagePropsTableInfo[table].filters.push({
+            if (workingOnFilterIndex < 0) {                
+                pageFilterSortErrors.filters.push({
                     id: uuid.v1(),
                     field: t,
                     op: '' as SQLOPS,
                     val: '',
                     table,
                 });
-                setWorkingOnFilterIndex(pageProps.pagePropsTableInfo[table].filters.length - 1);
+                setWorkingOnFilterIndex(pageFilterSortErrors.filters.length - 1);
                 forceUpdatePageProps();
                 return;
             }
-            const lastFilter = pageProps.pagePropsTableInfo[table].filters[workingOnFilterIndex];
+            const lastFilter = pageFilterSortErrors.filters[workingOnFilterIndex];
             if (!lastFilter.op) {
                 lastFilter.op = t as SQLOPS;
                 forceUpdatePageProps();
@@ -52,7 +47,7 @@ export function CrudFilter(props: ICrudTagFilterProps) {
             }
         }}
         onTagRemoved={t => {
-            pageProps.pagePropsTableInfo[table].filters = pageProps.pagePropsTableInfo[table].filters.filter(f => f.id !== t.id);
+            pageFilterSortErrors.filters = pageFilterSortErrors.filters.filter(f => f.id !== t.id);
             forceUpdatePageProps();
         }}
     ></TagsInput>

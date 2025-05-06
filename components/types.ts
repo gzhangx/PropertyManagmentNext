@@ -37,12 +37,16 @@ export interface IPageFilter {
     val: string;
 };
 
+
+export interface IPageFilterSortErrors {
+    sorts: ISqlOrderDef[];
+    filters: IPageFilter[];
+    filterErrors: { [id: string]: string; };
+}
+
 export interface IPagePropsByTable {
     pagePropsTableInfo: {
-        [tableName: string]: {
-            sorts: ISqlOrderDef[];
-            filters: IPageFilter[];
-        };
+        [tableName: string]: IPageFilterSortErrors;
     };
     reloadCount: number;
 };
