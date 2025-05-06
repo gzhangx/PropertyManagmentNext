@@ -73,19 +73,12 @@ tr:nth-child(even) {
   }
 
 
-  .trBold{
-  font-weight: bold;
-  }
-  .trGrandTotal{
-    border-top-style:double;
-    border-top-width: 20px;
-    font-weight: bold;
-
-  }
-  .tdDoubleTop{
+   .tdDoubleTop{
     border-top-style:double;
     border-top-width: 20px; 
     font-weight: bolder;
+    border-color: rgb(221, 39, 39);
+    
 
   }
   
