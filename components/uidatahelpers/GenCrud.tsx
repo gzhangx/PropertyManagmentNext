@@ -9,6 +9,8 @@ import { ICrudAddCustomObj, ITableAndSheetMappingInfo, ItemTypeDict } from './da
 import { usePageRelatedContext } from '../states/PageRelatedState';
 import moment from 'moment';
 import { BaseDialog } from '../generic/basedialog';
+import { TagsInput } from '../generic/TagsInput';
+import { getOriginalFilters } from './defs/util';
 
 
 
@@ -23,7 +25,7 @@ export function getPageFilters(pageState: IPageState, table: string): IPageFilte
     const { pageProps,
         //setPageProps
     } = pageState;
-    return get(pageProps, [table, 'filters'], []);
+    return get(pageProps.pagePropsTableInfo, [table, 'filters'], []);
 }
 
 
@@ -71,6 +73,8 @@ export const GenCrud = (props: IGenGrudProps) => {
     const [showFilter, setShowFilter] = useState(false);
     const [enableAllCustFilters, setEnableAllCustFilters] = useState(false);
     const [filterVals, setFilterVals] = useState<IPageFilter[]>([]);
+
+    const [tags, setTags] = useState<string[]>([]);
 
     const [deleteConfirm, setDeleteConfirm] = useState<{
         showDeleteConfirmation: boolean;
@@ -266,6 +270,18 @@ export const GenCrud = (props: IGenGrudProps) => {
                                 e.preventDefault();
                                 setEnableAllCustFilters(!enableAllCustFilters);
                             }}>{showFilter ? 'Hide All Filter' : 'All Filter'}</a>
+                            <TagsInput tags={getOriginalFilters(pageState, table)}
+                                displayTags={tag => {
+                                    return `${tag.field} ${tag.op} ${tag.val}`;
+                                }}
+                                onTagAdded={t => {
+                                setTags([...tags, t]);
+                            }}
+                                onTagRemoved={t => {
+                                    pageProps.pagePropsTableInfo[table].filters = pageProps.pagePropsTableInfo[table].filters.filter(f => f.id !== t.id);
+                                    forceUpdatePageProps();
+                                }}
+                            ></TagsInput>
                         {
                             showFilter && <table>
                                 {
