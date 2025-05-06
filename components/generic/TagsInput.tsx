@@ -1,4 +1,4 @@
-import { useRef } from "react";
+import { useRef, useState } from "react";
 
 
 export interface ITagProps<T> {
@@ -9,6 +9,7 @@ export interface ITagProps<T> {
 }
 export function TagsInput<T>(props: ITagProps<T>) {
     const tagsUl = useRef<HTMLUListElement>(null);
+    const [curInputText, setCurInputText] = useState('');
   return (
       <div className="tags-input">
           <ul ref={tagsUl}>
@@ -28,6 +29,10 @@ export function TagsInput<T>(props: ITagProps<T>) {
           </ul>
           <input type="text" 
               placeholder="Enter tag name"
+              value={curInputText}
+              onChange={e => {
+                  setCurInputText(e.target.value);
+              }}
               onKeyDown={function (event) { 
                   // Check if the key pressed is 'Enter'
                   if (event.key === 'Enter') {
@@ -41,7 +46,8 @@ export function TagsInput<T>(props: ITagProps<T>) {
                       // If the trimmed value is not an empty string
                       if (tagContent !== '') {
                           props.onTagAdded(tagContent); // Call the onTagAdded function passed as a prop
-                          (event.target as HTMLInputElement).value = '';
+                          //(event.target as HTMLInputElement).value = '';
+                          setCurInputText('');
                       }
                   }
               }}
