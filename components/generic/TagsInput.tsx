@@ -6,6 +6,9 @@ export interface ITagProps<T> {
     displayTags?: (tag: T) => string;
     onTagAdded: (tag: string) => void;
     onTagRemoved: (tag: T) => void;
+
+    custHandleKeyDown?: (event: React.KeyboardEvent<HTMLInputElement>) => boolean;
+    custAfterUIElement?: React.JSX.Element;
 }
 export function TagsInput<T>(props: ITagProps<T>) {
     const tagsUl = useRef<HTMLUListElement>(null);
@@ -34,6 +37,7 @@ export function TagsInput<T>(props: ITagProps<T>) {
                   setCurInputText(e.target.value);
               }}
               onKeyDown={function (event) { 
+                  if (props.custHandleKeyDown) if (props.custHandleKeyDown(event)) return;
                   // Check if the key pressed is 'Enter'
                   if (event.key === 'Enter') {
 
@@ -52,6 +56,7 @@ export function TagsInput<T>(props: ITagProps<T>) {
                   }
               }}
           />
+          { props.custAfterUIElement }
       </div>
   );
 }
