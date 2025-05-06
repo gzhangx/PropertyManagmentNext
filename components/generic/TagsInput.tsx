@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { Dispatch, SetStateAction, useRef, useState } from "react";
 
 
 export interface ITagProps<T> {
@@ -7,7 +7,8 @@ export interface ITagProps<T> {
     onTagAdded: (tag: string) => void;
     onTagRemoved: (tag: T) => void;
 
-    custHandleKeyDown?: (event: React.KeyboardEvent<HTMLInputElement>) => boolean;
+    custHandleKeyDown?: (event: React.KeyboardEvent<HTMLInputElement>, setCurInputText: Dispatch<SetStateAction<string>>) => boolean;
+    custHandleClick?: (event: React.MouseEvent<HTMLInputElement>) => void;
     custAfterUIElement?: React.JSX.Element;
 }
 export function TagsInput<T>(props: ITagProps<T>) {
@@ -36,8 +37,9 @@ export function TagsInput<T>(props: ITagProps<T>) {
               onChange={e => {
                   setCurInputText(e.target.value);
               }}
+              onClick={props.custHandleClick ? props.custHandleClick : () => { }}
               onKeyDown={function (event) { 
-                  if (props.custHandleKeyDown) if (props.custHandleKeyDown(event)) return;
+                  if (props.custHandleKeyDown) if (props.custHandleKeyDown(event, setCurInputText)) return;
                   // Check if the key pressed is 'Enter'
                   if (event.key === 'Enter') {
 

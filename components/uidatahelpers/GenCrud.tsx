@@ -273,6 +273,7 @@ export const GenCrud = (props: IGenGrudProps) => {
                                 setEnableAllCustFilters(!enableAllCustFilters);
                             }}>{showFilter ? 'Hide All Filter' : 'All Filter'}</a>
                             <CrudFilter pageState={pageState} table={table}
+                                columnInfo={columnInfo}
                                 forceUpdatePageProps={ forceUpdatePageProps}                                
                             ></CrudFilter>
                         {
