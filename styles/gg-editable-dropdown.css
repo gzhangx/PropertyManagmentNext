@@ -49,6 +49,8 @@
 
     text-align: left;
     font-weight: normal;
+
+    display: block;
 }
 
 .gg-editable-dropdown-list li {

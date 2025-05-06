@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { TagsInput } from "../generic/TagsInput";
 import { IDBFieldDef, IPageFilter, IPageState, SQLOPS, TableNames } from "../types";
 import { getOriginalFilters, getPageFilterSorterErrors } from "./defs/util";
@@ -18,6 +18,16 @@ export function CrudFilter(props: ICrudTagFilterProps) {
     const { pageProps } = pageState;
     const pageFilterSortErrors = getPageFilterSorterErrors(pageState, table);
     
+
+    //edit drop props
+    const [isOpen, setIsOpen] = useState(false);    
+    const [highlightedIndex, setHighlightedIndex] = useState(-1);
+    const [showAllOptions, setShowAllOptions] = useState(false);
+
+    const [curInputText, setCurInputText] = useState('');
+
+    const listRef = useRef(null);
+
     const onTagAdded = t => {
         if (workingOnFilterIndex < 0) {
             pageFilterSortErrors.filters.push({
@@ -44,6 +54,60 @@ export function CrudFilter(props: ICrudTagFilterProps) {
             return;
         }
     };
+
+    function getCurSelState(): ('fields' | 'op' | 'val') {
+        if (workingOnFilterIndex < 0) return 'fields';
+        const lastFilter = pageFilterSortErrors.filters[workingOnFilterIndex];
+        if (!lastFilter || !lastFilter.field) return 'fields';
+        if (!lastFilter.op) return 'op';
+        return 'val';
+    }
+    function getCurSelection() {
+        switch (getCurSelState()) {
+            case 'fields':
+                return props.columnInfo ? props.columnInfo.map(c => c.field) : [];
+            case 'op':
+                return ['=', '!=', '<', '<=', '>', '>=', 'like'];
+            case 'val':
+                return null;
+        }
+    }
+
+    const handleSelect = (option: string) => {
+        setCurInputText(option);
+            setIsOpen(false);
+            setHighlightedIndex(-1);
+            setShowAllOptions(false);
+            //props.onSelectionChanged(option);
+        };
+    const filteredOptions = getCurSelection();
+    const custAfterUIElement = 
+        isOpen && filteredOptions && (
+            <ul ref={listRef} className="gg-editable-dropdown-list">
+                {filteredOptions.length > 0 ? (
+                    filteredOptions.map((option, index) => {
+                        let label = '';
+                        let value = '';
+                        if (typeof option === 'string') {
+                            label = value = option;
+                        }
+                        return (
+                            <li
+                                key={value}
+                                onClick={() => handleSelect(option)}
+                                className={`${index === highlightedIndex ? 'highlighted' : ''
+                                    }`}
+                            >
+                                {label}
+                            </li>
+                        )
+                    })
+                ) : (
+                    <li className="no-options">No options found</li>
+                )}
+            </ul>
+        )    
+
     return <TagsInput tags={pageFilterSortErrors.filters}
         displayTags={tag => {
             return `${tag.field} ${tag.op} ${tag.val}`;
@@ -53,7 +117,7 @@ export function CrudFilter(props: ICrudTagFilterProps) {
             pageFilterSortErrors.filters = pageFilterSortErrors.filters.filter(f => f.id !== t.id);
             forceUpdatePageProps();
         }}
-        custHandleKeyDown={(event, setCurInputText) => {
+        custHandleKeyDown={(event) => {
             if (event.key === 'Enter') {                
                 event.preventDefault();                
                 const tagContent = (event.target as HTMLInputElement).value.trim();
@@ -65,5 +129,12 @@ export function CrudFilter(props: ICrudTagFilterProps) {
             }
             return true;
         }}
+        custHandleClick={e => {
+            setIsOpen(true);
+            setShowAllOptions(true);
+        }}
+        curInputText={curInputText}
+        setCurInputText={setCurInputText}
+        custAfterUIElement={custAfterUIElement}
     ></TagsInput>
 }
