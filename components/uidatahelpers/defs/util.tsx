@@ -51,8 +51,9 @@ function stdOnChange(pageState: IPageState, colInfo: IDBFieldDef, table: TableNa
     const { pageProps } = pageState;
     const pfse = getPageFilterSorterErrors(pageState, table);
     const origFilters: IPageFilter[] = pfse.filters;
-    if (valObj) {
+    if (valObj) {        
         valObj.val = val;
+        valObj.valDescUIOnly = val;
         if (!val) {            
             origFilters.splice(origFilters.indexOf(valObj), 1);
             //set(pageProps.pagePropsTableInfo, [table, 'filters'], origFilters);
