@@ -1,11 +1,10 @@
 import { useEffect, useRef, useState } from "react";
 import { TagsInput } from "../generic/TagsInput";
 import { IDBFieldDef, IPageFilter, IPageState, SQLOPS, TableNames } from "../types";
-import { getOriginalFilters, getPageFilterSorterErrors } from "./defs/util";
+import { getPageFilterSorterErrors } from "./defs/util";
 
 import * as uuid from 'uuid';
 import { usePageRelatedContext } from "../states/PageRelatedState";
-import { IEditTextDropdownItem } from "../generic/GenericDropdown";
 
 export interface ICrudTagFilterProps {
     pageState: IPageState;
@@ -116,9 +115,10 @@ export function CrudFilter(props: ICrudTagFilterProps) {
                 } 
                 if (workingOnFilter.field === 'workerID') {
                     const allWkrs = mainCtx.getAllForeignKeyLookupItems('workerInfo');
+                    console.log(allWkrs,'debugremove allworkers')
                     const items = allWkrs.map(h => {
                         return {
-                            label: h.fullName as string || '',
+                            label: h.workerName as string || '',
                             value: h.workerID as string,
 
                         }
@@ -133,6 +133,7 @@ export function CrudFilter(props: ICrudTagFilterProps) {
     if (curSelState === 'val') {
         switch (workingOnFilter.field) {
             case 'houseID':
+            case 'workerID':
                 filterValIsSelection = true;
                 break;
             default:
