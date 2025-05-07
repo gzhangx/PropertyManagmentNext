@@ -4,6 +4,8 @@ import { IDBFieldDef, IPageFilter, IPageState, SQLOPS, TableNames } from "../typ
 import { getOriginalFilters, getPageFilterSorterErrors } from "./defs/util";
 
 import * as uuid from 'uuid';
+import { usePageRelatedContext } from "../states/PageRelatedState";
+import { IEditTextDropdownItem } from "../generic/GenericDropdown";
 
 export interface ICrudTagFilterProps {
     pageState: IPageState;
@@ -29,6 +31,7 @@ export function CrudFilter(props: ICrudTagFilterProps) {
             valDescUIOnly: '',
         }
     }
+    const mainCtx = usePageRelatedContext();
     const [workingOnFilter, setWorkingOnFilter] = useState<IPageFilter>(getEmptyFilter());
     const { table, pageState, forceUpdatePageProps } = props;
     const { pageProps } = pageState;
@@ -57,20 +60,21 @@ export function CrudFilter(props: ICrudTagFilterProps) {
             return () => document.removeEventListener('click', handleClickOutside);
     }, []);
     
-    const onTagAdded = t => {
+    const onTagAdded = (t:EditItem) => {
         if (!workingOnFilter.id) {
             workingOnFilter.id = uuid.v1();
-            workingOnFilter.field = t;
+            workingOnFilter.field = t.value;
             setWorkingOnFilter({ ...workingOnFilter });
             return;
         }
         if (!workingOnFilter.op) {
-            workingOnFilter.op = t as SQLOPS;
+            workingOnFilter.op = t.value as SQLOPS;
             setWorkingOnFilter({ ...workingOnFilter });
             return;
         }
         if (!workingOnFilter.val) {
-            workingOnFilter.val = t;
+            workingOnFilter.val = t.value;
+            workingOnFilter.valDescUIOnly = t.label;
             pageFilterSortErrors.filters.push(workingOnFilter);
             setWorkingOnFilter(getEmptyFilter());
             forceUpdatePageProps();
@@ -99,8 +103,41 @@ export function CrudFilter(props: ICrudTagFilterProps) {
                     }
                 });
             case 'val':
+                if (workingOnFilter.field === 'houseID') {
+                    const allHouses = mainCtx.getAllForeignKeyLookupItems('houseInfo');
+                    const items = allHouses.map(h => {
+                        return {
+                            label: h.address as string,
+                            value: h.houseID as string,
+                        
+                        }
+                    });
+                    return items;
+                } 
+                if (workingOnFilter.field === 'workerID') {
+                    const allWkrs = mainCtx.getAllForeignKeyLookupItems('workerInfo');
+                    const items = allWkrs.map(h => {
+                        return {
+                            label: h.fullName as string || '',
+                            value: h.workerID as string,
+
+                        }
+                    });
+                    return items;
+                }
                 return [];
         }
+    }
+    let canShowFilterSel = true;
+    let filterValIsSelection = false;
+    if (curSelState === 'val') {
+        switch (workingOnFilter.field) {
+            case 'houseID':
+                filterValIsSelection = true;
+                break;
+            default:
+                canShowFilterSel = false;
+        }        
     }
 
     const handleSelect = (option: EditItem) => {
@@ -109,7 +146,7 @@ export function CrudFilter(props: ICrudTagFilterProps) {
         setHighlightedIndex(-1);
         setShowAllOptions(false);
         //props.onSelectionChanged(option);
-        onTagAdded(option.value);
+        onTagAdded(option);
         setCurInputText('');
         inputRef.current.focus();
     };
@@ -262,12 +299,16 @@ export function CrudFilter(props: ICrudTagFilterProps) {
                         handleKeyDown(event);
                         return;
                     }
-                    if (event.key === 'Enter') {
+                if (event.key === 'Enter') {
+                    if (filterValIsSelection) return;
                         event.preventDefault();
                         const tagContent = (event.target as HTMLInputElement).value.trim();
 
                         if (tagContent !== '') {
-                            onTagAdded(tagContent);
+                            onTagAdded({
+                                label: tagContent,
+                                value: tagContent,
+                            });
                             setCurInputText('');
                         }
                     }
@@ -276,7 +317,7 @@ export function CrudFilter(props: ICrudTagFilterProps) {
             }
             />
             {
-            isOpen && filteredOptions && (
+                canShowFilterSel && isOpen && filteredOptions && (
                 <ul ref={listRef} className="gg-editable-dropdown-list">
                     {filteredOptions.length > 0 ? (
                         filteredOptions.map((option, index) => {
@@ -313,7 +354,7 @@ export function CrudFilter(props: ICrudTagFilterProps) {
             displayTags={tag => {
                 return `${tag.field} ${tag.op} ${tag.valDescUIOnly || tag.val}`;
             }}
-            onTagAdded={onTagAdded}
+            onTagAdded={()=>{}}
             onTagRemoved={t => {
                 pageFilterSortErrors.filters = pageFilterSortErrors.filters.filter(f => f.id !== t.id);
                 forceUpdatePageProps();
