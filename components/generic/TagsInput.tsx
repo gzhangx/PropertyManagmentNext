@@ -6,20 +6,12 @@ export interface ITagProps<T> {
     displayTags?: (tag: T) => string;
     onTagAdded: (tag: string) => void;
     onTagRemoved: (tag: T) => void;
-
-    custHandleKeyDown?: (event: React.KeyboardEvent<HTMLInputElement>) => boolean;
-    custHandleClick?: (event: React.MouseEvent<HTMLInputElement>) => void;
-    custAfterUIElement?: React.JSX.Element;
-
-    //pass in if we need to control those
-    setCurInputText?: Dispatch<SetStateAction<string>>
-    curInputText?: string;
+    
+    custInputUIElement?: React.JSX.Element;    
 }
 export function TagsInput<T>(props: ITagProps<T>) {
     const tagsUl = useRef<HTMLUListElement>(null);
-    const [curInputTextLocal, setCurInputTextLocal] = useState('');
-    const curInputText = props.curInputText ?? curInputTextLocal;
-    const setCurInputText = props.setCurInputText ?? setCurInputTextLocal;
+    const [curInputText, setCurInputText] = useState('');    
   return (
       <div className="tags-input">
           <ul ref={tagsUl}>
@@ -37,15 +29,13 @@ export function TagsInput<T>(props: ITagProps<T>) {
                   })
               }
           </ul>
-          <input type="text" 
+          { props.custInputUIElement ?? <input type="text"
               placeholder="Enter tag name"
               value={curInputText}
               onChange={e => {
                   setCurInputText(e.target.value);
               }}
-              onClick={props.custHandleClick ? props.custHandleClick : () => { }}
-              onKeyDown={function (event) { 
-                  if (props.custHandleKeyDown) if (props.custHandleKeyDown(event)) return;
+              onKeyDown={function (event) {
                   // Check if the key pressed is 'Enter'
                   if (event.key === 'Enter') {
 
@@ -64,7 +54,7 @@ export function TagsInput<T>(props: ITagProps<T>) {
                   }
               }}
           />
-          { props.custAfterUIElement }
+          }
       </div>
   );
 }
