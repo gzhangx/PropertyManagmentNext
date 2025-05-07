@@ -12,6 +12,7 @@ import { BaseDialog } from '../generic/basedialog';
 import { TagsInput } from '../generic/TagsInput';
 import { getOriginalFilters } from './defs/util';
 import { CrudFilter } from './CrudFilter';
+import { standardGenListColumnFormatter } from '../utils/reportUtils';
 
 
 
@@ -153,7 +154,11 @@ export const GenCrud = (props: IGenGrudProps) => {
         if (typeof col === 'string') {
             val = baseColumnMap[col] || displayFields[col] || { desc: `****Col ${col} not setup` } as IDBFieldDef;
             acc[col] = val;
-        } else {            
+        } else {
+            const basCol = baseColumnMap[col.field];
+            if (col.displayType) {
+                basCol.displayType = col.displayType;
+            }
             acc[col.field] = val;
         }
         
@@ -448,14 +453,8 @@ export const GenCrud = (props: IGenGrudProps) => {
                                                             }
                                                         }
                                                     }
-                                                    if (props.customDisplayFunc) {
-                                                        if (def) {
-                                                            dsp = props.customDisplayFunc(dsp, def);
-                                                        } else {
-                                                            console.log('Cant find field def for ', fn, dsp);
-                                                        }
-                                                    }
-                                                    return <td key={find}>{dsp}</td>
+                                                    
+                                                    return <td key={find}>{standardGenListColumnFormatter(dsp, def)}</td>
                                                 })
                                             }
                                             <td>

@@ -34,20 +34,6 @@ export const paymentInfoDef: ITableAndSheetMappingInfo = {
     },
 
     title: 'RentPaymentt Records',
-    //this class is defined by components/page/inputs/rentpaymentInfo.tsx
-    customDisplayFunc: (value, fieldDef) => {
-        if (fieldDef.field === 'receivedDate') {
-            let str = moment(value).format('YYYY-MM-DD HH:mm:ss');
-            while (str.endsWith(':00')) {
-                str = str.substring(0, str.length - 3);
-            }
-            if (str.endsWith(' 00')) {
-                str = str.substring(0, str.length - 3);
-            }
-            return str;
-        }
-        return value;
-    },
     customAddNewDefaults: async (mainCtx, columnInfo, editItem) => {
         await mainCtx.loadForeignKeyLookup('leaseInfo');
         await mainCtx.loadForeignKeyLookup('tenantInfo');
@@ -143,8 +129,8 @@ export const paymentInfoDef: ITableAndSheetMappingInfo = {
     },
     displayFields:
         [
-            { field: 'receivedDate', 'desc': 'ReceivedDate', type: 'date' },
-            { field: 'receivedAmount', 'desc': 'Amount', type: 'decimal' },
+            { field: 'receivedDate', 'desc': 'ReceivedDate', type: 'date', displayType: 'date' },
+            { field: 'receivedAmount', 'desc': 'Amount', type: 'decimal', displayType: 'currency' },
             { field: 'houseID', 'desc': 'Address' },
             { field: 'paymentTypeName', 'desc': 'type', type: 'string' },
             { field: 'notes', 'desc': 'Notes', type: 'string' },
