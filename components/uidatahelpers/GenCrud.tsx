@@ -177,10 +177,10 @@ export const GenCrud = (props: IGenGrudProps) => {
             if (!newCustomFiltersEnabled[table]) {
                 newCustomFiltersEnabled[table] = {};
             }
-            newCustomFiltersEnabled[table][name] = !enableAllCustFilters;
+            newCustomFiltersEnabled[table][name] = enableAllCustFilters;
             setCustomFiltersEnabled(newCustomFiltersEnabled);
         })
-    }, [enableAllCustFilters]);
+    }, [enableAllCustFilters?'true':'false']);
 
     const idCols = columnInfo.filter(c => c.isId);
 
