@@ -82,3 +82,25 @@ tr:nth-child(even) {
 
   }
   
+
+
+  .gengrid-header-text-block {
+    display: flex;
+    vertical-align: center;
+    gap: 4px;
+  }
+
+  .gengrid-header-text-block a {
+    text-decoration: none;
+    color: #a19b9b
+  }
+
+  .gengrid-header-text-block a:hover {
+    color: #007bff;
+  }
+
+  .gengrid-header-text-block-func-container-hor {
+    display: flex;
+    
+    gap: 0px; /* smallest possible */
+  }

@@ -205,9 +205,9 @@ export const GenCrud = (props: IGenGrudProps) => {
         setPageProps({ ...pageProps,  reloadCount: (pageProps.reloadCount || 0) + 1 });
     }
     const getFieldSort = (field:string) => {
-        const opToDesc = {
-            'asc': 'AS',
-            'desc': 'DS',
+        const opToIcon = {
+            'asc': 'fas fa-chevron-up',
+            'desc': 'fas fa-chevron-down',
         };
         const opToNext = {
             'asc': 'desc',
@@ -218,17 +218,17 @@ export const GenCrud = (props: IGenGrudProps) => {
         const fieldSorts = getPageSorts(pageState, table) || []; //get(pageProps, [table, 'sorts'], []);
         const fieldSortFound = fieldSorts.filter(s => s.name === field)[0];
         const fieldSort = fieldSortFound || ({} as ISqlOrderDef);
-        const getShortDesc = (op:string) => opToDesc[op] || 'NS';
-        const shortDesc = getShortDesc(fieldSort.op);
+        const getIconDesc = (op:string) => opToIcon[op] || 'fas fa-minus';
+        const shortIcon = getIconDesc(fieldSort.op);
         const onSortClick = e => {
             e.preventDefault();
             const sort = fieldSortFound || ({
                 name: field,
-                shortDesc,
+                //shortDesc,
             }) as ISqlOrderDef;
 
             sort.op = opToNext[fieldSort.op || ''] as SortOps;
-            sort.shortDesc = getShortDesc(sort.op);
+            sort.shortDesc = getIconDesc(sort.op);
             if (!fieldSortFound) {
                 fieldSorts.push(sort);                
                 set(pageProps.pagePropsTableInfo, [table, 'sorts'], fieldSorts.filter(s => s.op));
@@ -237,7 +237,7 @@ export const GenCrud = (props: IGenGrudProps) => {
             //setPageProps(Object.assign({}, pageProps, { reloadCount: (pageProps.reloadCount || 0) + 1 }));
             forceUpdatePageProps();
         }
-        return <a href='' onClick={onSortClick}>{shortDesc}</a>;
+        return <a href='' onClick={onSortClick} style={{marginLeft:'2px'}}><i className={shortIcon}></i></a>;
     };
     const filterClick = e => {
         e.preventDefault();
@@ -389,20 +389,28 @@ export const GenCrud = (props: IGenGrudProps) => {
                             <tr>
                                 {
                                     displayFieldsStripped.map((name, ind) => {
-                                        return <th key={ind}>
-                                            <div>{columnMap[name] ? columnMap[name].desc : `****Column ${JSON.stringify(name)} not mapped`}</div>
-                                            <div>{getFieldSort(name)}
-                                                {
-                                                    props.customHeaderFilterFunc && <><a style={{ marginLeft: '3px' }} onClick={e => {
-                                                        e.preventDefault();
-                                                        const newCustomFiltersEnabled = { ...customFiltersEnabled };
-                                                        if (!newCustomFiltersEnabled[table]) {
-                                                            newCustomFiltersEnabled[table] = {};
+                                        return <th key={ind}>                                            
+                                            <div>
+                                                <div className='gengrid-header-text-block'>
+                                                    {columnMap[name] ? columnMap[name].desc : `****Column ${JSON.stringify(name)} not mapped`}
+                                                    
+                                                        {getFieldSort(name)}
+                                                        {
+                                                            props.customHeaderFilterFunc && <><a style={{ marginLeft: '0px' }} onClick={e => {
+                                                                e.preventDefault();
+                                                                const newCustomFiltersEnabled = { ...customFiltersEnabled };
+                                                                if (!newCustomFiltersEnabled[table]) {
+                                                                    newCustomFiltersEnabled[table] = {};
+                                                                }
+                                                                newCustomFiltersEnabled[table][name] = !newCustomFiltersEnabled[table][name];
+                                                                setCustomFiltersEnabled(newCustomFiltersEnabled);
+                                                            }}>{
+                                                                    //CustFilter
+                                                                    <i className='fas fa-gear' role='button'></i>
+                                                                }</a></>
                                                         }
-                                                        newCustomFiltersEnabled[table][name] = !newCustomFiltersEnabled[table][name];
-                                                        setCustomFiltersEnabled(newCustomFiltersEnabled);
-                                                    }}>CustFilter</a></>
-                                                }
+                                                    
+                                                </div>                                                                                                
                                             </div>
                                             
                                             {
