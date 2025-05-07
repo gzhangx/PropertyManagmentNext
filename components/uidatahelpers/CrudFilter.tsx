@@ -48,6 +48,10 @@ export function CrudFilter(props: ICrudTagFilterProps) {
 
     useEffect(() => {
         const handleClickOutside = (event: MouseEvent) => {
+            const isTargetInDOM = document.body.contains(event.target as Node);
+            if (!isTargetInDOM) {
+                return;
+            }
             let clickInsideText = false;
             if (inputRef.current && inputRef.current.contains(event.target)) {
                 clickInsideText = true;                
