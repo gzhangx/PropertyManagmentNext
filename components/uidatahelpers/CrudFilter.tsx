@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { TagsInput } from "../generic/TagsInput";
 import { IDBFieldDef, IPageFilter, IPageState, SQLOPS, TableNames } from "../types";
 import { getOriginalFilters, getPageFilterSorterErrors } from "./defs/util";
@@ -39,9 +39,22 @@ export function CrudFilter(props: ICrudTagFilterProps) {
     const [showAllOptions, setShowAllOptions] = useState(false);
 
     const [curInputText, setCurInputText] = useState('');
-
+    const containerRef = useRef(null);
+    const inputRef = useRef(null);
     const listRef = useRef(null);
 
+    useEffect(() => {
+            const handleClickOutside = (event: MouseEvent) => {
+                if (containerRef.current && !containerRef.current.contains(event.target)) {
+                    setIsOpen(false);
+                    setHighlightedIndex(-1);
+                    setShowAllOptions(false);
+                }
+            };
+            document.addEventListener('click', handleClickOutside);
+            return () => document.removeEventListener('click', handleClickOutside);
+    }, []);
+    
     const onTagAdded = t => {
         if (!workingOnFilter.id) {
             workingOnFilter.id = uuid.v1();
@@ -96,6 +109,7 @@ export function CrudFilter(props: ICrudTagFilterProps) {
         //props.onSelectionChanged(option);
         onTagAdded(option.value);
         setCurInputText('');
+        inputRef.current.focus();
     };
     const options = getCurSelection();
     const filteredOptions = showAllOptions
@@ -127,7 +141,11 @@ export function CrudFilter(props: ICrudTagFilterProps) {
         } else if (e.key === 'Enter' && highlightedIndex >= 0) {
             e.preventDefault();
             handleSelect(filteredOptions[highlightedIndex]);
-        } else if (e.key === 'Escape') {
+        } else if (e.key === 'Enter' && filteredOptions.length > 0) {
+            e.preventDefault();
+            handleSelect(filteredOptions[0]);
+        }
+        else if (e.key === 'Escape') {
             setIsOpen(false);
             setHighlightedIndex(-1);
             setShowAllOptions(false);
@@ -158,7 +176,7 @@ export function CrudFilter(props: ICrudTagFilterProps) {
             font-size: 0.875rem;
     }`}
         </style>
-        <div style={{
+        <div ref={containerRef} style={{
             display: 'flex',
             alignItems: 'center',
             gap: '10px',
@@ -218,7 +236,8 @@ export function CrudFilter(props: ICrudTagFilterProps) {
                     </>
                 }
                 </div>
-        <input type="text"
+            <input type="text"
+                ref={inputRef}
                 placeholder="Enter tag name1"
                 style={{
                     padding: '8px',
