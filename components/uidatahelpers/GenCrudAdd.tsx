@@ -147,38 +147,38 @@ export const GenCrudAdd = (props: IGenGrudAddProps) => {
     // }, [table, columnInfo]);
 
     useEffect(() => {
-        mainCtx.checkLoadForeignKeyForTable(table);        
+        mainCtx.checkLoadForeignKeyForTable(table);
     }, [JSON.stringify(editItem)])
-    const [columnInfoMaps, setColumnInfoMaps] = useState<{
-        [name: string]: {
-            columnInfo: IDBFieldDef[];
-            helper: IHelper;
-        }
-    }>({});
-    const loadColumnInfo = async (colInf: IDBFieldDef[]) => {
-        const hasFks = colInf.filter(c => c.foreignKey).filter(c => c.foreignKey.table);
-        await bluebird.Promise.map(hasFks, async fk => {
-            const tbl = fk.foreignKey.table;
-            const helper = await createAndLoadHelper(rootCtx, mainCtx, {
-                ...props,
-                table: tbl,
-            });
-            await helper.loadModel();
-            const columnInfo = helper.getModelFields().map(x => x as IDBFieldDef);
-            setColumnInfoMaps(prev => {
-                return {
-                    ...prev,
-                    [tbl]: {
-                        helper,
-                        columnInfo,
-                    }
-                };
-            });
-        })
-    }
-    useEffect(() => {
-        loadColumnInfo(columnInfo);
-    }, [columnInfo]);
+    // const [columnInfoMaps, setColumnInfoMaps] = useState<{
+    //     [name: string]: {
+    //         columnInfo: IDBFieldDef[];
+    //         helper: IHelper;
+    //     }
+    // }>({});
+    // const loadColumnInfo = async (colInf: IDBFieldDef[]) => {
+    //     const hasFks = colInf.filter(c => c.foreignKey).filter(c => c.foreignKey.table);
+    //     await bluebird.Promise.map(hasFks, async fk => {
+    //         const tbl = fk.foreignKey.table;
+    //         const helper = await createAndLoadHelper(rootCtx, mainCtx, {
+    //             ...props,
+    //             table: tbl,
+    //         });
+    //         await helper.loadModel();
+    //         const columnInfo = helper.getModelFields().map(x => x as IDBFieldDef);
+    //         setColumnInfoMaps(prev => {
+    //             return {
+    //                 ...prev,
+    //                 [tbl]: {
+    //                     helper,
+    //                     columnInfo,
+    //                 }
+    //             };
+    //         });
+    //     })
+    // }
+    // useEffect(() => {
+    //     loadColumnInfo(columnInfo);
+    // }, [columnInfo]);
     const checkErrorInd = c => {
         if (requiredFieldsMap[c.field] && !editItem[c.field])
             return "alert-danger";
