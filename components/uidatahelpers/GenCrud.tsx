@@ -156,8 +156,10 @@ export const GenCrud = (props: IGenGrudProps) => {
             acc[col] = val;
         } else {
             const basCol = baseColumnMap[col.field];
-            if (col.displayType) {
-                basCol.displayType = col.displayType;
+            if (basCol) {
+                if (col.displayType) {
+                    basCol.displayType = col.displayType;
+                }
             }
             acc[col.field] = val;
         }
