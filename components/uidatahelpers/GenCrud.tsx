@@ -432,7 +432,11 @@ export const GenCrud = (props: IGenGrudProps) => {
                                                             if (desc) {
                                                                 dsp = desc;
                                                             } else {
-                                                                dsp = 'NOTMAPPED_' + val;
+                                                                if (val) {
+                                                                    dsp = 'NOTMAPPED_' + val;
+                                                                } else {
+                                                                    dsp = '';
+                                                                }
                                                             }
                                                         }
                                                     }
