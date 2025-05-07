@@ -54,9 +54,13 @@ export function GenList(props: ITableAndSheetMappingInfo) {
             rowCount: paggingInfo.PageSize,
             offset: paggingInfo.pos*paggingInfo.PageSize,
         }).then(res => {
-            const {rows, total} = res;
-            setPaggingInfo({ ...paggingInfo, total, })
-            
+            const { rows, total } = res;
+            if (rows.length === 0 && total && paggingInfo.pos > 0) {
+                //this is some other table's page
+                setPaggingInfo({ ...paggingInfo, total, pos: 0})
+            } else {
+                setPaggingInfo({ ...paggingInfo, total, })
+            }
             setMainData(rows);
             setLoading(false);
         });
