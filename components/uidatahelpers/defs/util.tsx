@@ -47,7 +47,7 @@ function isValid(val: string, colInfo: IDBFieldDef): boolean {
     return true;
 }
 
-function stdOnChange(pageState: IPageState, colInfo: IDBFieldDef, table: TableNames, val: string, id, valObj: IPageFilter, op: SQLOPS) {
+function stdOnChange(pageState: IPageState, colInfo: IDBFieldDef, table: TableNames, val: string, id: string, valObj: IPageFilter, op: SQLOPS) {
     const { pageProps } = pageState;
     const pfse = getPageFilterSorterErrors(pageState, table);
     const origFilters: IPageFilter[] = pfse.filters;
@@ -58,7 +58,7 @@ function stdOnChange(pageState: IPageState, colInfo: IDBFieldDef, table: TableNa
             //set(pageProps.pagePropsTableInfo, [table, 'filters'], origFilters);
         }        
     } else {        
-        origFilters.push({ id, field: colInfo.field, val, op, table });
+        origFilters.push({ id, field: colInfo.field, val, op, table, valDescUIOnly: val });
         //set(pageProps.pagePropsTableInfo, [table, 'filters'], origFilters);
     }
 
@@ -165,6 +165,7 @@ export function customHeaderFilterFuncWithHouseIDLookup(mainCtx: IPageRelatedSta
                             field: 'houseID',
                             op: '=',
                             val: item.value,
+                            valDescUIOnly: item.label,
                         }
                     ];
                     if (!item.value) {
@@ -174,7 +175,8 @@ export function customHeaderFilterFuncWithHouseIDLookup(mainCtx: IPageRelatedSta
                     const origFilters: IPageFilter[] = pfse.filters;
                     //const origFilters: IPageFilter[] = get(pageProps.pagePropsTableInfo, [table, 'filters']) || [];
                     const newFilters = origFilters.filter(f => f.id !== id).concat(newFil);
-                    set(pageProps.pagePropsTableInfo, [table, 'filters'], newFilters);
+                    pfse.filters = newFilters;
+                    //set(pageProps.pagePropsTableInfo, [table, 'filters'], newFilters);
                     forceUpdateFilterVals();
                 }}
             ></GrkEditableDropdown>

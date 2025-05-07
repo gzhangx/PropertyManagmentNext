@@ -25,6 +25,8 @@ export function CrudFilter(props: ICrudTagFilterProps) {
             op: '' as SQLOPS,
             val: '',
             table: props.table,
+
+            valDescUIOnly: '',
         }
     }
     const [workingOnFilter, setWorkingOnFilter] = useState<IPageFilter>(getEmptyFilter());
@@ -309,7 +311,7 @@ export function CrudFilter(props: ICrudTagFilterProps) {
         
         <TagsInput tags={pageFilterSortErrors.filters}
             displayTags={tag => {
-                return `${tag.field} ${tag.op} ${tag.val}`;
+                return `${tag.field} ${tag.op} ${tag.valDescUIOnly || tag.val}`;
             }}
             onTagAdded={onTagAdded}
             onTagRemoved={t => {

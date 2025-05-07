@@ -327,10 +327,10 @@ export const GenCrud = (props: IGenGrudProps) => {
                                     e => {
                                         e.preventDefault();
                                         const newFilterVals = [...filterVals,
-                                        { id: v1(), table, op: defaultFilter.value as SQLOPS, val: '', field: '' }
+                                        { id: v1(), table, op: defaultFilter.value as SQLOPS, val: '', field: '', valDescUIOnly: '' }
                                         ];
                                         setFilterVals(newFilterVals);
-                                        set(pageProps, [table, 'filters'], newFilterVals);
+                                        set(pageProps.pagePropsTableInfo, [table, 'filters'], newFilterVals);
                                         //setPageProps({ ...pageProps });
                                         forceUpdatePageProps();
                                     }

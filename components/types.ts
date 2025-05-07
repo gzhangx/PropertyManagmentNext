@@ -35,6 +35,8 @@ export interface IPageFilter {
     field: string;
     op: SQLOPS;
     val: string;
+
+    valDescUIOnly: string;
 };
 
 
