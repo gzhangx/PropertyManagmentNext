@@ -12,6 +12,11 @@ export interface ICrudTagFilterProps {
     forceUpdatePageProps: () => void;
 }
 
+
+interface EditItem {
+    label: string;
+    value: string;
+}
 export function CrudFilter(props: ICrudTagFilterProps) {
     const [workingOnFilterIndex, setWorkingOnFilterIndex] = useState(-1);
     const { table, pageState, forceUpdatePageProps } = props;
@@ -62,40 +67,52 @@ export function CrudFilter(props: ICrudTagFilterProps) {
         if (!lastFilter.op) return 'op';
         return 'val';
     }
+    const curSelState = getCurSelState();
     function getCurSelection() {
         switch (getCurSelState()) {
             case 'fields':
-                return props.columnInfo ? props.columnInfo.map(c => c.field) : [];
+                return props.columnInfo ? props.columnInfo.map(c => {
+                    return { label: c.field, value: c.field };
+                }) : [];
             case 'op':
-                return ['=', '!=', '<', '<=', '>', '>=', 'like'];
+                return ['=', '!=', '<', '<=', '>', '>=', 'like'].map(label => {
+                    return {
+                        label,
+                        value: label,
+                    }
+                });
             case 'val':
                 return null;
         }
     }
 
-    const handleSelect = (option: string) => {
-        setCurInputText(option);
+    const handleSelect = (option: EditItem) => {
+        setCurInputText(option.label);
             setIsOpen(false);
             setHighlightedIndex(-1);
             setShowAllOptions(false);
             //props.onSelectionChanged(option);
         };
-    const filteredOptions = getCurSelection();
+    const options = getCurSelection();
+    const filteredOptions = showAllOptions
+        ? options
+        : options.filter(option =>
+            option.label.toLowerCase().includes(curInputText.toLowerCase())
+        );
+    console.log(filteredOptions, 'filteredopts---->', curInputText)
     const custAfterUIElement = 
         isOpen && filteredOptions && (
             <ul ref={listRef} className="gg-editable-dropdown-list">
                 {filteredOptions.length > 0 ? (
                     filteredOptions.map((option, index) => {
-                        let label = '';
-                        let value = '';
-                        if (typeof option === 'string') {
-                            label = value = option;
-                        }
+                        const { label, value } = option;
+                        
                         return (
                             <li
-                                key={value}
+                                key={value}                                
+                                style={{display:'block'}}
                                 onClick={() => handleSelect(option)}
-                                className={`${index === highlightedIndex ? 'highlighted' : ''
+                                className={`${index === highlightedIndex ? 'gg-editable-dropdown-list-block highlighted' : ''
                                     }`}
                             >
                                 {label}
@@ -108,6 +125,40 @@ export function CrudFilter(props: ICrudTagFilterProps) {
             </ul>
         )    
 
+    
+    const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+        if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+            e.preventDefault();
+            setIsOpen(true);
+            const maxIndex = filteredOptions.length - 1;
+            let newIndex = highlightedIndex;
+
+            if (e.key === 'ArrowDown') {
+                newIndex = highlightedIndex < maxIndex ? highlightedIndex + 1 : 0;
+            } else if (e.key === 'ArrowUp') {
+                newIndex = highlightedIndex > 0 ? highlightedIndex - 1 : maxIndex;
+            }
+
+            setHighlightedIndex(newIndex);
+
+            // Scroll highlighted item into view
+            if (newIndex >= 0 && listRef.current) {
+                const highlightedItem = listRef.current.children[newIndex];
+                highlightedItem.scrollIntoView({ block: 'nearest' });
+            }
+        } else if (e.key === 'Enter' && highlightedIndex >= 0) {
+            e.preventDefault();
+            handleSelect(filteredOptions[highlightedIndex]);
+        } else if (e.key === 'Escape') {
+            setIsOpen(false);
+            setHighlightedIndex(-1);
+            setShowAllOptions(false);
+        } else {
+            setShowAllOptions(false);
+        }
+    };
+
+
     return <TagsInput tags={pageFilterSortErrors.filters}
         displayTags={tag => {
             return `${tag.field} ${tag.op} ${tag.val}`;
@@ -118,6 +169,10 @@ export function CrudFilter(props: ICrudTagFilterProps) {
             forceUpdatePageProps();
         }}
         custHandleKeyDown={(event) => {
+            if (curSelState === 'fields' || curSelState === 'op') {
+                handleKeyDown(event);
+                return true;
+            }
             if (event.key === 'Enter') {                
                 event.preventDefault();                
                 const tagContent = (event.target as HTMLInputElement).value.trim();

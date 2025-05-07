@@ -48,9 +48,7 @@
     font-size: 0.8em;
 
     text-align: left;
-    font-weight: normal;
-
-    display: block;
+    font-weight: normal; 
 }
 
 .gg-editable-dropdown-list li {
