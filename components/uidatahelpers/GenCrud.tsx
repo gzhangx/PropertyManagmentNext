@@ -41,12 +41,7 @@ export interface IGenGrudProps extends ITableAndSheetMappingInfo {
     displayFields: IDBFieldDef[];
     rows: any[];
     pageState: IPageState;
-    paggingInfo: {
-        total: number;
-        PageSize: number;
-        lastPage: number;
-        pos: number;
-    };
+    paggingInfo: IPageInfo;
     setPaggingInfo: React.Dispatch<SetStateAction<IPageInfo>>;
     doAdd: (data: ItemType, id: FieldValueType) => Promise<{ id: string; }>;
     //onOK?: (data?: ItemType) => void;
