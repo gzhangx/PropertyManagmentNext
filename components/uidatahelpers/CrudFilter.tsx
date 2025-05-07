@@ -43,20 +43,28 @@ export function CrudFilter(props: ICrudTagFilterProps) {
     const [showAllOptions, setShowAllOptions] = useState(false);
 
     const [curInputText, setCurInputText] = useState('');
-    const containerRef = useRef(null);
     const inputRef = useRef(null);
     const listRef = useRef(null);
 
     useEffect(() => {
-            const handleClickOutside = (event: MouseEvent) => {
-                if (containerRef.current && !containerRef.current.contains(event.target)) {
-                    setIsOpen(false);
-                    setHighlightedIndex(-1);
-                    setShowAllOptions(false);
-                }
-            };
-            document.addEventListener('click', handleClickOutside);
-            return () => document.removeEventListener('click', handleClickOutside);
+        const handleClickOutside = (event: MouseEvent) => {
+            let clickInsideText = false;
+            if (inputRef.current && inputRef.current.contains(event.target)) {
+                clickInsideText = true;                
+            }
+            let clickInsideSelect = false;
+            if (listRef.current && listRef.current.contains(event.target)) {
+                clickInsideSelect = true;
+            }
+
+            if (!clickInsideText && !clickInsideSelect) {
+                setIsOpen(false);
+                setHighlightedIndex(-1);
+                setShowAllOptions(false);
+            }
+        };
+        document.addEventListener('click', handleClickOutside);
+        return () => document.removeEventListener('click', handleClickOutside);
     }, []);
     
     const onTagAdded = (t:EditItem) => {
@@ -115,7 +123,6 @@ export function CrudFilter(props: ICrudTagFilterProps) {
                 } 
                 if (workingOnFilter.field === 'workerID') {
                     const allWkrs = mainCtx.getAllForeignKeyLookupItems('workerInfo');
-                    console.log(allWkrs,'debugremove allworkers')
                     const items = allWkrs.map(h => {
                         return {
                             label: h.workerName as string || '',
@@ -142,14 +149,13 @@ export function CrudFilter(props: ICrudTagFilterProps) {
     }
 
     const handleSelect = (option: EditItem) => {
-        setCurInputText(option.label);
-        setIsOpen(false);
+        //setIsOpen(true);
         setHighlightedIndex(-1);
-        setShowAllOptions(false);
         //props.onSelectionChanged(option);
         onTagAdded(option);
         setCurInputText('');
         inputRef.current.focus();
+        //setShowAllOptions(true);
     };
     const options = getCurSelection();
     const filteredOptions = showAllOptions
@@ -194,6 +200,8 @@ export function CrudFilter(props: ICrudTagFilterProps) {
         }
     };
 
+    const showFilterSelect = canShowFilterSel && isOpen && filteredOptions;
+
     const custInputUIElement = <>
         <style jsx>{`
             .tag-input-wrapper {
@@ -216,11 +224,11 @@ export function CrudFilter(props: ICrudTagFilterProps) {
             font-size: 0.875rem;
     }`}
         </style>
-        <div ref={containerRef} style={{
+        <div style={{
             display: 'flex',
             alignItems: 'center',
-            gap: '10px',
-            padding: '20px',
+            gap: '2px',
+            padding: '2px',
             fontFamily: 'Arial, sans-serif'
         }}>
             <div style={{
@@ -317,9 +325,8 @@ export function CrudFilter(props: ICrudTagFilterProps) {
                 }
             }
             />
-            {
-                canShowFilterSel && isOpen && filteredOptions && (
-                <ul ref={listRef} className="gg-editable-dropdown-list">
+            
+            <ul ref={listRef} className="gg-editable-dropdown-list" style={{ display: showFilterSelect?'inline-block':'none'}}>
                     {filteredOptions.length > 0 ? (
                         filteredOptions.map((option, index) => {
                             const { label, value } = option;
@@ -339,14 +346,9 @@ export function CrudFilter(props: ICrudTagFilterProps) {
                     ) : (
                         <li className="no-options">No options found</li>
                     )}
-                </ul>
-            )
-            }
+                </ul>            
             </div>
         </>
-
-    
-
 
 
     return <>
