@@ -47,6 +47,8 @@ export function GenList(props: ITableAndSheetMappingInfo) {
                 }
             });            
         }
+
+        await secCtx.checkLoadForeignKeyForTable(table);   
         //helper will conver date back from utc to local
         await helper.loadData({
             whereArray,
