@@ -38,7 +38,7 @@ export function GenList(props: ITableAndSheetMappingInfo) {
         let whereArray = (getPageFilters(pageState, table) as any) as ISqlRequestWhereItem[];
         const order = getPageSorts(pageState, table);        
         const pfse = getPageFilterSorterErrors(pageState, table);
-        if (!order && props.sortFields) {                        
+        if ((!order || order.length === 0) && props.sortFields) {                        
             pfse.sorts = props.sortFields.map(f => {
                 return {
                     name: f,
