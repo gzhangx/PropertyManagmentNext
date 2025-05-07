@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { SetStateAction, useEffect, useState } from 'react';
 import { set, get } from 'lodash';
 import { v1 } from 'uuid';
 import { EditTextDropdown } from '../generic/EditTextDropdown';
@@ -29,6 +29,12 @@ export function getPageFilters(pageState: IPageState, table: string): IPageFilte
     return get(pageProps.pagePropsTableInfo, [table, 'filters'], []);
 }
 
+export interface IPageInfo {
+    PageSize: number;
+    pos: number;
+    total: number;
+    lastPage: number;
+}
 
 export interface IGenGrudProps extends ITableAndSheetMappingInfo {
     columnInfo: IDBFieldDef[];
@@ -41,7 +47,7 @@ export interface IGenGrudProps extends ITableAndSheetMappingInfo {
         lastPage: number;
         pos: number;
     };
-    setPaggingInfo: any;
+    setPaggingInfo: React.Dispatch<SetStateAction<IPageInfo>>;
     doAdd: (data: ItemType, id: FieldValueType) => Promise<{ id: string; }>;
     //onOK?: (data?: ItemType) => void;
     //onCancel: (data?: ItemType) => void;

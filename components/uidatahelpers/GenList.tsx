@@ -7,6 +7,7 @@ import * as RootState from '../states/RootState'
 import { FieldValueType, IDBFieldDef, ISqlRequestWhereItem } from '../types';
 import { usePageRelatedContext } from '../states/PageRelatedState';
 import { ITableAndSheetMappingInfo, ItemTypeDict } from './datahelperTypes';
+import { getPageFilterSorterErrors } from './defs/util';
 
 
 //props: table and displayFields [fieldNames]
@@ -36,20 +37,15 @@ export function GenList(props: ITableAndSheetMappingInfo) {
     const reload = async () => {
         let whereArray = (getPageFilters(pageState, table) as any) as ISqlRequestWhereItem[];
         const order = getPageSorts(pageState, table);        
-        console.log('proosssss', props.displayFields, order, props.sortFields)
-        if (!order && props.sortFields) {            
-            console.log('proosssss', props.displayFields, order)
-            pageState.pageProps.pagePropsTableInfo[table] = {
-                filters: [],
-                sorts: props.sortFields.map(f => { 
-                    return {
-                        name: f,
-                        op: 'desc',
-                        shortDesc: 'DSC',
-                    }
-                })
-                                    ,
-            }
+        const pfse = getPageFilterSorterErrors(pageState, table);
+        if (!order && props.sortFields) {                        
+            pfse.sorts = props.sortFields.map(f => {
+                return {
+                    name: f,
+                    op: 'desc',
+                    shortDesc: 'DSC',
+                }
+            });            
         }
         //helper will conver date back from utc to local
         await helper.loadData({
