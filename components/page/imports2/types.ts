@@ -39,7 +39,7 @@ export interface IDbInserter {
 }
 
 
-export interface IPageInfo extends ITableAndSheetMappingInfo {    
+export interface IPageInfo extends ITableAndSheetMappingInfo<unknown> {    
     displayColumnInfo?: IDisplayColumnInfo[];
     dbLoader?: () => Promise<IDbSaveData[]>;
     //dbItemIdField?: ALLFieldNames;

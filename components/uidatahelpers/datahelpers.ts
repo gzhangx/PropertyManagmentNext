@@ -128,7 +128,7 @@ export function stdFormatValue(def: IDBFieldDef, v: string | number, fieldName?:
 }
 
 
-export function createHelper(rootCtx: RootState.IRootPageState, ctx: IPageRelatedState, props: ITableAndSheetMappingInfo): IHelper {
+export function createHelper(rootCtx: RootState.IRootPageState, ctx: IPageRelatedState, props: ITableAndSheetMappingInfo<unknown>): IHelper {
     const googleSheetId: string = ctx.googleSheetAuthInfo.googleSheetId;    
     //sheetMapping?: DataToDbSheetMapping
     const { table, sheetMapping } = props; 
@@ -476,14 +476,14 @@ function getTableNameToSheetMapping(sheetMapping?: DataToDbSheetMapping) {
     return sheetMapping;
 }
 
-export async function createAndLoadHelper(rootCtx: RootState.IRootPageState, ctx: IPageRelatedState, props: ITableAndSheetMappingInfo) {
+export async function createAndLoadHelper(rootCtx: RootState.IRootPageState, ctx: IPageRelatedState, props: ITableAndSheetMappingInfo<unknown>) {
     const helper = createHelper(rootCtx, ctx, props);
     await helper.loadModel();
     return helper;
 }
 
 
-export function getGenListParms(ctx: IPageRelatedState, table: TableNames): ITableAndSheetMappingInfo {
+export function getGenListParms(ctx: IPageRelatedState, table: TableNames): ITableAndSheetMappingInfo<unknown> {
     const def = tableNameToDefinitions.get(table);
     const allFields = ctx.modelsProp.models.get(table).fields;
     return {

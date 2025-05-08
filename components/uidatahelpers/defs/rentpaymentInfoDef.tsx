@@ -1,4 +1,3 @@
-import moment from "moment";
 import { CloseableDialog } from "../../generic/basedialog";
 import { IEditTextDropdownItem } from "../../generic/GenericDropdown";
 import { ILeaseInfo, ITenantInfo } from "../../reportTypes";
@@ -6,13 +5,18 @@ import { gatherLeaseInfomation, HouseWithLease } from "../../utils/leaseUtil";
 import { ICrudAddCustomObj, ITableAndSheetMappingInfo, ItemTypeDict } from "../datahelperTypes";
 import * as api from '../../api'
 import { formateEmail } from "../../utils/leaseEmailUtil";
-import { EditTextDropdown } from "../../generic/EditTextDropdown";
-import { get, orderBy, set } from "lodash";
-import { IPageFilter } from "../../types";
+import { orderBy } from "lodash";
 import { customHeaderFilterFuncWithHouseIDLookup, genericCustomHeaderFilterFunc } from "./util";
 
 const table = 'rentPaymentInfo';
-export const paymentInfoDef: ITableAndSheetMappingInfo = {
+
+export interface ICustEmailInfo {
+    html: string;
+    subject: string;
+    to: string[];
+    edit: boolean;
+}
+export const paymentInfoDef: ITableAndSheetMappingInfo<ICustEmailInfo> = {
     table,
     sheetMapping: {
         sheetName: 'PaymentRecord',
@@ -143,12 +147,13 @@ export const paymentInfoDef: ITableAndSheetMappingInfo = {
         const lasts = cols.filter(c => !orders.includes(c.field));
         return firsts.concat(lasts);
     },
-    customScreen: (cust: ICrudAddCustomObj, setCustomFieldMapping: React.Dispatch<React.SetStateAction<ICrudAddCustomObj>>) => {
+    customScreen: (cust: ICrudAddCustomObj<ICustEmailInfo>, setCustomFieldMapping: React.Dispatch<React.SetStateAction<ICrudAddCustomObj<ICustEmailInfo>>>) => {
         const emailPreviewDef = {
             html: 'testtest',
             subject: 'testsub',
             to: ['testot'],
             edit: false,
+            showRenterConfirmationScreen: false,
         };
         const emailPreview: {
             html: string;
@@ -167,7 +172,7 @@ export const paymentInfoDef: ITableAndSheetMappingInfo = {
                 }
             })
         };
-        return cust.paymentUIRelated?.showRenterConfirmationScreen && <CloseableDialog show={!!emailPreview.html}
+        return cust.paymentUIRelated_showRenterConfirmationScreen && <CloseableDialog show={!!emailPreview.html}
             rootDialogStyle={{
                 maxWidth: '1000px'
             }}
@@ -205,7 +210,7 @@ export const paymentInfoDef: ITableAndSheetMappingInfo = {
                                                 ...prev,
                                                 paymentUIRelated: {
                                                     ...(prev.paymentUIRelated || emailPreviewDef),
-                                                    to: e.target.value,
+                                                    to: [e.target.value],
                                                 }
                                             }
                                         })

@@ -37,7 +37,7 @@ export interface IPageInfo {
     lastPage: number;
 }
 
-export interface IGenGrudProps extends ITableAndSheetMappingInfo {
+export interface IGenGrudProps extends ITableAndSheetMappingInfo<unknown> {
     columnInfo: IDBFieldDef[];
     displayFields: IDBFieldDef[];
     rows: any[];
@@ -87,8 +87,9 @@ export const GenCrud = (props: IGenGrudProps) => {
         deleteRowData: {},
     });
     
-    const [crudAddCustomObjMap, setCrudAddCustomObjMap] = useState<ICrudAddCustomObj>({
+    const [crudAddCustomObjMap, setCrudAddCustomObjMap] = useState<ICrudAddCustomObj<unknown>>({
         leaseToTenantCustOptions: {},
+        paymentUIRelated_showRenterConfirmationScreen: false,
     });
     
 
@@ -508,7 +509,7 @@ export const GenCrud = (props: IGenGrudProps) => {
             }}></GenCrudAdd>            
             }
             {
-                props.customScreen && crudAddCustomObjMap.paymentUIRelated?.showRenterConfirmationScreen && props.customScreen(crudAddCustomObjMap, setCrudAddCustomObjMap)
+                props.customScreen && crudAddCustomObjMap.paymentUIRelated_showRenterConfirmationScreen && props.customScreen(crudAddCustomObjMap, setCrudAddCustomObjMap)
             }
         </div>
     )
