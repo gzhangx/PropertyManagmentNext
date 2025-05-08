@@ -35,6 +35,8 @@ export interface IPageInfo {
     pos: number;
     total: number;
     lastPage: number;
+
+    enableFullTextSearch: boolean;
 }
 
 export interface IGenGrudProps extends ITableAndSheetMappingInfo<unknown> {
