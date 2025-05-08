@@ -153,7 +153,6 @@ export const paymentInfoDef: ITableAndSheetMappingInfo<ICustEmailInfo> = {
             subject: 'testsub',
             to: ['testot'],
             edit: false,
-            showRenterConfirmationScreen: false,
         };
         const emailPreview: {
             html: string;
@@ -165,9 +164,9 @@ export const paymentInfoDef: ITableAndSheetMappingInfo<ICustEmailInfo> = {
             setCustomFieldMapping(prev => {
                 return {
                     ...prev,
+                    paymentUIRelated_showRenterConfirmationScreen: false,
                     paymentUIRelated: {
-                        ...(prev.paymentUIRelated || emailPreviewDef),
-                        showRenterConfirmationScreen: false,
+                        ...(prev.paymentUIRelated || emailPreviewDef),                        
                     }
                 }
             })
@@ -283,12 +282,12 @@ export const paymentInfoDef: ITableAndSheetMappingInfo<ICustEmailInfo> = {
             setCustomFieldMapping(prev => {
                 return {
                     ...prev,
+                    paymentUIRelated_showRenterConfirmationScreen: true,
                     paymentUIRelated: {
                         html: formatedData.body,
                         subject: formatedData.subject,
                         to: formatedData.mailtos,
-                        edit: false,
-                        showRenterConfirmationScreen: true,
+                        edit: false,                        
                     }
                 }
             })
