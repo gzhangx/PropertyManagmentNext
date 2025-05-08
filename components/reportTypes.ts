@@ -1,7 +1,7 @@
 import { AllDateTypes, FieldValueType, IDBFieldDef, IGetModelReturn, IPageState, ISqlDeleteResponse, ISqlOrderDef, ISqlRequestWhereItem, TableNames, TimeZoneType } from './types'
 import { IGoogleSheetAuthInfo } from './api';
 import { IEditTextDropdownItem } from './generic/GenericDropdown';
-import { ItemTypeDict } from './uidatahelpers/datahelperTypes';
+import { ItemType, ItemTypeDict } from './uidatahelpers/datahelperTypes';
 import { NotifyIconItem } from './page/tinyIconNotify';
 import { JSX } from 'react';
 
@@ -210,7 +210,7 @@ export type IHelper = {
         rows: any[];
     }>;
     saveData: (data: any, id: FieldValueType, saveToSheet: boolean, foreignKeyLookup: IForeignKeyLookupMap) => Promise<any>;
-    deleteData: (ids: string[], foreignKeyLookup: IForeignKeyLookupMap, data: ItemTypeDict) => Promise<ISqlDeleteResponse>;
+    deleteData: (ids: string[], foreignKeyLookup: IForeignKeyLookupMap, data: ItemType) => Promise<ISqlDeleteResponse>;
 }
 
 export type TableNameToHelper = Map<TableNames, IHelper>;

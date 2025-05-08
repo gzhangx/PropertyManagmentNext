@@ -12,8 +12,7 @@ import { IForeignKeyCombo, IForeignKeyLookupMap, IHelper, IHelperOpts, IPageRela
 
 import * as RootState from '../states/RootState'
 import { tableNameToDefinitions } from './defs/allDefs';
-import { ALLFieldNames, DataToDbSheetMapping, ITableAndSheetMappingInfo, ItemTypeDict } from './datahelperTypes';
-import { ItemType } from './GenCrudAdd';
+import { ALLFieldNames, DataToDbSheetMapping, ITableAndSheetMappingInfo, ItemType, ItemTypeDict } from './datahelperTypes';
 
 
 
@@ -200,7 +199,7 @@ export function createHelper(rootCtx: RootState.IRootPageState, ctx: IPageRelate
                 const mapFuns = getSheetMappingFuncs(accModelFields(), sheetMapping, foreignKeyLookup, newId, ctx);
                 
                 
-                const values = mapFuns.getSheetValuesFromData(data);
+                const values = mapFuns.getSheetValuesFromData(data.data);
                 console.log('debu8gremove _vdOriginalRecord', data._vdOriginalRecord);
                 //const originalValues = data._vdOriginalRecord ? mapFuns.getSheetValuesFromData(data._vdOriginalRecord): null;
 
@@ -307,10 +306,7 @@ export function createHelper(rootCtx: RootState.IRootPageState, ctx: IPageRelate
             const deleteRes = await sqlDelete(table, ids);
             if (sheetMapping) {
                 const mapFuns = getSheetMappingFuncs(accModelFields(), sheetMapping, foreignKeyLookup, '', ctx);
-                const foundRow = await mapFuns.findItemOnSheet({
-                    ...data,
-                    _vdOriginalRecord: data,
-                }, googleSheetId, ids[0]); //TODO: fix this
+                const foundRow = await mapFuns.findItemOnSheet(data, googleSheetId, ids[0]); //TODO: fix this
                 if (foundRow === 'NOT FOUND') {
                 } else {
                     await deleteSheetRow(googleSheetId, sheetMapping.sheetName, foundRow);

@@ -266,7 +266,7 @@ export const paymentInfoDef: ITableAndSheetMappingInfo<ICustEmailInfo> = {
     },
     customFooterButton(mainCtx, cust, setCustomFieldMapping, item) {
         const customFooterFunc = async () => {
-            const houseID = item.houseID as string;
+            const houseID = item.data.houseID as string;
             if (!houseID) return;
             const house: HouseWithLease = {
                 houseID,

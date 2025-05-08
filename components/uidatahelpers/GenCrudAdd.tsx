@@ -9,7 +9,7 @@ import { IEditTextDropdownItem } from '../generic/GenericDropdown';
 import { IGenGrudProps } from './GenCrud';
 import * as RootState from '../states/RootState'
 import moment from 'moment';
-import { ALLFieldNames, DataToDbSheetMapping, ICrudAddCustomObj, ItemTypeDict } from './datahelperTypes';
+import { ALLFieldNames, DataToDbSheetMapping, ICrudAddCustomObj, ItemType, ItemTypeDict } from './datahelperTypes';
 import { usePageRelatedContext } from '../states/PageRelatedState';
 import { IHelper } from '../reportTypes';
 import GrkEditableDropdown from '../generic/GrkEditableDropdown';
@@ -17,12 +17,12 @@ import GrkEditableDropdown from '../generic/GrkEditableDropdown';
 
 
 
-export type ItemType = ItemTypeDict & { _vdOriginalRecord: ItemTypeDict; }; //{ [key: string]: FieldValueType; };
+//export type ItemType = ItemTypeDict & { _vdOriginalRecord: ItemTypeDict; }; //{ [key: string]: FieldValueType; };
 export interface IGenGrudAddProps extends IGenGrudProps {
     columnInfo: IDBFieldDef[];
     editItem?: ItemType;
     setEditItem: React.Dispatch<React.SetStateAction<ItemType>>;
-    doAdd: (data: ItemType, id: FieldValueType) => Promise<{ id: string;}>;
+    doAdd: (data: ItemTypeDict, id: FieldValueType) => Promise<{ id: string;}>;
     //onOK?: (data?:ItemType) => void;
     onCancel: (data?:ItemType) => void;
     onError?: (err: { message: string; missed: any; }) => void;
@@ -84,22 +84,31 @@ export const GenCrudAdd = (props: IGenGrudAddProps) => {
     //const [optsData, setOptsData] = useState<{[keyName:string]:IEditTextDropdownItem[]}>({});
     const handleChange = e => {
         const { name, value } = e.target;
-        setEditItem({ ...editItem, [name]: value });
+        editItem.data[name] = value;
+        setEditItem({
+            ...editItem, 
+            data: {
+                ...editItem.data,
+            }
+         });
     }
 
     const handleSubmit = async e => {
         e.preventDefault();
 
         const data = editItem;
-        const missed = requiredFields.filter(r => !data[r]);
+        const missed = requiredFields.filter(r => !data.data[r]);
         if (missed.length === 0) {
-            const ret = await doAdd(data, id);
+            const ret = await doAdd(data.data, id);
             //handleChange(e, ret);          
             const fid = id || ret.id;
             onOK({
                 ...data,
-                [idName]: fid,
-                id: fid,
+                data: {
+                    ...data.data,
+                    [idName]: fid,
+                    id: fid,
+                }                
             });
         } else {
             if (onError) {
@@ -216,10 +225,10 @@ export const GenCrudAdd = (props: IGenGrudAddProps) => {
                             }
                         } else {
                             //modify
-                            if (c.isId) return <div className='row' key={cind}>{editItem[c.field] || '' }</div>
+                            if (c.isId) return <div className='row' key={cind}>{editItem.data[c.field] || '' }</div>
                         }
                         if (isColumnSecurityField(c)) {
-                            editItem[c.field] = '';
+                            editItem.data[c.field] = '';
                             return null;  
                         } 
 
@@ -227,7 +236,7 @@ export const GenCrudAdd = (props: IGenGrudAddProps) => {
                         const createSelection = (optName: TableNames, colField: string) => {                            
                             const fops = mainCtx.foreignKeyLoopkup.get(optName);
                             if (!fops) return null;
-                            const selOptions = fops.specialOptionGenerator ? fops.specialOptionGenerator(editItem) :  fops.rows.map(r => {
+                            const selOptions = fops.specialOptionGenerator ? fops.specialOptionGenerator(editItem.data) :  fops.rows.map(r => {
                                 return {
                                     label: r.desc,
                                     value: r.id,
@@ -249,7 +258,7 @@ export const GenCrudAdd = (props: IGenGrudAddProps) => {
                             if (props.operation === 'Add' && options.length > 0) {
                                 options[0].selected = true;
                             } else {
-                                const curSelection = options.filter(o => o.value === get(editItem, colField))[0];
+                                const curSelection = options.filter(o => o.value === get(editItem.data, colField))[0];
                                 if (curSelection) {
                                     curSelection.selected = true;
                                 }
@@ -262,7 +271,7 @@ export const GenCrudAdd = (props: IGenGrudAddProps) => {
                                             //if (s.value === 'AddNew') {
                                             //    setAddNewForField(colField);
                                             //} else
-                                            let newItem: ItemTypeDict = { ...editItem, [colField]: s.value };                                            
+                                            let newItem: ItemTypeDict = { ...editItem.data, [colField]: s.value };                                            
                                             if (props.customEditItemOnChange) {
                                                 newItem = await props.customEditItemOnChange(mainCtx, colField, setCrudAddCustomObjMap, newItem);
                                             }
@@ -298,7 +307,7 @@ export const GenCrudAdd = (props: IGenGrudAddProps) => {
                             <td className={checkErrorInd(c)} style={style}>
                                 {
                                     foreignSel || <input type="text" className="form-control bg-light border-0 small" placeholder={c.field}                
-                                        value={editItem[c.field]} name={c.field} onChange={handleChange} />
+                                        value={editItem.data[c.field]} name={c.field} onChange={handleChange} />
                                 }
                             </td>
                             <td className={checkErrorInd(c)}>{checkErrorInd(c) && '*'}</td>

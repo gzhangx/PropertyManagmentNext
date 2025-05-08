@@ -2,10 +2,10 @@ import React, { SetStateAction, useEffect, useState } from 'react';
 import { set, get } from 'lodash';
 import { v1 } from 'uuid';
 import { EditTextDropdown } from '../generic/EditTextDropdown';
-import { GenCrudAdd, ItemType } from './GenCrudAdd';
-import { ISqlOrderDef, SortOps, IPageFilter, IPageState, IDBFieldDef, TableNames, SQLOPS, FieldValueType } from '../types'
+import { GenCrudAdd } from './GenCrudAdd';
+import { ISqlOrderDef, SortOps, IPageFilter, IPageState, IDBFieldDef, TableNames, SQLOPS, FieldValueType,  } from '../types'
 //import { IFKDefs} from './GenCrudTableFkTrans'
-import { ICrudAddCustomObj, ITableAndSheetMappingInfo, ItemTypeDict } from './datahelperTypes';
+import { ICrudAddCustomObj, ITableAndSheetMappingInfo, ItemType, ItemTypeDict } from './datahelperTypes';
 import { usePageRelatedContext } from '../states/PageRelatedState';
 import moment from 'moment';
 import { BaseDialog } from '../generic/basedialog';
@@ -42,11 +42,11 @@ export interface IPageInfo {
 export interface IGenGrudProps extends ITableAndSheetMappingInfo<unknown> {
     columnInfo: IDBFieldDef[];
     displayFields: IDBFieldDef[];
-    rows: any[];
+    rows: ItemType[];
     pageState: IPageState;
     paggingInfo: IPageInfo;
     setPaggingInfo: React.Dispatch<SetStateAction<IPageInfo>>;
-    doAdd: (data: ItemType, id: FieldValueType) => Promise<{ id: string; }>;
+    doAdd: (data: ItemTypeDict, id: FieldValueType) => Promise<{ id: string; }>;
     //onOK?: (data?: ItemType) => void;
     //onCancel: (data?: ItemType) => void;
     //onError?: (err: { message: string; missed: any; }) => void;
@@ -55,7 +55,7 @@ export interface IGenGrudProps extends ITableAndSheetMappingInfo<unknown> {
     table: TableNames;
     //desc?: string;
     //fkDefs?: IFKDefs;
-    doDelete: (ids: string[], data: ItemTypeDict) => void;
+    doDelete: (ids: string[], data: ItemType) => void;
     idCol?: { field: string; }
     reload?: () => Promise<void>;    
     //customDisplayFunc?: (value: any, fieldDef: IDBFieldDef) => React.JSX.Element;
@@ -73,18 +73,24 @@ export const GenCrud = (props: IGenGrudProps) => {
 
     const [dspState, setDspState] = useState<'Add' | 'Update' | 'dsp'>('dsp');
     const [editItem, setEditItem] = useState<ItemType>({
+        data: {},
         _vdOriginalRecord: null,
+        searchInfo: [],
     });    
     //const [enableAllCustFilters, setEnableAllCustFilters] = useState(false);    
 
     const [deleteConfirm, setDeleteConfirm] = useState<{
         showDeleteConfirmation: boolean;
         deleteIds: string[];
-        deleteRowData: ItemTypeDict;
+        deleteRowData: ItemType;
     }>({
         showDeleteConfirmation: false,
         deleteIds: [],
-        deleteRowData: {},
+        deleteRowData: {
+            data: {},
+            _vdOriginalRecord: {},
+            searchInfo: [],
+        },
     });
     
     const [crudAddCustomObjMap, setCrudAddCustomObjMap] = useState<ICrudAddCustomObj<unknown>>({
@@ -299,7 +305,7 @@ export const GenCrud = (props: IGenGrudProps) => {
                                     <button type="button" className="btn btn-secondary" data-dismiss="modal" onClick={() => {
                                         setDeleteConfirm({
                                             deleteIds: [],
-                                            deleteRowData: {},
+                                            deleteRowData: {} as ItemType,
                                             showDeleteConfirmation: false
                                         });
                                         props.doDelete(deleteConfirm.deleteIds, deleteConfirm.deleteRowData);
@@ -307,7 +313,8 @@ export const GenCrud = (props: IGenGrudProps) => {
                                     <button type="button" className="btn btn-secondary" data-dismiss="modal" onClick={() => {
                                         setDeleteConfirm({
                                             deleteIds: [],
-                                            deleteRowData: {},
+                                            deleteRowData: {
+                                            } as ItemType,
                                             showDeleteConfirmation: false
                                         });                                        
                                     }}>Cancel</button>
@@ -361,7 +368,7 @@ export const GenCrud = (props: IGenGrudProps) => {
                                             {
                                                 displayFieldsStripped.map((fn, find) => {
                                                     const def = fkDefLookup[fn];                                                    
-                                                    const val = row[fn]
+                                                    const val = row.data[fn]
                                                     let dsp = val;
                                                     if (def && def.foreignKey && def.foreignKey.table) {
                                                         const fkk = mainCtx.foreignKeyLoopkup.get(def.foreignKey.table);
@@ -384,10 +391,7 @@ export const GenCrud = (props: IGenGrudProps) => {
                                             }
                                             <td>
                                                 {idCols.length && <button className="btn btn-primary outline-primary" type="button"  onClick={() => {
-                                                    setEditItem({
-                                                        ...row,
-                                                        _vdOriginalRecord: row,
-                                                    });
+                                                    setEditItem(row);
                                                     setDspState('Update');
                                                 }}>Edit</button>
                                                 }

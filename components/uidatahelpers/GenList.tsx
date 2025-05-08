@@ -1,12 +1,11 @@
 import React,{useState,useEffect} from 'react';
 import { GenCrud, getPageSorts, getPageFilters, IPageInfo } from './GenCrud';
-import { ItemType } from './GenCrudAdd';
 import { createHelper } from './datahelpers';
 
 import * as RootState from '../states/RootState'
 import { FieldValueType, IDBFieldDef, ISqlRequestWhereItem } from '../types';
 import { usePageRelatedContext } from '../states/PageRelatedState';
-import { ITableAndSheetMappingInfo, ItemTypeDict } from './datahelperTypes';
+import { ITableAndSheetMappingInfo, ItemType, ItemTypeDict } from './datahelperTypes';
 import { getPageFilterSorterErrors } from './defs/util';
 import { orderBy } from 'lodash';
 
@@ -29,8 +28,8 @@ export function GenList(props: ITableAndSheetMappingInfo<unknown>) {
     //     { field: 'tenantID', desc: 'Id', type: 'uuid', required: true, isId: true },
     //     { field: 'dadPhone', desc: 'Dad Phone', },
     // ];
-    const [mainDataRows, setMainData] = useState([]);
-    const [allDataRows, setAllData] = useState([]);
+    const [mainDataRows, setMainData] = useState<ItemType[]>([]);
+    const [allDataRows, setAllData] = useState<ItemType[]>([]);
     const [columnInf, setColumnInf] = useState<IDBFieldDef[]>([]);
 
     const [lastDataLoadWhereClaus, setLastDataLoadWhereClaus] = useState('');
@@ -88,13 +87,21 @@ export function GenList(props: ITableAndSheetMappingInfo<unknown>) {
                 } else {
                     setPaggingInfo({ ...paggingInfo, total, })
                 }
+                const rowsParsed: ItemType[] = rows.map(r => {
+                    const ret: ItemType = {
+                        data: r,
+                        _vdOriginalRecord: r,
+                        searchInfo: [],
+                    };
+                    return ret;
+                })
                 if (paggingInfo.enableFullTextSearch) {
-                    setAllData(rows);
-                    setMainData(rows.slice(offset, offset + paggingInfo.PageSize))
+                    setAllData(rowsParsed);
+                    setMainData(rowsParsed.slice(offset, offset + paggingInfo.PageSize))
                 } else {
-                    setMainData(rows);
+                    setMainData(rowsParsed);
                 }
-                return rows;
+                return rowsParsed;
                 //setLoading(false);
             });
         } else {
@@ -135,7 +142,7 @@ export function GenList(props: ITableAndSheetMappingInfo<unknown>) {
         ld();        
     }, [table || 'NA', pageState.pageProps.reloadCount, secCtx.googleSheetAuthInfo.googleSheetId, paggingInfo.pos]); //paggingInfo.pos, paggingInfo.total
 
-    const doAdd = (data: ItemType, id: FieldValueType) => {        
+    const doAdd = (data: ItemTypeDict, id: FieldValueType) => {        
         return helper.saveData(data,id, true, secCtx.foreignKeyLoopkup).then(res => {
             //setLoading(true);
             reload();
@@ -146,7 +153,7 @@ export function GenList(props: ITableAndSheetMappingInfo<unknown>) {
         });
     }
 
-    const doDelete=( ids: string[], data: ItemTypeDict ) => {
+    const doDelete=( ids: string[], data: ItemType ) => {
         //setLoading(true);
         helper.deleteData(ids, secCtx.foreignKeyLoopkup, data).then(() => {
             reload();

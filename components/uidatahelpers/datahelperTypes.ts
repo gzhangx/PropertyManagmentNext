@@ -48,13 +48,13 @@ export interface ITableAndSheetMappingInfo<T> {
     sortFields?: string[];
 
     //customDisplayFunc?: (value: any, fieldDef: IDBFieldDef) => React.JSX.Element; //function to display data in the list, if not provided, default is to use the field name
-    customAddNewDefaults?: (mainCtx: IPageRelatedState, columnInfo: IDBFieldDef[], editItem: ItemTypeDict) => Promise<void>;  //edit item is actuall ItemType
+    customAddNewDefaults?: (mainCtx: IPageRelatedState, columnInfo: IDBFieldDef[], editItem: ItemType) => Promise<void>;  //edit item is actuall ItemType
     customEditItemOnChange?: (mainCtx: IPageRelatedState, fieldName: string, setCustomFieldMapping: React.Dispatch<React.SetStateAction<ICrudAddCustomObj<T>>>, editItem: ItemTypeDict) => Promise<ItemTypeDict>;  //edit item is actuall ItemType
 
     orderColunmInfo?: (cols: IDBFieldDef[]) => IDBFieldDef[];
 
     customScreen?: (cust: ICrudAddCustomObj<T>, setCustomFieldMapping: React.Dispatch<React.SetStateAction<ICrudAddCustomObj<T>>>) => React.JSX.Element;
-    customFooterButton?: (mainCtx: IPageRelatedState, cust: ICrudAddCustomObj<T>, setCustomFieldMapping: React.Dispatch<React.SetStateAction<ICrudAddCustomObj<T>>>, editItem: ItemTypeDict) => {
+    customFooterButton?: (mainCtx: IPageRelatedState, cust: ICrudAddCustomObj<T>, setCustomFieldMapping: React.Dispatch<React.SetStateAction<ICrudAddCustomObj<T>>>, editItem: ItemType) => {
         customFooterFunc: () => Promise<void>;
         customFooterUI: React.JSX.Element;
     };
@@ -62,3 +62,9 @@ export interface ITableAndSheetMappingInfo<T> {
 }
 
 export type ItemTypeDict = { [p in ALLFieldNames]?: FieldValueType; };
+
+export interface ItemType {
+    data: ItemTypeDict;
+    _vdOriginalRecord: ItemTypeDict;
+    searchInfo: string[]; //used for full text search
+};
