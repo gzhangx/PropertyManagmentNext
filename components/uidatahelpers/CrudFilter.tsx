@@ -75,6 +75,12 @@ export function CrudFilter(props: ICrudTagFilterProps) {
         if (!workingOnFilter.id) {
             workingOnFilter.id = uuid.v1();
             workingOnFilter.field = t.value;
+            const field = props.columnInfo.find(c => c.field === t.value);
+            if (field.foreignKey) {
+                workingOnFilter.op = '=';
+            } else if (field.type === 'string') {
+                workingOnFilter.op = 'like';
+            }
             setWorkingOnFilter({ ...workingOnFilter });
             return;
         }
@@ -84,8 +90,12 @@ export function CrudFilter(props: ICrudTagFilterProps) {
             return;
         }
         if (!workingOnFilter.val) {
+            const field = props.columnInfo.find(c => c.field === workingOnFilter.field);            
             workingOnFilter.val = t.value;
             workingOnFilter.valDescUIOnly = t.label;
+            if (field.type === 'string') {
+                workingOnFilter.val = `%${t.value}%`;
+            }            
             pageFilterSortErrors.filters.push(workingOnFilter);
             setWorkingOnFilter(getEmptyFilter());
             forceUpdatePageProps();
@@ -107,7 +117,13 @@ export function CrudFilter(props: ICrudTagFilterProps) {
                     return { label: c.field, value: c.field };
                 }) : [];
             case 'op':
-                return ['=', '!=', '<', '<=', '>', '>=', 'like'].map(label => {
+                const originalList = ['=', '!=', '<', '<=', '>', '>=', 'like'];
+                const field = props.columnInfo.find(c => c.field === workingOnFilter.field);            
+                let listToUse = originalList;
+                if (field.type === 'decimal' || field.type === 'int') {
+                    listToUse = listToUse.filter(x => x !== 'like');
+                }                
+                return listToUse.map(label => {
                     return {
                         label,
                         value: label,

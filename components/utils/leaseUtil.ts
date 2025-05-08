@@ -143,7 +143,7 @@ export async function getLeaseUtilForHouse(houseID: string) {
                 info.accumulated = acc.totalPayments;
                 info.balance = round2(info.shouldAccumatled - info.accumulated);
                 acc.totalBalance = round2(info.shouldAccumatled - info.accumulated);
-                console.log(`lookuping up with ${pmt.receivedDate.substring(0, 7)} paid=${info.paid} accumulated=${info.accumulated} balance=${info.balance}`)
+                //console.log(`lookuping up with ${pmt.receivedDate.substring(0, 7)} paid=${info.paid} accumulated=${info.accumulated} balance=${info.balance}`)
             }
             return acc;
         }, {

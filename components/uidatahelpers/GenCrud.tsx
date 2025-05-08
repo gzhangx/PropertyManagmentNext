@@ -160,6 +160,7 @@ export const GenCrud = (props: IGenGrudProps) => {
                 if (col.displayType) {
                     basCol.displayType = col.displayType;
                 }
+                if (basCol.foreignKey) col.foreignKey = basCol.foreignKey;
             }
             acc[col.field] = val;
         }
