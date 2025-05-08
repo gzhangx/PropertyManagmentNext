@@ -11,7 +11,7 @@ import { getPageFilterSorterErrors } from './defs/util';
 
 
 //props: table and displayFields [fieldNames]
-export function GenList(props: ITableAndSheetMappingInfo) {
+export function GenList(props: ITableAndSheetMappingInfo<unknown>) {
     const { table, initialPageSize } = props;
     const secCtx = usePageRelatedContext();
     const rootCtx = RootState.useRootPageContext();

@@ -32,8 +32,8 @@ export interface IGenGrudAddProps extends IGenGrudProps {
     desc?: string;    
     sheetMapping?: DataToDbSheetMapping;
 
-    crudAddCustomObjMap: ICrudAddCustomObj;
-    setCrudAddCustomObjMap: React.Dispatch<React.SetStateAction<ICrudAddCustomObj>>;
+    crudAddCustomObjMap: ICrudAddCustomObj<unknown>;
+    setCrudAddCustomObjMap: React.Dispatch<React.SetStateAction<ICrudAddCustomObj<unknown>>>;
 }
 export const GenCrudAdd = (props: IGenGrudAddProps) => {
 
