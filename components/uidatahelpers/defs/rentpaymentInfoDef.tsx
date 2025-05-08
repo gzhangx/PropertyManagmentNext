@@ -33,7 +33,7 @@ export const paymentInfoDef: ITableAndSheetMappingInfo = {
         ],
     },
 
-    title: 'RentPaymentt Records',
+    title: 'Rent Payments Records',
     customAddNewDefaults: async (mainCtx, columnInfo, editItem) => {
         await mainCtx.loadForeignKeyLookup('leaseInfo');
         await mainCtx.loadForeignKeyLookup('tenantInfo');
@@ -129,9 +129,9 @@ export const paymentInfoDef: ITableAndSheetMappingInfo = {
     },
     displayFields:
         [
-            { field: 'receivedDate', 'desc': 'ReceivedDate', type: 'date', displayType: 'date' },
+            { field: 'receivedDate', 'desc': 'Received Date', type: 'date', displayType: 'date' },
             { field: 'receivedAmount', 'desc': 'Amount', type: 'decimal', displayType: 'currency' },
-            { field: 'houseID', 'desc': 'Address' },
+            { field: 'houseID', 'desc': 'House' },
             { field: 'paymentTypeName', 'desc': 'type', type: 'string' },
             { field: 'notes', 'desc': 'Notes', type: 'string' },
         ],
