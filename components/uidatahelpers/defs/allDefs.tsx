@@ -3,6 +3,7 @@ import { ITableAndSheetMappingInfo } from "../datahelperTypes";
 
 export const workerInfoDef: ITableAndSheetMappingInfo = {
     table: 'workerInfo',
+    title: 'Contractors/Workers List',
     sheetMapping: {
         sheetName: 'Workers Info',
         range: 'A1:K',
@@ -22,6 +23,7 @@ export const workerInfoDef: ITableAndSheetMappingInfo = {
 
 export const houseInfoDef: ITableAndSheetMappingInfo = {    
     table: 'houseInfo',
+    title: 'Houses List',
     sheetMapping: {
         sheetName: 'House Info',
         range: 'A1:I',
@@ -41,6 +43,7 @@ export const houseInfoDef: ITableAndSheetMappingInfo = {
 
 export const tenantInfoDef: ITableAndSheetMappingInfo = {
     table: 'tenantInfo',
+    title: 'Tenants List',
     sheetMapping: {
         sheetName: 'Tenants Info',
         range: 'A1:G',
