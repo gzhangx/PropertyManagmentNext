@@ -8,6 +8,7 @@ import { FieldValueType, IDBFieldDef, ISqlRequestWhereItem } from '../types';
 import { usePageRelatedContext } from '../states/PageRelatedState';
 import { ITableAndSheetMappingInfo, ItemTypeDict } from './datahelperTypes';
 import { getPageFilterSorterErrors } from './defs/util';
+import { orderBy } from 'lodash';
 
 
 //props: table and displayFields [fieldNames]
@@ -33,6 +34,7 @@ export function GenList(props: ITableAndSheetMappingInfo<unknown>) {
     const [columnInf, setColumnInf] = useState<IDBFieldDef[]>([]);
 
     const [lastDataLoadWhereClaus, setLastDataLoadWhereClaus] = useState('');
+    const [lastDataRowOrder, setLastDataRowOrder] = useState('');
 
     if (!secCtx.googleSheetAuthInfo.googleSheetId || secCtx.googleSheetAuthInfo.googleSheetId === 'NA') {
         secCtx.reloadGoogleSheetAuthInfo();
@@ -68,6 +70,7 @@ export function GenList(props: ITableAndSheetMappingInfo<unknown>) {
                 needReload = false;
             } else {
                 setLastDataLoadWhereClaus(newWhereClaus);
+                setLastDataRowOrder(JSON.stringify(order));
             }
         }
 
@@ -95,7 +98,20 @@ export function GenList(props: ITableAndSheetMappingInfo<unknown>) {
                 //setLoading(false);
             });
         } else {
-            setMainData(allDataRows.slice(offset, offset + paggingInfo.PageSize))
+            let orderedRows = allDataRows;
+            if (order && order.length) {
+                const dirOrder = order.filter(o => o.op);
+
+                const orderStr = JSON.stringify(dirOrder);
+                if (orderStr !== lastDataRowOrder) {
+                    setLastDataRowOrder(orderStr);
+                    orderedRows = orderBy(allDataRows, dirOrder.map(o => o.name), dirOrder.map(o => o.op) as 'asc'[]);                    
+                    setAllData(orderedRows);
+                }
+
+            }
+            const dspRows = orderedRows.slice(offset, offset + paggingInfo.PageSize);
+            setMainData(dspRows)
         }
     }
 
