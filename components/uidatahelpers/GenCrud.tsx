@@ -72,10 +72,8 @@ export const GenCrud = (props: IGenGrudProps) => {
     const [dspState, setDspState] = useState<'Add' | 'Update' | 'dsp'>('dsp');
     const [editItem, setEditItem] = useState<ItemType>({
         _vdOriginalRecord: null,
-    });
-    const [showFilter, setShowFilter] = useState(false);
-    const [enableAllCustFilters, setEnableAllCustFilters] = useState(false);
-    const [filterVals, setFilterVals] = useState<IPageFilter[]>([]);    
+    });    
+    //const [enableAllCustFilters, setEnableAllCustFilters] = useState(false);    
 
     const [deleteConfirm, setDeleteConfirm] = useState<{
         showDeleteConfirmation: boolean;
@@ -180,16 +178,16 @@ export const GenCrud = (props: IGenGrudProps) => {
         return f.field;
     });
 
-    useEffect(() => {
-        displayFieldsStripped.forEach((name) => {                                        
-            const newCustomFiltersEnabled = { ...customFiltersEnabled };
-            if (!newCustomFiltersEnabled[table]) {
-                newCustomFiltersEnabled[table] = {};
-            }
-            newCustomFiltersEnabled[table][name] = enableAllCustFilters;
-            setCustomFiltersEnabled(newCustomFiltersEnabled);
-        })
-    }, [enableAllCustFilters?'true':'false']);
+    // useEffect(() => {
+    //     displayFieldsStripped.forEach((name) => {                                        
+    //         const newCustomFiltersEnabled = { ...customFiltersEnabled };
+    //         if (!newCustomFiltersEnabled[table]) {
+    //             newCustomFiltersEnabled[table] = {};
+    //         }
+    //         newCustomFiltersEnabled[table][name] = enableAllCustFilters;
+    //         setCustomFiltersEnabled(newCustomFiltersEnabled);
+    //     })
+    // }, [enableAllCustFilters?'true':'false']);
 
     const idCols = columnInfo.filter(c => c.isId);
 
@@ -248,10 +246,7 @@ export const GenCrud = (props: IGenGrudProps) => {
         }
         return <a href='' onClick={onSortClick} style={{marginLeft:'2px'}}><i className={shortIcon}></i></a>;
     };
-    const filterClick = e => {
-        e.preventDefault();
-        setShowFilter(!showFilter);
-    }
+
 
     const filterOptions = ['=', '!=', '<', '<=', '>', '>='].map(value => ({ value, label: value, selected: false }));
     const defaultFilter = filterOptions.filter(x => x.value === '=')[0];
@@ -276,88 +271,12 @@ export const GenCrud = (props: IGenGrudProps) => {
                             {makePageButtons([paggingInfo.lastPage], '>>')}
                         </div>
                     }
-                    <div>
-                            <a href="" onClick={filterClick}>{showFilter ? 'Hide' : 'Filter'}</a>{' '}
-                            <a href="" onClick={(e) => {
-                                e.preventDefault();
-                                setEnableAllCustFilters(!enableAllCustFilters);
-                            }}>{showFilter ? 'Hide All Filter' : 'All Filter'}</a>
+                    <div>                            
+                            
                             <CrudFilter pageState={pageState} table={table}
                                 columnInfo={displayFields}
                                 forceUpdatePageProps={ forceUpdatePageProps}                                
                             ></CrudFilter>
-                        {
-                            showFilter && <table>
-                                {
-                                    filterVals.map((fv, ind) => {
-                                        return <tr key={ind}>
-                                            <td><EditTextDropdown items={displayFields.map(d => {
-                                                if (typeof d === 'string') return {
-                                                    value: d,
-                                                    label: d,
-                                                    selected: fv.field === d,
-                                                }
-                                                return {
-                                                    value: d.field,
-                                                    label: d.name,
-                                                    selected: fv.field === d.field,
-                                                }
-                                            })}                                                
-                                                
-                                                onSelectionChanged={val => {
-                                                    fv.field = val.value;
-                                                    setFilterVals(filterVals);
-                                                    forceUpdatePageProps();
-                                                }
-                                                }></EditTextDropdown></td>
-                                            <td><EditTextDropdown items={filterOptions}
-                                                onSelectionChanged={val => {
-                                                    fv.op = val.value;
-                                                    setFilterVals(filterVals);
-                                                    forceUpdatePageProps();
-                                                }
-                                                }></EditTextDropdown></td>
-                                            <td><input name={fv.field} onChange={v => {
-                                                fv.val = v.target.value;
-                                                setFilterVals(filterVals);
-                                                forceUpdatePageProps();
-                                            }}></input></td>
-                                            <td><a href="" onClick={e => {
-                                                e.preventDefault();
-                                                const newFilterVals = filterVals.filter(f => f.id !== fv.id);
-                                                setFilterVals(newFilterVals);
-                                                set(pageProps, [table, 'filters'], newFilterVals);
-                                                //setPageProps({ ...pageProps });
-                                                forceUpdatePageProps();
-                                            }}>Remove</a></td>
-                                        </tr>
-                                    })
-                                }
-                                <tr><td><a href="" onClick={
-                                    e => {
-                                        e.preventDefault();
-                                        const newFilterVals = [...filterVals,
-                                        { id: v1(), table, op: defaultFilter.value as SQLOPS, val: '', field: '', valDescUIOnly: '' }
-                                        ];
-                                        setFilterVals(newFilterVals);
-                                        set(pageProps.pagePropsTableInfo, [table, 'filters'], newFilterVals);
-                                        //setPageProps({ ...pageProps });
-                                        forceUpdatePageProps();
-                                    }
-                                } >Add</a></td>
-                                    <td><a href="" onClick={
-                                        e => {
-                                            e.preventDefault();
-                                            //console.log(filterVals);
-                                            set(pageProps, [table, 'filters'], filterVals);
-                                            //setPageProps({ ...pageProps });
-                                            forceUpdatePageProps();
-                                            //setPageProps(Object.assign({}, pageProps, { reloadCount: (pageProps.reloadCount || 0) + 1 }));
-                                        }
-                                    } >Submit</a></td>
-                                </tr>
-                            </table>
-                        }
                         </div>
                         
                         <BaseDialog show={deleteConfirm.showDeleteConfirmation}>
@@ -405,7 +324,7 @@ export const GenCrud = (props: IGenGrudProps) => {
                                                     
                                                         {getFieldSort(name)}
                                                         {
-                                                            props.customHeaderFilterFunc && <><a style={{ marginLeft: '0px' }} onClick={e => {
+                                                            false && props.customHeaderFilterFunc && <><a style={{ marginLeft: '0px' }} onClick={e => {
                                                                 e.preventDefault();
                                                                 const newCustomFiltersEnabled = { ...customFiltersEnabled };
                                                                 if (!newCustomFiltersEnabled[table]) {
