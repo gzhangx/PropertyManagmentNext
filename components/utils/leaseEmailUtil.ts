@@ -205,7 +205,7 @@ function doReplace(text: string, house: HouseWithLease, tenants: ITenantInfo[], 
 export async function getTenantsForHouse(mainCtx: IPageRelatedState, house: HouseWithLease) {
     const mailToIds = [];
     for (let i = 1; i <= 5; i++) {
-        const id = house.lease['tenant' + i];
+        const id = house.lease?.['tenant' + i];
         if (id) mailToIds.push(id);
     }
     const tenantMaps = mainCtx.foreignKeyLoopkup.get('tenantInfo');
@@ -217,9 +217,16 @@ export async function formateEmail(mainCtx: IPageRelatedState, house: HouseWithL
 
     await mainCtx.loadForeignKeyLookup('tenantInfo');
 
+    if (!house.lease || !house.leaseInfo) {
+        return {
+            subject: 'no lease found',
+            body: 'no lease found',
+            mailtos: [],
+        }
+    }
     let last2 = '';
     for (let i = 0; i < 2; i++) {
-        const inf = house.leaseInfo.monthlyInfo[i];
+        const inf = house.leaseInfo?.monthlyInfo[i];
         if (!inf) break;
         last2 += `${inf.month}  Balance ${inf.balance}  Paid: ${inf.paid}\n`
     }

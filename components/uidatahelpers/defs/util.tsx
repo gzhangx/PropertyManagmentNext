@@ -1,5 +1,5 @@
 import { get, set } from 'lodash'
-import { IDBFieldDef, IPageFilter, IPageState, SQLOPS, TableNames } from "../../types";
+import { IDBFieldDef, IPageFilter, IPageFilterSortErrors, IPageState, SQLOPS, TableNames } from "../../types";
 import moment from 'moment';
 import { IPageRelatedState } from '../../reportTypes';
 import { IEditTextDropdownItem } from '../../generic/GenericDropdown';
@@ -18,10 +18,24 @@ export const updateFilterValsNoSubmit = (pageState: IPageState) => {
     setPageProps({ ...pageProps});
 }
 
+
+export function getPageFilterSorterErrors(pageState: IPageState, table: TableNames): IPageFilterSortErrors {
+    let ret = pageState.pageProps.pagePropsTableInfo[table] as IPageFilterSortErrors;
+    if (ret) return ret;
+    ret = {
+        filters: [],
+        sorts: [],
+        filterErrors: {},
+    };
+    pageState.pageProps.pagePropsTableInfo[table] = ret;
+    return ret;
+}
+
 export function getOriginalFilters(pageState: IPageState, table: TableNames): IPageFilter[] {
-    const { pageProps, setPageProps } = pageState;
-    const origFilters: IPageFilter[] = get(pageProps.pagePropsTableInfo, [table, 'filters']) || [];
-    return origFilters;
+    //const { pageProps, setPageProps } = pageState;
+    //const origFilters: IPageFilter[] = get(pageProps.pagePropsTableInfo, [table, 'filters']) || [];    
+    //return origFilters;
+    return getPageFilterSorterErrors(pageState, table).filters;
 }
 
 function isValid(val: string, colInfo: IDBFieldDef): boolean {
@@ -33,23 +47,26 @@ function isValid(val: string, colInfo: IDBFieldDef): boolean {
     return true;
 }
 
-function stdOnChange(pageState: IPageState, colInfo: IDBFieldDef, table: TableNames, val: string, id, valObj: IPageFilter, op: SQLOPS) {
+function stdOnChange(pageState: IPageState, colInfo: IDBFieldDef, table: TableNames, val: string, id: string, valObj: IPageFilter, op: SQLOPS) {
     const { pageProps } = pageState;
-    const origFilters: IPageFilter[] = getOriginalFilters(pageState, table);
-    if (valObj) {
+    const pfse = getPageFilterSorterErrors(pageState, table);
+    const origFilters: IPageFilter[] = pfse.filters;
+    if (valObj) {        
         valObj.val = val;
+        valObj.valDescUIOnly = val;
         if (!val) {            
             origFilters.splice(origFilters.indexOf(valObj), 1);
-            set(pageProps.pagePropsTableInfo, [table, 'filters'], origFilters);
+            //set(pageProps.pagePropsTableInfo, [table, 'filters'], origFilters);
         }        
     } else {        
-        origFilters.push({ id, field: colInfo.field, val, op, table });
-        set(pageProps.pagePropsTableInfo, [table, 'filters'], origFilters);
+        origFilters.push({ id, field: colInfo.field, val, op, table, valDescUIOnly: val });
+        //set(pageProps.pagePropsTableInfo, [table, 'filters'], origFilters);
     }
 
 
     if (val && !isValid(val, colInfo)) {
-        set(pageProps.pagePropsTableInfo, [table, 'filterErrors', id], true);
+        //set(pageProps.pagePropsTableInfo, [table, 'filterErrors', id], true);
+        pfse.filterErrors[id] = `Invalid val for ${colInfo.field} ${val}`;
         return updateFilterValsNoSubmit(pageState);
     }
     set(pageProps, [table, 'filterErrors', id], false);
@@ -58,15 +75,16 @@ function stdOnChange(pageState: IPageState, colInfo: IDBFieldDef, table: TableNa
 export function genericCustomHeaderFilterFunc(pageState: IPageState, colInfo: IDBFieldDef, table: TableNames): (React.JSX.Element | null) {
     const { pageProps, setPageProps } = pageState;
     if (colInfo.type === 'date' || colInfo.type === 'datetime' || colInfo.type === 'decimal') {
-        const origFilters: IPageFilter[] = getOriginalFilters(pageState, table);
+        const pfse = getPageFilterSorterErrors(pageState, table);
+        const origFilters: IPageFilter[] = pfse.filters;
         const fromId = `${CUST_FILTER_HEADER}_${table}_${colInfo.field}_from`;
         const toId = `${CUST_FILTER_HEADER}_${table}_${colInfo.field}_to`;
 
         const fromValObj = origFilters.find((f) => f.id === fromId);
         const toValObj = origFilters.find((f) => f.id === toId);
 
-        const fromError = get(pageProps.pagePropsTableInfo, [table, 'filterErrors', fromId]);
-        const toError = get(pageProps.pagePropsTableInfo, [table, 'filterErrors', toId]);
+        const fromError = pfse.filterErrors[fromId];
+        const toError = pfse.filterErrors[toId];
         if (colInfo.type === 'date' || colInfo.type === 'datetime') {
             return <div className="flex flex-row gap-2">
                 <div>
@@ -104,10 +122,11 @@ export function genericCustomHeaderFilterFunc(pageState: IPageState, colInfo: ID
 
 export function genericCustomerHeaderFilterFuncForString(pageState: IPageState, colInfo: IDBFieldDef, table: TableNames) {
     const { pageProps, setPageProps } = pageState;
-    const origFilters: IPageFilter[] = getOriginalFilters(pageState, table);
+    const pfse = getPageFilterSorterErrors(pageState, table);
+    const origFilters: IPageFilter[] = pfse.filters;
     const id = `${CUST_FILTER_HEADER}_${table}_${colInfo.field}_string_eq`;
     const valObj = origFilters.find((f) => f.id === id);
-    const error = get(pageProps.pagePropsTableInfo, [table, 'filterErrors', id]);
+    const error = pfse.filterErrors[id];
     return <div className="flex flex-row gap-2">
         <input type="text" className="form-control bg-light border-0 small" placeholder={colInfo.field} style={{ border: error ? '2px solid red' : 'black' }}
             value={valObj?.val || ''} name={colInfo.field} onChange={e => {
@@ -147,14 +166,18 @@ export function customHeaderFilterFuncWithHouseIDLookup(mainCtx: IPageRelatedSta
                             field: 'houseID',
                             op: '=',
                             val: item.value,
+                            valDescUIOnly: item.label,
                         }
                     ];
                     if (!item.value) {
                         newFil = [];
                     }
-                    const origFilters: IPageFilter[] = get(pageProps.pagePropsTableInfo, [table, 'filters']) || [];
+                    const pfse = getPageFilterSorterErrors(pageState, table);
+                    const origFilters: IPageFilter[] = pfse.filters;
+                    //const origFilters: IPageFilter[] = get(pageProps.pagePropsTableInfo, [table, 'filters']) || [];
                     const newFilters = origFilters.filter(f => f.id !== id).concat(newFil);
-                    set(pageProps.pagePropsTableInfo, [table, 'filters'], newFilters);
+                    pfse.filters = newFilters;
+                    //set(pageProps.pagePropsTableInfo, [table, 'filters'], newFilters);
                     forceUpdateFilterVals();
                 }}
             ></GrkEditableDropdown>

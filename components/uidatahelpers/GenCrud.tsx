@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { SetStateAction, useEffect, useState } from 'react';
 import { set, get } from 'lodash';
 import { v1 } from 'uuid';
 import { EditTextDropdown } from '../generic/EditTextDropdown';
@@ -11,6 +11,8 @@ import moment from 'moment';
 import { BaseDialog } from '../generic/basedialog';
 import { TagsInput } from '../generic/TagsInput';
 import { getOriginalFilters } from './defs/util';
+import { CrudFilter } from './CrudFilter';
+import { standardGenListColumnFormatter } from '../utils/reportUtils';
 
 
 
@@ -28,19 +30,20 @@ export function getPageFilters(pageState: IPageState, table: string): IPageFilte
     return get(pageProps.pagePropsTableInfo, [table, 'filters'], []);
 }
 
+export interface IPageInfo {
+    PageSize: number;
+    pos: number;
+    total: number;
+    lastPage: number;
+}
 
 export interface IGenGrudProps extends ITableAndSheetMappingInfo {
     columnInfo: IDBFieldDef[];
     displayFields: IDBFieldDef[];
     rows: any[];
     pageState: IPageState;
-    paggingInfo: {
-        total: number;
-        PageSize: number;
-        lastPage: number;
-        pos: number;
-    };
-    setPaggingInfo: any;
+    paggingInfo: IPageInfo;
+    setPaggingInfo: React.Dispatch<SetStateAction<IPageInfo>>;
     doAdd: (data: ItemType, id: FieldValueType) => Promise<{ id: string; }>;
     //onOK?: (data?: ItemType) => void;
     //onCancel: (data?: ItemType) => void;
@@ -72,9 +75,7 @@ export const GenCrud = (props: IGenGrudProps) => {
     });
     const [showFilter, setShowFilter] = useState(false);
     const [enableAllCustFilters, setEnableAllCustFilters] = useState(false);
-    const [filterVals, setFilterVals] = useState<IPageFilter[]>([]);
-
-    const [tags, setTags] = useState<string[]>([]);
+    const [filterVals, setFilterVals] = useState<IPageFilter[]>([]);    
 
     const [deleteConfirm, setDeleteConfirm] = useState<{
         showDeleteConfirmation: boolean;
@@ -94,7 +95,10 @@ export const GenCrud = (props: IGenGrudProps) => {
     const [customFiltersEnabled, setCustomFiltersEnabled] = useState<{
         [tableName: string]: {
             [field: string]: boolean;
-    }}>({});
+        }
+    }>({});
+    
+    
     const { pageProps, setPageProps } = pageState;
     const mainCtx = usePageRelatedContext();
     useEffect(() => {
@@ -150,7 +154,13 @@ export const GenCrud = (props: IGenGrudProps) => {
         if (typeof col === 'string') {
             val = baseColumnMap[col] || displayFields[col] || { desc: `****Col ${col} not setup` } as IDBFieldDef;
             acc[col] = val;
-        } else {            
+        } else {
+            const basCol = baseColumnMap[col.field];
+            if (basCol) {
+                if (col.displayType) {
+                    basCol.displayType = col.displayType;
+                }
+            }
             acc[col.field] = val;
         }
         
@@ -174,10 +184,10 @@ export const GenCrud = (props: IGenGrudProps) => {
             if (!newCustomFiltersEnabled[table]) {
                 newCustomFiltersEnabled[table] = {};
             }
-            newCustomFiltersEnabled[table][name] = !enableAllCustFilters;
+            newCustomFiltersEnabled[table][name] = enableAllCustFilters;
             setCustomFiltersEnabled(newCustomFiltersEnabled);
         })
-    }, [enableAllCustFilters]);
+    }, [enableAllCustFilters?'true':'false']);
 
     const idCols = columnInfo.filter(c => c.isId);
 
@@ -202,9 +212,9 @@ export const GenCrud = (props: IGenGrudProps) => {
         setPageProps({ ...pageProps,  reloadCount: (pageProps.reloadCount || 0) + 1 });
     }
     const getFieldSort = (field:string) => {
-        const opToDesc = {
-            'asc': 'AS',
-            'desc': 'DS',
+        const opToIcon = {
+            'asc': 'fas fa-chevron-up',
+            'desc': 'fas fa-chevron-down',
         };
         const opToNext = {
             'asc': 'desc',
@@ -215,17 +225,17 @@ export const GenCrud = (props: IGenGrudProps) => {
         const fieldSorts = getPageSorts(pageState, table) || []; //get(pageProps, [table, 'sorts'], []);
         const fieldSortFound = fieldSorts.filter(s => s.name === field)[0];
         const fieldSort = fieldSortFound || ({} as ISqlOrderDef);
-        const getShortDesc = (op:string) => opToDesc[op] || 'NS';
-        const shortDesc = getShortDesc(fieldSort.op);
+        const getIconDesc = (op:string) => opToIcon[op] || 'fas fa-minus';
+        const shortIcon = getIconDesc(fieldSort.op);
         const onSortClick = e => {
             e.preventDefault();
             const sort = fieldSortFound || ({
                 name: field,
-                shortDesc,
+                //shortDesc,
             }) as ISqlOrderDef;
 
             sort.op = opToNext[fieldSort.op || ''] as SortOps;
-            sort.shortDesc = getShortDesc(sort.op);
+            sort.shortDesc = getIconDesc(sort.op);
             if (!fieldSortFound) {
                 fieldSorts.push(sort);                
                 set(pageProps.pagePropsTableInfo, [table, 'sorts'], fieldSorts.filter(s => s.op));
@@ -234,7 +244,7 @@ export const GenCrud = (props: IGenGrudProps) => {
             //setPageProps(Object.assign({}, pageProps, { reloadCount: (pageProps.reloadCount || 0) + 1 }));
             forceUpdatePageProps();
         }
-        return <a href='' onClick={onSortClick}>{shortDesc}</a>;
+        return <a href='' onClick={onSortClick} style={{marginLeft:'2px'}}><i className={shortIcon}></i></a>;
     };
     const filterClick = e => {
         e.preventDefault();
@@ -270,18 +280,10 @@ export const GenCrud = (props: IGenGrudProps) => {
                                 e.preventDefault();
                                 setEnableAllCustFilters(!enableAllCustFilters);
                             }}>{showFilter ? 'Hide All Filter' : 'All Filter'}</a>
-                            <TagsInput tags={getOriginalFilters(pageState, table)}
-                                displayTags={tag => {
-                                    return `${tag.field} ${tag.op} ${tag.val}`;
-                                }}
-                                onTagAdded={t => {
-                                setTags([...tags, t]);
-                            }}
-                                onTagRemoved={t => {
-                                    pageProps.pagePropsTableInfo[table].filters = pageProps.pagePropsTableInfo[table].filters.filter(f => f.id !== t.id);
-                                    forceUpdatePageProps();
-                                }}
-                            ></TagsInput>
+                            <CrudFilter pageState={pageState} table={table}
+                                columnInfo={displayFields}
+                                forceUpdatePageProps={ forceUpdatePageProps}                                
+                            ></CrudFilter>
                         {
                             showFilter && <table>
                                 {
@@ -333,10 +335,10 @@ export const GenCrud = (props: IGenGrudProps) => {
                                     e => {
                                         e.preventDefault();
                                         const newFilterVals = [...filterVals,
-                                        { id: v1(), table, op: defaultFilter.value as SQLOPS, val: '', field: '' }
+                                        { id: v1(), table, op: defaultFilter.value as SQLOPS, val: '', field: '', valDescUIOnly: '' }
                                         ];
                                         setFilterVals(newFilterVals);
-                                        set(pageProps, [table, 'filters'], newFilterVals);
+                                        set(pageProps.pagePropsTableInfo, [table, 'filters'], newFilterVals);
                                         //setPageProps({ ...pageProps });
                                         forceUpdatePageProps();
                                     }
@@ -394,20 +396,28 @@ export const GenCrud = (props: IGenGrudProps) => {
                             <tr>
                                 {
                                     displayFieldsStripped.map((name, ind) => {
-                                        return <th key={ind}>
-                                            <div>{columnMap[name] ? columnMap[name].desc : `****Column ${JSON.stringify(name)} not mapped`}</div>
-                                            <div>{getFieldSort(name)}
-                                                {
-                                                    props.customHeaderFilterFunc && <><a style={{ marginLeft: '3px' }} onClick={e => {
-                                                        e.preventDefault();
-                                                        const newCustomFiltersEnabled = { ...customFiltersEnabled };
-                                                        if (!newCustomFiltersEnabled[table]) {
-                                                            newCustomFiltersEnabled[table] = {};
+                                        return <th key={ind}>                                            
+                                            <div>
+                                                <div className='gengrid-header-text-block'>
+                                                    {columnMap[name] ? columnMap[name].desc : `****Column ${JSON.stringify(name)} not mapped`}
+                                                    
+                                                        {getFieldSort(name)}
+                                                        {
+                                                            props.customHeaderFilterFunc && <><a style={{ marginLeft: '0px' }} onClick={e => {
+                                                                e.preventDefault();
+                                                                const newCustomFiltersEnabled = { ...customFiltersEnabled };
+                                                                if (!newCustomFiltersEnabled[table]) {
+                                                                    newCustomFiltersEnabled[table] = {};
+                                                                }
+                                                                newCustomFiltersEnabled[table][name] = !newCustomFiltersEnabled[table][name];
+                                                                setCustomFiltersEnabled(newCustomFiltersEnabled);
+                                                            }}>{
+                                                                    //CustFilter
+                                                                    <i className='fas fa-gear' role='button'></i>
+                                                                }</a></>
                                                         }
-                                                        newCustomFiltersEnabled[table][name] = !newCustomFiltersEnabled[table][name];
-                                                        setCustomFiltersEnabled(newCustomFiltersEnabled);
-                                                    }}>CustFilter</a></>
-                                                }
+                                                    
+                                                </div>                                                                                                
                                             </div>
                                             
                                             {
@@ -437,18 +447,16 @@ export const GenCrud = (props: IGenGrudProps) => {
                                                             if (desc) {
                                                                 dsp = desc;
                                                             } else {
-                                                                dsp = 'NOTMAPPED_' + val;
+                                                                if (val) {
+                                                                    dsp = 'NOTMAPPED_' + val;
+                                                                } else {
+                                                                    dsp = '';
+                                                                }
                                                             }
                                                         }
                                                     }
-                                                    if (props.customDisplayFunc) {
-                                                        if (def) {
-                                                            dsp = props.customDisplayFunc(dsp, def);
-                                                        } else {
-                                                            console.log('Cant find field def for ', fn, dsp);
-                                                        }
-                                                    }
-                                                    return <td key={find}>{dsp}</td>
+                                                    
+                                                    return <td key={find}>{standardGenListColumnFormatter(dsp, def)}</td>
                                                 })
                                             }
                                             <td>

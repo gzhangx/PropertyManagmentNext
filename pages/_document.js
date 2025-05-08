@@ -11,7 +11,7 @@ class MyDocument extends Document {
             <Html>
                 <Head />
                 <body>
-                    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.13.0/css/all.min.css"></link>
+                    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css"></link>
                     <Main />
                     <NextScript />
                 </body>

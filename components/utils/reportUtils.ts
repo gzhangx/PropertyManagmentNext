@@ -185,3 +185,18 @@ export function removeZeroHourMinuteSeconds(str: string) {
     }
     return str;
 }
+
+
+export function standardGenListColumnFormatter(val: any, def: IDBFieldDef): string {
+    if (!def) {
+        console.log('TODO findout this out this val does not have def', val)
+        return val;  //TODO figure out how this happened
+    }
+    switch (def.displayType) {
+        case 'currency':
+            return formatAccounting(val);
+        case 'date':
+            return moment(val).format('MM/DD/YYYY');
+    }
+    return val;
+}

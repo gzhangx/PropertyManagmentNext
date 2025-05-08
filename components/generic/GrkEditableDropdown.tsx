@@ -23,8 +23,7 @@ export default function GrkEditableDropdown(props: IGrkEditableDropdownProps) {
         ? options
         : options.filter(option =>
             option.label.toLowerCase().includes(inputValue.toLowerCase())
-        );
-    console.log('GrkEditableDropdown----------------------------->', props.items, showAllOptions, filteredOptions);
+        );        
 
     // Handle click outside to close dropdown
     useEffect(() => {
@@ -38,6 +37,20 @@ export default function GrkEditableDropdown(props: IGrkEditableDropdownProps) {
         document.addEventListener('click', handleClickOutside);
         return () => document.removeEventListener('click', handleClickOutside);
     }, []);
+
+    const getSelectedText = () => {
+        const selectedItem = options.find(itm => itm.selected);
+        if (!selectedItem) return '';
+        return selectedItem.label || selectedItem.value;
+    }
+    useEffect(() => {
+        setInputValue(getSelectedText());
+        const selectedItem = options.find(itm => itm.selected);
+        if (selectedItem) {
+            props.onSelectionChanged(selectedItem);
+        }
+    }, [getSelectedText()])
+
 
     // Handle option selection
     const handleSelect = (option: IEditTextDropdownItem) => {

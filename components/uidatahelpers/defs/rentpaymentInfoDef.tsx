@@ -7,7 +7,7 @@ import { ICrudAddCustomObj, ITableAndSheetMappingInfo, ItemTypeDict } from "../d
 import * as api from '../../api'
 import { formateEmail } from "../../utils/leaseEmailUtil";
 import { EditTextDropdown } from "../../generic/EditTextDropdown";
-import { get, set } from "lodash";
+import { get, orderBy, set } from "lodash";
 import { IPageFilter } from "../../types";
 import { customHeaderFilterFuncWithHouseIDLookup, genericCustomHeaderFilterFunc } from "./util";
 
@@ -34,20 +34,6 @@ export const paymentInfoDef: ITableAndSheetMappingInfo = {
     },
 
     title: 'RentPaymentt Records',
-    //this class is defined by components/page/inputs/rentpaymentInfo.tsx
-    customDisplayFunc: (value, fieldDef) => {
-        if (fieldDef.field === 'receivedDate') {
-            let str = moment(value).format('YYYY-MM-DD HH:mm:ss');
-            while (str.endsWith(':00')) {
-                str = str.substring(0, str.length - 3);
-            }
-            if (str.endsWith(' 00')) {
-                str = str.substring(0, str.length - 3);
-            }
-            return str;
-        }
-        return value;
-    },
     customAddNewDefaults: async (mainCtx, columnInfo, editItem) => {
         await mainCtx.loadForeignKeyLookup('leaseInfo');
         await mainCtx.loadForeignKeyLookup('tenantInfo');
@@ -60,6 +46,29 @@ export const paymentInfoDef: ITableAndSheetMappingInfo = {
     customEditItemOnChange: async (mainCtx, fieldName: string, setCustomFieldMapping, editItem) => {
         const ret: ItemTypeDict = { [fieldName]: editItem[fieldName] };
         if (fieldName === 'houseID' || fieldName === 'leaseID') {
+            if (editItem['leaseID'] && editItem['houseID']) {
+                const oldpayments = orderBy(await api.getPaymnents({
+                    whereArray: [
+                        {
+                            field: 'leaseID',
+                            op: '=',
+                            val: editItem['leaseID'],
+                        },
+                        {
+                            field: 'houseID',
+                            op: '=',
+                            val: editItem['houseID'],
+                        }
+                    ]
+                }), itm => itm.created, 'desc');            
+                //console.log('debugRemove oldpayments-------------->', oldpayments[0]);
+                const lastPayment = oldpayments[0];
+                if (lastPayment) {
+                    (ret as any).paidBy = lastPayment.paidBy;
+                    (ret as any).paymentProcessor = lastPayment.paymentProcessor;
+                    (ret as any).receivedAmount = lastPayment.receivedAmount;
+                }
+            }
             await mainCtx.loadForeignKeyLookup('leaseInfo');
             await mainCtx.loadForeignKeyLookup('tenantInfo');
             const fkObj = mainCtx.translateForeignLeuColumnToObject({
@@ -69,7 +78,7 @@ export const paymentInfoDef: ITableAndSheetMappingInfo = {
                     field: 'leaseID',
                 }
             }, editItem);
-            console.log('fkObj', fkObj);
+            //console.log('fkObj', fkObj);
             if (fkObj) {
                 const lease = fkObj as ILeaseInfo;
                 if (lease.monthlyRent) {
@@ -90,11 +99,14 @@ export const paymentInfoDef: ITableAndSheetMappingInfo = {
                             tenantID: tenantId,
                         }) as ITenantInfo;
                         if (tenantTranslated) {
-                            console.log('tenantTranslated', tenantTranslated);
+                            //console.log('tenantTranslated', tenantTranslated);
                             options.push({
                                 label: tenantTranslated.fullName,
                                 value: tenantTranslated.fullName,
                             })
+                            if (!ret['paidBy']) {
+                                ret['paidBy'] = tenantTranslated.fullName;
+                            }
                         }
                     }
                 }
@@ -117,8 +129,8 @@ export const paymentInfoDef: ITableAndSheetMappingInfo = {
     },
     displayFields:
         [
-            { field: 'receivedDate', 'desc': 'ReceivedDate', type: 'date' },
-            { field: 'receivedAmount', 'desc': 'Amount', type: 'decimal' },
+            { field: 'receivedDate', 'desc': 'ReceivedDate', type: 'date', displayType: 'date' },
+            { field: 'receivedAmount', 'desc': 'Amount', type: 'decimal', displayType: 'currency' },
             { field: 'houseID', 'desc': 'Address' },
             { field: 'paymentTypeName', 'desc': 'type', type: 'string' },
             { field: 'notes', 'desc': 'Notes', type: 'string' },

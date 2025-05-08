@@ -35,14 +35,20 @@ export interface IPageFilter {
     field: string;
     op: SQLOPS;
     val: string;
+
+    valDescUIOnly: string;
 };
+
+
+export interface IPageFilterSortErrors {
+    sorts: ISqlOrderDef[];
+    filters: IPageFilter[];
+    filterErrors: { [id: string]: string; };
+}
 
 export interface IPagePropsByTable {
     pagePropsTableInfo: {
-        [tableName: string]: {
-            sorts: ISqlOrderDef[];
-            filters: IPageFilter[];
-        };
+        [tableName: string]: IPageFilterSortErrors;
     };
     reloadCount: number;
 };
@@ -86,6 +92,9 @@ export interface IDBFieldDef {
     allowBadForeignKey?: boolean;
 
     autoYYYYMMFromDateField?: string; //if field is automatically clculated yyyymmdd, this will be populated with the field name to get the date from
+
+
+    displayType?: 'currency' | 'date'; 
 }
 
 export interface IGetModelReturn {

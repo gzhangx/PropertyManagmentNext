@@ -7,6 +7,7 @@ import * as RootState from '../states/RootState'
 import { FieldValueType, IDBFieldDef, ISqlRequestWhereItem } from '../types';
 import { usePageRelatedContext } from '../states/PageRelatedState';
 import { ITableAndSheetMappingInfo, ItemTypeDict } from './datahelperTypes';
+import { getPageFilterSorterErrors } from './defs/util';
 
 
 //props: table and displayFields [fieldNames]
@@ -36,21 +37,18 @@ export function GenList(props: ITableAndSheetMappingInfo) {
     const reload = async () => {
         let whereArray = (getPageFilters(pageState, table) as any) as ISqlRequestWhereItem[];
         const order = getPageSorts(pageState, table);        
-        console.log('proosssss', props.displayFields, order, props.sortFields)
-        if (!order && props.sortFields) {            
-            console.log('proosssss', props.displayFields, order)
-            pageState.pageProps.pagePropsTableInfo[table] = {
-                filters: [],
-                sorts: props.sortFields.map(f => { 
-                    return {
-                        name: f,
-                        op: 'desc',
-                        shortDesc: 'DSC',
-                    }
-                })
-                                    ,
-            }
+        const pfse = getPageFilterSorterErrors(pageState, table);
+        if ((!order || order.length === 0) && props.sortFields) {                        
+            pfse.sorts = props.sortFields.map(f => {
+                return {
+                    name: f,
+                    op: 'desc',
+                    shortDesc: 'DSC',
+                }
+            });            
         }
+
+        await secCtx.checkLoadForeignKeyForTable(table);   
         //helper will conver date back from utc to local
         await helper.loadData({
             whereArray,
@@ -58,9 +56,13 @@ export function GenList(props: ITableAndSheetMappingInfo) {
             rowCount: paggingInfo.PageSize,
             offset: paggingInfo.pos*paggingInfo.PageSize,
         }).then(res => {
-            const {rows, total} = res;
-            setPaggingInfo({ ...paggingInfo, total, })
-            
+            const { rows, total } = res;
+            if (rows.length === 0 && total && paggingInfo.pos > 0) {
+                //this is some other table's page
+                setPaggingInfo({ ...paggingInfo, total, pos: 0})
+            } else {
+                setPaggingInfo({ ...paggingInfo, total, })
+            }
             setMainData(rows);
             setLoading(false);
         });
@@ -84,7 +86,7 @@ export function GenList(props: ITableAndSheetMappingInfo) {
         }
         
         ld();        
-    }, [table || 'NA', pageState.pageProps.reloadCount, secCtx.googleSheetAuthInfo.googleSheetId]); //paggingInfo.pos, paggingInfo.total
+    }, [table || 'NA', pageState.pageProps.reloadCount, secCtx.googleSheetAuthInfo.googleSheetId, paggingInfo.pos]); //paggingInfo.pos, paggingInfo.total
 
     const doAdd = (data: ItemType, id: FieldValueType) => {        
         return helper.saveData(data,id, true, secCtx.foreignKeyLoopkup).then(res => {
