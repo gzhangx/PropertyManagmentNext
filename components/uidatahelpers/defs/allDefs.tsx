@@ -1,7 +1,7 @@
 import { TableNames } from "../../types";
 import { ITableAndSheetMappingInfo } from "../datahelperTypes";
 
-export const workerInfoDef: ITableAndSheetMappingInfo = {
+export const workerInfoDef: ITableAndSheetMappingInfo<unknown> = {
     table: 'workerInfo',
     title: 'Contractors/Workers List',
     sheetMapping: {
@@ -21,7 +21,7 @@ export const workerInfoDef: ITableAndSheetMappingInfo = {
 
 
 
-export const houseInfoDef: ITableAndSheetMappingInfo = {    
+export const houseInfoDef: ITableAndSheetMappingInfo<unknown> = {    
     table: 'houseInfo',
     title: 'Houses List',
     sheetMapping: {
@@ -41,7 +41,7 @@ export const houseInfoDef: ITableAndSheetMappingInfo = {
     },
 }
 
-export const tenantInfoDef: ITableAndSheetMappingInfo = {
+export const tenantInfoDef: ITableAndSheetMappingInfo<unknown> = {
     table: 'tenantInfo',
     title: 'Tenants List',
     sheetMapping: {
@@ -62,7 +62,7 @@ export const tenantInfoDef: ITableAndSheetMappingInfo = {
     },
 }
 
-export const maintenanceInfoDef: ITableAndSheetMappingInfo = {
+export const maintenanceInfoDef: ITableAndSheetMappingInfo<unknown> = {
     table: 'maintenanceRecords',
     sheetMapping: {
         sheetName: 'MaintainessRecord',
@@ -97,7 +97,7 @@ export const maintenanceInfoDef: ITableAndSheetMappingInfo = {
 }
 
 
-export const leaseInfoDef: ITableAndSheetMappingInfo = {
+export const leaseInfoDef: ITableAndSheetMappingInfo<unknown> = {
     table: 'leaseInfo',
     sheetMapping: {
         sheetName: 'Lease Info',
@@ -125,7 +125,7 @@ export const leaseInfoDef: ITableAndSheetMappingInfo = {
 }
 
 
-const ownerInfoDef: ITableAndSheetMappingInfo = {
+const ownerInfoDef: ITableAndSheetMappingInfo<unknown> = {
     table: 'ownerInfo'
 }
 
@@ -140,4 +140,4 @@ export const tableNameToDefinitions = [tenantInfoDef, houseInfoDef, paymentInfoD
 ].reduce((acc, pp) => {
     acc.set(pp.table, pp);
     return acc;
-}, new Map<TableNames, ITableAndSheetMappingInfo>());
+}, new Map<TableNames, ITableAndSheetMappingInfo<unknown>>());

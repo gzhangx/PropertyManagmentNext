@@ -26,8 +26,9 @@ export type DataToDbSheetMapping ={
 }
 
 
-export interface ICrudAddCustomObj {
-    paymentUIRelated?: any;
+export interface ICrudAddCustomObj<T> {
+    paymentUIRelated?: T;
+    paymentUIRelated_showRenterConfirmationScreen: boolean;
     leaseToTenantCustOptions: {
         [fromEditItemField: string]: {  //ie. if lease Changes, table will be tenantInfo to match tenants
             options: IEditTextDropdownItem[];
@@ -35,7 +36,7 @@ export interface ICrudAddCustomObj {
     }
 };
     
-export interface ITableAndSheetMappingInfo {
+export interface ITableAndSheetMappingInfo<T> {
     table: TableNames;
     allFields?: IDBFieldDef[];  //TODO: check who is using this
     displayFields?: IDBFieldDef[];
@@ -48,12 +49,12 @@ export interface ITableAndSheetMappingInfo {
 
     //customDisplayFunc?: (value: any, fieldDef: IDBFieldDef) => React.JSX.Element; //function to display data in the list, if not provided, default is to use the field name
     customAddNewDefaults?: (mainCtx: IPageRelatedState, columnInfo: IDBFieldDef[], editItem: ItemTypeDict) => Promise<void>;  //edit item is actuall ItemType
-    customEditItemOnChange?: (mainCtx: IPageRelatedState, fieldName: string, setCustomFieldMapping: React.Dispatch<React.SetStateAction<ICrudAddCustomObj>>, editItem: ItemTypeDict) => Promise<ItemTypeDict>;  //edit item is actuall ItemType
+    customEditItemOnChange?: (mainCtx: IPageRelatedState, fieldName: string, setCustomFieldMapping: React.Dispatch<React.SetStateAction<ICrudAddCustomObj<T>>>, editItem: ItemTypeDict) => Promise<ItemTypeDict>;  //edit item is actuall ItemType
 
     orderColunmInfo?: (cols: IDBFieldDef[]) => IDBFieldDef[];
 
-    customScreen?: (cust: ICrudAddCustomObj, setCustomFieldMapping: React.Dispatch<React.SetStateAction<ICrudAddCustomObj>>) => React.JSX.Element;
-    customFooterButton?: (mainCtx: IPageRelatedState, cust: ICrudAddCustomObj, setCustomFieldMapping: React.Dispatch<React.SetStateAction<ICrudAddCustomObj>>, editItem: ItemTypeDict) => {
+    customScreen?: (cust: ICrudAddCustomObj<T>, setCustomFieldMapping: React.Dispatch<React.SetStateAction<ICrudAddCustomObj<T>>>) => React.JSX.Element;
+    customFooterButton?: (mainCtx: IPageRelatedState, cust: ICrudAddCustomObj<T>, setCustomFieldMapping: React.Dispatch<React.SetStateAction<ICrudAddCustomObj<T>>>, editItem: ItemTypeDict) => {
         customFooterFunc: () => Promise<void>;
         customFooterUI: React.JSX.Element;
     };
