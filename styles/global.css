@@ -104,3 +104,10 @@ tr:nth-child(even) {
     
     gap: 0px; /* smallest possible */
   }
+  .subHeader{
+    text-align: center;
+    font-size: 30px;
+    color: #000;
+    font-weight: bolder;
+
+  }
