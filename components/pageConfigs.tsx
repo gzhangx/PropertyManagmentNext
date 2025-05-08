@@ -60,9 +60,14 @@ const inputPages: LocalPageInfo[] = [
         //page: <OwnerList />,
         table: 'ownerInfo'
     }, {
+        name: 'Workers',
+        table: 'workerInfo'        
+    },  
+    {
         name: 'AutoAssignLeases',
         page: getLeasePage(),        
     }, 
+   
 ];
 
 const allSections = [
