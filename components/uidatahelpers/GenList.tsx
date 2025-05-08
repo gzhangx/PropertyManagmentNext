@@ -1,5 +1,5 @@
 import React,{useState,useEffect} from 'react';
-import { GenCrud, getPageSorts, getPageFilters } from './GenCrud';
+import { GenCrud, getPageSorts, getPageFilters, IPageInfo } from './GenCrud';
 import { ItemType } from './GenCrudAdd';
 import { createHelper } from './datahelpers';
 
@@ -8,18 +8,20 @@ import { FieldValueType, IDBFieldDef, ISqlRequestWhereItem } from '../types';
 import { usePageRelatedContext } from '../states/PageRelatedState';
 import { ITableAndSheetMappingInfo, ItemTypeDict } from './datahelperTypes';
 import { getPageFilterSorterErrors } from './defs/util';
+import { orderBy } from 'lodash';
 
 
 //props: table and displayFields [fieldNames]
-export function GenList(props: ITableAndSheetMappingInfo) {
+export function GenList(props: ITableAndSheetMappingInfo<unknown>) {
     const { table, initialPageSize } = props;
     const secCtx = usePageRelatedContext();
     const rootCtx = RootState.useRootPageContext();
-    const [paggingInfo, setPaggingInfo] = useState({
+    const [paggingInfo, setPaggingInfo] = useState <IPageInfo>({
         PageSize: initialPageSize|| 10,        
         pos: 0,
         total: 0,
-        lastPage:0,// added since missing
+        lastPage: 0,// added since missing
+        enableFullTextSearch: true,
     });    
     const helper = createHelper(rootCtx, secCtx, props); //props: table, sheetMapping, column
     const pageState = secCtx.pageState;
@@ -27,9 +29,12 @@ export function GenList(props: ITableAndSheetMappingInfo) {
     //     { field: 'tenantID', desc: 'Id', type: 'uuid', required: true, isId: true },
     //     { field: 'dadPhone', desc: 'Dad Phone', },
     // ];
-    const [mainDataRows,setMainData]=useState([]);
-    const [loading,setLoading]=useState(true);
+    const [mainDataRows, setMainData] = useState([]);
+    const [allDataRows, setAllData] = useState([]);
     const [columnInf, setColumnInf] = useState<IDBFieldDef[]>([]);
+
+    const [lastDataLoadWhereClaus, setLastDataLoadWhereClaus] = useState('');
+    const [lastDataRowOrder, setLastDataRowOrder] = useState('');
 
     if (!secCtx.googleSheetAuthInfo.googleSheetId || secCtx.googleSheetAuthInfo.googleSheetId === 'NA') {
         secCtx.reloadGoogleSheetAuthInfo();
@@ -50,22 +55,64 @@ export function GenList(props: ITableAndSheetMappingInfo) {
 
         await secCtx.checkLoadForeignKeyForTable(table);   
         //helper will conver date back from utc to local
-        await helper.loadData({
-            whereArray,
-            order,
-            rowCount: paggingInfo.PageSize,
-            offset: paggingInfo.pos*paggingInfo.PageSize,
-        }).then(res => {
-            const { rows, total } = res;
-            if (rows.length === 0 && total && paggingInfo.pos > 0) {
-                //this is some other table's page
-                setPaggingInfo({ ...paggingInfo, total, pos: 0})
+        let rowCount = paggingInfo.PageSize;
+        const offset = paggingInfo.pos * paggingInfo.PageSize; 
+        let offsetToUse = offset;
+        if (paggingInfo.enableFullTextSearch) {
+            offsetToUse = 0;
+            rowCount = Number.MAX_SAFE_INTEGER;
+        }
+
+        let needReload = true;
+        if (paggingInfo.enableFullTextSearch) {
+            const newWhereClaus = JSON.stringify(whereArray);
+            if (lastDataLoadWhereClaus === newWhereClaus ) {
+                needReload = false;
             } else {
-                setPaggingInfo({ ...paggingInfo, total, })
+                setLastDataLoadWhereClaus(newWhereClaus);
+                setLastDataRowOrder(JSON.stringify(order));
             }
-            setMainData(rows);
-            setLoading(false);
-        });
+        }
+
+        if (needReload) {
+            await helper.loadData({
+                whereArray,
+                order,
+                rowCount,
+                offset: offsetToUse,
+            }).then(res => {
+                const { rows, total } = res;
+                if (rows.length === 0 && total && paggingInfo.pos > 0) {
+                    //this is some other table's page
+                    setPaggingInfo({ ...paggingInfo, total, pos: 0 })
+                } else {
+                    setPaggingInfo({ ...paggingInfo, total, })
+                }
+                if (paggingInfo.enableFullTextSearch) {
+                    setAllData(rows);
+                    setMainData(rows.slice(offset, offset + paggingInfo.PageSize))
+                } else {
+                    setMainData(rows);
+                }
+                return rows;
+                //setLoading(false);
+            });
+        } else {
+            let orderedRows = allDataRows;
+            if (order && order.length) {
+                const dirOrder = order.filter(o => o.op);
+
+                const orderStr = JSON.stringify(dirOrder);
+                if (orderStr !== lastDataRowOrder) {
+                    setLastDataRowOrder(orderStr);
+                    orderedRows = orderBy(allDataRows, dirOrder.map(o => o.name), dirOrder.map(o => o.op) as 'asc'[]);                    
+                    setAllData(orderedRows);
+                }
+
+            }
+            const dspRows = orderedRows.slice(offset, offset + paggingInfo.PageSize);
+            setMainData(dspRows)
+        }
     }
 
 
@@ -90,17 +137,17 @@ export function GenList(props: ITableAndSheetMappingInfo) {
 
     const doAdd = (data: ItemType, id: FieldValueType) => {        
         return helper.saveData(data,id, true, secCtx.foreignKeyLoopkup).then(res => {
-            setLoading(true);            
+            //setLoading(true);
             reload();
             return res;
         }).catch(err => {
-            setLoading(false);
+            //setLoading(false);
             console.log(err);
         });
     }
 
     const doDelete=( ids: string[], data: ItemTypeDict ) => {
-        setLoading(true);
+        //setLoading(true);
         helper.deleteData(ids, secCtx.foreignKeyLoopkup, data).then(() => {
             reload();
         })
