@@ -7,7 +7,7 @@ export const workerInfoDef: ITableAndSheetMappingInfo = {
         sheetName: 'Workers Info',
         range: 'A1:K',
         mapping: [
-            'workerID', 'workerName', 'taxName', 'taxID', 'address', 'city', 'state', 'zip',
+            'workerID', 'workerName', 'taxName', 'taxID', 'address', 'city', 'state', 'zip', 'contactPerson', 'website', 'zellerId', 'venmoId', 'paypalId', 'comment', 
             '', //contact
             'email',
             'phone',
@@ -90,6 +90,7 @@ export const maintenanceInfoDef: ITableAndSheetMappingInfo = {
     customHeaderFilterFunc: (mainCtx, pageState, colInfo) => {
         return customHeaderFilterFuncWithHouseIDLookup(mainCtx, pageState, colInfo, 'maintenanceRecords');
         },
+
 }
 
 
