@@ -240,6 +240,7 @@ export default function CashFlowReport() {
                         </table>                        
                     </div>
                 </CloseableDialog>
+        <div className="subHeader">Cash Flow Report<br></br><br></br></div>
         <div className="row">
             <div className="col-sm-3">
                 <EditTextDropdown

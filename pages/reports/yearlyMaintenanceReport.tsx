@@ -422,6 +422,7 @@ export default function YearlyMaintenanceReport() {
 
     
     return <div>
+        <div className="subHeader">Yearly 1099 Report<br></br><br></br></div>
         <div className="row">
             <div className="col-sm-3">
                 <EditTextDropdown items={state.curYearOptions.map(o => ({

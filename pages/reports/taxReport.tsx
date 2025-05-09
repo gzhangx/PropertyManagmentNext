@@ -228,7 +228,7 @@ export default function TaxReport() {
     };
 
     return (
-        <div className="container-fluid">            
+        <div className="container-fluid">          
             <div className="row">
                 <PdfScript/>
                 <h1>Tax Report</h1>

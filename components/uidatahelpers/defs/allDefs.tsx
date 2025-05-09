@@ -81,11 +81,11 @@ export const maintenanceInfoDef: ITableAndSheetMappingInfo<unknown> = {
 
     displayFields: [
         { field: 'date', 'desc': 'Date', type: 'date', displayType: 'date' },
-        { field: 'description', 'desc': 'Notes', type: 'string' },
+        { field: 'description', 'desc': 'Description', type: 'string' },
         { field: 'amount', 'desc': 'Amount', type: 'decimal', displayType: 'currency' },
-        { field: 'houseID', 'desc': 'Address' },
+        { field: 'houseID', 'desc': 'House' },
         { field: 'expenseCategoryId', 'desc': 'Category', type: 'string' },
-        { field: 'workerID', 'desc': 'Worker' },
+        { field: 'workerID', 'desc': 'Workers/Contractors' },
         { field: 'comment', 'desc': 'Comment', type: 'string' },
     ],
     sortFields: ['date', 'houseID'],
