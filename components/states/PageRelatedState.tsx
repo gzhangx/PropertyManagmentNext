@@ -70,6 +70,7 @@ export function PageRelatedContextWrapper(props: {
     const topBarMessagesCfg = generateTopBarNotifyOpt();
     function reloadGoogleSheetAuthInfo() {
         return getSheetAuthInfo().then(auth => {
+            if (!auth) return; //not setup yet
             if (auth.error) {
                 rootCtx.checkLoginExpired(auth);
             } else {            
