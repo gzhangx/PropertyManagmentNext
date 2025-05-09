@@ -257,7 +257,7 @@ export function getDisplayHeaders(params: IPageParms, curPageState: IPageStates)
                                 console.log('createntity', err, sheetRow.invalid);                                   
                                 if (!err) {
                                     //await createEntity(params, sheetRow, dbInserter, curPageState.curPage.allFields!);
-                                    await updateRowData(params, table, sheetRow); 
+                                    await updateRowData(params, table, sheetRow, `updated by batch ${i}`); 
                                 }  else {
                                     console.log('Found error during process all for page',err, sheetRow);
                                     params.setErrorStr(err);
@@ -326,9 +326,9 @@ export async function backFillSheetIds(curPageState: IPageStates) {
 }
 
 
-export async function updateRowData(params: IPageParms, table: TableNames, sheetRow: ISheetRowData) {
+export async function updateRowData(params: IPageParms, table: TableNames, sheetRow: ISheetRowData, desc: string) {
     const doCreate = sheetRow.matchedToId ? false : true;
-    params.showProgress(`processing ${sheetRow.matchedToId || ''} create=${doCreate}`);
+    params.showProgress(`processing ${sheetRow.matchedToId || ''} create=${doCreate}  ${desc}`);
     const dbInserter: IDbInserter = inserter.getDbInserter(params.pageCtx, table, doCreate);
     let res: any = null;
     try {

@@ -240,7 +240,7 @@ function stdTryDisplayItemForCreate(params: IPageParms, state: IPageStates, shee
             //setProgressStr('processing')
             if (sheetRow.invalid || !sheetRow.needUpdate) return;
             params.showProgress('processing');
-            await updateRowData(params, state.curPage.table, sheetRow)
+            await updateRowData(params, state.curPage.table, sheetRow, 'updated by button')
             // try {
             //     await dbInserter.createEntity(sheetRow.importSheetData);
             //     sheetRow.needUpdate = false;
