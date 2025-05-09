@@ -271,7 +271,7 @@ export const GenCrudAdd = (props: IGenGrudAddProps) => {
                                             editItem.data[colField] = s.value;
                                             let newItem = editItem;
                                             if (props.customEditItemOnChange) {
-                                                newItem = await props.customEditItemOnChange(mainCtx, colField, setCrudAddCustomObjMap, newItem);
+                                                newItem = await props.customEditItemOnChange(mainCtx, colField, setCrudAddCustomObjMap, newItem, operation === 'Add');
                                             }
                                             setEditItem(prev => {
                                                 return {

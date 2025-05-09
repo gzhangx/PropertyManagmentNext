@@ -47,7 +47,8 @@ export const paymentInfoDef: ITableAndSheetMappingInfo<ICustEmailInfo> = {
             }
         }
     },
-    customEditItemOnChange: async (mainCtx, fieldName: string, setCustomFieldMapping, editItem) => {
+    customEditItemOnChange: async (mainCtx, fieldName: string, setCustomFieldMapping, editItem, isNew) => {
+        if (!isNew) return editItem;
         const ret: ItemType = {
             data: { [fieldName]: editItem.data[fieldName] }
         };
