@@ -64,7 +64,7 @@ export function GenList(props: ITableAndSheetMappingInfo<unknown>) {
 
         let needReload = true;
         if (paggingInfo.enableFullTextSearch) {
-            const newWhereClaus = JSON.stringify(whereArray);
+            const newWhereClaus = table+':'+JSON.stringify(whereArray);
             if (lastDataLoadWhereClaus === newWhereClaus ) {
                 needReload = false;
             } else {
