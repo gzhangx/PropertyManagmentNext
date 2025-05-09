@@ -87,6 +87,7 @@ export const paymentInfoDef: ITableAndSheetMappingInfo<ICustEmailInfo> = {
             //console.log('fkObj', fkObj);
             if (fkObj) {
                 const lease = (fkObj as ItemType).data  as ILeaseInfo;
+                if (lease) {
                 if (lease.monthlyRent) {
                     ret['receivedAmount'] = lease.monthlyRent;
                     ret.data.leaseID = lease.leaseID;
@@ -127,7 +128,7 @@ export const paymentInfoDef: ITableAndSheetMappingInfo<ICustEmailInfo> = {
                         }
                     }
                 });
-
+                }
             }
         }
         return ret;
