@@ -142,7 +142,7 @@ export function GenList(props: ITableAndSheetMappingInfo<unknown>) {
         ld();        
     }, [table || 'NA', pageState.pageProps.reloadCount, secCtx.googleSheetAuthInfo.googleSheetId, paggingInfo.pos]); //paggingInfo.pos, paggingInfo.total
 
-    const doAdd = (data: ItemTypeDict, id: FieldValueType) => {        
+    const doAdd = (data: ItemType, id: FieldValueType) => {        
         return helper.saveData(data,id, true, secCtx.foreignKeyLoopkup).then(res => {
             //setLoading(true);
             reload();

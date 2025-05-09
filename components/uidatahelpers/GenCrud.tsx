@@ -5,7 +5,7 @@ import { EditTextDropdown } from '../generic/EditTextDropdown';
 import { GenCrudAdd } from './GenCrudAdd';
 import { ISqlOrderDef, SortOps, IPageFilter, IPageState, IDBFieldDef, TableNames, SQLOPS, FieldValueType,  } from '../types'
 //import { IFKDefs} from './GenCrudTableFkTrans'
-import { ICrudAddCustomObj, ITableAndSheetMappingInfo, ItemType, ItemTypeDict } from './datahelperTypes';
+import { ICrudAddCustomObj, ITableAndSheetMappingInfo, ItemType } from './datahelperTypes';
 import { usePageRelatedContext } from '../states/PageRelatedState';
 import moment from 'moment';
 import { BaseDialog } from '../generic/basedialog';
@@ -46,7 +46,7 @@ export interface IGenGrudProps extends ITableAndSheetMappingInfo<unknown> {
     pageState: IPageState;
     paggingInfo: IPageInfo;
     setPaggingInfo: React.Dispatch<SetStateAction<IPageInfo>>;
-    doAdd: (data: ItemTypeDict, id: FieldValueType) => Promise<{ id: string; }>;
+    doAdd: (data: ItemType, id: FieldValueType) => Promise<{ id: string; }>;
     //onOK?: (data?: ItemType) => void;
     //onCancel: (data?: ItemType) => void;
     //onError?: (err: { message: string; missed: any; }) => void;

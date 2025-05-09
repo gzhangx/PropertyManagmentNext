@@ -142,11 +142,11 @@ export function customHeaderFilterFuncWithHouseIDLookup(mainCtx: IPageRelatedSta
         setPageProps({ ...pageProps, reloadCount: (pageProps.reloadCount || 0) + 1 });
     }
     if (colInfo.field === 'houseID') {
-        const allHouses = mainCtx.getAllForeignKeyLookupItems('houseInfo');
+        const allHouses = (mainCtx.getAllForeignKeyLookupItems('houseInfo') || []);
         const items: IEditTextDropdownItem[] = allHouses.map(h => {
             return {
-                label: h.address as string,
-                value: h.houseID,
+                label: h.data.address as string,
+                value: h.data.houseID,
     
             }
         })

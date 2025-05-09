@@ -2,7 +2,7 @@ import { CloseableDialog } from "../../generic/basedialog";
 import { IEditTextDropdownItem } from "../../generic/GenericDropdown";
 import { ILeaseInfo, ITenantInfo } from "../../reportTypes";
 import { gatherLeaseInfomation, HouseWithLease } from "../../utils/leaseUtil";
-import { ICrudAddCustomObj, ITableAndSheetMappingInfo, ItemTypeDict } from "../datahelperTypes";
+import { ICrudAddCustomObj, ITableAndSheetMappingInfo, ItemType, ItemTypeDict } from "../datahelperTypes";
 import * as api from '../../api'
 import { formateEmail } from "../../utils/leaseEmailUtil";
 import { orderBy } from "lodash";
@@ -48,20 +48,22 @@ export const paymentInfoDef: ITableAndSheetMappingInfo<ICustEmailInfo> = {
         }
     },
     customEditItemOnChange: async (mainCtx, fieldName: string, setCustomFieldMapping, editItem) => {
-        const ret: ItemTypeDict = { [fieldName]: editItem[fieldName] };
+        const ret: ItemType = {
+            data: { [fieldName]: editItem.data[fieldName] }
+        };
         if (fieldName === 'houseID' || fieldName === 'leaseID') {
-            if (editItem['leaseID'] && editItem['houseID']) {
+            if (editItem.data.leaseID && editItem.data.houseID) {
                 const oldpayments = orderBy(await api.getPaymnents({
                     whereArray: [
                         {
                             field: 'leaseID',
                             op: '=',
-                            val: editItem['leaseID'],
+                            val: editItem.data.leaseID,
                         },
                         {
                             field: 'houseID',
                             op: '=',
-                            val: editItem['houseID'],
+                            val: editItem.data.houseID,
                         }
                     ]
                 }), itm => itm.created, 'desc');            
@@ -84,16 +86,16 @@ export const paymentInfoDef: ITableAndSheetMappingInfo<ICustEmailInfo> = {
             }, editItem);
             //console.log('fkObj', fkObj);
             if (fkObj) {
-                const lease = fkObj as ILeaseInfo;
+                const lease = (fkObj as ItemType).data  as ILeaseInfo;
                 if (lease.monthlyRent) {
                     ret['receivedAmount'] = lease.monthlyRent;
-                    ret.leaseID = lease.leaseID;
+                    ret.data.leaseID = lease.leaseID;
                 }
                 const options: IEditTextDropdownItem[] = [];
                 for (let ti = 1; ti <= 5; ti++) {
                     const tenantId = lease[`tenant${ti}`];
                     if (tenantId) {
-                        const tenantTranslated = mainCtx.translateForeignLeuColumnToObject({
+                        const tenantTranslated = (mainCtx.translateForeignLeuColumnToObject({
                             field: 'tenantID',
                             foreignKey: {
                                 table: 'tenantInfo',
@@ -101,7 +103,7 @@ export const paymentInfoDef: ITableAndSheetMappingInfo<ICustEmailInfo> = {
                             }
                         }, {
                             tenantID: tenantId,
-                        }) as ITenantInfo;
+                        }) as ItemType).data as ITenantInfo;
                         if (tenantTranslated) {
                             //console.log('tenantTranslated', tenantTranslated);
                             options.push({

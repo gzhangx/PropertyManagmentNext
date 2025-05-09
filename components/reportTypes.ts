@@ -209,7 +209,7 @@ export type IHelper = {
         total: number;
         rows: any[];
     }>;
-    saveData: (data: any, id: FieldValueType, saveToSheet: boolean, foreignKeyLookup: IForeignKeyLookupMap) => Promise<any>;
+    saveData: (data: ItemType, id: FieldValueType, saveToSheet: boolean, foreignKeyLookup: IForeignKeyLookupMap) => Promise<any>;
     deleteData: (ids: string[], foreignKeyLookup: IForeignKeyLookupMap, data: ItemType) => Promise<ISqlDeleteResponse>;
 }
 
@@ -254,8 +254,8 @@ export interface IPageRelatedState {
     loadForeignKeyLookup: (t: TableNames, forceReload?: boolean) => Promise<IForeignKeyCombo>;
     checkLoadForeignKeyForTable: (table: TableNames) => Promise<IDBFieldDef[]>;
     translateForeignLeuColumn: (def: IDBFieldDef, dataDict: any) => string;
-    translateForeignLeuColumnToObject: (def: IDBFieldDef, data: any) => ItemTypeDict | string;
-    getAllForeignKeyLookupItems: (table: TableNames) => ItemTypeDict[] | null;
+    translateForeignLeuColumnToObject: (def: IDBFieldDef, data: any) => ItemType | string;
+    getAllForeignKeyLookupItems: (table: TableNames) => ItemType[] | null;
     forceReload: () => void;
 
     topBarMessagesCfg: TopBarIconNotifyCfg;

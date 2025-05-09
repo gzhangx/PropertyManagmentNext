@@ -22,7 +22,7 @@ export interface IGenGrudAddProps extends IGenGrudProps {
     columnInfo: IDBFieldDef[];
     editItem?: ItemType;
     setEditItem: React.Dispatch<React.SetStateAction<ItemType>>;
-    doAdd: (data: ItemTypeDict, id: FieldValueType) => Promise<{ id: string;}>;
+    doAdd: (data: ItemType, id: FieldValueType) => Promise<{ id: string;}>;
     //onOK?: (data?:ItemType) => void;
     onCancel: (data?:ItemType) => void;
     onError?: (err: { message: string; missed: any; }) => void;
@@ -99,7 +99,7 @@ export const GenCrudAdd = (props: IGenGrudAddProps) => {
         const data = editItem;
         const missed = requiredFields.filter(r => !data.data[r]);
         if (missed.length === 0) {
-            const ret = await doAdd(data.data, id);
+            const ret = await doAdd(data, id);
             //handleChange(e, ret);          
             const fid = id || ret.id;
             onOK({
@@ -267,18 +267,16 @@ export const GenCrudAdd = (props: IGenGrudAddProps) => {
 
                                 <GrkEditableDropdown items={options}
                                     onSelectionChanged={
-                                        async (s: IEditTextDropdownItem) => {
-                                            //if (s.value === 'AddNew') {
-                                            //    setAddNewForField(colField);
-                                            //} else
-                                            let newItem: ItemTypeDict = { ...editItem.data, [colField]: s.value };                                            
+                                        async (s: IEditTextDropdownItem) => {                                            
+                                            editItem.data[colField] = s.value;
+                                            let newItem = editItem;
                                             if (props.customEditItemOnChange) {
                                                 newItem = await props.customEditItemOnChange(mainCtx, colField, setCrudAddCustomObjMap, newItem);
                                             }
                                             setEditItem(prev => {
                                                 return {
                                                     ...prev,
-                                                    ...newItem,
+                                                    data: {...newItem.data}
                                                 };
                                             });    //, [colField+'_labelDesc']: s.label
                                         }

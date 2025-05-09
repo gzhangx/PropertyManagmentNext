@@ -49,7 +49,7 @@ export interface ITableAndSheetMappingInfo<T> {
 
     //customDisplayFunc?: (value: any, fieldDef: IDBFieldDef) => React.JSX.Element; //function to display data in the list, if not provided, default is to use the field name
     customAddNewDefaults?: (mainCtx: IPageRelatedState, columnInfo: IDBFieldDef[], editItem: ItemType) => Promise<void>;  //edit item is actuall ItemType
-    customEditItemOnChange?: (mainCtx: IPageRelatedState, fieldName: string, setCustomFieldMapping: React.Dispatch<React.SetStateAction<ICrudAddCustomObj<T>>>, editItem: ItemTypeDict) => Promise<ItemTypeDict>;  //edit item is actuall ItemType
+    customEditItemOnChange?: (mainCtx: IPageRelatedState, fieldName: string, setCustomFieldMapping: React.Dispatch<React.SetStateAction<ICrudAddCustomObj<T>>>, editItem: ItemType) => Promise<ItemType>;  //edit item is actuall ItemType
 
     orderColunmInfo?: (cols: IDBFieldDef[]) => IDBFieldDef[];
 
@@ -65,6 +65,6 @@ export type ItemTypeDict = { [p in ALLFieldNames]?: FieldValueType; };
 
 export interface ItemType {
     data: ItemTypeDict;
-    _vdOriginalRecord: ItemTypeDict;
-    searchInfo: string[]; //used for full text search
+    _vdOriginalRecord?: ItemTypeDict;
+    searchInfo?: string[]; //used for full text search
 };

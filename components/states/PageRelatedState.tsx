@@ -19,7 +19,7 @@ import { IEditTextDropdownItem } from '../generic/GenericDropdown';
 import { orderBy } from 'lodash';
 
 import momentTimezone from 'moment-timezone';
-import { ItemTypeDict } from '../uidatahelpers/datahelperTypes';
+import { ItemType, ItemTypeDict } from '../uidatahelpers/datahelperTypes';
 
 const PageRelatedContext = React.createContext({} as IPageRelatedState);
 
@@ -214,7 +214,7 @@ export function PageRelatedContextWrapper(props: {
         return lookup.idDesc.get(val)?.desc || `Failed Lookup tbl=(${etb})-field=${def.field}: `+val;        
     }
 
-    function translateForeignLeuColumnToObject(def: IDBFieldDef, data: any): ItemTypeDict | string {
+    function translateForeignLeuColumnToObject(def: IDBFieldDef, data: any): ItemType | string {
         const etb = def.foreignKey?.table;
         const val = data[def.field] as string;
         if (!etb) {
@@ -224,13 +224,13 @@ export function PageRelatedContextWrapper(props: {
         if (!lookup) {
             return val; //not loaded yet
         }
-        return lookup.idObj.get(val);
+        return { data: lookup.idObj.get(val) };
     }
 
-    function getAllForeignKeyLookupItems(table: TableNames): ItemTypeDict[] | null {
+    function getAllForeignKeyLookupItems(table: TableNames): ItemType[] | null {
         const all = foreignKeyLoopkup.get(table);
         if (!all) return null;
-        return Array.from(all.idObj.values());
+        return Array.from(all.idObj.values().map(data=>({data})));
     }
 
 

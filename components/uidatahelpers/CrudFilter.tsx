@@ -131,7 +131,7 @@ export function CrudFilter(props: ICrudTagFilterProps) {
                 });
             case 'val':
                 if (workingOnFilter.field === 'houseID') {
-                    const allHouses = mainCtx.getAllForeignKeyLookupItems('houseInfo');
+                    const allHouses = (mainCtx.getAllForeignKeyLookupItems('houseInfo') || []).map(data=>data.data);
                     const items = allHouses.map(h => {
                         return {
                             label: h.address as string,
@@ -142,7 +142,7 @@ export function CrudFilter(props: ICrudTagFilterProps) {
                     return items;
                 } 
                 if (workingOnFilter.field === 'workerID') {
-                    const allWkrs = mainCtx.getAllForeignKeyLookupItems('workerInfo');
+                    const allWkrs = (mainCtx.getAllForeignKeyLookupItems('workerInfo') || []).map(data=>data.data);
                     const items = allWkrs.map(h => {
                         return {
                             label: h.workerName as string || '',

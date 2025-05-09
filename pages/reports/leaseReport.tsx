@@ -38,7 +38,7 @@ export default function LeaseReport() {
             const leases = await getLeases();
             mainCtx.showLoadingDlg('');
 
-            const allHouses = (mainCtx.getAllForeignKeyLookupItems('houseInfo') || []) as IHouseInfo[];
+            const allHouses = (mainCtx.getAllForeignKeyLookupItems('houseInfo') || []).map(r=>r.data) as IHouseInfo[];
             const ownerDc = allHouses.reduce((acc, house) => {
                 const ownerName = house.ownerName;
                 if (!acc.dict[ownerName]) {

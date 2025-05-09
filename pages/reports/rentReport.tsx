@@ -142,7 +142,7 @@ export default function RentReport() {
         loadData();
     }, [curMonthSelection]);
     
-    const allHouses = (mainCtx.getAllForeignKeyLookupItems('houseInfo') || []) as IHouseInfo[];
+    const allHouses = (mainCtx.getAllForeignKeyLookupItems('houseInfo') || []).map(r=>r.data) as IHouseInfo[];
     const selectedHouses = allHouses.filter(h => (h.ownerName === curOwner.value || !curOwner.value) && h.disabled !== 'Y');
     return <div>
         <div className='divReportHeader'>Rent Report</div><br></br><br></br>

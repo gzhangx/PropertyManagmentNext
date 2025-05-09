@@ -3,6 +3,7 @@ import { IExpenseData, IHelperOpts, IHouseInfo, IMaintenanceRawData, IPageRelate
 import { IRootPageState } from "../states/RootState";
 import { IDBFieldDef, ISqlRequestWhereItem } from "../types";
 import { createAndLoadHelper } from "../uidatahelpers/datahelpers";
+import { ItemType } from "../uidatahelpers/datahelperTypes";
 
 
 
@@ -44,7 +45,7 @@ export async function loadPayment(rootCtx: IRootPageState, mainCtx: IPageRelated
             ['receivedDate'].forEach(f => {
                 const tmField = fieldToDefDict['houseID'];
                 if (tmField.foreignKey && tmField.foreignKey.resolvedToField) {
-                    const houseInfo = mainCtx.translateForeignLeuColumnToObject(tmField, r);
+                    const houseInfo = (mainCtx.translateForeignLeuColumnToObject(tmField, r) as ItemType).data;
                     pmt[tmField.foreignKey.resolvedToField] = houseInfo as IHouseInfo;
 
                     if (typeof houseInfo === 'string') {
