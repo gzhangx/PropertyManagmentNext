@@ -50,6 +50,6 @@ export const tenantPageInfo: IPageInfo = {
             name: 'Email'
         },        
     ],
-    sheetMustExistField: 'tenantID',
+    sheetMustExistField: 'fullName',
     //dbInserter: inserter.getDbInserter('houseInfo'),
 };

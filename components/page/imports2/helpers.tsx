@@ -109,7 +109,8 @@ export async function genericPageLoader(prms: IPageParms, pageState: IPageStates
         'rentPaymentInfo': true,
         'maintenanceRecords': true,
         'leaseInfo': true,
-
+        'houseInfo': true,
+        'tenantInfo': true,
     }
 
     stdProcessSheetData(pageDetails.dataRows, {
