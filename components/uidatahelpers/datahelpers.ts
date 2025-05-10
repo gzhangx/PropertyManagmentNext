@@ -178,9 +178,9 @@ export function createHelper(rootCtx: RootState.IRootPageState, ctx: IPageRelate
         saveData: async (data: ItemType, id: string, saveToSheet: boolean, foreignKeyLookup: IForeignKeyLookupMap) => {
             const fieldTypeMapping: Map<string, IDBFieldDef> = new Map();
             const submitData = accModelFields().reduce((acc, f) => {
-                acc[f.field] = data[f.field];
+                acc[f.field] = data.data[f.field];
                 if (f.type === 'date' || f.type === 'datetime') {
-                    acc[f.field] = ctx.browserTimeToUTCDBTime(data[f.field]);
+                    acc[f.field] = ctx.browserTimeToUTCDBTime(data.data[f.field]);
                 }
                 fieldTypeMapping.set(f.field, f);                
                 return acc;
