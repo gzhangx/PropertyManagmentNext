@@ -490,8 +490,8 @@ function isNumeric(str: string) {
   
 function stringToFullTextSearchPart(str: string): IFullTextSearchPart {
     const res: IFullTextSearchPart = {
-        val: uuid.v1(),
-        id: '',
+        val: '',
+        id: uuid.v1(),
         op: '',
         type: 'string',
     };
