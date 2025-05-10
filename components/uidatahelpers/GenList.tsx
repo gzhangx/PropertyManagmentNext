@@ -123,7 +123,7 @@ export function GenList(props: ITableAndSheetMappingInfo<unknown>) {
                 const orderStr = JSON.stringify(dirOrder);
                 if (orderStr !== lastDataRowOrder) {
                     setLastDataRowOrder(orderStr);
-                    orderedRows = orderBy(allDataRows, dirOrder.map(o => o.name), dirOrder.map(o => o.op) as 'asc'[]);                    
+                    orderedRows = orderBy(allDataRows, dirOrder.map(o => `data.${o.name}`), dirOrder.map(o => o.op) as 'asc'[]);                    
                     setAllData(orderedRows);
                 }
 
