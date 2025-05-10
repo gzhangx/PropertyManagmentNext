@@ -35,9 +35,14 @@ export function GenList(props: ITableAndSheetMappingInfo<unknown>) {
     const [allDataRows, setAllData] = useState<ItemType[]>([]);
     const [columnInf, setColumnInf] = useState<IDBFieldDef[]>([]);
 
-    const [displayFields, setDisplayFields] = useState<IDBFieldDef[]>(props.displayFields);
     const [lastDataLoadWhereClaus, setLastDataLoadWhereClaus] = useState('');
     const [lastDataRowOrder, setLastDataRowOrder] = useState('');
+
+    const [displayColumnByTable, setDisplayColumnByTable] = useState<{
+        [tableName: string]: {
+            displayColumns: IDBFieldDef[];
+        }
+    }>({});
 
     const [fullTextSearchInTyping, setFullTextSearchInTyping] = useState<IFullTextSearchPart>({
         id: '',
@@ -89,6 +94,15 @@ export function GenList(props: ITableAndSheetMappingInfo<unknown>) {
         }
         const fullTextSearchs = pfse.fullTextSearchs;
 
+        const sortPagingProps = {
+            fullTextSearchs,
+            fullTextSearchInTyping,
+            displayColumnInfo: displayColumnByTable[table]?.displayColumns,
+            offset,
+            paggingInfo,
+            setMainData,
+            setPaggingInfo,
+        };
         if (needReload) {
             await helper.loadData({
                 whereArray,
@@ -109,7 +123,7 @@ export function GenList(props: ITableAndSheetMappingInfo<unknown>) {
                         setPaggingInfo({ ...paggingInfo, total, pos });
                     }
                 }
-                const dcinf =getDspFieldInfo(props, columnInf);
+                const dcinf = displayColumnByTable[table]?.displayColumns ||  getDspFieldInfo(props, columnInf);
                 const rowsParsed: ItemType[] = rows.map(r => {
                     const ret: ItemType = {
                         data: r,
@@ -124,12 +138,7 @@ export function GenList(props: ITableAndSheetMappingInfo<unknown>) {
                     //setMainData(rowsParsed.slice(offset, offset + paggingInfo.PageSize))
                     calcAllDataSortAndPaggingInfo({
                         allDataRows: rowsParsed,
-                        fullTextSearchs,
-                        fullTextSearchInTyping,
-                        offset,
-                        paggingInfo,
-                        setMainData,
-                        setPaggingInfo,
+                        ...sortPagingProps,
                     });
                 } else {
                     setMainData(rowsParsed);
@@ -152,17 +161,33 @@ export function GenList(props: ITableAndSheetMappingInfo<unknown>) {
             }
             calcAllDataSortAndPaggingInfo({
                 allDataRows: orderedRows,
-                fullTextSearchs,
-                fullTextSearchInTyping,
-                offset,
-                paggingInfo,
-                setMainData,
-                setPaggingInfo,
+                ...sortPagingProps,
             });
             //const dspRows = orderedRows.slice(offset, offset + paggingInfo.PageSize);
             //setMainData(dspRows)
         }
     }
+
+    useEffect(() => {
+        if (!table) return;
+        //if (!helper) return;
+        const ld=async () => {                        
+            await helper.loadModel();
+            let columnInfo = helper.getModelFields() as IDBFieldDef[];
+            if (props.orderColunmInfo) {
+                columnInfo = props.orderColunmInfo(columnInfo);
+            }
+            const displayColumns = getDspFieldInfo(props, columnInf);
+            setDisplayColumnByTable(prev => ({
+                ...prev,
+                [table]: {
+                    displayColumns,
+                }
+            }))
+        }
+        
+        ld();        
+    }, [table || 'NA']); //paggingInfo.pos, paggingInfo.total
 
 
     useEffect(() => {
@@ -202,7 +227,7 @@ export function GenList(props: ITableAndSheetMappingInfo<unknown>) {
             reload(columnInf);
         })
     }
-    const displayFields=props.displayFields||helper.getModelFields().map(f => f.isId? null:f).filter(x => x);
+    const displayFields=  displayColumnByTable[table]?.displayColumns || props.displayFields||helper.getModelFields().map(f => f.isId? null:f).filter(x => x);
     return <div>
         <p className='subHeader'>{props.title}</p>
         {
@@ -282,9 +307,11 @@ interface ISortingAndPaggingInfo {
     offset: number;
     setMainData: ReactSetStateType<ItemType[]>;
     setPaggingInfo: ReactSetStateType<IPageInfo>;
+
+    displayColumnInfo: IDBFieldDef[];
 }
 
-function checkItem(r: ItemType, search: IFullTextSearchPart) {
+function checkItem(r: ItemType, search: IFullTextSearchPart,displayColumnInfo: IDBFieldDef[]) {
     return r.searchInfo.find(fieldAry => {
         return !!fieldAry.find(f => f.includes(search.val))
     });
@@ -297,7 +324,7 @@ function calcAllDataSortAndPaggingInfo(info: ISortingAndPaggingInfo) {
             if (!r.searchInfo) return true;
             
             const allFieldSearchRes = info.fullTextSearchs.reduce((acc, search) => {
-                const searchOK = checkItem(r, search);
+                const searchOK = checkItem(r, search, info.displayColumnInfo);
                 if (searchOK) acc.oks++;
                 else acc.nos++;
                 return acc
@@ -305,7 +332,7 @@ function calcAllDataSortAndPaggingInfo(info: ISortingAndPaggingInfo) {
                 oks: 0,
                 nos: 0,
             });
-            if (checkItem(r, info.fullTextSearchInTyping)) {
+            if (checkItem(r, info.fullTextSearchInTyping, info.displayColumnInfo)) {
                 allFieldSearchRes.oks++;
             } else {
                 if (info.fullTextSearchs.length > 0) allFieldSearchRes.nos++;
