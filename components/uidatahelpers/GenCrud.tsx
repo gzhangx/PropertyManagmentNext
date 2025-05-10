@@ -408,7 +408,7 @@ export const GenCrud = (props: IGenGrudProps) => {
                                                     () => {
                                                         setDeleteConfirm({
                                                             showDeleteConfirmation: true,
-                                                            deleteIds: idCols.map(c => row[c.field]),
+                                                            deleteIds: idCols.map(c => row.data[c.field]),
                                                             deleteRowData: row,
                                                         });
                                                         //props.doDelete(idCols.map(c => row[c.field]), row)
