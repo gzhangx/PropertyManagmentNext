@@ -58,6 +58,8 @@ export interface IGenGrudProps extends ITableAndSheetMappingInfo<unknown> {
     doDelete: (ids: string[], data: ItemType) => void;
     idCol?: { field: string; }
     reload?: () => Promise<void>;    
+    fullTextSearch: string;
+    setFullTextSearch: (searchTxt: string)=>void;
     //customDisplayFunc?: (value: any, fieldDef: IDBFieldDef) => React.JSX.Element;
 }
 
@@ -278,6 +280,11 @@ export const GenCrud = (props: IGenGrudProps) => {
                             {paggingCalced.needRear3dots ? '...' : ''}
                             {makePageButtons([paggingInfo.lastPage], '>>')}
                         </div>
+                    }
+                    {
+                        <input value={props.fullTextSearch} onChange={e=>{
+                            props.setFullTextSearch(e.target.value);
+                        }} ></input>
                     }
                     <div>                            
                             

@@ -37,6 +37,8 @@ export function GenList(props: ITableAndSheetMappingInfo<unknown>) {
     const [lastDataLoadWhereClaus, setLastDataLoadWhereClaus] = useState('');
     const [lastDataRowOrder, setLastDataRowOrder] = useState('');
 
+    const [fullTextSearch, setFullTextSearch] = useState('');
+
     if (!secCtx.googleSheetAuthInfo.googleSheetId || secCtx.googleSheetAuthInfo.googleSheetId === 'NA') {
         secCtx.reloadGoogleSheetAuthInfo();
     }
@@ -125,6 +127,15 @@ export function GenList(props: ITableAndSheetMappingInfo<unknown>) {
                 }
 
             }
+            if(fullTextSearch) {
+                orderedRows = orderedRows.filter(r=>{
+                    if (!r.searchInfo) return true;
+                    return r.searchInfo.reduce((acc, rr)=>{
+                        if(rr.filter(rrr=>rrr.includes(fullTextSearch))) return true;
+                        return acc;
+                    }, false);
+                });
+            }
             const dspRows = orderedRows.slice(offset, offset + paggingInfo.PageSize);
             setMainData(dspRows)
         }
@@ -148,7 +159,7 @@ export function GenList(props: ITableAndSheetMappingInfo<unknown>) {
         }
         
         ld();        
-    }, [table || 'NA', pageState.pageProps.reloadCount, secCtx.googleSheetAuthInfo.googleSheetId, paggingInfo.pos]); //paggingInfo.pos, paggingInfo.total
+    }, [table || 'NA', pageState.pageProps.reloadCount, secCtx.googleSheetAuthInfo.googleSheetId, paggingInfo.pos, fullTextSearch]); //paggingInfo.pos, paggingInfo.total
 
     const doAdd = (data: ItemType, id: FieldValueType) => {
         return helper.saveData(data,id, true, secCtx.foreignKeyLoopkup).then(res => {
@@ -187,6 +198,8 @@ export function GenList(props: ITableAndSheetMappingInfo<unknown>) {
                         doAdd={doAdd}
                         doDelete={doDelete}
                         rows={mainDataRows}
+                        fullTextSearch={fullTextSearch}
+                        setFullTextSearch = {setFullTextSearch}
                     ></GenCrud>
                 </div>
         }
