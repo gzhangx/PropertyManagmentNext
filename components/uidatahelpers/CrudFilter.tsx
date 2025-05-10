@@ -405,14 +405,22 @@ export function CrudFilter(props: ICrudTagFilterProps) {
         <DropdownSimple state={modeSelState} setState={setModeSelState}>
         <>
                             <div className="dropdown-header">Mode:</div>
-                    <a className="dropdown-item" href="#" onChange={e => {
+                    <a className="dropdown-item" href="#" onClick={e => {
                         e.preventDefault();
-                        props.setMode('fullText')
+                        props.setMode('fullText');
+                        setModeSelState(prev => ({
+                                ...prev,
+                                show: false,
+                            }))
                             }}>Full Text Search</a>
                             <div className="dropdown-divider"></div>
-                            <a className="dropdown-item" href="#"onChange={e => {
+                            <a className="dropdown-item" href="#" onClick={e => {
                         e.preventDefault();
                         props.setMode('fieldValue');
+                        setModeSelState(prev => ({
+                            ...prev,
+                            show: false,
+                        }))
                             }}>Field Search</a>
                         </>
             </DropdownSimple>
@@ -447,13 +455,15 @@ function DropdownSimple(props: {
     return <div className="dropdown no-arrow">
         <a className="dropdown-toggle" href="#" role="button"
             onBlur={
-                () => setState(prev => ({
-                    ...prev,
-                    show: false,
-                }))
+                () => {
+                    //</div>setState(prev => ({
+                    //    ...prev,
+                    //    show: false,
+                    //}))
+                }
             }
             onClick={e => {
-                e.preventDefault();
+                //e.preventDefault();
                 setState(prev => ({
                     ...prev,
                     show: !prev.show,
