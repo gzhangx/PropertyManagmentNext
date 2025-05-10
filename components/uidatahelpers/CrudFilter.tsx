@@ -193,21 +193,6 @@ export function CrudFilter(props: ICrudTagFilterProps) {
         );
     
     const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-        if (props.mode === 'fullText') {
-            if (e.key === 'Enter') {
-                pageFilterSortErrors.fullTextSearchs.push({
-                    id: uuid.v1(),
-                    val: (e.target as HTMLInputElement).value,
-                    op: '',
-                    type: 'string',
-                });
-                setCurInputText('');
-                forceUpdatePageProps();
-            } else {
-                props.setFullTextSearch((e.target as HTMLInputElement).value)
-            }
-            return;
-        }
         if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
             e.preventDefault();
             setIsOpen(true);
@@ -341,12 +326,32 @@ export function CrudFilter(props: ICrudTagFilterProps) {
             value={curInputText}
             onChange={e => {
                 setCurInputText(e.target.value);
+                if (props.mode === 'fullText') {
+                    props.setFullTextSearch((e.target).value);
+                    return;
+                }
                 }}
                 onClick={() => {
+                    if (props.mode === 'fullText') {
+                        return;
+                    }
                     setIsOpen(true);
                     setShowAllOptions(true);
                 }}
-            onKeyDown={(event) => {
+                onKeyDown={(event) => {
+                    if (props.mode === 'fullText') {
+                        if (event.key === 'Enter') {
+                            pageFilterSortErrors.fullTextSearchs.push({
+                                id: uuid.v1(),
+                                val: (event.target as HTMLInputElement).value,
+                                op: '',
+                                type: 'string',
+                            });
+                            setCurInputText('');
+                            forceUpdatePageProps();
+                        } 
+                        return;
+                    }
                     if (curSelState === 'fields' || curSelState === 'op') {
                         handleKeyDown(event);
                         return;
