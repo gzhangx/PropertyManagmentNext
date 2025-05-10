@@ -113,12 +113,13 @@ export function GenList(props: ITableAndSheetMappingInfo<unknown>) {
                     ret.searchInfo = getStdSearchInfo(secCtx, ret, dcinf);
                     return ret;
                 })
-                if (paggingInfo.enableFullTextSearch) {
+                if (paggingInfo.enableFullTextSearch || fullTextSearch) {
                     setAllData(rowsParsed);
                     //setMainData(rowsParsed.slice(offset, offset + paggingInfo.PageSize))
                     calcAllDataSortAndPaggingInfo({
                         allDataRows: rowsParsed,
                         fullTextSearchs,
+                        fullTextSearch,
                         offset,
                         paggingInfo,
                         setMainData,
@@ -146,6 +147,7 @@ export function GenList(props: ITableAndSheetMappingInfo<unknown>) {
             calcAllDataSortAndPaggingInfo({
                 allDataRows: orderedRows,
                 fullTextSearchs,
+                fullTextSearch,
                 offset,
                 paggingInfo,
                 setMainData,
@@ -262,6 +264,7 @@ interface ISortingAndPaggingInfo {
     //order: ISqlOrderDef[];
 
     fullTextSearchs: IFullTextSearchPart[];
+    fullTextSearch: string;
     offset: number;
     setMainData: ReactSetStateType<ItemType[]>;
     setPaggingInfo: ReactSetStateType<IPageInfo>;
@@ -285,6 +288,9 @@ function calcAllDataSortAndPaggingInfo(info: ISortingAndPaggingInfo) {
                     oks: 0,
                     nos: 0,
                 });
+                if (rr.find(rrr => rrr.includes(info.fullTextSearch))) {
+                    res.oks++;
+                }
                 if (res.oks > 0 && res.nos == 0) return true;
                 return acc;
             }, false);

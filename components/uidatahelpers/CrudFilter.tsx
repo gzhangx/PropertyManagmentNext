@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { TagsInput } from "../generic/TagsInput";
-import { IDBFieldDef, IPageFilter, IPageState, SQLOPS, TableNames } from "../types";
+import { IDBFieldDef, IPageFilter, IPageState, ReactSetStateType, SQLOPS, TableNames } from "../types";
 import { getPageFilterSorterErrors } from "./defs/util";
 
 import * as uuid from 'uuid';
@@ -12,6 +12,8 @@ export interface ICrudTagFilterProps {
     table: TableNames;    
     forceUpdatePageProps: () => void;
     mode: 'fullText' | 'fieldValue';
+    setMode: ReactSetStateType<'fullText' | 'fieldValue'>;
+    setFullTextSearch: (searchTxt: string)=>void;
 }
 
 
@@ -46,6 +48,11 @@ export function CrudFilter(props: ICrudTagFilterProps) {
     const [curInputText, setCurInputText] = useState('');
     const inputRef = useRef(null);
     const listRef = useRef(null);
+
+    const [modeSelState, setModeSelState] = useState<DropdownSimpleState>({
+        show: false,
+        text: 'F',
+    });
 
     useEffect(() => {
         const handleClickOutside = (event: MouseEvent) => {
@@ -186,15 +193,19 @@ export function CrudFilter(props: ICrudTagFilterProps) {
         );
     
     const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-        if (props.mode === 'fullText' && e.key === 'Enter') {
-            pageFilterSortErrors.fullTextSearchs.push({
-                id: uuid.v1(),
-                val: (e.target as HTMLInputElement).value,
-                op: '',
-                type: 'string',
-            });
-            setCurInputText('');
-            forceUpdatePageProps();
+        if (props.mode === 'fullText') {
+            if (e.key === 'Enter') {
+                pageFilterSortErrors.fullTextSearchs.push({
+                    id: uuid.v1(),
+                    val: (e.target as HTMLInputElement).value,
+                    op: '',
+                    type: 'string',
+                });
+                setCurInputText('');
+                forceUpdatePageProps();
+            } else {
+                props.setFullTextSearch((e.target as HTMLInputElement).value)
+            }
             return;
         }
         if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
@@ -384,7 +395,22 @@ export function CrudFilter(props: ICrudTagFilterProps) {
 
 
     return <>
-        
+        <div>
+        <DropdownSimple state={modeSelState} setState={setModeSelState}>
+        <>
+                            <div className="dropdown-header">Mode:</div>
+                    <a className="dropdown-item" href="#" onChange={e => {
+                        e.preventDefault();
+                        props.setMode('fullText')
+                            }}>Full Text Search</a>
+                            <div className="dropdown-divider"></div>
+                            <a className="dropdown-item" href="#"onChange={e => {
+                        e.preventDefault();
+                        props.setMode('fieldValue');
+                            }}>Field Search</a>
+                        </>
+            </DropdownSimple>
+            </div>
         <TagsInput tags={pageFilterSortErrors.filters.concat(pageFilterSortErrors.fullTextSearchs as unknown as IPageFilter[])}
             displayTags={tag => {
                 return `${tag.field || ''} ${tag.op} ${tag.valDescUIOnly || tag.val}`;
@@ -398,4 +424,43 @@ export function CrudFilter(props: ICrudTagFilterProps) {
                 custInputUIElement={custInputUIElement}
         ></TagsInput>    
     </>
+}
+
+
+interface DropdownSimpleState {
+    show: boolean;
+    text: string;
+}
+function DropdownSimple(props: {
+    state: DropdownSimpleState;
+    setState: ReactSetStateType<DropdownSimpleState>;
+    children: React.JSX.Element;
+}) {
+    const { state, setState } = props;
+    const className = `dropdown-menu shadow animated--fade-in ${state.show && 'show'}`;
+    return <div className="dropdown no-arrow">
+        <a className="dropdown-toggle" href="#" role="button"
+            onBlur={
+                () => setState(prev => ({
+                    ...prev,
+                    show: false,
+                }))
+            }
+            onClick={e => {
+                e.preventDefault();
+                setState(prev => ({
+                    ...prev,
+                    show: !prev.show,
+                }));
+            }}
+            data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+            <i className="fas fa-ellipsis-v fa-sm fa-fw text-gray-400">{ state.text}</i>
+        </a>
+        <div className={className}
+            aria-labelledby="dropdownMenuLink">
+            {
+                props.children
+            }
+        </div>
+    </div>
 }

@@ -292,6 +292,8 @@ export const GenCrud = (props: IGenGrudProps) => {
                             
                             <CrudFilter pageState={pageState} table={table}
                                 mode={searchMode}
+                                setMode={setSearchMode}
+                                setFullTextSearch={props.setFullTextSearch}
                                 columnInfo={displayFields}
                                 forceUpdatePageProps={ forceUpdatePageProps}                                
                             ></CrudFilter>
