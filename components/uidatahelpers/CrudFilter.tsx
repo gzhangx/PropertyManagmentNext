@@ -314,7 +314,7 @@ export function CrudFilter(props: ICrudTagFilterProps) {
                 </div>
             <input type="text"
                 ref={inputRef}
-                placeholder="Enter tag name1"
+                placeholder={ props.mode === 'fullText'? 'Enter full text search':"Enter field/value"}
                 style={{
                     padding: '8px',
                     border: '1px solid #ccc',
