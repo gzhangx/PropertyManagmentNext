@@ -273,7 +273,7 @@ interface ISortingAndPaggingInfo {
 
 function calcAllDataSortAndPaggingInfo(info: ISortingAndPaggingInfo) {
     let rowsAfterTextSearch = info.allDataRows;
-    if (info.fullTextSearchs.length) {
+    if (info.fullTextSearchs.length || info.fullTextSearch) {
         rowsAfterTextSearch = info.allDataRows.filter(r => {
             if (!r.searchInfo) return true;
             return r.searchInfo.reduce((acc, rr) => {
