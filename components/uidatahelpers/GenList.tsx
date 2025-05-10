@@ -278,9 +278,18 @@ function calcAllDataSortAndPaggingInfo(info: ISortingAndPaggingInfo) {
             }, false);
         });
     }
+    let needResetPagging = false;
     if (info.offset > rowsAfterTextSearch.length) {
         info.offset = 0;
         info.paggingInfo.pos = 0;
+        needResetPagging = true;
+        //info.setPaggingInfo({ ...info.paggingInfo });
+    }
+    if (info.paggingInfo.total !== rowsAfterTextSearch.length) {
+        info.paggingInfo.total = rowsAfterTextSearch.length;
+        needResetPagging = true;
+    }
+    if (needResetPagging) {
         info.setPaggingInfo({ ...info.paggingInfo });
     }
     const dspRows = rowsAfterTextSearch.slice(info.offset, info.offset + info.paggingInfo.PageSize);

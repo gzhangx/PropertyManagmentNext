@@ -270,20 +270,23 @@ export const GenCrud = (props: IGenGrudProps) => {
             {
                 dspState === 'dsp' &&
                 <div>
-                    {
-                        paggingCalced.needsPagging && <div>
-                            {makePageButtons([0], '<<')}
-                            {paggingCalced.needFront3dots ? '...' : ''}
-                            {makePageButtons(paggingCalced.frontPageInds)}
-                            {paggingInfo.pos + 1}
-                            {makePageButtons(paggingCalced.rearPageInds)}
-                            {paggingCalced.needRear3dots ? '...' : ''}
-                            {makePageButtons([paggingInfo.lastPage], '>>')}
+                        <>{
+                            paggingCalced.needsPagging && <div style={{ display: 'inline' }}>
+                                {makePageButtons([0], '<<')}
+                                {paggingCalced.needFront3dots ? '...' : ''}
+                                {makePageButtons(paggingCalced.frontPageInds)}
+                                {paggingInfo.pos + 1}
+                                {makePageButtons(paggingCalced.rearPageInds)}
+                                {paggingCalced.needRear3dots ? '...' : ''}
+                                {makePageButtons([paggingInfo.lastPage], '>>')}
+                            
+                            </div>
+                        }
                             <input className='fullTextSearchInput' value={props.fullTextSearch} onChange={e=>{
-                            props.setFullTextSearch(e.target.value);
-                        }} placeholder='Enter full text search' ></input>
-                        </div>
-                    }
+                                props.setFullTextSearch(e.target.value);
+                            }} placeholder='Enter full text search' ></input>
+                            </>
+                    
                     <div>                            
                             
                             <CrudFilter pageState={pageState} table={table}
