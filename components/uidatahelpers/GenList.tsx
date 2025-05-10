@@ -281,10 +281,13 @@ function calcAllDataSortAndPaggingInfo(info: ISortingAndPaggingInfo) {
     if (info.fullTextSearchs.length || info.fullTextSearchInTyping.val) {
         rowsAfterTextSearch = info.allDataRows.filter(r => {
             if (!r.searchInfo) return true;
-            const allFieldSearchRes = info.fullTextSearchs.reduce((acc, search) => {
-                const searchOK = r.searchInfo.find(fieldAry => {
+            function checkItem(r: ItemType, search: IFullTextSearchPart) {
+                return r.searchInfo.find(fieldAry => {
                     return !!fieldAry.find(f => f.includes(search.val))
                 });
+            }
+            const allFieldSearchRes = info.fullTextSearchs.reduce((acc, search) => {
+                const searchOK = checkItem(r, search);
                 if (searchOK) acc.oks++;
                 else acc.nos++;
                 return acc
@@ -292,9 +295,7 @@ function calcAllDataSortAndPaggingInfo(info: ISortingAndPaggingInfo) {
                 oks: 0,
                 nos: 0,
             });
-            if (r.searchInfo.find(fa => {
-                return fa.find(f => f.includes(info.fullTextSearchInTyping.val));
-            })) {
+            if (checkItem(r, info.fullTextSearchInTyping)) {
                 allFieldSearchRes.oks++;
             } else {
                 if (info.fullTextSearchs.length > 0) allFieldSearchRes.nos++;
