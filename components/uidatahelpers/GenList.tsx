@@ -276,24 +276,25 @@ function calcAllDataSortAndPaggingInfo(info: ISortingAndPaggingInfo) {
     if (info.fullTextSearchs.length || info.fullTextSearch) {
         rowsAfterTextSearch = info.allDataRows.filter(r => {
             if (!r.searchInfo) return true;
-            return r.searchInfo.reduce((acc, rr) => {
-                const res = info.fullTextSearchs.reduce((acc, search) => {
-                    if (rr.find(rrr => rrr.includes(search.val))) {
-                        acc.oks++;
-                    } else {
-                        acc.nos++;
-                    }
-                    return acc;
-                }, {
-                    oks: 0,
-                    nos: 0,
+            const allFieldSearchRes = info.fullTextSearchs.reduce((acc, search) => {
+                const searchOK = r.searchInfo.find(fieldAry => {
+                    return !!fieldAry.find(f => f.includes(search.val))
                 });
-                if (rr.find(rrr => rrr.includes(info.fullTextSearch))) {
-                    res.oks++;
-                }
-                if (res.oks > 0 && res.nos == 0) return true;
-                return acc;
-            }, false);
+                if (searchOK) acc.oks++;
+                else acc.nos++;
+                return acc
+            }, {
+                oks: 0,
+                nos: 0,
+            });
+            if (r.searchInfo.find(fa => {
+                return fa.find(f => f.includes(info.fullTextSearch));
+            })) {
+                allFieldSearchRes.oks++;
+            } else {
+                if (info.fullTextSearchs.length > 0) allFieldSearchRes.nos++;
+            }
+            return allFieldSearchRes.oks > 0 && allFieldSearchRes.nos == 0;
         });
     }
     let needResetPagging = false;
