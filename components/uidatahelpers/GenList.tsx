@@ -43,7 +43,7 @@ export function GenList(props: ITableAndSheetMappingInfo<unknown>) {
     if (!secCtx.googleSheetAuthInfo.googleSheetId || secCtx.googleSheetAuthInfo.googleSheetId === 'NA') {
         secCtx.reloadGoogleSheetAuthInfo();
     }
-    const reload = async (forceReload = false) => {
+    const reload = async (columnInf: IDBFieldDef[], forceReload = false) => {
         let whereArray = (getPageFilters(pageState, table) as any) as ISqlRequestWhereItem[];
         const order = getPageSorts(pageState, table);        
         const pfse = getPageFilterSorterErrors(pageState, table);
@@ -156,7 +156,7 @@ export function GenList(props: ITableAndSheetMappingInfo<unknown>) {
             //if(columnInfo) {
             //    setColumnInf(columnInfo);
             //}
-            reload();
+            reload(columnInfo);
         }
         
         ld();        
@@ -166,7 +166,7 @@ export function GenList(props: ITableAndSheetMappingInfo<unknown>) {
         return helper.saveData(data,id, true, secCtx.foreignKeyLoopkup).then(res => {
             const isUpdateExisting = !!id;  //if  we have id it is updateExisting
             //setLoading(true);
-            reload(isUpdateExisting);  //force reload on update (for google sheet comp)
+            reload(columnInf, isUpdateExisting);  //force reload on update (for google sheet comp)
             return res;
         }).catch(err => {
             //setLoading(false);
@@ -177,7 +177,7 @@ export function GenList(props: ITableAndSheetMappingInfo<unknown>) {
     const doDelete=( ids: string[], data: ItemType ) => {
         //setLoading(true);
         helper.deleteData(ids, secCtx.foreignKeyLoopkup, data).then(() => {
-            reload();
+            reload(columnInf);
         })
     }
     const displayFields=props.displayFields||helper.getModelFields().map(f => f.isId? null:f).filter(x => x);
@@ -189,7 +189,7 @@ export function GenList(props: ITableAndSheetMappingInfo<unknown>) {
                     <GenCrud
                         //fkDefs={getFKDefs()}
                     paggingInfo={paggingInfo} setPaggingInfo={setPaggingInfo}
-                    reload = {reload}
+                    reload = {()=>reload(columnInf)}
                     pageState = {pageState}
                         {...props}
                         displayFields={displayFields}
@@ -217,7 +217,7 @@ export function getDspFieldInfo(props: ITableAndSheetMappingInfo<unknown>, allCo
 function getStdSearchInfo(mainCtx:IPageRelatedState, itm: ItemType, columnInfo: IDBFieldDef[]) {
     const res: string[][] = [];
     for (const c of columnInfo) {
-        let v = itm.data[c.field];
+        let v = itm.data[c.field] as string;
         switch(c.type) {
             case 'date':
             case 'datetime':
@@ -225,14 +225,14 @@ function getStdSearchInfo(mainCtx:IPageRelatedState, itm: ItemType, columnInfo: 
                 res.push([mm.format('YYYY-MM-DD'), mm.format('MM/DD/YYYY')])
                     break;
             case 'decimal':
-                res.push([v.toString(), formatAccounting(v)]);
+                res.push([(v??'').toString(), formatAccounting(v)]);
                 break;
             default:
                 if (v) {
                     if (c.foreignKey && c.foreignKey.table) {
                         v = mainCtx.translateForeignLeuColumn(c, itm.data);
                     } 
-                    res.push([v.toString()])
+                    res.push([v.toString().toLowerCase()])
                 }
 
         }
