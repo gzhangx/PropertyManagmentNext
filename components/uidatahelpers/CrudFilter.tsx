@@ -367,6 +367,7 @@ export function CrudFilter(props: ICrudTagFilterProps) {
                                 value: tagContent,
                             });
                             setCurInputText('');
+                            props.setFullTextSearch('');
                         }
                     }
                     return;
