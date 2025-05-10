@@ -5,6 +5,7 @@ import { getPageFilterSorterErrors } from "./defs/util";
 
 import * as uuid from 'uuid';
 import { usePageRelatedContext } from "../states/PageRelatedState";
+import moment from "moment";
 
 export interface ICrudTagFilterProps {
     pageState: IPageState;
@@ -327,10 +328,8 @@ export function CrudFilter(props: ICrudTagFilterProps) {
             onChange={e => {
                 setCurInputText(e.target.value);
                 if (props.mode === 'fullText') {
-                    props.setFullTextSearchInTyping(prev => ({
-                        ...prev,
-                        val: (e.target).value,
-                    }));
+                    const sch = stringToFullTextSearchPart(e.target.value);
+                    props.setFullTextSearchInTyping(sch);
                     return;
                 }
                 }}
@@ -344,12 +343,8 @@ export function CrudFilter(props: ICrudTagFilterProps) {
                 onKeyDown={(event) => {
                     if (props.mode === 'fullText') {
                         if (event.key === 'Enter') {
-                            pageFilterSortErrors.fullTextSearchs.push({
-                                id: uuid.v1(),
-                                val: (event.target as HTMLInputElement).value,
-                                op: '',
-                                type: 'string',
-                            });
+                            const sch = stringToFullTextSearchPart((event.target as HTMLInputElement).value);
+                            pageFilterSortErrors.fullTextSearchs.push(sch);
                             setCurInputText('');
                             forceUpdatePageProps();
                         } 
@@ -485,4 +480,35 @@ function DropdownSimple(props: {
             }
         </div>
     </div>
+}
+
+
+function isNumeric(str: string) {
+    return !isNaN(str as unknown as number) && // Use Type conversion to determine if it is a number
+           !isNaN(parseFloat(str)) 
+}
+  
+function stringToFullTextSearchPart(str: string): IFullTextSearchPart {
+    const res: IFullTextSearchPart = {
+        val: uuid.v1(),
+        id: '',
+        op: '',
+        type: 'string',
+    };
+
+    res.val = str;
+    for (const op of ['=', '>', '<']) {
+        if (str.startsWith(op)) {
+            res.op = op as '=';
+            res.val = str.substring(op.length);
+            if (moment(res.val).isValid()) {
+                res.type = 'date';
+            } else if (isNumeric(res.val)) {
+                res.type = 'number';
+            }
+            break;
+        }
+    }
+
+    return res;
 }
