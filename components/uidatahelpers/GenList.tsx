@@ -311,9 +311,13 @@ interface ISortingAndPaggingInfo {
     displayColumnInfo: IDBFieldDef[];
 }
 
+
+function checkOneFieldMatch(rowCellStr: string, pos: number, search: IFullTextSearchPart, displayColumnInfo: IDBFieldDef[]) {
+    return rowCellStr.includes(search.val);
+}
 function checkItem(r: ItemType, search: IFullTextSearchPart,displayColumnInfo: IDBFieldDef[]) {
-    return r.searchInfo.find(fieldAry => {
-        return !!fieldAry.find(f => f.includes(search.val))
+    return r.searchInfo.find((fieldAry, pos) => {
+        return !!fieldAry.find(f => checkOneFieldMatch(f, pos, search, displayColumnInfo));
     });
 }
 
