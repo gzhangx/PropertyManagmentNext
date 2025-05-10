@@ -60,7 +60,7 @@ export const GenCrudAdd = (props: IGenGrudAddProps) => {
         if (col.isId && !col.userSecurityField) {
             return {
                 idName: col.field,
-                id: editItem[col.field],
+                id: editItem.data[col.field],
             };
         }
         return acc;
