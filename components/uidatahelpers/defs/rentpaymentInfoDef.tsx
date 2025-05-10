@@ -1,6 +1,6 @@
 import { CloseableDialog } from "../../generic/basedialog";
 import { IEditTextDropdownItem } from "../../generic/GenericDropdown";
-import { ILeaseInfo, ITenantInfo } from "../../reportTypes";
+import { IHouseInfo, ILeaseInfo, ITenantInfo } from "../../reportTypes";
 import { gatherLeaseInfomation, HouseWithLease } from "../../utils/leaseUtil";
 import { ICrudAddCustomObj, ITableAndSheetMappingInfo, ItemType, ItemTypeDict } from "../datahelperTypes";
 import * as api from '../../api'
@@ -52,6 +52,17 @@ export const paymentInfoDef: ITableAndSheetMappingInfo<ICustEmailInfo> = {
         const ret: ItemType = {
             data: { [fieldName]: editItem.data[fieldName] }
         };
+        if (fieldName === 'houseID' && !editItem.data['leaseID']) {
+            //auto populate latest lease
+            const leaseInfo = await gatherLeaseInfomation({houseID: editItem.data['houseID']} as IHouseInfo);
+            if (leaseInfo) {
+                if (typeof leaseInfo === 'string') {
+                    console.log('Warning error load leas from customEditItemOnChange')
+                } else {
+                editItem.data['leaseID'] = leaseInfo.lease.leaseID;
+                }
+            }
+        }
         if (fieldName === 'houseID' || fieldName === 'leaseID') {
             if (editItem.data.leaseID && editItem.data.houseID) {
                 const oldpayments = orderBy(await api.getPaymnents({
@@ -277,7 +288,7 @@ export const paymentInfoDef: ITableAndSheetMappingInfo<ICustEmailInfo> = {
             const house: HouseWithLease = {
                 houseID,
             } as HouseWithLease;
-            const leaseInfo = await gatherLeaseInfomation(house);
+            
             const formatedData = await formateEmail(mainCtx, house, err => {
                 mainCtx.topBarErrorsCfg.setTopBarItems(itm => {
                     return [...itm, {
