@@ -38,7 +38,12 @@ export function GenList(props: ITableAndSheetMappingInfo<unknown>) {
     const [lastDataLoadWhereClaus, setLastDataLoadWhereClaus] = useState('');
     const [lastDataRowOrder, setLastDataRowOrder] = useState('');
 
-    const [fullTextSearch, setFullTextSearch] = useState('');
+    const [fullTextSearchInTyping, setFullTextSearchInTyping] = useState<IFullTextSearchPart>({
+        id: '',
+        op: '',
+        type: 'string',
+        val: '',
+    });
 
     if (!secCtx.googleSheetAuthInfo.googleSheetId || secCtx.googleSheetAuthInfo.googleSheetId === 'NA') {
         secCtx.reloadGoogleSheetAuthInfo();
@@ -113,13 +118,13 @@ export function GenList(props: ITableAndSheetMappingInfo<unknown>) {
                     ret.searchInfo = getStdSearchInfo(secCtx, ret, dcinf);
                     return ret;
                 })
-                if (paggingInfo.enableFullTextSearch || fullTextSearch) {
+                if (paggingInfo.enableFullTextSearch || (fullTextSearchInTyping.val)) {
                     setAllData(rowsParsed);
                     //setMainData(rowsParsed.slice(offset, offset + paggingInfo.PageSize))
                     calcAllDataSortAndPaggingInfo({
                         allDataRows: rowsParsed,
                         fullTextSearchs,
-                        fullTextSearch,
+                        fullTextSearchInTyping,
                         offset,
                         paggingInfo,
                         setMainData,
@@ -147,7 +152,7 @@ export function GenList(props: ITableAndSheetMappingInfo<unknown>) {
             calcAllDataSortAndPaggingInfo({
                 allDataRows: orderedRows,
                 fullTextSearchs,
-                fullTextSearch,
+                fullTextSearchInTyping,
                 offset,
                 paggingInfo,
                 setMainData,
@@ -176,7 +181,7 @@ export function GenList(props: ITableAndSheetMappingInfo<unknown>) {
         }
         
         ld();        
-    }, [table || 'NA', pageState.pageProps.reloadCount, secCtx.googleSheetAuthInfo.googleSheetId, paggingInfo.pos, fullTextSearch]); //paggingInfo.pos, paggingInfo.total
+    }, [table || 'NA', pageState.pageProps.reloadCount, secCtx.googleSheetAuthInfo.googleSheetId, paggingInfo.pos, fullTextSearchInTyping]); //paggingInfo.pos, paggingInfo.total
 
     const doAdd = (data: ItemType, id: FieldValueType) => {
         return helper.saveData(data,id, true, secCtx.foreignKeyLoopkup).then(res => {
@@ -215,8 +220,8 @@ export function GenList(props: ITableAndSheetMappingInfo<unknown>) {
                         doAdd={doAdd}
                         doDelete={doDelete}
                         rows={mainDataRows}
-                        fullTextSearch={fullTextSearch}
-                        setFullTextSearch = {setFullTextSearch}
+                        fullTextSearchInTyping={fullTextSearchInTyping}
+                        setFullTextSearchInTyping = {setFullTextSearchInTyping}
                     ></GenCrud>
                 </div>
         }
@@ -264,7 +269,7 @@ interface ISortingAndPaggingInfo {
     //order: ISqlOrderDef[];
 
     fullTextSearchs: IFullTextSearchPart[];
-    fullTextSearch: string;
+    fullTextSearchInTyping: IFullTextSearchPart;
     offset: number;
     setMainData: ReactSetStateType<ItemType[]>;
     setPaggingInfo: ReactSetStateType<IPageInfo>;
@@ -273,7 +278,7 @@ interface ISortingAndPaggingInfo {
 
 function calcAllDataSortAndPaggingInfo(info: ISortingAndPaggingInfo) {
     let rowsAfterTextSearch = info.allDataRows;
-    if (info.fullTextSearchs.length || info.fullTextSearch) {
+    if (info.fullTextSearchs.length || info.fullTextSearchInTyping.val) {
         rowsAfterTextSearch = info.allDataRows.filter(r => {
             if (!r.searchInfo) return true;
             const allFieldSearchRes = info.fullTextSearchs.reduce((acc, search) => {
@@ -288,7 +293,7 @@ function calcAllDataSortAndPaggingInfo(info: ISortingAndPaggingInfo) {
                 nos: 0,
             });
             if (r.searchInfo.find(fa => {
-                return fa.find(f => f.includes(info.fullTextSearch));
+                return fa.find(f => f.includes(info.fullTextSearchInTyping.val));
             })) {
                 allFieldSearchRes.oks++;
             } else {

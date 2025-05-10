@@ -3,7 +3,7 @@ import { set, get } from 'lodash';
 import { v1 } from 'uuid';
 import { EditTextDropdown } from '../generic/EditTextDropdown';
 import { GenCrudAdd } from './GenCrudAdd';
-import { ISqlOrderDef, SortOps, IPageFilter, IPageState, IDBFieldDef, TableNames, SQLOPS, FieldValueType,  } from '../types'
+import { ISqlOrderDef, SortOps, IPageFilter, IPageState, IDBFieldDef, TableNames, SQLOPS, FieldValueType, IFullTextSearchPart, ReactSetStateType,  } from '../types'
 //import { IFKDefs} from './GenCrudTableFkTrans'
 import { ICrudAddCustomObj, ITableAndSheetMappingInfo, ItemType } from './datahelperTypes';
 import { usePageRelatedContext } from '../states/PageRelatedState';
@@ -58,8 +58,8 @@ export interface IGenGrudProps extends ITableAndSheetMappingInfo<unknown> {
     doDelete: (ids: string[], data: ItemType) => void;
     idCol?: { field: string; }
     reload?: () => Promise<void>;    
-    fullTextSearch: string;
-    setFullTextSearch: (searchTxt: string)=>void;
+    fullTextSearchInTyping: IFullTextSearchPart;
+    setFullTextSearchInTyping: ReactSetStateType<IFullTextSearchPart>;
     //customDisplayFunc?: (value: any, fieldDef: IDBFieldDef) => React.JSX.Element;
 }
 
@@ -283,8 +283,11 @@ export const GenCrud = (props: IGenGrudProps) => {
                             
                             </div>
                         }
-                            <input className='fullTextSearchInput' value={props.fullTextSearch} onChange={e=>{
-                                props.setFullTextSearch(e.target.value);
+                            <input className='fullTextSearchInput' value={props.fullTextSearchInTyping.val} onChange={e=>{
+                                props.setFullTextSearchInTyping(prev => ({
+                                    ...prev,
+                                    val:e.target.value,
+                                }));
                             }} placeholder='Enter full text search' ></input>
                             </>
                     
@@ -293,7 +296,7 @@ export const GenCrud = (props: IGenGrudProps) => {
                             <CrudFilter pageState={pageState} table={table}
                                 mode={searchMode}
                                 setMode={setSearchMode}
-                                setFullTextSearch={props.setFullTextSearch}
+                                setFullTextSearchInTyping={props.setFullTextSearchInTyping}
                                 columnInfo={displayFields}
                                 forceUpdatePageProps={ forceUpdatePageProps}                                
                             ></CrudFilter>

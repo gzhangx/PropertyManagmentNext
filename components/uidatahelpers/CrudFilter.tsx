@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { TagsInput } from "../generic/TagsInput";
-import { IDBFieldDef, IPageFilter, IPageState, ReactSetStateType, SQLOPS, TableNames } from "../types";
+import { IDBFieldDef, IFullTextSearchPart, IPageFilter, IPageState, ReactSetStateType, SQLOPS, TableNames } from "../types";
 import { getPageFilterSorterErrors } from "./defs/util";
 
 import * as uuid from 'uuid';
@@ -13,7 +13,7 @@ export interface ICrudTagFilterProps {
     forceUpdatePageProps: () => void;
     mode: 'fullText' | 'fieldValue';
     setMode: ReactSetStateType<'fullText' | 'fieldValue'>;
-    setFullTextSearch: (searchTxt: string)=>void;
+    setFullTextSearchInTyping: ReactSetStateType<IFullTextSearchPart>;
 }
 
 
@@ -327,7 +327,10 @@ export function CrudFilter(props: ICrudTagFilterProps) {
             onChange={e => {
                 setCurInputText(e.target.value);
                 if (props.mode === 'fullText') {
-                    props.setFullTextSearch((e.target).value);
+                    props.setFullTextSearchInTyping(prev => ({
+                        ...prev,
+                        val: (e.target).value,
+                    }));
                     return;
                 }
                 }}
@@ -367,7 +370,10 @@ export function CrudFilter(props: ICrudTagFilterProps) {
                                 value: tagContent,
                             });
                             setCurInputText('');
-                            props.setFullTextSearch('');
+                            props.setFullTextSearchInTyping(prev => ({
+                                ...prev,
+                                val: '',
+                            }));
                         }
                     }
                     return;
