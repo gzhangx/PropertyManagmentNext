@@ -38,7 +38,7 @@ export function GenList(props: ITableAndSheetMappingInfo<unknown>) {
     if (!secCtx.googleSheetAuthInfo.googleSheetId || secCtx.googleSheetAuthInfo.googleSheetId === 'NA') {
         secCtx.reloadGoogleSheetAuthInfo();
     }
-    const reload = async () => {
+    const reload = async (forceReload = false) => {
         let whereArray = (getPageFilters(pageState, table) as any) as ISqlRequestWhereItem[];
         const order = getPageSorts(pageState, table);        
         const pfse = getPageFilterSorterErrors(pageState, table);
@@ -71,6 +71,10 @@ export function GenList(props: ITableAndSheetMappingInfo<unknown>) {
                 setLastDataLoadWhereClaus(newWhereClaus);
                 setLastDataRowOrder(JSON.stringify(order));
             }
+        }
+
+        if (forceReload) {
+            needReload = true;
         }
 
         if (needReload) {
@@ -142,10 +146,11 @@ export function GenList(props: ITableAndSheetMappingInfo<unknown>) {
         ld();        
     }, [table || 'NA', pageState.pageProps.reloadCount, secCtx.googleSheetAuthInfo.googleSheetId, paggingInfo.pos]); //paggingInfo.pos, paggingInfo.total
 
-    const doAdd = (data: ItemType, id: FieldValueType) => {        
+    const doAdd = (data: ItemType, id: FieldValueType) => {
         return helper.saveData(data,id, true, secCtx.foreignKeyLoopkup).then(res => {
+            const isUpdateExisting = !!id;  //if  we have id it is updateExisting
             //setLoading(true);
-            reload();
+            reload(isUpdateExisting);  //force reload on update (for google sheet comp)
             return res;
         }).catch(err => {
             //setLoading(false);

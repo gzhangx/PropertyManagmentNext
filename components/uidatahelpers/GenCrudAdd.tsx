@@ -68,6 +68,9 @@ export const GenCrudAdd = (props: IGenGrudAddProps) => {
         idName: '',
         id: '',
     });
+
+    const isUpdateExisting = !!id;
+    const isCreateAddNewItem = !isUpdateExisting;
     const addUpdateLabel = props.operation;
     const onOK =  onCancel;
     const internalCancel = () => onOK();
@@ -216,7 +219,7 @@ export const GenCrudAdd = (props: IGenGrudAddProps) => {
                 <table>
                 {
                     columnInfo.map((c, cind) => {
-                        if (operation === 'Add') { //  !editItem
+                        if (isCreateAddNewItem) { //operation === 'Add') { //  !editItem
                             //create                            
                             if (c.type === 'date') {
                                 editItem[c.field] = mainCtx.browserTimeToUTCDBTime(moment())//  moment().format('YYYY-MM-DD');
@@ -255,7 +258,7 @@ export const GenCrudAdd = (props: IGenGrudAddProps) => {
 
                         const createSelectionFromOptions = (options: IEditTextDropdownItem[], colField: string) => {                            
                             
-                            if (props.operation === 'Add' && options.length > 0) {
+                            if (isCreateAddNewItem && options.length > 0) { //props.operation === 'Add'
                                 options[0].selected = true;
                             } else {
                                 const curSelection = options.filter(o => o.value === get(editItem.data, colField))[0];
@@ -271,7 +274,7 @@ export const GenCrudAdd = (props: IGenGrudAddProps) => {
                                             editItem.data[colField] = s.value;
                                             let newItem = editItem;
                                             if (props.customEditItemOnChange) {
-                                                newItem = await props.customEditItemOnChange(mainCtx, colField, setCrudAddCustomObjMap, newItem, operation === 'Add');
+                                                newItem = await props.customEditItemOnChange(mainCtx, colField, setCrudAddCustomObjMap, newItem, isCreateAddNewItem); // operation === 'Add'
                                             }
                                             setEditItem(prev => {
                                                 return {
@@ -318,7 +321,10 @@ export const GenCrudAdd = (props: IGenGrudAddProps) => {
                 </table>
             {                
                     <div className="modal-footer">
-                        {addUpdateLabel === 'Update' && props.customFooterButton && props.customFooterButton(mainCtx, crudAddCustomObjMap, setCrudAddCustomObjMap, editItem).customFooterUI}
+                        {
+                            //addUpdateLabel === 'Update'
+                        isUpdateExisting && props.customFooterButton && props.customFooterButton(mainCtx, crudAddCustomObjMap, setCrudAddCustomObjMap, editItem).customFooterUI
+                        }
                         <button type="button" className="btn btn-primary" data-dismiss="modal" onClick={
                             async e => {
                                 await handleSubmit(e);
