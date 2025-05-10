@@ -115,3 +115,6 @@ export type AllDateTypes = string | Date | moment.Moment;
 
 
 export type IStringLogger = (s: string) => void;
+
+
+export type ReactSetStateType<T> = React.Dispatch<React.SetStateAction<T>>;

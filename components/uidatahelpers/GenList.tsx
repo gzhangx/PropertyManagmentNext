@@ -3,7 +3,7 @@ import { GenCrud, getPageSorts, getPageFilters, IPageInfo } from './GenCrud';
 import { createHelper } from './datahelpers';
 
 import * as RootState from '../states/RootState'
-import { FieldValueType, IDBFieldDef, ISqlRequestWhereItem } from '../types';
+import { FieldValueType, IDBFieldDef, ISqlOrderDef, ISqlRequestWhereItem, ReactSetStateType } from '../types';
 import { usePageRelatedContext } from '../states/PageRelatedState';
 import { ITableAndSheetMappingInfo, ItemType, ItemTypeDict } from './datahelperTypes';
 import { getPageFilterSorterErrors } from './defs/util';
@@ -74,7 +74,7 @@ export function GenList(props: ITableAndSheetMappingInfo<unknown>) {
                 needReload = false;
             } else {
                 setLastDataLoadWhereClaus(newWhereClaus);
-                setLastDataRowOrder(JSON.stringify(order));
+                //setLastDataRowOrder(JSON.stringify(order));
             }
         }
 
@@ -94,7 +94,13 @@ export function GenList(props: ITableAndSheetMappingInfo<unknown>) {
                     //this is some other table's page
                     setPaggingInfo({ ...paggingInfo, total, pos: 0 })
                 } else {
-                    setPaggingInfo({ ...paggingInfo, total, })
+                    let pos = paggingInfo.pos;
+                    if (total < paggingInfo.PageSize * paggingInfo.pos) {
+                        pos = 0;
+                    }
+                    if (paggingInfo.total !== total || paggingInfo.pos !== pos) {
+                        setPaggingInfo({ ...paggingInfo, total, pos });
+                    }
                 }
                 const dcinf =getDspFieldInfo(props, columnInf);
                 const rowsParsed: ItemType[] = rows.map(r => {
@@ -108,7 +114,15 @@ export function GenList(props: ITableAndSheetMappingInfo<unknown>) {
                 })
                 if (paggingInfo.enableFullTextSearch) {
                     setAllData(rowsParsed);
-                    setMainData(rowsParsed.slice(offset, offset + paggingInfo.PageSize))
+                    //setMainData(rowsParsed.slice(offset, offset + paggingInfo.PageSize))
+                    calcAllDataSortAndPaggingInfo({
+                        allDataRows: rowsParsed,
+                        fullTextSearch,
+                        offset,
+                        paggingInfo,
+                        setMainData,
+                        setPaggingInfo,
+                    });
                 } else {
                     setMainData(rowsParsed);
                 }
@@ -128,17 +142,16 @@ export function GenList(props: ITableAndSheetMappingInfo<unknown>) {
                 }
 
             }
-            if(fullTextSearch) {
-                orderedRows = orderedRows.filter(r=>{
-                    if (!r.searchInfo) return true;
-                    return r.searchInfo.reduce((acc, rr)=>{
-                        if(rr.find(rrr=>rrr.includes(fullTextSearch))) return true;
-                        return acc;
-                    }, false);
-                });
-            }
-            const dspRows = orderedRows.slice(offset, offset + paggingInfo.PageSize);
-            setMainData(dspRows)
+            calcAllDataSortAndPaggingInfo({
+                allDataRows: orderedRows,
+                fullTextSearch,
+                offset,
+                paggingInfo,
+                setMainData,
+                setPaggingInfo,
+            });
+            //const dspRows = orderedRows.slice(offset, offset + paggingInfo.PageSize);
+            //setMainData(dspRows)
         }
     }
 
@@ -238,4 +251,38 @@ function getStdSearchInfo(mainCtx:IPageRelatedState, itm: ItemType, columnInfo: 
         }
     }
     return res;
+}
+
+
+
+interface ISortingAndPaggingInfo {
+    allDataRows: ItemType[];
+    paggingInfo: IPageInfo;
+    //order: ISqlOrderDef[];
+
+    fullTextSearch: string;
+    offset: number;
+    setMainData: ReactSetStateType<ItemType[]>;
+    setPaggingInfo: ReactSetStateType<IPageInfo>;
+}
+
+
+function calcAllDataSortAndPaggingInfo(info: ISortingAndPaggingInfo) {
+    let rowsAfterTextSearch = info.allDataRows;
+    if (info.fullTextSearch) {
+        rowsAfterTextSearch = info.allDataRows.filter(r => {
+            if (!r.searchInfo) return true;
+            return r.searchInfo.reduce((acc, rr) => {
+                if (rr.find(rrr => rrr.includes(info.fullTextSearch))) return true;
+                return acc;
+            }, false);
+        });
+    }
+    if (info.offset > rowsAfterTextSearch.length) {
+        info.offset = 0;
+        info.paggingInfo.pos = 0;
+        info.setPaggingInfo({ ...info.paggingInfo });
+    }
+    const dspRows = rowsAfterTextSearch.slice(info.offset, info.offset + info.paggingInfo.PageSize);
+    info.setMainData(dspRows)
 }

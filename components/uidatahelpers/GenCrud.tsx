@@ -134,12 +134,12 @@ export const GenCrud = (props: IGenGrudProps) => {
         if (back < 0) frontPgs -= back;
 
         const needFront3dots = paggingInfo.pos > frontPgs;
-        const frontPageInds = [];
+        const frontPageInds: number[] = [];
         for (let i = frontPgs; i > 0; i--) {
             let ind = paggingInfo.pos - i;
             if (ind >= 0) frontPageInds.push(ind);
         }
-        const rearPageInds = [];
+        const rearPageInds: number[] = [];
         for (let i = 1; i <= rearPgs; i++) {
             let ind = paggingInfo.pos + i;
             if (ind <= lastPage) rearPageInds.push(ind)
