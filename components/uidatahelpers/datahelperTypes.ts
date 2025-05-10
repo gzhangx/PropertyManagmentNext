@@ -66,5 +66,5 @@ export type ItemTypeDict = { [p in ALLFieldNames]?: FieldValueType; };
 export interface ItemType {
     data: ItemTypeDict;
     _vdOriginalRecord?: ItemTypeDict;
-    searchInfo?: string[]; //used for full text search
+    searchInfo?: string[][]; //used for full text search
 };

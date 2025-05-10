@@ -8,6 +8,8 @@ import { usePageRelatedContext } from '../states/PageRelatedState';
 import { ITableAndSheetMappingInfo, ItemType, ItemTypeDict } from './datahelperTypes';
 import { getPageFilterSorterErrors } from './defs/util';
 import { orderBy } from 'lodash';
+import moment from 'moment';
+import { formatAccounting } from '../utils/reportUtils';
 
 
 //props: table and displayFields [fieldNames]
@@ -91,12 +93,14 @@ export function GenList(props: ITableAndSheetMappingInfo<unknown>) {
                 } else {
                     setPaggingInfo({ ...paggingInfo, total, })
                 }
+                const dcinf =getDspFieldInfo(props, columnInf);
                 const rowsParsed: ItemType[] = rows.map(r => {
                     const ret: ItemType = {
                         data: r,
                         _vdOriginalRecord: r,
                         searchInfo: [],
                     };
+                    ret.searchInfo = getStdSearchInfo(ret, dcinf);
                     return ret;
                 })
                 if (paggingInfo.enableFullTextSearch) {
@@ -189,3 +193,32 @@ export function GenList(props: ITableAndSheetMappingInfo<unknown>) {
     </div>
 }
 
+
+export function getDspFieldInfo(props: ITableAndSheetMappingInfo<unknown>, allColumns: IDBFieldDef[]) {
+    if (!props.displayFields) return allColumns;
+    return props.displayFields.map(f=>{
+        return allColumns.find(c=>c.field === f.field || c.field === f as any)
+    }).filter(x=>x);
+}
+function getStdSearchInfo(itm: ItemType, columnInfo: IDBFieldDef[]) {
+    const res: string[][] = [];
+    for (const c of columnInfo) {
+        const v = itm.data[c.field];
+        switch(c.type) {
+            case 'date':
+            case 'datetime':
+                const mm = moment(v);
+                res.push([mm.format('YYYY-MM-DD'), mm.format('MM/DD/YYYY')])
+                    break;
+            case 'decimal':
+                res.push([v.toString(), formatAccounting(v)]);
+                break;
+            default:
+                if (v) {
+                    res.push([v.toString()])
+                }
+
+        }
+    }
+    return res;
+}
