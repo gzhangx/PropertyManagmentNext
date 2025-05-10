@@ -131,7 +131,7 @@ export function GenList(props: ITableAndSheetMappingInfo<unknown>) {
                 orderedRows = orderedRows.filter(r=>{
                     if (!r.searchInfo) return true;
                     return r.searchInfo.reduce((acc, rr)=>{
-                        if(rr.filter(rrr=>rrr.includes(fullTextSearch))) return true;
+                        if(rr.find(rrr=>rrr.includes(fullTextSearch))) return true;
                         return acc;
                     }, false);
                 });
