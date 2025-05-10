@@ -43,7 +43,7 @@ export const paymentInfoDef: ITableAndSheetMappingInfo<ICustEmailInfo> = {
         await mainCtx.loadForeignKeyLookup('tenantInfo');
         for (const c of columnInfo) {
             if (c.field === 'paymentTypeName') {
-                editItem[c.field] = 'Rent';
+                editItem.data[c.field] = 'Rent';
             }
         }
     },

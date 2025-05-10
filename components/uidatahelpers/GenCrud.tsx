@@ -202,9 +202,9 @@ export const GenCrud = (props: IGenGrudProps) => {
     const addNew = async () => {
         columnInfo.map((c, cind) => {
             if (c.type === 'date' || c.type === 'datetime') {
-                editItem[c.field] = moment().format('YYYY-MM-DD');
+                editItem.data[c.field] = moment().format('YYYY-MM-DD');
             } else {
-                editItem[c.field] = '';
+                editItem.data[c.field] = '';
             }
         });
         if (props.customAddNewDefaults) {
