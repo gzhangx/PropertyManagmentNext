@@ -111,3 +111,7 @@ tr:nth-child(even) {
     font-weight: bolder;
 
   }
+
+  .fullTextSearchInput {
+    margin-left: 1em;
+  }

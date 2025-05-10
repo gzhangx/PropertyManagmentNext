@@ -279,12 +279,10 @@ export const GenCrud = (props: IGenGrudProps) => {
                             {makePageButtons(paggingCalced.rearPageInds)}
                             {paggingCalced.needRear3dots ? '...' : ''}
                             {makePageButtons([paggingInfo.lastPage], '>>')}
-                        </div>
-                    }
-                    {
-                        <input value={props.fullTextSearch} onChange={e=>{
+                            <input className='fullTextSearchInput' value={props.fullTextSearch} onChange={e=>{
                             props.setFullTextSearch(e.target.value);
-                        }} ></input>
+                        }} placeholder='Enter full text search' ></input>
+                        </div>
                     }
                     <div>                            
                             
