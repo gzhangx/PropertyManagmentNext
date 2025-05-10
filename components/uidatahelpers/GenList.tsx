@@ -10,6 +10,7 @@ import { getPageFilterSorterErrors } from './defs/util';
 import { orderBy } from 'lodash';
 import moment from 'moment';
 import { formatAccounting } from '../utils/reportUtils';
+import { IPageRelatedState } from '../reportTypes';
 
 
 //props: table and displayFields [fieldNames]
@@ -102,7 +103,7 @@ export function GenList(props: ITableAndSheetMappingInfo<unknown>) {
                         _vdOriginalRecord: r,
                         searchInfo: [],
                     };
-                    ret.searchInfo = getStdSearchInfo(ret, dcinf);
+                    ret.searchInfo = getStdSearchInfo(secCtx, ret, dcinf);
                     return ret;
                 })
                 if (paggingInfo.enableFullTextSearch) {
@@ -213,10 +214,10 @@ export function getDspFieldInfo(props: ITableAndSheetMappingInfo<unknown>, allCo
         return allColumns.find(c=>c.field === f.field || c.field === f as any)
     }).filter(x=>x);
 }
-function getStdSearchInfo(itm: ItemType, columnInfo: IDBFieldDef[]) {
+function getStdSearchInfo(mainCtx:IPageRelatedState, itm: ItemType, columnInfo: IDBFieldDef[]) {
     const res: string[][] = [];
     for (const c of columnInfo) {
-        const v = itm.data[c.field];
+        let v = itm.data[c.field];
         switch(c.type) {
             case 'date':
             case 'datetime':
@@ -228,6 +229,9 @@ function getStdSearchInfo(itm: ItemType, columnInfo: IDBFieldDef[]) {
                 break;
             default:
                 if (v) {
+                    if (c.foreignKey && c.foreignKey.table) {
+                        v = mainCtx.translateForeignLeuColumn(c, itm.data);
+                    } 
                     res.push([v.toString()])
                 }
 
