@@ -101,7 +101,7 @@ export const paymentInfoDef: ITableAndSheetMappingInfo<ICustEmailInfo> = {
                 const lease = (fkObj as ItemType).data  as ILeaseInfo;
                 if (lease) {
                 if (lease.monthlyRent) {
-                    ret['receivedAmount'] = lease.monthlyRent;
+                    ret.data['receivedAmount'] = lease.monthlyRent;
                     ret.data.leaseID = lease.leaseID;
                 }
                 const options: IEditTextDropdownItem[] = [];
@@ -125,8 +125,8 @@ export const paymentInfoDef: ITableAndSheetMappingInfo<ICustEmailInfo> = {
                                 label: tenantTranslated.fullName,
                                 value: tenantTranslated.fullName,
                             })
-                            if (!ret['paidBy']) {
-                                ret['paidBy'] = tenantTranslated.fullName;
+                            if (!ret.data['paidBy']) {
+                                ret.data['paidBy'] = tenantTranslated.fullName;
                             }
                         }
                     }
