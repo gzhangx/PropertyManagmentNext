@@ -313,11 +313,44 @@ interface ISortingAndPaggingInfo {
 
 
 function checkOneFieldMatch(rowCellStr: string, pos: number, search: IFullTextSearchPart, displayColumnInfo: IDBFieldDef[]) {
+    const colDef = displayColumnInfo[pos];
+    if (search.type === 'date') {
+        const searchDate = moment(search.val);
+        if (colDef.type === 'date' || colDef.type === 'datetime') {
+            const colDate = moment(rowCellStr);
+            if (search.op === '=') {
+                return searchDate.isSame(colDate);
+            } 
+            if (search.op === '>') {
+                return colDate.isAfter(searchDate);
+            }
+            if (search.op === '<') {
+                return colDate.isBefore(searchDate);
+            }
+        }
+        return false;
+    }
+    if (search.type === 'number') {
+        if (colDef.type === 'decimal') {
+            const colVal = parseFloat(rowCellStr);
+            const searchVal = parseFloat(search.val);
+            if (search.op === '=') {
+                return colVal == searchVal;
+            } 
+            if (search.op === '>') {
+                return colVal > searchVal;
+            }
+            if (search.op === '<') {
+                return colVal < searchVal;
+            }
+        }
+        return false;
+    }
     return rowCellStr.includes(search.val);
 }
 function checkItem(r: ItemType, search: IFullTextSearchPart,displayColumnInfo: IDBFieldDef[]) {
     return r.searchInfo.find((fieldAry, pos) => {
-        return !!fieldAry.find(f => checkOneFieldMatch(f, pos, search, displayColumnInfo));
+        return !!fieldAry.find(rowCellStr => checkOneFieldMatch(rowCellStr, pos, search, displayColumnInfo));
     });
 }
 
