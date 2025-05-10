@@ -276,7 +276,10 @@ export const GenCrudAdd = (props: IGenGrudAddProps) => {
                                             setEditItem(prev => {
                                                 return {
                                                     ...prev,
-                                                    data: {...newItem.data}
+                                                    data: {
+                                                        ...prev.data,
+                                                        ...newItem.data
+                                                    }
                                                 };
                                             });    //, [colField+'_labelDesc']: s.label
                                         }
