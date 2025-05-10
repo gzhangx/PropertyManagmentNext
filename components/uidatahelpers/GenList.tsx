@@ -177,7 +177,7 @@ export function GenList(props: ITableAndSheetMappingInfo<unknown>) {
             if (props.orderColunmInfo) {
                 columnInfo = props.orderColunmInfo(columnInfo);
             }
-            const displayColumns = getDspFieldInfo(props, columnInf);
+            const displayColumns = getDspFieldInfo(props, columnInfo);
             setDisplayColumnByTable(prev => ({
                 ...prev,
                 [table]: {
