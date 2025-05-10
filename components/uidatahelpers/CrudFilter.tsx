@@ -11,6 +11,7 @@ export interface ICrudTagFilterProps {
     columnInfo: IDBFieldDef[];
     table: TableNames;    
     forceUpdatePageProps: () => void;
+    mode: 'fullText' | 'fieldValue';
 }
 
 
@@ -71,7 +72,7 @@ export function CrudFilter(props: ICrudTagFilterProps) {
         return () => document.removeEventListener('click', handleClickOutside);
     }, []);
     
-    const onTagAdded = (t:EditItem) => {
+    const onTagAdded = (t: EditItem) => {
         if (!workingOnFilter.id) {
             workingOnFilter.id = uuid.v1();
             workingOnFilter.field = t.value;
@@ -185,6 +186,17 @@ export function CrudFilter(props: ICrudTagFilterProps) {
         );
     
     const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+        if (props.mode === 'fullText' && e.key === 'Enter') {
+            pageFilterSortErrors.fullTextSearchs.push({
+                id: uuid.v1(),
+                val: (e.target as HTMLInputElement).value,
+                op: '',
+                type: 'string',
+            });
+            setCurInputText('');
+            forceUpdatePageProps();
+            return;
+        }
         if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
             e.preventDefault();
             setIsOpen(true);
@@ -373,13 +385,14 @@ export function CrudFilter(props: ICrudTagFilterProps) {
 
     return <>
         
-        <TagsInput tags={pageFilterSortErrors.filters}
+        <TagsInput tags={pageFilterSortErrors.filters.concat(pageFilterSortErrors.fullTextSearchs as unknown as IPageFilter[])}
             displayTags={tag => {
-                return `${tag.field} ${tag.op} ${tag.valDescUIOnly || tag.val}`;
+                return `${tag.field || ''} ${tag.op} ${tag.valDescUIOnly || tag.val}`;
             }}
             onTagAdded={()=>{}}
             onTagRemoved={t => {
                 pageFilterSortErrors.filters = pageFilterSortErrors.filters.filter(f => f.id !== t.id);
+                pageFilterSortErrors.fullTextSearchs = pageFilterSortErrors.fullTextSearchs.filter(f => f.id !== t.id);
                 forceUpdatePageProps();
             }}                                    
                 custInputUIElement={custInputUIElement}

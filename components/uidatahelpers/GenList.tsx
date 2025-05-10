@@ -3,7 +3,7 @@ import { GenCrud, getPageSorts, getPageFilters, IPageInfo } from './GenCrud';
 import { createHelper } from './datahelpers';
 
 import * as RootState from '../states/RootState'
-import { FieldValueType, IDBFieldDef, ISqlOrderDef, ISqlRequestWhereItem, ReactSetStateType } from '../types';
+import { FieldValueType, IDBFieldDef, IFullTextSearchPart, ISqlOrderDef, ISqlRequestWhereItem, ReactSetStateType } from '../types';
 import { usePageRelatedContext } from '../states/PageRelatedState';
 import { ITableAndSheetMappingInfo, ItemType, ItemTypeDict } from './datahelperTypes';
 import { getPageFilterSorterErrors } from './defs/util';
@@ -81,6 +81,7 @@ export function GenList(props: ITableAndSheetMappingInfo<unknown>) {
         if (forceReload) {
             needReload = true;
         }
+        const fullTextSearchs = pfse.fullTextSearchs;
 
         if (needReload) {
             await helper.loadData({
@@ -117,7 +118,7 @@ export function GenList(props: ITableAndSheetMappingInfo<unknown>) {
                     //setMainData(rowsParsed.slice(offset, offset + paggingInfo.PageSize))
                     calcAllDataSortAndPaggingInfo({
                         allDataRows: rowsParsed,
-                        fullTextSearch,
+                        fullTextSearchs,
                         offset,
                         paggingInfo,
                         setMainData,
@@ -144,7 +145,7 @@ export function GenList(props: ITableAndSheetMappingInfo<unknown>) {
             }
             calcAllDataSortAndPaggingInfo({
                 allDataRows: orderedRows,
-                fullTextSearch,
+                fullTextSearchs,
                 offset,
                 paggingInfo,
                 setMainData,
@@ -260,7 +261,7 @@ interface ISortingAndPaggingInfo {
     paggingInfo: IPageInfo;
     //order: ISqlOrderDef[];
 
-    fullTextSearch: string;
+    fullTextSearchs: IFullTextSearchPart[];
     offset: number;
     setMainData: ReactSetStateType<ItemType[]>;
     setPaggingInfo: ReactSetStateType<IPageInfo>;
@@ -269,11 +270,22 @@ interface ISortingAndPaggingInfo {
 
 function calcAllDataSortAndPaggingInfo(info: ISortingAndPaggingInfo) {
     let rowsAfterTextSearch = info.allDataRows;
-    if (info.fullTextSearch) {
+    if (info.fullTextSearchs.length) {
         rowsAfterTextSearch = info.allDataRows.filter(r => {
             if (!r.searchInfo) return true;
             return r.searchInfo.reduce((acc, rr) => {
-                if (rr.find(rrr => rrr.includes(info.fullTextSearch))) return true;
+                const res = info.fullTextSearchs.reduce((acc, search) => {
+                    if (rr.find(rrr => rrr.includes(search.val))) {
+                        acc.oks++;
+                    } else {
+                        acc.nos++;
+                    }
+                    return acc;
+                }, {
+                    oks: 0,
+                    nos: 0,
+                });
+                if (res.oks > 0 && res.nos == 0) return true;
                 return acc;
             }, false);
         });

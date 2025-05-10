@@ -39,10 +39,17 @@ export interface IPageFilter {
     valDescUIOnly: string;
 };
 
+export interface IFullTextSearchPart {
+    id: string;
+    val: string;
+    op: '>' | '<' | '=' | '';
+    type: 'number' | 'date' | 'string';
+}
 
 export interface IPageFilterSortErrors {
     sorts: ISqlOrderDef[];
     filters: IPageFilter[];
+    fullTextSearchs: IFullTextSearchPart[];
     filterErrors: { [id: string]: string; };
 }
 

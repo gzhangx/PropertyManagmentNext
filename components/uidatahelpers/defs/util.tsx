@@ -26,6 +26,7 @@ export function getPageFilterSorterErrors(pageState: IPageState, table: TableNam
         filters: [],
         sorts: [],
         filterErrors: {},
+        fullTextSearchs: [],
     };
     pageState.pageProps.pagePropsTableInfo[table] = ret;
     return ret;

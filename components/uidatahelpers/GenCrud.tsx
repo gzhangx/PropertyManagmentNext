@@ -107,6 +107,7 @@ export const GenCrud = (props: IGenGrudProps) => {
         }
     }>({});
     
+    const [searchMode, setSearchMode] = useState<'fullText' | 'fieldValue'>('fullText');
     
     const { pageProps, setPageProps } = pageState;
     const mainCtx = usePageRelatedContext();
@@ -290,6 +291,7 @@ export const GenCrud = (props: IGenGrudProps) => {
                     <div>                            
                             
                             <CrudFilter pageState={pageState} table={table}
+                                mode={searchMode}
                                 columnInfo={displayFields}
                                 forceUpdatePageProps={ forceUpdatePageProps}                                
                             ></CrudFilter>
