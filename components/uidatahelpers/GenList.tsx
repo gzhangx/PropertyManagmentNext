@@ -35,6 +35,7 @@ export function GenList(props: ITableAndSheetMappingInfo<unknown>) {
     const [allDataRows, setAllData] = useState<ItemType[]>([]);
     const [columnInf, setColumnInf] = useState<IDBFieldDef[]>([]);
 
+    const [displayFields, setDisplayFields] = useState<IDBFieldDef[]>(props.displayFields);
     const [lastDataLoadWhereClaus, setLastDataLoadWhereClaus] = useState('');
     const [lastDataRowOrder, setLastDataRowOrder] = useState('');
 
@@ -232,7 +233,15 @@ export function GenList(props: ITableAndSheetMappingInfo<unknown>) {
 export function getDspFieldInfo(props: ITableAndSheetMappingInfo<unknown>, allColumns: IDBFieldDef[]) {
     if (!props.displayFields) return allColumns;
     return props.displayFields.map(f=>{
-        return allColumns.find(c=>c.field === f.field || c.field === f as any)
+        const allColFound = allColumns.find(c => c.field === f.field || c.field === f as any);
+        if (allColFound) {
+            if (allColFound.foreignKey) {
+                f.foreignKey = allColFound.foreignKey;
+            }
+            allColFound.displayType = f.displayType;
+        }
+        
+        return allColFound;
     }).filter(x=>x);
 }
 function getStdSearchInfo(mainCtx:IPageRelatedState, itm: ItemType, columnInfo: IDBFieldDef[]) {
@@ -275,17 +284,18 @@ interface ISortingAndPaggingInfo {
     setPaggingInfo: ReactSetStateType<IPageInfo>;
 }
 
+function checkItem(r: ItemType, search: IFullTextSearchPart) {
+    return r.searchInfo.find(fieldAry => {
+        return !!fieldAry.find(f => f.includes(search.val))
+    });
+}
 
 function calcAllDataSortAndPaggingInfo(info: ISortingAndPaggingInfo) {
     let rowsAfterTextSearch = info.allDataRows;
     if (info.fullTextSearchs.length || info.fullTextSearchInTyping.val) {
         rowsAfterTextSearch = info.allDataRows.filter(r => {
             if (!r.searchInfo) return true;
-            function checkItem(r: ItemType, search: IFullTextSearchPart) {
-                return r.searchInfo.find(fieldAry => {
-                    return !!fieldAry.find(f => f.includes(search.val))
-                });
-            }
+            
             const allFieldSearchRes = info.fullTextSearchs.reduce((acc, search) => {
                 const searchOK = checkItem(r, search);
                 if (searchOK) acc.oks++;
