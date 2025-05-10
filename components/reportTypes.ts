@@ -254,7 +254,7 @@ export interface IPageRelatedState {
     loadForeignKeyLookup: (t: TableNames, forceReload?: boolean) => Promise<IForeignKeyCombo>;
     checkLoadForeignKeyForTable: (table: TableNames) => Promise<IDBFieldDef[]>;
     translateForeignLeuColumn: (def: IDBFieldDef, dataDict: any) => string;
-    translateForeignLeuColumnToObject: (def: IDBFieldDef, data: any) => ItemType | string;
+    translateForeignLeuColumnToObject: (def: IDBFieldDef, data: ItemType) => ItemType | string;
     getAllForeignKeyLookupItems: (table: TableNames) => ItemType[] | null;
     forceReload: () => void;
 

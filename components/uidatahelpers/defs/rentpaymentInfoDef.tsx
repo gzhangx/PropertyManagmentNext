@@ -71,9 +71,9 @@ export const paymentInfoDef: ITableAndSheetMappingInfo<ICustEmailInfo> = {
                 //console.log('debugRemove oldpayments-------------->', oldpayments[0]);
                 const lastPayment = oldpayments[0];
                 if (lastPayment) {
-                    (ret as any).paidBy = lastPayment.paidBy;
-                    (ret as any).paymentProcessor = lastPayment.paymentProcessor;
-                    (ret as any).receivedAmount = lastPayment.receivedAmount;
+                    (ret.data as any).paidBy = lastPayment.paidBy;
+                    (ret.data as any).paymentProcessor = lastPayment.paymentProcessor;
+                    (ret.data as any).receivedAmount = lastPayment.receivedAmount;
                 }
             }
             await mainCtx.loadForeignKeyLookup('leaseInfo');
@@ -104,7 +104,9 @@ export const paymentInfoDef: ITableAndSheetMappingInfo<ICustEmailInfo> = {
                                 field: 'tenantID',
                             }
                         }, {
+                            data:{ 
                             tenantID: tenantId,
+                            }
                         }) as ItemType).data as ITenantInfo;
                         if (tenantTranslated) {
                             //console.log('tenantTranslated', tenantTranslated);

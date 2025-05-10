@@ -215,9 +215,9 @@ export function PageRelatedContextWrapper(props: {
         return lookup.idDesc.get(val)?.desc || `Failed Lookup tbl=(${etb})-field=${def.field}: `+val;        
     }
 
-    function translateForeignLeuColumnToObject(def: IDBFieldDef, data: any): ItemType | string {
+    function translateForeignLeuColumnToObject(def: IDBFieldDef, data: ItemType): ItemType | string {
         const etb = def.foreignKey?.table;
-        const val = data[def.field] as string;
+        const val = data.data[def.field] as string;
         if (!etb) {
             return val;
         }

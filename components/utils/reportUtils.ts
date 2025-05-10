@@ -45,7 +45,7 @@ export async function loadPayment(rootCtx: IRootPageState, mainCtx: IPageRelated
             ['receivedDate'].forEach(f => {
                 const tmField = fieldToDefDict['houseID'];
                 if (tmField.foreignKey && tmField.foreignKey.resolvedToField) {
-                    const houseInfo = (mainCtx.translateForeignLeuColumnToObject(tmField, r) as ItemType).data;
+                    const houseInfo = (mainCtx.translateForeignLeuColumnToObject(tmField, {data:r}) as ItemType).data;
                     pmt[tmField.foreignKey.resolvedToField] = houseInfo as IHouseInfo;
 
                     if (typeof houseInfo === 'string') {
