@@ -501,7 +501,7 @@ function stringToFullTextSearchPart(str: string): IFullTextSearchPart {
         if (str.startsWith(op)) {
             res.op = op as '=';
             res.val = str.substring(op.length);
-            if (moment(res.val).isValid()) {
+            if (res.val && moment(res.val, ['YYYY-MM-DD', 'MM/DD/YYYY']).isValid()) {
                 res.type = 'date';
             } else if (isNumeric(res.val)) {
                 res.type = 'number';
