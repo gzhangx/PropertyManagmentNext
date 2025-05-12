@@ -115,3 +115,7 @@ tr:nth-child(even) {
   .fullTextSearchInput {
     margin-left: 1em;
   }
+
+  .fulTextHightLightYellow {
+    background-color: #bdce68;
+  }

@@ -400,8 +400,31 @@ export const GenCrud = (props: IGenGrudProps) => {
                                                             }
                                                         }
                                                     }
+
+                                                    let fullTextSearchHighLight: IFullTextSearchCheckOneFieldMatch = null;
+                                                    let dspLine: (React.JSX.Element | string) = standardGenListColumnFormatter(dsp, def);
+                                                    let dspClass = '';
+                                                    if (props.fullTextSearchInTyping.val) {
+                                                        fullTextSearchHighLight = checkOneFieldMatch(dspLine, def, props.fullTextSearchInTyping);                                                                                                                
+                                                        if (fullTextSearchHighLight) {
+                                                            if (fullTextSearchHighLight.searchMatchSuccess) {                                                                
+                                                                if (fullTextSearchHighLight.lightAll) {
+                                                                    dspClass = 'fulTextHightLightYellow';
+                                                                } else {                                                                    
+                                                                    const startIndex = dspLine.indexOf(props.fullTextSearchInTyping.val);
+                                                                    const len = props.fullTextSearchInTyping.val.length;
+                                                                    dspLine = <div style={{display:'block'}}><span>{dspLine.substring(0, startIndex)}</span><span className='fulTextHightLightYellow'>{
+                                                                        dspLine.substring(startIndex, startIndex+ len)
+                                                                    }</span>
+                                                                        <span>{ dspLine.substring(startIndex+len)}</span>
+                                                                    </div>
+                                                                }
+                                                            }
+                                                        }
+                                                    }                                                    
+
                                                     
-                                                    return <td key={find}>{standardGenListColumnFormatter(dsp, def)}</td>
+                                                    return <td key={find} className={dspClass}>{dspLine}</td>
                                                 })
                                             }
                                             <td>
@@ -456,7 +479,13 @@ export const GenCrud = (props: IGenGrudProps) => {
 }
 
 
-export function checkOneFieldMatch(rowCellStr: string, colDef: IDBFieldDef, search: IFullTextSearchPart) {
+interface IFullTextSearchCheckOneFieldMatch {
+    op: '>' | '<' | '=' | 'like' | '';
+    lightAll: boolean;
+    searchMatchSuccess: boolean;
+}
+
+export function checkOneFieldMatch(rowCellStr: string, colDef: IDBFieldDef, search: IFullTextSearchPart): IFullTextSearchCheckOneFieldMatch {
     //const colDef = displayColumnInfo[pos];
     if (search.type === 'date') {
         const searchDate = moment(search.val);
@@ -505,7 +534,7 @@ export function checkOneFieldMatch(rowCellStr: string, colDef: IDBFieldDef, sear
         };
     }
     return {
-        searchMatchSuccess: rowCellStr.includes(search.val),
+        searchMatchSuccess: (rowCellStr || '').toString().includes(search.val),
         op: 'like',
         lightAll: false,
     }
