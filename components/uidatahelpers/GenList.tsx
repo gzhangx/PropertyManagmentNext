@@ -49,6 +49,7 @@ export function GenList(props: ITableAndSheetMappingInfo<unknown>) {
         op: '',
         type: 'string',
         val: '',
+        valDescUIOnly: '',
     });
 
     if (!secCtx.googleSheetAuthInfo.googleSheetId || secCtx.googleSheetAuthInfo.googleSheetId === 'NA') {

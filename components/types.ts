@@ -44,6 +44,7 @@ export interface IFullTextSearchPart {
     val: string;
     op: '>' | '<' | '=' | '';
     type: 'number' | 'date' | 'string';
+    valDescUIOnly: string;
 }
 
 export interface IPageFilterSortErrors {

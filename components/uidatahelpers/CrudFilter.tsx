@@ -494,6 +494,7 @@ function stringToFullTextSearchPart(str: string): IFullTextSearchPart {
         id: uuid.v1(),
         op: '',
         type: 'string',
+        valDescUIOnly: '',
     };
 
     res.val = str;
@@ -503,11 +504,16 @@ function stringToFullTextSearchPart(str: string): IFullTextSearchPart {
             res.val = str.substring(op.length);
             if (res.val && moment(res.val, ['YYYY-MM-DD', 'MM/DD/YYYY']).isValid()) {
                 res.type = 'date';
+                res.valDescUIOnly = `date(${res.val})`;
             } else if (isNumeric(res.val)) {
                 res.type = 'number';
+                res.valDescUIOnly = `num(${res.val})`;
             }
             break;
         }
+    }
+    if (!res.op) {
+        res.valDescUIOnly = `like(${res.val})`;
     }
 
     return res;
