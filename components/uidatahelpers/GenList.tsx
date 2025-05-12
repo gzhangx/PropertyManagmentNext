@@ -317,59 +317,59 @@ function checkOneFieldMatch(rowCellStr: string, pos: number, search: IFullTextSe
     const colDef = displayColumnInfo[pos];
     if (search.type === 'date') {
         const searchDate = moment(search.val);
-        let ret = false;
+        let searchMatchSuccess = false;
         if (colDef.type === 'date' || colDef.type === 'datetime') {
             const colDate = moment(rowCellStr);        
             switch (search.op) {
                 case '=':
-                    ret = searchDate.isSame(colDate);
+                    searchMatchSuccess = searchDate.isSame(colDate);
                     break;
                 case '>':
-                    ret = colDate.isAfter(searchDate);
+                    searchMatchSuccess = colDate.isAfter(searchDate);
                     break;
                 case '<':
-                    ret = colDate.isBefore(searchDate);
+                    searchMatchSuccess = colDate.isBefore(searchDate);
                     break;
             }
         }
         return {
             op: search.op,
             lightAll: true,
-            ret,
+            searchMatchSuccess,
         }
     }
     if (search.type === 'number') {
-        let ret = false;
+        let searchMatchSuccess = false;
         if (colDef.type === 'decimal') {
             const colVal = parseFloat(rowCellStr);
             const searchVal = parseFloat(search.val);            
             switch (search.op) {
                 case '=':
-                    ret = colVal == searchVal;
+                    searchMatchSuccess = colVal == searchVal;
                     break;
                 case '>':
-                    ret = colVal > searchVal;
+                    searchMatchSuccess = colVal > searchVal;
                     break;
                 case '<':
-                    ret = colVal < searchVal;
+                    searchMatchSuccess = colVal < searchVal;
                     break;
             }
         }
         return {
             op: search.op,
             lightAll: true,
-            ret,
+            searchMatchSuccess,
         };
     }
     return {
-        ret: rowCellStr.includes(search.val),
+        searchMatchSuccess: rowCellStr.includes(search.val),
         op: 'like',
         lightAll: false,
     }
 }
 function checkItem(r: ItemType, search: IFullTextSearchPart,displayColumnInfo: IDBFieldDef[]) {
     return r.searchInfo.find((fieldAry, pos) => {
-        return !!fieldAry.find(rowCellStr => checkOneFieldMatch(rowCellStr, pos, search, displayColumnInfo).ret);
+        return !!fieldAry.find(rowCellStr => checkOneFieldMatch(rowCellStr, pos, search, displayColumnInfo).searchMatchSuccess);
     });
 }
 
