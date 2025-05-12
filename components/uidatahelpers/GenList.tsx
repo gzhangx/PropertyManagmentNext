@@ -1,5 +1,5 @@
 import React,{useState,useEffect} from 'react';
-import { GenCrud, getPageSorts, getPageFilters, IPageInfo } from './GenCrud';
+import { GenCrud, getPageSorts, getPageFilters, IPageInfo, checkOneFieldMatch } from './GenCrud';
 import { createHelper } from './datahelpers';
 
 import * as RootState from '../states/RootState'
@@ -313,60 +313,7 @@ interface ISortingAndPaggingInfo {
 }
 
 
-function checkOneFieldMatch(rowCellStr: string, pos: number, search: IFullTextSearchPart, displayColumnInfo: IDBFieldDef[]) {
-    const colDef = displayColumnInfo[pos];
-    if (search.type === 'date') {
-        const searchDate = moment(search.val);
-        let searchMatchSuccess = false;
-        if (colDef.type === 'date' || colDef.type === 'datetime') {
-            const colDate = moment(rowCellStr);        
-            switch (search.op) {
-                case '=':
-                    searchMatchSuccess = searchDate.isSame(colDate);
-                    break;
-                case '>':
-                    searchMatchSuccess = colDate.isAfter(searchDate);
-                    break;
-                case '<':
-                    searchMatchSuccess = colDate.isBefore(searchDate);
-                    break;
-            }
-        }
-        return {
-            op: search.op,
-            lightAll: true,
-            searchMatchSuccess,
-        }
-    }
-    if (search.type === 'number') {
-        let searchMatchSuccess = false;
-        if (colDef.type === 'decimal') {
-            const colVal = parseFloat(rowCellStr);
-            const searchVal = parseFloat(search.val);            
-            switch (search.op) {
-                case '=':
-                    searchMatchSuccess = colVal == searchVal;
-                    break;
-                case '>':
-                    searchMatchSuccess = colVal > searchVal;
-                    break;
-                case '<':
-                    searchMatchSuccess = colVal < searchVal;
-                    break;
-            }
-        }
-        return {
-            op: search.op,
-            lightAll: true,
-            searchMatchSuccess,
-        };
-    }
-    return {
-        searchMatchSuccess: rowCellStr.includes(search.val),
-        op: 'like',
-        lightAll: false,
-    }
-}
+
 function checkItem(r: ItemType, search: IFullTextSearchPart,displayColumnInfo: IDBFieldDef[]) {
     return r.searchInfo.find((fieldAry, pos) => {
         return !!fieldAry.find(rowCellStr => checkOneFieldMatch(rowCellStr, pos, search, displayColumnInfo).searchMatchSuccess);
