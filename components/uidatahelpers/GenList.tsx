@@ -316,7 +316,7 @@ interface ISortingAndPaggingInfo {
 
 function checkItem(r: ItemType, search: IFullTextSearchPart,displayColumnInfo: IDBFieldDef[]) {
     return r.searchInfo.find((fieldAry, pos) => {
-        return !!fieldAry.find(rowCellStr => checkOneFieldMatch(rowCellStr, pos, search, displayColumnInfo).searchMatchSuccess);
+        return !!fieldAry.find(rowCellStr => checkOneFieldMatch(rowCellStr, displayColumnInfo[pos], search).searchMatchSuccess);
     });
 }
 

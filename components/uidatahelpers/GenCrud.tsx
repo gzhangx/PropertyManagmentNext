@@ -456,8 +456,8 @@ export const GenCrud = (props: IGenGrudProps) => {
 }
 
 
-export function checkOneFieldMatch(rowCellStr: string, pos: number, search: IFullTextSearchPart, displayColumnInfo: IDBFieldDef[]) {
-    const colDef = displayColumnInfo[pos];
+export function checkOneFieldMatch(rowCellStr: string, colDef: IDBFieldDef, search: IFullTextSearchPart) {
+    //const colDef = displayColumnInfo[pos];
     if (search.type === 'date') {
         const searchDate = moment(search.val);
         let searchMatchSuccess = false;
