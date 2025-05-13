@@ -4,7 +4,7 @@ import { get } from 'lodash';
 import { EditTextDropdown, } from '../generic/EditTextDropdown';
 import * as bluebird from 'bluebird';
 import {Dialog, createDialogPrms} from '../dialog'
-import { FieldValueType, IDBFieldDef, isColumnSecurityField, TableNames } from '../types';
+import { DisplayCustomFormatFieldOriginalDataSufix, FieldValueType, IDBFieldDef, isColumnSecurityField, TableNames } from '../types';
 import { IEditTextDropdownItem } from '../generic/GenericDropdown';
 import { IGenGrudProps } from './GenCrud';
 import * as RootState from '../states/RootState'
@@ -222,13 +222,16 @@ export const GenCrudAdd = (props: IGenGrudAddProps) => {
                         if (isCreateAddNewItem) { //operation === 'Add') { //  !editItem
                             //create                            
                             if (c.type === 'date') {
-                                editItem[c.field] = mainCtx.browserTimeToUTCDBTime(moment())//  moment().format('YYYY-MM-DD');
+                                editItem.data[c.field] = mainCtx.browserTimeToUTCDBTime(moment())//  moment().format('YYYY-MM-DD');
                             } else {
                                 if (c.isId) return null;
                             }
                         } else {
                             //modify
-                            if (c.isId) return <div className='row' key={cind}>{editItem.data[c.field] || '' }</div>
+                            if (c.isId) return <div className='row' key={cind}>{editItem.data[c.field] || ''}</div>
+                            if (c.displayCustomFormatField) {
+                                editItem.data[c.field] = editItem.data[c.field + DisplayCustomFormatFieldOriginalDataSufix];
+                            }
                         }
                         if (isColumnSecurityField(c)) {
                             editItem.data[c.field] = '';
