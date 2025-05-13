@@ -92,6 +92,12 @@ export const houseInfoDef: ITableAndSheetMappingInfo<unknown> = {
     customHeaderFilterFunc: (mainCtx, pageState, colInfo) => {
         return genericCustomerHeaderFilterFuncForString(pageState, colInfo, 'houseInfo');
     },
+    displayFields:[
+       // {field:'houseID', desc:'Address',},
+        {field:'address', desc:'Address',},
+        {field:'city', desc:'city',},
+        {field:'zip', desc:'zip',},
+    ]
 }
 
 export const tenantInfoDef: ITableAndSheetMappingInfo<unknown> = {
