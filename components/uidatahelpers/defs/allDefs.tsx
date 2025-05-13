@@ -14,6 +14,59 @@ export const workerInfoDef: ITableAndSheetMappingInfo<unknown> = {
             'phone',
         ]
     },
+    displayFields:[    
+        {
+            field: 'workerName',
+            desc: 'Worker Name',
+        },
+        {
+            field: 'taxName',
+            desc: 'Tax Name',
+        },
+        {
+            field: 'taxID',
+            desc: 'Tax ID',
+        },
+        {
+            field: 'contactPerson',
+            desc: 'Contract Person'
+        },
+        {
+            field: 'email',
+            desc: 'Email'
+        },
+        {
+            field: 'phone',
+            desc: 'Phone'
+        },
+        {
+            field: 'address',
+            desc: 'Address'
+        },
+        {
+            field: 'city',
+            desc: 'City'
+        },
+        {
+            field: 'zip',
+            desc: 'Zip'
+        },
+        
+    
+        {
+            field: 'website',
+            desc: 'Website'
+        },
+        {
+            field: 'zellerId',
+            desc: 'Zeller ID'
+        },
+        {
+            field: 'venmoId',
+            desc: 'Venmo ID'
+        },
+    ],
+       
     customHeaderFilterFunc: (mainCtx, pageState, colInfo) => {
         return genericCustomerHeaderFilterFuncForString(pageState, colInfo, 'houseInfo');
     },
