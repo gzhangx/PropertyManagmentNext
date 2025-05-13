@@ -375,7 +375,7 @@ export const GenCrud = (props: IGenGrudProps) => {
                                     return (
                                         <tr key={ind}>
                                             {
-                                                displayFieldsStripped.map((fn, find) => {
+                                                displayFieldsStripped.map((fn, findIndex) => {
                                                     const def = fkDefLookup[fn];                                                    
                                                     const val = row.data[fn]
                                                     let dsp = val;
@@ -399,9 +399,12 @@ export const GenCrud = (props: IGenGrudProps) => {
                                                     let dspLine: (React.JSX.Element | string) = standardGenListColumnFormatter(dsp, def);
                                                     let dspClass = '';
                                                     if (props.fullTextSearchInTyping.val) {
-                                                        fullTextSearchHighLight = checkOneFieldMatch(val, def, props.fullTextSearchInTyping);                                                                                                                
+                                                        fullTextSearchHighLight = checkOneFieldMatch(row.searchInfo?.[findIndex]?.[0] || val, def, props.fullTextSearchInTyping);                                
+                                                        if (!fullTextSearchHighLight.searchMatchSuccess && row.searchInfo[findIndex]?.[1]) {
+                                                            fullTextSearchHighLight = checkOneFieldMatch(row.searchInfo?.[findIndex]?.[1] || dspLine, def, props.fullTextSearchInTyping);
+                                                        }                                                        
                                                         if (fullTextSearchHighLight) {
-                                                            if (fullTextSearchHighLight.searchMatchSuccess) {                                                                
+                                                            if (fullTextSearchHighLight.searchMatchSuccess) {                                                                                                                                
                                                                 if (fullTextSearchHighLight.lightAll) {
                                                                     dspClass = 'fulTextHightLightYellow';
                                                                 } else {                                                                    
@@ -412,7 +415,7 @@ export const GenCrud = (props: IGenGrudProps) => {
                                                     }                                                    
 
                                                     
-                                                    return <td key={find} className={dspClass}>{dspLine}</td>
+                                                    return <td key={findIndex} className={dspClass}>{dspLine}</td>
                                                 })
                                             }
                                             <td>
@@ -597,10 +600,13 @@ function getSerchHighlightDsp(dspLine: string, def: IDBFieldDef, fullTextSearchI
         }
         return dspLine;
     } else if (def.displayType === 'date') {
-        function findDateMatch(dateStr: string, searchStr: string): { start: number; end: number; }[] {
-            const [mm, dd, yyyy] = dateStr.split('/');
-            const originalDate = dateStr; // MM/DD/YYYY
-            const altDate = `${yyyy}-${mm}-${dd}`; // YYYY-MM-DD
+        function findDateMatch(fullDate: string, searchStr: string): { start: number; end: number; }[] {
+            if (!/^\d{2}\/\d{2}\/\d{4}$/.test(fullDate)) {
+                return null;
+            }            
+            const [mm, dd, yyyy] = fullDate.split('/');
+            const originalDate = fullDate; // MM/DD/YYYY
+            const fullIsoDate = `${yyyy}-${mm}-${dd}`; // YYYY-MM-DD
 
             // Check if the searchStr is in the original date
             if (originalDate.includes(searchStr)) {
@@ -610,13 +616,41 @@ function getSerchHighlightDsp(dspLine: string, def: IDBFieldDef, fullTextSearchI
             }
 
             // Check if the searchStr is in the alternative date
-            if (altDate.includes(searchStr)) {                
+
+            const foundStart = fullIsoDate.indexOf(searchStr);
+            const yearpart = {
+                start: -1,
+                end: -1,
             }
+            const monthPart = {
+                start: -1,
+                end: -1,
+            }
+            const MONOFF = 5;
+            const YEAROFF = 6;
+            if (foundStart >= 0) {
+                if (foundStart < 4) {
+                    //got year part
+                    yearpart.start = foundStart + YEAROFF;
+                    yearpart.end = 4 + YEAROFF;
+                    const yearPartLen = 4 - foundStart;
+                    const MMDDLen = searchStr.length - yearPartLen - 1;
+                    monthPart.start = 0;
+                    monthPart.end = MMDDLen;
+                    return [monthPart, yearpart]
+                } else if (foundStart < 7) {
+                    //has MM/DD, M/DD, M/D
+                    monthPart.start = foundStart - MONOFF;
+                    monthPart.end = monthPart.start + searchStr.length;
+                    return [monthPart];
+                }
+                //impossible to have only date
+            }            
 
             return null; // no match found
         }
 
-        const starEnds = findDateMatch(dspLine, fullTextSearchInTyping.val);
+        const starEnds = findDateMatch(dspLine, fullTextSearchInTyping.val);        
         if (!starEnds) return dspLine;
         let curStart = 0;
         return <div style={{ display: 'block' }}>
@@ -627,7 +661,7 @@ function getSerchHighlightDsp(dspLine: string, def: IDBFieldDef, fullTextSearchI
                     curStart = starEnd.end;
                     return <><span>{dspLine.substring(start, starEnd.start)}</span><span className='fulTextHightLightYellow'>{
                         dspLine.substring(starEnd.start, starEnd.end)
-                    }</span> {
+                    }</span>{
                             at === starEnds.length - 1 && <span>{dspLine.substring(starEnd.end)}</span>       
                     }                        
                     </>
