@@ -265,6 +265,9 @@ export function getDspFieldInfo(props: ITableAndSheetMappingInfo<unknown>, allCo
                 f.foreignKey = allColFound.foreignKey;
             }
             allColFound.displayType = f.displayType;
+            if (f.desc) {
+                allColFound.desc = f.desc;
+            }
         }
         
         return allColFound;

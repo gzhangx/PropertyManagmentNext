@@ -126,7 +126,19 @@ export const leaseInfoDef: ITableAndSheetMappingInfo<unknown> = {
 
 
 const ownerInfoDef: ITableAndSheetMappingInfo<unknown> = {
-    table: 'ownerInfo'
+    table: 'ownerInfo',
+    displayFields:[
+        //{ field: 'userID', desc: 'Owner', foreignKey: { table: 'userInfo', field: 'userID' }, required: true, isId: true, },
+        { field: 'ownerName', desc: 'Owner Name', required: true, },
+        { field: 'taxName', desc: 'Tax Name' },
+        { field: 'taxID', desc: 'TAX ID', },
+        { field: 'address', desc: 'Address' },
+        { field: 'city', desc: 'City' },
+        { field: 'state', desc: 'State' },
+        { field: 'zip', desc: 'Zip' },
+        { field: 'email', desc: 'Email', },
+        { field: 'phone', desc: 'Phone', },
+    ]
 }
 
 import { paymentInfoDef } from './rentpaymentInfoDef'

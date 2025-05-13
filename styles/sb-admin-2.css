@@ -5642,7 +5642,7 @@ a.close.disabled {
 }
 
 .modal-open .modal {
-  overflow-x: hidden;
+  overflow-x: auto;
   overflow-y: auto;
 }
 
@@ -9807,7 +9807,7 @@ a:focus {
 #wrapper #content-wrapper {
   background-color: #f8f9fc;
   width: 100%;
-  overflow-x: hidden;
+  overflow-x: auto;
 }
 
 #wrapper #content-wrapper #content {

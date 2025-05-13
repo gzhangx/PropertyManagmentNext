@@ -4,10 +4,10 @@ import {GenList} from '../../uidatahelpers/GenList';
 export function OwnerList(props) {   
     return <GenList {...props} table={'ownerInfo'} title={'Owner List'}
         displayFields={[
-            { field: 'userID', desc: 'Owner', foreignKey: { table: 'userInfo', field: 'userID' }, required: true, isId: true, },
+            //{ field: 'userID', desc: 'Owner', foreignKey: { table: 'userInfo', field: 'userID' }, required: true, isId: true, },
             { field: 'ownerName', desc: 'Owner Name', required: true, },
             { field: 'taxName', desc: 'Tax Name' },
-            { field: 'taxID', desc: 'SSN', },
+            { field: 'taxID', desc: 'TAX ID', },
             { field: 'address', desc: 'Address' },
             { field: 'city', desc: 'City' },
             { field: 'state', desc: 'State' },
