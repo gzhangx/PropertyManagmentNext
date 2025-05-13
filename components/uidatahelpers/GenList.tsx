@@ -292,6 +292,8 @@ function getStdSearchInfo(mainCtx:IPageRelatedState, itm: ItemType, columnInfo: 
                         v = mainCtx.translateForeignLeuColumn(c, itm.data);
                     } 
                     res.push([v.toString().toLowerCase()])
+                } else {
+                    res.push([]);
                 }
 
         }
