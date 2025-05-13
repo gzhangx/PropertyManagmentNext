@@ -399,7 +399,7 @@ export const GenCrud = (props: IGenGrudProps) => {
                                                     let dspLine: (React.JSX.Element | string) = standardGenListColumnFormatter(dsp, def);
                                                     let dspClass = '';
                                                     if (props.fullTextSearchInTyping.val) {
-                                                        fullTextSearchHighLight = checkOneFieldMatch(dspLine, def, props.fullTextSearchInTyping);                                                                                                                
+                                                        fullTextSearchHighLight = checkOneFieldMatch(val, def, props.fullTextSearchInTyping);                                                                                                                
                                                         if (fullTextSearchHighLight) {
                                                             if (fullTextSearchHighLight.searchMatchSuccess) {                                                                
                                                                 if (fullTextSearchHighLight.lightAll) {
