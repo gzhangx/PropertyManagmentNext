@@ -534,6 +534,12 @@ export function checkOneFieldMatch(rowCellStr: string, colDef: IDBFieldDef, sear
 
 //string, date or accounting
 function getSerchHighlightDsp(dspLine: string, def: IDBFieldDef, fullTextSearchInTyping: IFullTextSearchPart) {
+    if (!dspLine) {        
+        return dspLine;
+    }
+    if (typeof dspLine === 'number') {        
+        dspLine = (dspLine as number).toString();
+    }
     const startIndex = dspLine.indexOf(fullTextSearchInTyping.val);
     if (startIndex >= 0) {
         const len = fullTextSearchInTyping.val.length;
