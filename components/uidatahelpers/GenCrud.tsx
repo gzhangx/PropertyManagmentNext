@@ -405,13 +405,7 @@ export const GenCrud = (props: IGenGrudProps) => {
                                                                 if (fullTextSearchHighLight.lightAll) {
                                                                     dspClass = 'fulTextHightLightYellow';
                                                                 } else {                                                                    
-                                                                    const startIndex = dspLine.indexOf(props.fullTextSearchInTyping.val);
-                                                                    const len = props.fullTextSearchInTyping.val.length;
-                                                                    dspLine = <div style={{display:'block'}}><span>{dspLine.substring(0, startIndex)}</span><span className='fulTextHightLightYellow'>{
-                                                                        dspLine.substring(startIndex, startIndex+ len)
-                                                                    }</span>
-                                                                        <span>{ dspLine.substring(startIndex+len)}</span>
-                                                                    </div>
+                                                                    dspLine = getSerchHighlightDsp(dspLine, def, props.fullTextSearchInTyping)
                                                                 }
                                                             }
                                                         }
@@ -532,4 +526,115 @@ export function checkOneFieldMatch(rowCellStr: string, colDef: IDBFieldDef, sear
         op: 'like',
         lightAll: false,
     }
+}
+
+
+//string, date or accounting
+function getSerchHighlightDsp(dspLine: string, def: IDBFieldDef, fullTextSearchInTyping: IFullTextSearchPart) {
+    const startIndex = dspLine.indexOf(fullTextSearchInTyping.val);
+    if (startIndex >= 0) {
+        const len = fullTextSearchInTyping.val.length;
+        return <div style={{ display: 'block' }}><span>{dspLine.substring(0, startIndex)}</span><span className='fulTextHightLightYellow'>{
+            dspLine.substring(startIndex, startIndex + len)
+        }</span>
+            <span>{dspLine.substring(startIndex + len)}</span>
+        </div>
+    }
+    if (def.displayType === 'currency') {
+        //match val to line, all char on val must match line
+        function findCurrencyPartPosition(currencyStr: string, part: string) {
+            // Validate inputs
+            if (!currencyStr || !part) {
+                return { start: -1, end: -1, error: "Invalid input" };
+            }
+
+            // Remove currency symbols and commas for matching
+            const cleanedCurrency = currencyStr.replace(/[^0-9.]/g, '');
+            const cleanedPart = part.replace(/[^0-9.]/g, '');
+
+            // Check if part exists in cleaned currency string
+            const matchIndex = cleanedCurrency.indexOf(cleanedPart);
+            if (matchIndex === -1) {
+                return { start: -1, end: -1, error: "Part not found" };
+            }
+
+            // Map cleaned positions to original string
+            let cleanedPos = 0;
+            let originalPos = 0;
+            let startPos = -1;
+            let endPos = -1;
+
+            // Find start position
+            while (cleanedPos < matchIndex && originalPos < currencyStr.length) {
+                if (/[0-9.]/.test(currencyStr[originalPos])) {
+                    cleanedPos++;
+                }
+                originalPos++;
+            }
+            startPos = originalPos;
+
+            // Find end position
+            cleanedPos = matchIndex;
+            while (cleanedPos < matchIndex + cleanedPart.length && originalPos < currencyStr.length) {
+                if (/[0-9.]/.test(currencyStr[originalPos])) {
+                    cleanedPos++;
+                }
+                originalPos++;
+            }
+            endPos = originalPos;
+
+            return { start: startPos, end: endPos };
+        }
+
+        // Example usage
+        const starEnd = findCurrencyPartPosition(dspLine, fullTextSearchInTyping.val);
+        if (starEnd.start >= 0) {
+            return <div style={{ display: 'block' }}><span>{dspLine.substring(0, starEnd.start)}</span><span className='fulTextHightLightYellow'>{
+                dspLine.substring(starEnd.start, starEnd.end)
+            }</span>
+                <span>{dspLine.substring(starEnd.end)}</span>
+            </div>
+        }
+        return dspLine;
+    } else if (def.displayType === 'date') {
+        function findDateMatch(dateStr: string, searchStr: string): { start: number; end: number; }[] {
+            const [mm, dd, yyyy] = dateStr.split('/');
+            const originalDate = dateStr; // MM/DD/YYYY
+            const altDate = `${yyyy}-${mm}-${dd}`; // YYYY-MM-DD
+
+            // Check if the searchStr is in the original date
+            if (originalDate.includes(searchStr)) {
+                const start = originalDate.indexOf(searchStr);
+                const end = start + searchStr.length - 1;
+                return [{ start, end }];
+            }
+
+            // Check if the searchStr is in the alternative date
+            if (altDate.includes(searchStr)) {                
+            }
+
+            return null; // no match found
+        }
+
+        const starEnds = findDateMatch(dspLine, fullTextSearchInTyping.val);
+        if (!starEnds) return dspLine;
+        let curStart = 0;
+        return <div style={{ display: 'block' }}>
+
+            {
+                starEnds.map((starEnd, at) => {
+                    const start = curStart;
+                    curStart = starEnd.end;
+                    return <><span>{dspLine.substring(start, starEnd.start)}</span><span className='fulTextHightLightYellow'>{
+                        dspLine.substring(starEnd.start, starEnd.end)
+                    }</span> {
+                            at === starEnds.length - 1 && <span>{dspLine.substring(starEnd.end)}</span>       
+                    }                        
+                    </>
+                })
+            }
+
+        </div>
+    }
+        //string, do standard split        
 }
