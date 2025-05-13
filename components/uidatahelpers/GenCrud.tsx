@@ -285,7 +285,7 @@ export const GenCrud = (props: IGenGrudProps) => {
                         }                            
                             </>
                     
-                    <div>                            
+                        <div className="crudFilterDiv">                            
                             
                             <CrudFilter pageState={pageState} table={table}
                                 mode={searchMode}

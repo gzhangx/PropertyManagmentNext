@@ -52,7 +52,7 @@ export function CrudFilter(props: ICrudTagFilterProps) {
 
     const [modeSelState, setModeSelState] = useState<DropdownSimpleState>({
         show: false,
-        text: 'F',
+        icon: 'fa-magnifying-glass',
     });
 
     useEffect(() => {
@@ -63,7 +63,7 @@ export function CrudFilter(props: ICrudTagFilterProps) {
             }
             let clickInsideText = false;
             if (inputRef.current && inputRef.current.contains(event.target)) {
-                clickInsideText = true;                
+                clickInsideText = true;
             }
             let clickInsideSelect = false;
             if (listRef.current && listRef.current.contains(event.target)) {
@@ -99,12 +99,12 @@ export function CrudFilter(props: ICrudTagFilterProps) {
             return;
         }
         if (!workingOnFilter.val) {
-            const field = props.columnInfo.find(c => c.field === workingOnFilter.field);            
+            const field = props.columnInfo.find(c => c.field === workingOnFilter.field);
             workingOnFilter.val = t.value;
             workingOnFilter.valDescUIOnly = t.label;
             if (field.type === 'string') {
                 workingOnFilter.val = `%${t.value}%`;
-            }            
+            }
             pageFilterSortErrors.filters.push(workingOnFilter);
             setWorkingOnFilter(getEmptyFilter());
             forceUpdatePageProps();
@@ -127,11 +127,11 @@ export function CrudFilter(props: ICrudTagFilterProps) {
                 }) : [];
             case 'op':
                 const originalList = ['=', '!=', '<', '<=', '>', '>=', 'like'];
-                const field = props.columnInfo.find(c => c.field === workingOnFilter.field);            
+                const field = props.columnInfo.find(c => c.field === workingOnFilter.field);
                 let listToUse = originalList;
                 if (field.type === 'decimal' || field.type === 'int') {
                     listToUse = listToUse.filter(x => x !== 'like');
-                }                
+                }
                 return listToUse.map(label => {
                     return {
                         label,
@@ -140,7 +140,7 @@ export function CrudFilter(props: ICrudTagFilterProps) {
                 });
             case 'val':
                 if (workingOnFilter.field === 'houseID') {
-                    const allHouses = (mainCtx.getAllForeignKeyLookupItems('houseInfo') || []).map(data=>data.data);
+                    const allHouses = (mainCtx.getAllForeignKeyLookupItems('houseInfo') || []).map(data => data.data);
                     const items = allHouses.map(h => {
                         return {
                             label: h.address as string,
@@ -149,9 +149,9 @@ export function CrudFilter(props: ICrudTagFilterProps) {
                         }
                     });
                     return items;
-                } 
+                }
                 if (workingOnFilter.field === 'workerID') {
-                    const allWkrs = (mainCtx.getAllForeignKeyLookupItems('workerInfo') || []).map(data=>data.data);
+                    const allWkrs = (mainCtx.getAllForeignKeyLookupItems('workerInfo') || []).map(data => data.data);
                     const items = allWkrs.map(h => {
                         return {
                             label: h.workerName as string || '',
@@ -174,7 +174,7 @@ export function CrudFilter(props: ICrudTagFilterProps) {
                 break;
             default:
                 canShowFilterSel = false;
-        }        
+        }
     }
 
     const handleSelect = (option: EditItem) => {
@@ -266,56 +266,56 @@ export function CrudFilter(props: ICrudTagFilterProps) {
                 gap: '8px'
             }}>
 
-            {
-                workingOnFilter.field && <>
-                    {
-                        [workingOnFilter.field, workingOnFilter.op].filter(x => x).map((tag, index) => {
-                            return (
-                                <span key={index} style={{
-                                    background: '#e0e0e0',
-                                    padding: '5px 10px',
-                                    borderRadius: '15px',
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    gap: '5px'
-                                }}>
-                                    {tag}
-                                    <button style={{
-                                        background: '#ff4d4d',
-                                        color: 'white',
-                                        border: 'none',
-                                        borderRadius: '50%',
-                                        width: '20px',
-                                        height: '20px',
-                                        cursor: 'pointer',
+                {
+                    workingOnFilter.field && <>
+                        {
+                            [workingOnFilter.field, workingOnFilter.op].filter(x => x).map((tag, index) => {
+                                return (
+                                    <span key={index} style={{
+                                        background: '#e0e0e0',
+                                        padding: '5px 10px',
+                                        borderRadius: '15px',
                                         display: 'flex',
                                         alignItems: 'center',
-                                        justifyContent: 'center'
-                                    }}
- onClick={() => {
-                                        // Call the onTagRemoved function passed as a prop
-                                        switch (index) {
-                                            case 0:
-                                                setWorkingOnFilter(getEmptyFilter());
-                                                break;
-                                            case 1:
-                                                setWorkingOnFilter({
-                                                    ...workingOnFilter,
-                                                    op: '' as SQLOPS
-                                                })
-                                                break;
-                                        }
-                                    }}>X</button>
-                                </span>
-                            );
-                        })
-                    }
+                                        gap: '5px'
+                                    }}>
+                                        {tag}
+                                        <button style={{
+                                            background: '#ff4d4d',
+                                            color: 'white',
+                                            border: 'none',
+                                            borderRadius: '50%',
+                                            width: '20px',
+                                            height: '20px',
+                                            cursor: 'pointer',
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            justifyContent: 'center'
+                                        }}
+                                            onClick={() => {
+                                                // Call the onTagRemoved function passed as a prop
+                                                switch (index) {
+                                                    case 0:
+                                                        setWorkingOnFilter(getEmptyFilter());
+                                                        break;
+                                                    case 1:
+                                                        setWorkingOnFilter({
+                                                            ...workingOnFilter,
+                                                            op: '' as SQLOPS
+                                                        })
+                                                        break;
+                                                }
+                                            }}>X</button>
+                                    </span>
+                                );
+                            })
+                        }
                     </>
                 }
-                </div>
+            </div>
             <input type="text"
                 ref={inputRef}
-                placeholder={ props.mode === 'fullText'? 'Enter full text search':"Enter field/value"}
+                placeholder={props.mode === 'fullText' ? 'Enter full text search' : "Enter field/value"}
                 style={{
                     padding: '8px',
                     border: '1px solid #ccc',
@@ -324,14 +324,14 @@ export function CrudFilter(props: ICrudTagFilterProps) {
                     fontSize: '16px',
                     maxWidth: '800px'
                 }}
-            value={curInputText}
-            onChange={e => {
-                setCurInputText(e.target.value);
-                if (props.mode === 'fullText') {
-                    const sch = stringToFullTextSearchPart(e.target.value);
-                    props.setFullTextSearchInTyping(sch);
-                    return;
-                }
+                value={curInputText}
+                onChange={e => {
+                    setCurInputText(e.target.value);
+                    if (props.mode === 'fullText') {
+                        const sch = stringToFullTextSearchPart(e.target.value);
+                        props.setFullTextSearchInTyping(sch);
+                        return;
+                    }
                 }}
                 onClick={() => {
                     if (props.mode === 'fullText') {
@@ -347,15 +347,15 @@ export function CrudFilter(props: ICrudTagFilterProps) {
                             pageFilterSortErrors.fullTextSearchs.push(sch);
                             setCurInputText('');
                             forceUpdatePageProps();
-                        } 
+                        }
                         return;
                     }
                     if (curSelState === 'fields' || curSelState === 'op') {
                         handleKeyDown(event);
                         return;
                     }
-                if (event.key === 'Enter') {
-                    if (filterValIsSelection) return;
+                    if (event.key === 'Enter') {
+                        if (filterValIsSelection) return;
                         event.preventDefault();
                         const tagContent = (event.target as HTMLInputElement).value.trim();
 
@@ -373,78 +373,78 @@ export function CrudFilter(props: ICrudTagFilterProps) {
                     }
                     return;
                 }
-            }
+                }
             />
             
-            <ul ref={listRef} className="gg-editable-dropdown-list" style={{ display: showFilterSelect?'inline-block':'none'}}>
-                    {filteredOptions.length > 0 ? (
-                        filteredOptions.map((option, index) => {
-                            const { label, value } = option;
+            <ul ref={listRef} className="gg-editable-dropdown-list" style={{ display: showFilterSelect ? 'inline-block' : 'none' }}>
+                {filteredOptions.length > 0 ? (
+                    filteredOptions.map((option, index) => {
+                        const { label, value } = option;
                         
-                            return (
-                                <li
-                                    key={value}
-                                    style={{ display: 'block' }}
-                                    onClick={() => handleSelect(option)}
-                                    className={`${index === highlightedIndex ? 'gg-editable-dropdown-list-block highlighted' : ''
-                                        }`}
-                                >
-                                    {label}
-                                </li>
-                            )
-                        })
-                    ) : (
-                        <li className="no-options">No options found</li>
-                    )}
-                </ul>            
-            </div>
-        </>
+                        return (
+                            <li
+                                key={value}
+                                style={{ display: 'block' }}
+                                onClick={() => handleSelect(option)}
+                                className={`${index === highlightedIndex ? 'gg-editable-dropdown-list-block highlighted' : ''
+                                    }`}
+                            >
+                                {label}
+                            </li>
+                        )
+                    })
+                ) : (
+                    <li className="no-options">No options found</li>
+                )}
+            </ul>
+        </div>
+    </>
 
 
     return <>
         <div>
-        <DropdownSimple state={modeSelState} setState={setModeSelState}>
-        <>
-                            <div className="dropdown-header">Mode:</div>
+            <DropdownSimple state={modeSelState} setState={setModeSelState}>
+                <>
+                    <div className="dropdown-header">Mode:</div>
                     <a className="dropdown-item" href="#" onClick={e => {
                         e.preventDefault();
                         props.setMode('fullText');
                         setModeSelState(prev => ({
-                                ...prev,
-                                show: false,
-                            }))
-                            }}>Full Text Search</a>
-                            <div className="dropdown-divider"></div>
-                            <a className="dropdown-item" href="#" onClick={e => {
+                            icon: 'fa-magnifying-glass',
+                            show: false,
+                        }))
+                    }}>Full Text Search</a>
+                    <div className="dropdown-divider"></div>
+                    <a className="dropdown-item" href="#" onClick={e => {
                         e.preventDefault();
                         props.setMode('fieldValue');
                         setModeSelState(prev => ({
-                            ...prev,
+                            icon: 'fa-file-lines',
                             show: false,
                         }))
-                            }}>Field Search</a>
-                        </>
+                    }}>Field Search</a>
+                </>
             </DropdownSimple>
-            </div>
+        </div>
         <TagsInput tags={pageFilterSortErrors.filters.concat(pageFilterSortErrors.fullTextSearchs as unknown as IPageFilter[])}
             displayTags={tag => {
                 return `${tag.field || ''} ${tag.op} ${tag.valDescUIOnly || tag.val}`;
             }}
-            onTagAdded={()=>{}}
+            onTagAdded={() => { }}
             onTagRemoved={t => {
                 pageFilterSortErrors.filters = pageFilterSortErrors.filters.filter(f => f.id !== t.id);
                 pageFilterSortErrors.fullTextSearchs = pageFilterSortErrors.fullTextSearchs.filter(f => f.id !== t.id);
                 forceUpdatePageProps();
-            }}                                    
-                custInputUIElement={custInputUIElement}
-        ></TagsInput>    
+            }}
+            custInputUIElement={custInputUIElement}
+        ></TagsInput>
     </>
 }
 
 
 interface DropdownSimpleState {
     show: boolean;
-    text: string;
+    icon: 'fa-magnifying-glass' | 'fa-file-lines';
 }
 function DropdownSimple(props: {
     state: DropdownSimpleState;
@@ -471,7 +471,7 @@ function DropdownSimple(props: {
                 }));
             }}
             data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-            <i className="fas fa-ellipsis-v fa-sm fa-fw text-gray-400">{ state.text}</i>
+            <i className={`fas ${state.icon}`}></i>
         </a>
         <div className={className}
             aria-labelledby="dropdownMenuLink">

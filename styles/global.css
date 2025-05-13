@@ -119,3 +119,9 @@ tr:nth-child(even) {
   .fulTextHightLightYellow {
     background-color: #bdce68;
   }
+
+
+  .crudFilterDiv {
+    display: flex;
+    align-items: center;
+  }
