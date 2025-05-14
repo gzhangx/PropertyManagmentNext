@@ -10,6 +10,7 @@ import { orderBy, set } from 'lodash';
 import { formatAccounting, standardFormatDate, removeZeroHourMinuteSeconds } from '../utils/reportUtils';
 import { getTenantsForHouse } from '../utils/leaseEmailUtil';
 import moment from 'moment';
+import React from 'react';
 
 
 interface HouseWithTenants extends HouseWithLease {
@@ -192,14 +193,14 @@ export function OriginalDashboard() {
                         <div className="card-body">
                             {
                                 selectedHouse.leaseInfo?.payments.reverse().map((p, index) => {
-                                    return <><h4 className="small font-weight-bold" key={index}>{removeZeroHourMinuteSeconds(mainCtx.utcDbTimeToZonedTime(p.receivedDate))} <span
+                                    return <React.Fragment key={index}><h4 className="small font-weight-bold">{removeZeroHourMinuteSeconds(mainCtx.utcDbTimeToZonedTime(p.receivedDate))} <span
                                         className="float-right">{formatAccounting(p.receivedAmount)}</span>
                                     </h4>
                                         <div className="progress mb-4">
                                             <div className="progress-bar bg-danger" style={{ width: selectedHouse.leaseInfo?.totalBalance ? '0%' : '100%' }}
                                                 aria-valuenow={20} aria-valuemin={0} aria-valuemax={100}></div>
                                         </div>
-                                    </>
+                                    </React.Fragment>
                                 })
                             }                           
                         </div>
@@ -214,7 +215,7 @@ export function OriginalDashboard() {
                         <div className="card-body">
                             {
                                 selectedHouse.expenses?.map((p, index) => {
-                                    return <><h4 className="small font-weight-bold" key={index}>{removeZeroHourMinuteSeconds(mainCtx.utcDbTimeToZonedTime(p.date))} <span
+                                    return <React.Fragment key={index}><h4 className="small font-weight-bold">{removeZeroHourMinuteSeconds(mainCtx.utcDbTimeToZonedTime(p.date))} <span
                                         className="float-right">{formatAccounting(p.amount)}</span>
                                     </h4>
                                         <div className="mb-4">
@@ -223,7 +224,7 @@ export function OriginalDashboard() {
                                         <div className="mb-4">
                                             <span>{p.comment}</span>
                                         </div>
-                                    </>
+                                    </React.Fragment>
                                 })
                             }
                         </div>
