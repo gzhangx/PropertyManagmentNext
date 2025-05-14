@@ -3,7 +3,7 @@ import { GenCrud, getPageSorts, getPageFilters, IPageInfo, checkOneFieldMatch } 
 import { createHelper } from './datahelpers';
 
 import * as RootState from '../states/RootState'
-import { FieldValueType, IDBFieldDef, IFullTextSearchPart, ISqlOrderDef, ISqlRequestWhereItem, ReactSetStateType } from '../types';
+import { DisplayCustomFormatFieldOriginalDataSufix, FieldValueType, IDBFieldDef, IFullTextSearchPart, ISqlOrderDef, ISqlRequestWhereItem, ReactSetStateType } from '../types';
 import { usePageRelatedContext } from '../states/PageRelatedState';
 import { ITableAndSheetMappingInfo, ItemType, ItemTypeDict } from './datahelperTypes';
 import { getPageFilterSorterErrors } from './defs/util';
@@ -265,6 +265,7 @@ export function getDspFieldInfo(props: ITableAndSheetMappingInfo<unknown>, allCo
                 f.foreignKey = allColFound.foreignKey;
             }
             allColFound.displayType = f.displayType;
+            allColFound.displayCustomFormatField = f.displayCustomFormatField;
             if (f.desc) {
                 allColFound.desc = f.desc;
             }
@@ -277,6 +278,10 @@ function getStdSearchInfo(mainCtx:IPageRelatedState, itm: ItemType, columnInfo: 
     const res: string[][] = [];
     for (const c of columnInfo) {
         let v = itm.data[c.field] as string;
+        if (c.displayCustomFormatField) {
+            itm.data[c.field + DisplayCustomFormatFieldOriginalDataSufix] = v;
+            v = c.displayCustomFormatField(itm.data, c.field);
+        }
         switch(c.type) {
             case 'date':
             case 'datetime':
