@@ -7,7 +7,7 @@ import { usePageRelatedContext } from '../states/PageRelatedState';
 import { useEffect, useState } from 'react';
 import { getLeases } from '../api';
 import { orderBy, set } from 'lodash';
-import { formatAccounting, removeZeroHourMinuteSeconds } from '../utils/reportUtils';
+import { formatAccounting, standardFormatDate, removeZeroHourMinuteSeconds } from '../utils/reportUtils';
 import { getTenantsForHouse } from '../utils/leaseEmailUtil';
 import moment from 'moment';
 
@@ -73,7 +73,7 @@ export function OriginalDashboard() {
 
                 h.expenses = await getAllMaintenanceForHouse(h.houseID);
                 if (h.expenses) {
-                    h.expenses = orderBy(h.expenses, p => p.date, 'asc');
+                    h.expenses = orderBy(h.expenses, p => p.date, 'desc');
                 }
 
                 if (h.lease) {
@@ -147,6 +147,42 @@ export function OriginalDashboard() {
 
         {
             selectedHouse && <div className="row">
+                {
+                    <div className="col-12 mb-4">
+
+                        <div className="card shadow mb-4">
+                            <div className="card-header py-3">
+                                <h6 className="m-0 font-weight-bold text-primary">Lease Info for {selectedHouse.address}
+                                <div className="houseID"></div></h6>
+                            </div>
+                            <div className="card-body">
+                                {
+                                false &&<div className="text-center">
+                                    <img className="img-fluid px-3 px-sm-4 mt-3 mb-4" style={{ width: '25rem' }}
+                                        src="img/undraw_posting_photo.svg" alt="..." />
+                                </div>
+}
+                                <p>
+                                    Lease Starts <b>{standardFormatDate(selectedHouse.lease?.startDate)}  &nbsp; &nbsp;</b>
+                                    Ends <b>{standardFormatDate(selectedHouse.lease?.endDate) ?? 'NA'} </b><br />
+                                    Lease Amount <b>${selectedHouse.lease?.monthlyRent} </b>&nbsp; &nbsp;
+                                    Deposit <b>${selectedHouse.lease?.deposit}</b> &nbsp; &nbsp;
+                                    Pet Deposit <b>${selectedHouse.lease?.petDeposit}</b>
+                                </p>
+                                
+                                <div className='flex'>                                    
+                                    {
+                                        selectedHouse.tenants.map((t, index) => {
+                                            return <div className='tdNoBorder' key={index}>{t.fullName}<br></br> {t.email}<br></br> {t.phone}</div>
+                                        })
+                                    }
+                                </div>
+                                <div> &rarr;</div>
+                            </div>
+                        </div>
+
+                    </div>
+                }
                 <div className="col-lg-6 mb-4">
 
                     <div className="card shadow mb-4">
@@ -194,36 +230,7 @@ export function OriginalDashboard() {
                     </div>
                 </div>
 
-                {
-                    <div className="col-lg-6 mb-4">
-
-                        <div className="card shadow mb-4">
-                            <div className="card-header py-3">
-                                <h6 className="m-0 font-weight-bold text-primary">Lease Info</h6>
-                            </div>
-                            <div className="card-body">
-                                <div className="text-center">
-                                    <img className="img-fluid px-3 px-sm-4 mt-3 mb-4" style={{ width: '25rem' }}
-                                        src="img/undraw_posting_photo.svg" alt="..." />
-                                </div>
-                                <p>
-                                    Lease Started {selectedHouse.lease?.startDate} <br />
-                                    Lease Ends {selectedHouse.lease?.endDate ?? 'NA'} <br />
-                                    Lease Amount {selectedHouse.lease?.monthlyRent} <br />
-                                </p>
-                                <p>                                    
-                                    {
-                                        selectedHouse.tenants.map((t, index) => {
-                                            return <div key={index}>{t.fullName}<br></br> {t.email}<br></br> {t.phone}</div>
-                                        })
-                                    }
-                                </p>
-                                <div> &rarr;</div>
-                            </div>
-                        </div>
-
-                    </div>
-                }
+                
             </div>
         }
     </div>

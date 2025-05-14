@@ -163,12 +163,6 @@ export function formatAccounting(number: number | string) {
     return num < 0 ? `(${formatted.replace('-', '')})` : formatted;
   }
 
-  export function formatDate(date) {
-    let month = (date.getMonth() + 1).toString().padStart(2, '0');
-    let day = date.getDate().toString().padStart(2, '0');
-    let year = date.getFullYear();
-    return `${month}/${day}/${year}`;
-}
 
 
 export function DoubleAryToCsv(data: string[][]): string {
@@ -197,7 +191,14 @@ export function standardGenListColumnFormatter(val: any, def: IDBFieldDef): stri
         case 'currency':
             return formatAccounting(val);
         case 'date':
-            return moment(val).format('MM/DD/YYYY');
+            return standardFormatDate(val);
     }
     return val;
+}
+
+export function standardFormatDate(date: string | Date):string {
+
+    const mDate = moment(date);
+    if (!mDate.isValid()) return '';
+    return mDate.format('MM/DD/YYYY');
 }

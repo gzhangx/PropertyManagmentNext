@@ -125,3 +125,11 @@ tr:nth-child(even) {
     display: flex;
     align-items: center;
   }
+  .tdNoBorder{
+    border: none;
+  display:inline-block;
+  margin-right: 3em;
+  }
+  .flex{
+    display: flex;
+  }
