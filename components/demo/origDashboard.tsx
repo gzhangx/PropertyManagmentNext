@@ -101,8 +101,8 @@ export function OriginalDashboard() {
 
         <div className="row">
             {
-                allHouses.filter(h=>!h.disabled).map((h, index) => {
-                    return <HouseWithRenterAndLeaseInfo key={index} house={h}                         
+                allHouses.filter(h=>!h.disabled).map((h) => {
+                    return <HouseWithRenterAndLeaseInfo house={h}                         
                         onClick={() => {
                             setSelectedHouse(h);                          
                         }}                        
@@ -239,7 +239,8 @@ export function OriginalDashboard() {
 
 
 function HouseWithRenterAndLeaseInfo(props: {
-    house: HouseWithTenants
+    house: HouseWithTenants;
+    key: number;
     onClick?: () => void;
 }) {
     //title = { h.address }
@@ -262,7 +263,7 @@ function HouseWithRenterAndLeaseInfo(props: {
         }
         return str;
     }
-    return <div className="col-xl-3 col-md-6 mb-4" onClick={() => {
+    return <div key={h.houseID} className="col-xl-3 col-md-6 mb-4" onClick={() => {
         if (props.onClick) {
             props.onClick()
         }
