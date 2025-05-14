@@ -15,6 +15,7 @@ interface IPaymentOfMonth {
     accumulated: number;
     month: string;
     balance: number;
+    previousBalance: number;
 }
 
 //Same as IPayment but only needed items
@@ -109,6 +110,7 @@ export async function getLeaseUtilForHouse(houseID: string) {
                 shouldAccumatled,
                 paid: 0,
                 balance: 0,
+                previousBalance: 0,
             }
             monthInfoLookup[month] = info;
             finalMonthStr = month;
@@ -156,6 +158,7 @@ export async function getLeaseUtilForHouse(houseID: string) {
         });
         result.monthlyInfo.reduce((acc, mon) => {            
             if (!mon.accumulated) mon.accumulated = acc.last.accumulated;
+            mon.previousBalance = acc.last.balance;
             const balance = round2(mon.shouldAccumatled - mon.accumulated);
             if (mon.balance == 0) mon.balance = balance;
             if (balance !== mon.balance) {
