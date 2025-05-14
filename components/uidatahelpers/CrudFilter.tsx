@@ -345,6 +345,8 @@ export function CrudFilter(props: ICrudTagFilterProps) {
                         if (event.key === 'Enter') {
                             const sch = stringToFullTextSearchPart((event.target as HTMLInputElement).value);
                             pageFilterSortErrors.fullTextSearchs.push(sch);
+                            const clear = stringToFullTextSearchPart('');
+                            props.setFullTextSearchInTyping(clear);
                             setCurInputText('');
                             forceUpdatePageProps();
                         }
