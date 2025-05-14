@@ -295,7 +295,8 @@ export const paymentInfoDef: ITableAndSheetMappingInfo<ICustEmailInfo> = {
                         text: err,
                     }]
                 })
-            });       
+            });
+            console.log('format email res',house,formatedData)
             setCustomFieldMapping(prev => {
                 return {
                     ...prev,

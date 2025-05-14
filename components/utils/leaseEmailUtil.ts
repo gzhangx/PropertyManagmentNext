@@ -1,7 +1,7 @@
 import moment from 'moment';
 import { getUserOptions } from '../api'
 import { IHouseInfo, ILeaseInfo, IPageRelatedState, ITenantInfo } from '../reportTypes';
-import { HouseWithLease, ILeaseInfoWithPmtInfo } from './leaseUtil';
+import { gatherLeaseInfomation, HouseWithLease, ILeaseInfoWithPmtInfo } from './leaseUtil';
 import { IStringLogger } from '../types';
 
 
@@ -217,6 +217,9 @@ export async function formateEmail(mainCtx: IPageRelatedState, house: HouseWithL
 
     await mainCtx.loadForeignKeyLookup('tenantInfo');
 
+    if (!house.lease) {
+        await gatherLeaseInfomation(house);
+    }
     if (!house.lease || !house.leaseInfo) {
         return {
             subject: 'no lease found',
