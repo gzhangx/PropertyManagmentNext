@@ -104,7 +104,7 @@ export default function RentReport() {
             monthAry: [] as string[],
             monthDict: {} as { [month: string]: boolean; },
         }
-        const allRentReportData: AllRentReportData = paymentData.reduce((acc,pmt) => {            
+        const allRentReportData: AllRentReportData = paymentData.filter(p=>p.paymentTypeName === 'Rent').reduce((acc,pmt) => {            
             let houseMOnth = acc[pmt.houseID];
             if (!houseMOnth) {
                 houseMOnth = {};
