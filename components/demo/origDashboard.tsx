@@ -101,8 +101,8 @@ export function OriginalDashboard() {
 
         <div className="row">
             {
-                allHouses.filter(h=>!h.disabled).map((h) => {
-                    return <HouseWithRenterAndLeaseInfo house={h}                         
+                allHouses.filter(h=>!h.disabled).map((h, key) => {
+                    return <HouseWithRenterAndLeaseInfo key={key} house={h}                         
                         onClick={() => {
                             setSelectedHouse(h);                          
                         }}                        
