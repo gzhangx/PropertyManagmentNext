@@ -166,9 +166,9 @@ export function OriginalDashboard() {
                                 <p>
                                     Lease Starts <b>{standardFormatDate(selectedHouse.lease?.startDate)}  &nbsp; &nbsp;</b>
                                     Ends <b>{standardFormatDate(selectedHouse.lease?.endDate) ?? 'NA'} </b><br />
-                                    Lease Amount <b>${selectedHouse.lease?.monthlyRent} </b>&nbsp; &nbsp;
-                                    Deposit <b>${selectedHouse.lease?.deposit}</b> &nbsp; &nbsp;
-                                    Pet Deposit <b>${selectedHouse.lease?.petDeposit}</b>
+                                    Lease Amount <b>${formatAccounting(selectedHouse.lease?.monthlyRent)} </b>&nbsp; &nbsp;
+                                    Deposit <b>${formatAccounting(selectedHouse.lease?.deposit)}</b> &nbsp; &nbsp;
+                                    Pet Deposit <b>${formatAccounting(selectedHouse.lease?.petDeposit)}</b>
                                 </p>
                                 
                                 <div className='flex'>                                    
