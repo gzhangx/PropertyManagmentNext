@@ -107,6 +107,7 @@ function parser(s: string, pos: number, level: number) {
     if (curBuffer) {
         parts.push(curBuffer);
     }
+    console.log('parsing result', parts,pos)
     return {
         parts,
         pos,
@@ -135,7 +136,7 @@ function doReplace(text: string, house: HouseWithLease, tenants: ITenantInfo[], 
                                 logger(`Warning, ${tag.tag} expecting number, as first parameter`);
                             } else {
                                 const loops = parseInt(matched[1]);
-                                acc += matched[2];                                
+                                //acc += matched[2];                                
                                 for (let i = 0; i < loops; i++) {
                                     const curMonthlyInfo = monthlyInfo[i];
                                     if (!curMonthlyInfo) break;
