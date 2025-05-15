@@ -35,6 +35,7 @@ const MATCHCHAR = '{';
 const ENDMATCHCHAR = '}'
 const verbs = [
     '$LoopMonthly{',
+    '$PaymentMonth{',
     '$PaymentDate{',
     '$DueDate{',
     '$Paid',
@@ -153,20 +154,28 @@ function doReplace(text: string, house: HouseWithLease, tenants: ITenantInfo[], 
                                                 case '$Paid':
                                                     acc += '$' + curMonthlyInfo.paid.toFixed(2);
                                                     break;
-                                                case '$PaymentDate{':
+                                                case '$PaymentMonth{':
                                                     if (ptg.parts.length && typeof ptg.parts[0] === 'string') {
-                                                        acc += curMonthlyInfo.paymentDate ? moment(curMonthlyInfo.paymentDate).format(ptg.parts[0]) : '';
+                                                        acc += moment(curMonthlyInfo.month + '-01').format(ptg.parts[0]);
                                                     } else {
                                                         logger(`Warning, ${ptg.tag} no format specified`)
                                                         acc += curMonthlyInfo.month;
                                                     }
                                                     break;
-                                                case '$DueDate{':
+                                                case '$PaymentDate{':
                                                     if (ptg.parts.length && typeof ptg.parts[0] === 'string') {
-                                                        acc += curMonthlyInfo.paymentDate ? moment(curMonthlyInfo.dueDate).format(ptg.parts[0]) : '';
+                                                        acc += curMonthlyInfo.paymentDate ? moment(curMonthlyInfo.paymentDate).format(ptg.parts[0]) : '';
                                                     } else {
                                                         logger(`Warning, ${ptg.tag} no format specified`)
-                                                        acc += curMonthlyInfo.month;
+                                                        acc += curMonthlyInfo.paymentDate;
+                                                    }
+                                                    break;
+                                                case '$DueDate{':
+                                                    if (ptg.parts.length && typeof ptg.parts[0] === 'string') {
+                                                        acc += curMonthlyInfo.dueDate ? moment(curMonthlyInfo.dueDate).format(ptg.parts[0]) : '';
+                                                    } else {
+                                                        logger(`Warning, ${ptg.tag} no format specified`)
+                                                        acc += curMonthlyInfo.dueDate;
                                                     }
                                                     break;
                                             }
