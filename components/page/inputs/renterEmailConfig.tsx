@@ -107,8 +107,12 @@ export function RenterEmailConfig() {
 Your Rent Payment of $LastPaymentAmount was received on $LastPaymentDate{MM/DD/YYYY}.
 Here is your balance in details, 
 <table>
-<tr><td>Date</td><td>Previous Balance</td><td>Paid</td><td>Balance</td></tr>
-$LoopMonthly{3, <tr><td>$PaymentDate{YYYY/MMM}</td> <td>balance=$PreviousBalance</td> <td>p=$Paid</td> <td>balance=$Balance</td></tr>
+<tr><td>Date</td><td>Previous Balance</td><td>Paid</td></tr>
+<tr colspan=3><td>$PaymentMonth{MM/YYYY}</td></tr>
+$LoopMonthly{3, <tr><td colspan=2>Previous Balance:</td><td>$PreviousBalance</td></tr>
+<tr><td>$DueDate{MM/DD/YYYY}</td>    <td>Rent Due</td><td>$RentDue</td></tr>
+<tr><td>$PaymentDate{MM/DD/YYYY}</td><td>Payment </td><td>$Paid</td></tr>
+<tr><td colspan=2>Balance</td><td>$Balance</td></tr>
 }
 </table>
 
