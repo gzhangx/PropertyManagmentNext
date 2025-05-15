@@ -64,6 +64,7 @@ tr:nth-child(even) {
   padding: 0px;
     
   }
+  
   .divReportHeader{
   
     text-align: center;
@@ -79,7 +80,6 @@ tr:nth-child(even) {
     font-weight: bolder;
     border-color: rgb(221, 39, 39);
     
-
   }
   
 
@@ -125,11 +125,26 @@ tr:nth-child(even) {
     display: flex;
     align-items: center;
   }
+
   .tdNoBorder{
     border: none;
   display:inline-block;
   margin-right: 3em;
   }
+  .table-NOborder{
+    border-collapse: collapse; 
+    border: none;
+    display:inline-block;
+
+  }
+  .td20PercentWidth{
+   width: 20%;
+  }
+  .td80PercentWidth{
+    width: 80%;
+   }
+ 
+
   .flex{
     display: flex;
   }
