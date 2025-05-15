@@ -12,6 +12,8 @@ export type HouseWithLease = IHouseInfo & {
 
 interface IPaymentOfMonth {
     paid: number;
+    paymentDate: string;
+    dueDate: string;
     shouldAccumatled: number;
     accumulated: number;
     month: string;
@@ -34,6 +36,8 @@ export interface ILeaseInfoWithPmtInfo {
     monthlyInfo: IPaymentOfMonth[];
     lastPaymentDate: string;
     lastPaymentAmount: number;
+
+    monthlyRent: number;
 }
 
 export async function getLeaseUtilForHouse(houseID: string) {
@@ -112,6 +116,9 @@ export async function getLeaseUtilForHouse(houseID: string) {
                 paid: 0,
                 balance: 0,
                 previousBalance: 0,
+
+                dueDate: moment(curMon).clone().startOf('month').add(monthlyDueDate, 'days').format('YYYY-MM-DD'),
+                paymentDate: '',
             }
             monthInfoLookup[month] = info;
             finalMonthStr = month;
@@ -146,6 +153,8 @@ export async function getLeaseUtilForHouse(houseID: string) {
                 info.accumulated = acc.totalPayments;
                 info.balance = round2(info.shouldAccumatled - info.accumulated);
                 acc.totalBalance = round2(info.shouldAccumatled - info.accumulated);
+
+                info.paymentDate = pmt.receivedDate;
                 //console.log(`lookuping up with ${pmt.receivedDate.substring(0, 7)} paid=${info.paid} accumulated=${info.accumulated} balance=${info.balance}`)
             }
             return acc;
@@ -156,6 +165,7 @@ export async function getLeaseUtilForHouse(houseID: string) {
             monthlyInfo,
             lastPaymentDate: '',
             lastPaymentAmount: 0,
+            monthlyRent: l.monthlyRent,
         });
         result.monthlyInfo.reduce((acc, mon) => {            
             if (!mon.accumulated) mon.accumulated = acc.last.accumulated;
