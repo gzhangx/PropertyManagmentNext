@@ -151,7 +151,7 @@ export default function RentReport() {
                     <table>
                         {
                             orderBy((showDetail?.payments || [] ), 'receivedDate').map((d,tri) => {
-                                return <tr key={tri}><td>{d.amount.toFixed(2)}</td><td>{d.date}</td> <td>{d.address}</td><td> {d.notes}</td> <td>{d.month}</td></tr>
+                                return <tr key={tri}><td>{d.amount.toFixed(2)}</td><td>{d.date}</td> <td>{d.address}</td><td>{d.paymentTypeName}</td><td> {d.notes}</td> <td>{d.month}</td><td>{d.paidBy}</td></tr>
                             })
         
                         }
