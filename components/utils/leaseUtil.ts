@@ -3,6 +3,7 @@ import * as api from '../api'
 import moment from 'moment';
 import { IHouseInfo, ILeaseInfo, IPayment } from '../reportTypes';
 import { round2 } from '../report/util/utils';
+import { filterPaymentsForRent } from './reportUtils';
 
 export type HouseWithLease = IHouseInfo & {
     lease?: ILeaseInfo;
@@ -117,7 +118,7 @@ export async function getLeaseUtilForHouse(houseID: string) {
             monthlyInfo.push(info);
             curMon = curMon.add(1, 'month');
         }
-        const lps = orderBy(payments.filter(p => p.houseID === l.houseID).map(p => {
+        const lps = orderBy(payments.filter(p => p.houseID === l.houseID && filterPaymentsForRent(p)).map(p => {
             return {
                 ...p,
                 receivedDate: moment.utc(p.receivedDate).format('YYYY-MM-DD HH:mm:ss'),  //TODO change this to db date utc

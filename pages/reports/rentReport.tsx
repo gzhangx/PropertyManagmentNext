@@ -10,7 +10,7 @@ import { useRootPageContext } from "../../components/states/RootState";
 import { IEditTextDropdownItem } from "../../components/generic/GenericDropdown";
 import { CloseableDialog } from "../../components/generic/basedialog";
 import { orderBy } from "lodash";
-import { formatAccounting, getMonthAry, IPaymentWithDateMonthPaymentType, loadDataWithMonthRange, loadPayment, MonthSelections } from "../../components/utils/reportUtils";
+import { filterPaymentsForRent, formatAccounting, getMonthAry, IPaymentWithDateMonthPaymentType, loadDataWithMonthRange, loadPayment, MonthSelections } from "../../components/utils/reportUtils";
 
 
 const amtDsp = (amt: number) => {
@@ -104,7 +104,7 @@ export default function RentReport() {
             monthAry: [] as string[],
             monthDict: {} as { [month: string]: boolean; },
         }
-        const allRentReportData: AllRentReportData = paymentData.filter(p=>p.paymentTypeName === 'Rent').reduce((acc,pmt) => {            
+        const allRentReportData: AllRentReportData = paymentData.filter(filterPaymentsForRent).reduce((acc,pmt) => {            
             let houseMOnth = acc[pmt.houseID];
             if (!houseMOnth) {
                 houseMOnth = {};

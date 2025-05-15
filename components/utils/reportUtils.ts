@@ -202,3 +202,8 @@ export function standardFormatDate(date: string | Date):string {
     if (!mDate.isValid()) return '';
     return mDate.format('MM/DD/YYYY');
 }
+
+
+export function filterPaymentsForRent(payment: { paymentTypeName: string; }) {
+    return payment.paymentTypeName === 'Rent';
+}
