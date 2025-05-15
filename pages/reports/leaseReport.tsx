@@ -121,7 +121,7 @@ export default function LeaseReport() {
                     <tr>
                         <th>House</th>
                             <th>Lease Term</th>
-                            <th>Owners</th>
+                            <th>Tenants</th>
                             <th className='accounting-alright, td-center'>Balance</th>
                             <th className='accounting-alright,td-center'>Last Payment<br></br>Amount</th>
                             <th className='accounting-alright, td-center'>Last Payment<br></br> Received Date</th>
