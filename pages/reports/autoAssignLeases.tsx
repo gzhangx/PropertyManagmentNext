@@ -6,6 +6,7 @@ import { usePageRelatedContext } from '../../components/states/PageRelatedState'
 import Link from 'next/link';
 import { formateEmail } from '../../components/utils/leaseEmailUtil';
 import { CloseableDialog } from '../../components/generic/basedialog';
+import { formatAccounting } from '../../components/utils/reportUtils';
 
 
 export function getLeasePage() {
@@ -364,7 +365,7 @@ export default function AutoAssignLeases() {
                                                     <tr><td>month</td><td>Paid</td><td>Balance</td></tr>
                                                     {
                                                         house.leaseInfo.monthlyInfo.map(info => {
-                                                            return <tr><td>{info.month}</td><td>{info.paid}</td><td>{info.balance}</td></tr>
+                                                            return <tr><td>{info.month}</td><td>{formatAccounting(info.paid)}</td><td>{info.balance}</td></tr>
                                                         })
                                                     }
                                                 </tbody>
