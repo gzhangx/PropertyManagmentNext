@@ -36,6 +36,7 @@ const ENDMATCHCHAR = '}'
 const verbs = [
     '$LoopMonthly{',
     '$PaymentDate{',
+    '$DueDate{',
     '$Paid',
     '$Balance',
     '$PreviousBalance',
@@ -154,7 +155,15 @@ function doReplace(text: string, house: HouseWithLease, tenants: ITenantInfo[], 
                                                     break;
                                                 case '$PaymentDate{':
                                                     if (ptg.parts.length && typeof ptg.parts[0] === 'string') {
-                                                        acc+= moment(curMonthlyInfo.month+'-01').format(ptg.parts[0])
+                                                        acc += curMonthlyInfo.paymentDate ? moment(curMonthlyInfo.paymentDate).format(ptg.parts[0]) : '';
+                                                    } else {
+                                                        logger(`Warning, ${ptg.tag} no format specified`)
+                                                        acc += curMonthlyInfo.month;
+                                                    }
+                                                    break;
+                                                case '$DueDate{':
+                                                    if (ptg.parts.length && typeof ptg.parts[0] === 'string') {
+                                                        acc += curMonthlyInfo.paymentDate ? moment(curMonthlyInfo.dueDate).format(ptg.parts[0]) : '';
                                                     } else {
                                                         logger(`Warning, ${ptg.tag} no format specified`)
                                                         acc += curMonthlyInfo.month;
