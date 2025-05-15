@@ -84,10 +84,10 @@ export function MainSideBar(props : IMainSideBarProps) {
         <hr className="sidebar-divider my-0" />
 
         <li className="nav-item active">
-            <a className="nav-link" href="#" onClick={e => e.preventDefault()}>
+            <Link className="nav-link" href={`/${NAVPrefix}/dashboard`} >
                 <i className="fas fa-fw fa-tachometer-alt"></i>
-                <span onClick={getLinkOnClick('Dashboard') as any}>Dashboard</span>
-            </a>
+                <span >Dashboard</span>
+            </Link>
         </li>
 
         <hr className="sidebar-divider" />

@@ -25,9 +25,9 @@ export default function () {
             if (curSel) {
                 if (curSel.table) {
                     await mainCtx.modelsProp.getTableModel(curSel.table);
-                }
-                activeSideBarItem(rs, currentPath);
+                }                
             }
+            activeSideBarItem(rs, currentPath);
         }
     };
     useEffect(() => {
