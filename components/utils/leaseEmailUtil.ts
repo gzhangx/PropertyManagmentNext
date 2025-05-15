@@ -206,7 +206,7 @@ function doReplace(text: string, house: HouseWithLease, tenants: ITenantInfo[], 
                     }
                     break;
                 case '$Renters':
-                    acc += tenants.map(t => t.fullName).join(',');
+                    acc += tenants.map(t => t.firstName).join(' and ');
                     break;
                 case '$LastPaymentDate{':
                     if (typeof tag.parts[0] === 'string') {
