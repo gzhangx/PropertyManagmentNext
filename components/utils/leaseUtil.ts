@@ -159,7 +159,7 @@ export async function getLeaseUtilForHouse(houseID: string) {
         });
         result.monthlyInfo.reduce((acc, mon) => {            
             if (!mon.accumulated) mon.accumulated = acc.last.accumulated;
-            mon.previousBalance = acc.last.balance;
+            mon.previousBalance = mon.shouldAccumatled - acc.last.accumulated;            
             const balance = round2(mon.shouldAccumatled - mon.accumulated);
             if (mon.balance == 0) mon.balance = balance;
             if (balance !== mon.balance) {
@@ -169,7 +169,10 @@ export async function getLeaseUtilForHouse(houseID: string) {
             acc.last = mon;
             return acc;
         }, {
-            last: result.monthlyInfo[0]
+            //last: result.monthlyInfo[0]
+            last: {
+                accumulated: 0,
+            }
         });
         return result;
     }
