@@ -38,6 +38,7 @@ const verbs = [
     '$PaymentDate{',
     '$Paid',
     '$Balance',
+    '$PreviousBalance',
     '$Renters',
     '$CurrentBalance',
     '$Date{',
@@ -142,6 +143,9 @@ function doReplace(text: string, house: HouseWithLease, tenants: ITenantInfo[], 
                                             acc += ptg;
                                         } else {
                                             switch (ptg.tag) {
+                                                case '$PreviousBalance':
+                                                    acc += '$' + curMonthlyInfo.previousBalance.toFixed(2);
+                                                    break;
                                                 case '$Balance':
                                                     acc += '$'+curMonthlyInfo.balance.toFixed(2);
                                                     break;
