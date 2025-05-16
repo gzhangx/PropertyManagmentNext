@@ -179,6 +179,8 @@ export const leaseInfoDef: ITableAndSheetMappingInfo<unknown> = {
             'tenant3',
             'tenant4',
             'tenant5', //not here, added to force mapping
+            '',
+            'rentDueDay',
         ],
     },
 }
