@@ -211,55 +211,53 @@ export const paymentInfoDef: ITableAndSheetMappingInfo<ICustEmailInfo> = {
                 <button type="button" className="btn btn-secondary" data-dismiss="modal" onClick={closePreview}>Close</button>
             </div>}
         >
-            <div style={{ overflow: 'scroll' }}>
-                <div className="container-fluid">
-                    <div className="row">
-                        <div className="card bg-primary text-white shadow">
-                            <div className="card-body">                                
-                                <input type='text'
-                                    className="form-control "
-                                    placeholder='Email To'
-                                    size={(emailPreview.to.join(',').length)}
-                                    value={emailPreview.to.join(',')} onChange={e => {
-                                        setCustomFieldMapping(prev => {
-                                            return {
-                                                ...prev,
-                                                paymentUIRelated: {
-                                                    ...(prev.paymentUIRelated || emailPreviewDef),
-                                                    to: [e.target.value],
-                                                }
-                                            }
-                                        })
-                                    }}></input>
-                                <div className="text-white-50 small">to</div>
-                            </div>
-                        </div>
-                    </div>
-                    <div className="row">
-                        <div className="card bg-success text-white shadow">
-                            <div className="card-body">
-                                {emailPreview.edit ? <input type='text'
-                                    className="form-control "
-                                    placeholder='Subject'
-                                    size={emailPreview.subject.length}
-                                    value={emailPreview.subject} onChange={e => {
-                                        setCustomFieldMapping(prev => {
-                                            return {
-                                                ...prev,
-                                                paymentUIRelated: {
-                                                    ...(prev.paymentUIRelated || emailPreviewDef),
-                                                    subject: e.target.value,
-                                                }
-                                            }
-                                        })
-                                    }}></input> : emailPreview.subject}
-                                <div className="text-white-50 small">subject</div>
-                            </div>
-                        </div>
-                    </div>
-                    <div className="row">
-                        <div className="card bg-info text-white shadow">
-                            {emailPreview.edit ? <textarea rows={10} cols={100}
+            <table className="table-NOborder">
+                <tr >
+                    <td className="td20PercentWidth">Email To:</td>
+                    <td className="td80PercentWidth">
+                        <input type='text'
+                            className="form-control "
+                            placeholder='Email To'
+                            size={(emailPreview.to.join(',').length)}
+                            value={emailPreview.to.join(',')} onChange={e => {
+                                setCustomFieldMapping(prev => {
+                                    return {
+                                        ...prev,
+                                        paymentUIRelated: {
+                                            ...(prev.paymentUIRelated || emailPreviewDef),
+                                            to: [e.target.value],
+                                        }
+                                    }
+                                })
+                            }}></input>
+
+                    </td>
+                </tr>
+                <tr>
+                    <td className="td20PercentWidth">Email Subject:</td>
+                    <td className=" td80PercentWidth">
+                        {emailPreview.edit ? <input type='text'
+                            className="form-control "
+                            placeholder='Subject'
+                            size={emailPreview.subject.length}
+                            value={emailPreview.subject} onChange={e => {
+                                setCustomFieldMapping(prev => {
+                                    return {
+                                        ...prev,
+                                        paymentUIRelated: {
+                                            ...(prev.paymentUIRelated || emailPreviewDef),
+                                            subject: e.target.value,
+                                        }
+                                    }
+                                })
+                            }}></input> : emailPreview.subject}
+                    </td>
+
+                </tr>
+                <tr>
+                    <td colSpan={2} className="">
+
+                    {emailPreview.edit ? <textarea rows={10} cols={100}
                                 value={emailPreview.html}
                                 onChange={e => {
                                     setCustomFieldMapping(prev => {
@@ -275,10 +273,10 @@ export const paymentInfoDef: ITableAndSheetMappingInfo<ICustEmailInfo> = {
                             />
                                 : <div dangerouslySetInnerHTML={{ __html: emailPreview.html }}></div>}
 
-                        </div>
-                    </div>
-                </div>
-            </div>
+                    </td>
+                </tr>
+
+            </table>
         </CloseableDialog>
     },
     customFooterButton(mainCtx, cust, setCustomFieldMapping, item) {
