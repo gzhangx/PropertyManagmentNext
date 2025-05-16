@@ -2,10 +2,11 @@ table {
     width: 85%;
     border-collapse: collapse;
     border-collapse: separate; /* important! */
-    border-radius: 15px;
-  border-spacing: 0;
-  border: 2px solid #121f47;
+    border-radius: 8px;
+  border-spacing:0px;
+  border: 1px solid #121f47;
   padding: 0px;
+  overflow: hidden;
   
 }
 
@@ -147,4 +148,13 @@ tr:nth-child(even) {
 
   .flex{
     display: flex;
+  }
+  .centered-container {
+    display: flex;
+    justify-content: center;  /* horizontal center */
+    align-items: center;      /* vertical center */
+    height: 80vh;            /* full viewport height */
+  }
+  .centered-table {
+    margin: 0 auto;
   }

@@ -5669,8 +5669,9 @@ a.close.disabled {
 .modal-dialog {
   position: relative;
   width: auto;
-  margin: 0.5rem;
+  margin: 2rem;
   pointer-events: none;
+ 
 }
 
 .modal.fade .modal-dialog {
