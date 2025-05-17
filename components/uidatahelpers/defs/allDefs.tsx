@@ -14,6 +14,7 @@ export const workerInfoDef: ITableAndSheetMappingInfo<unknown> = {
             'phone',
         ]
     },
+    editTitle:'Add/Edit Contrator/Worker Record',
     displayFields:[    
         {
             field: 'workerName',
@@ -89,6 +90,7 @@ export const houseInfoDef: ITableAndSheetMappingInfo<unknown> = {
             'ownerName'
         ],
     },
+    editTitle:'Add/Edit House information',
     customHeaderFilterFunc: (mainCtx, pageState, colInfo) => {
         return genericCustomerHeaderFilterFuncForString(pageState, colInfo, 'houseInfo');
     },
@@ -116,6 +118,7 @@ export const tenantInfoDef: ITableAndSheetMappingInfo<unknown> = {
             'comment',
         ],
     },
+    editTitle:'Add/Edit Tenant Record',
     customHeaderFilterFunc: (mainCtx, pageState, colInfo) => {
         return genericCustomerHeaderFilterFuncForString(pageState, colInfo, 'tenantInfo');
     },
@@ -137,7 +140,7 @@ export const maintenanceInfoDef: ITableAndSheetMappingInfo<unknown> = {
             'comment'
         ],
     },
-
+editTitle:'Add/Edit Maintenance Record',
     displayFields: [
         { field: 'date', 'desc': 'Date', type: 'date', displayType: 'date' },
         { field: 'description', 'desc': 'Description', type: 'string' },
@@ -183,6 +186,7 @@ export const leaseInfoDef: ITableAndSheetMappingInfo<unknown> = {
             'rentDueDay',
         ],
     },
+    editTitle:'Add/Edit Lease Record',
 }
 
 

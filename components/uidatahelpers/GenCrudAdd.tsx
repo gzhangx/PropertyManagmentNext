@@ -13,6 +13,7 @@ import { ALLFieldNames, DataToDbSheetMapping, ICrudAddCustomObj, ItemType, ItemT
 import { usePageRelatedContext } from '../states/PageRelatedState';
 import { IHelper } from '../reportTypes';
 import GrkEditableDropdown from '../generic/GrkEditableDropdown';
+import { TextAlignment } from 'pdf-lib';
 
 
 
@@ -29,7 +30,7 @@ export interface IGenGrudAddProps extends IGenGrudProps {
         
     operation: 'Add' | 'Update';
     show: boolean;
-    desc?: string;    
+  
     sheetMapping?: DataToDbSheetMapping;
 
     crudAddCustomObjMap: ICrudAddCustomObj<unknown>;
@@ -45,7 +46,7 @@ export const GenCrudAdd = (props: IGenGrudAddProps) => {
         onError,
         show,
         table,
-        desc,
+
         //fkDefs,
         operation,
 
@@ -208,15 +209,15 @@ export const GenCrudAdd = (props: IGenGrudAddProps) => {
 
     return <div className={dspClassName} tabIndex={-1} role="dialog" >
         <Dialog dialogInfo={errDlgPrm}></Dialog>        
-        <div className="modal-dialog" role="document" style={{ maxWidth: '60%', maxHeight:'95%', overflowY:'auto' }}>
-        <div className="modal-content">
-            <div className="modal-header">
-                    <h5 className="modal-title">{desc}</h5>
+        <div className="modal-dialog" role="document" style={{ maxWidth: '60%', maxHeight:'95%', overflowY:'auto'  }}>
+        <div className="modal-content centered-container ">
+            <div className="modal-header centered-container ">
+                    <div className="centered-container headerFont" style={{textAlign:'center'}}>{props.editTitle}</div>
                 <button type="button" className="close" data-dismiss="modal" aria-label="Close">
                         <span aria-hidden="true" onClick={internalCancel}>&times;</span>
                 </button>
             </div>                
-                <table>
+                <table className='centered-table'>
                 {
                     columnInfo.map((c, cind) => {
                         if (isCreateAddNewItem) { //operation === 'Add') { //  !editItem

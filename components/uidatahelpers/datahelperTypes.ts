@@ -46,6 +46,7 @@ export interface ITableAndSheetMappingInfo<T> {
 
     initialPageSize?: number; //default page size for the list
     title?: string;
+    editTitle?: string; 
     sortFields?: string[];
 
     //customDisplayFunc?: (value: any, fieldDef: IDBFieldDef) => React.JSX.Element; //function to display data in the list, if not provided, default is to use the field name

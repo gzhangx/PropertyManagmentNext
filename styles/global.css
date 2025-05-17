@@ -152,9 +152,14 @@ tr:nth-child(even) {
   .centered-container {
     display: flex;
     justify-content: center;  /* horizontal center */
-    align-items: center;      /* vertical center */
-    height: 80vh;            /* full viewport height */
+  
+
   }
   .centered-table {
     margin: 0 auto;
+  }
+  .headerFont{
+    font-size: 26px;
+    font-weight: bolder;
+    color:#000
   }

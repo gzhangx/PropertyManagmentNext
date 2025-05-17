@@ -38,6 +38,7 @@ export const paymentInfoDef: ITableAndSheetMappingInfo<ICustEmailInfo> = {
     },
 
     title: 'Rent Payments Records',
+    editTitle: 'Add/Edit Rent Payment',
     customAddNewDefaults: async (mainCtx, columnInfo, editItem) => {
         await mainCtx.loadForeignKeyLookup('leaseInfo');
         await mainCtx.loadForeignKeyLookup('tenantInfo');
