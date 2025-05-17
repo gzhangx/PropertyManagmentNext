@@ -210,9 +210,9 @@ export const GenCrudAdd = (props: IGenGrudAddProps) => {
     return <div className={dspClassName} tabIndex={-1} role="dialog" >
         <Dialog dialogInfo={errDlgPrm}></Dialog>        
         <div className="modal-dialog" role="document" style={{ maxWidth: '60%' }}>
-        <div className="modal-content">
-            <div className="modal-header">
-                    <h5 className="modal-title centered-container headerFont" style={{textAlign:'center'}}>{props.editTitle}</h5>
+        <div className="modal-content centered-container ">
+            <div className="modal-header centered-container ">
+                    <div className="centered-container headerFont" style={{textAlign:'center'}}>{props.editTitle}</div>
                 <button type="button" className="close" data-dismiss="modal" aria-label="Close">
                         <span aria-hidden="true" onClick={internalCancel}>&times;</span>
                 </button>
