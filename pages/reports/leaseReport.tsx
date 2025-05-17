@@ -80,7 +80,7 @@ export default function LeaseReport() {
                 if (hlInfo !== 'Lease not found') {
                     console.log('gatherLeaseInfomation done', h.address);
                     h.leaseBal = hlInfo.leaseBalance;   
-                    h.leaseBalanceDueInfo = hlInfo.leaseWithPaymentDueHistory;
+                    h.leaseBalanceDueInfo = hlInfo.leaseBalanceDueInfo;
                 }
 
                 if (h.payments) {
