@@ -200,6 +200,7 @@ export async function getLeaseUtilForHouse(houseID: string) {
         findLeaseForDate,
         matchAllTransactions,
         calculateLeaseBalances,
+        calculateLeaseBalancesNew, //new one to replace calculateLeaseBalance
         loadLeasePayments: (lease: ILeaseInfo) => {
             return api.getPaymnents({
                 whereArray: [
@@ -276,10 +277,10 @@ export async function getAllMaintenanceForHouse(houseID: string) {
 
 
 
-function generateLeaseBalance(
+function calculateLeaseBalancesNew(
     payments: IPaymentForLease[],
     lease: ILeaseInfo,
-    endDateOverride?: string
+    endDateOverride?: string | Date | moment.Moment
 ): INewLeaseBalance[] {
     const result: INewLeaseBalance[] = [];    
 
