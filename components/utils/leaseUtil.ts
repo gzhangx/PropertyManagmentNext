@@ -18,6 +18,17 @@ interface INewLeaseBalance {
     newBalance: number; //current balance before payment is applied
 }
 
+export interface ILeaseInfoWithPaymentDueHistory {    
+    totalBalance: number;    
+    paymnetDuesInfo: INewLeaseBalance[];
+    lastPaymentDate: string;
+    lastPaymentAmount: number;
+
+    monthlyRent: number;
+
+    getLastNMonth: (n: number) => INewLeaseBalance[];
+}
+
 //old
 interface IPaymentOfMonth {
     paid: number;
@@ -38,6 +49,7 @@ type IPaymentForLease = {
     paymentTypeName: string;
 }
 
+//old
 export interface ILeaseInfoWithPmtInfo {
     totalPayments: number;
     totalBalance: number;
@@ -281,8 +293,8 @@ function calculateLeaseBalancesNew(
     payments: IPaymentForLease[],
     lease: ILeaseInfo,
     endDateOverride?: string | Date | moment.Moment
-): INewLeaseBalance[] {
-    const result: INewLeaseBalance[] = [];    
+): ILeaseInfoWithPaymentDueHistory {
+    const paymnetDuesInfo: INewLeaseBalance[] = [];
 
     // Determine the effective end date (override takes precedence, then termination, then lease end)
     // Collect all potential end dates (excluding null values)
@@ -353,12 +365,45 @@ function calculateLeaseBalancesNew(
             balance -= transaction.paymentOrDueAmount;
         }
 
-        result.push({
+        paymnetDuesInfo.push({
             ...transaction,
             previousBalance,
             newBalance: balance
         });
     }
 
-    return result;
+    //return result;
+    
+
+    const paymentDuesAndBalanceInfo: ILeaseInfoWithPaymentDueHistory = {
+        lastPaymentAmount: 0,
+        lastPaymentDate: '',
+        monthlyRent: lease.monthlyRent,
+        paymnetDuesInfo,
+        totalBalance: 0,
+        getLastNMonth(n) {
+            const lastn: INewLeaseBalance[] = []; 
+            //return paymnetDuesInfo;
+            let cnt = 0;
+            for (let pos = paymnetDuesInfo.length; pos >= 0; pos--) {
+                const objAtPos = paymnetDuesInfo[pos];
+                lastn.push(objAtPos);
+                if (objAtPos.paymentOrDueTransactionType === 'Due') {
+                    cnt++;
+                    if (cnt === n) break;
+                }
+            }
+            return lastn;
+        },
+    };
+
+    for (const pdi of paymnetDuesInfo) {
+        if (pdi.paymentOrDueTransactionType === 'Payment') {
+            paymentDuesAndBalanceInfo.lastPaymentAmount = pdi.paymentOrDueAmount;
+            paymentDuesAndBalanceInfo.lastPaymentDate = pdi.date;
+        }
+        paymentDuesAndBalanceInfo.totalBalance = pdi.newBalance;
+    }
+
+    return paymentDuesAndBalanceInfo
 }
