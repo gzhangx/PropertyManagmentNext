@@ -8,6 +8,7 @@ import { filterPaymentsForRent } from './reportUtils';
 export type HouseWithLease = IHouseInfo & {
     lease?: ILeaseInfo;
     leaseInfo?: ILeaseInfoWithPmtInfo;
+    leaseBalanceDueInfo?: ILeaseInfoWithPaymentDueHistory;
 }
 
 interface INewLeaseBalance {
@@ -257,6 +258,7 @@ export async function gatherLeaseInfomation(house: HouseWithLease, date?: Date) 
     return {
         lease,
         leaseBalance,
+        leaseWithPaymentDueHistory: finder.calculateLeaseBalancesNew(payments, lease, new Date()),
     };
 }
 
@@ -312,6 +314,15 @@ function calculateLeaseBalancesNew(
     // 1. Generate all rent due dates between lease start and effective end date
     const rentDueDates: INewLeaseBalance[] = [];
     const startDate = moment(lease.startDate);
+
+    payments = payments.filter(p => {
+        if (p.houseID !== lease.houseID) return false;
+        if (!filterPaymentsForRent(p)) return false;
+        const pm = moment(p.receivedDate);
+        if (pm.isBefore(startDate)) return false;
+        if (pm.isAfter(effectiveEndDate)) return false;
+        return true;
+    })
 
     // Calculate first rent due date
     let currentDueDate = moment(startDate);
