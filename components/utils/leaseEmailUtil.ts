@@ -35,11 +35,12 @@ const MATCHCHAR = '{';
 const ENDMATCHCHAR = '}'
 const verbs = [
     '$LoopMonthly{',
-    '$PaymentMonth{',
-    '$PaymentDate{',
-    '$DueDate{',
-    '$RentDue',
-    '$Paid',
+    //'$PaymentMonth{',
+    //'$PaymentDate{',
+    '$Date',
+    '$Type',
+    '$Amount',
+    '$RentDue',    
     '$Balance',
     '$PreviousBalance',
     '$Renters',
@@ -117,7 +118,7 @@ function parser(s: string, pos: number, level: number) {
 
 function doReplace(text: string, house: HouseWithLease, tenants: ITenantInfo[],  logger: IStringLogger) {
     const tags = parser(text, 0, 0);
-    const monthlyInfo = house.leaseInfo.monthlyInfo;
+    const monthlyInfo = house.leaseBalanceDueInfo.paymnetDuesInfo;
     const output: string = tags.parts.reduce((acc: string, tag: TAG) => {
         if (typeof tag === 'string') {
             return acc + tag;
@@ -151,35 +152,22 @@ function doReplace(text: string, house: HouseWithLease, tenants: ITenantInfo[], 
                                                     acc += '$' + curMonthlyInfo.previousBalance.toFixed(2);
                                                     break;
                                                 case '$Balance':
-                                                    acc += '$'+curMonthlyInfo.balance.toFixed(2);
+                                                    acc += '$'+curMonthlyInfo.newBalance.toFixed(2);
                                                     break;
-                                                case '$Paid':
-                                                    acc += '$' + curMonthlyInfo.paid.toFixed(2);
+                                                case '$Amount':
+                                                    acc += '$' + curMonthlyInfo.paymentOrDueAmount.toFixed(2);
                                                     break;
-                                                case '$PaymentMonth{':
+                                                case '$Date{':
                                                     if (ptg.parts.length && typeof ptg.parts[0] === 'string') {
-                                                        acc += moment(curMonthlyInfo.month + '-01').format(ptg.parts[0]);
+                                                        acc += moment(curMonthlyInfo.date).format(ptg.parts[0]);
                                                     } else {
                                                         logger(`Warning, ${ptg.tag} no format specified`)
-                                                        acc += curMonthlyInfo.month;
+                                                        acc += curMonthlyInfo.date;
                                                     }
                                                     break;
-                                                case '$PaymentDate{':
-                                                    if (ptg.parts.length && typeof ptg.parts[0] === 'string') {
-                                                        acc += curMonthlyInfo.paymentDate ? moment(curMonthlyInfo.paymentDate).format(ptg.parts[0]) : '';
-                                                    } else {
-                                                        logger(`Warning, ${ptg.tag} no format specified`)
-                                                        acc += curMonthlyInfo.paymentDate;
-                                                    }
-                                                    break;
-                                                case '$DueDate{':
-                                                    if (ptg.parts.length && typeof ptg.parts[0] === 'string') {
-                                                        acc += curMonthlyInfo.dueDate ? moment(curMonthlyInfo.dueDate).format(ptg.parts[0]) : '';
-                                                    } else {
-                                                        logger(`Warning, ${ptg.tag} no format specified`)
-                                                        acc += curMonthlyInfo.dueDate;
-                                                    }
-                                                    break;
+                                                case '$Type':
+                                                    acc += curMonthlyInfo.paymentOrDueTransactionType;
+                                                    break;                                                
                                                 case '$RentDue':
                                                     acc += '$' + house.leaseInfo.monthlyRent.toFixed(2);
                                                     break;
@@ -201,7 +189,7 @@ function doReplace(text: string, house: HouseWithLease, tenants: ITenantInfo[], 
                     break;
                 case '$CurrentBalance':
                     {
-                        const amt = monthlyInfo[0]?.balance?.toFixed(2);
+                        const amt = house.leaseBalanceDueInfo.totalBalance?.toFixed(2);
                         acc += amt ? '$' + amt : '';
                     }
                     break;
@@ -247,7 +235,7 @@ export async function formateEmail(mainCtx: IPageRelatedState, house: HouseWithL
     if (!house.lease) {
         await gatherLeaseInfomation(house);
     }
-    if (!house.lease || !house.leaseInfo) {
+    if (!house.lease || !house.leaseInfo || !house.leaseBalanceDueInfo) {
         return {
             subject: 'no lease found',
             body: 'no lease found',

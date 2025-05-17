@@ -79,7 +79,8 @@ export default function LeaseReport() {
                 h.payments = payments;
                 if (hlInfo !== 'Lease not found') {
                     console.log('gatherLeaseInfomation done', h.address);
-                    h.leaseBal = hlInfo.leaseBalance;                    
+                    h.leaseBal = hlInfo.leaseBalance;   
+                    h.leaseBalanceDueInfo = hlInfo.leaseBalanceDueInfo;
                 }
 
                 if (h.payments) {
@@ -143,17 +144,17 @@ export default function LeaseReport() {
                             }
 
                             return <><tr key={key}>
-                                <td className='td-center' onClick={async () => {
+                                <td className='td-center' style={{cursor:'pointer'}} onClick={async () => {
                                     setLeaseExpanded({ ...leaseExpanded, [h.houseID]: !leaseExpanded[h.houseID] });
                                     const hlInfo = await gatherLeaseInfomation(h);
                                     console.log('debugremove hlinfo', hlInfo);
-                                }}>{h.address}  { leaseExpanded[h.houseID]?'Y':'N'}</td>
+                                }}>{h.address}  { leaseExpanded[h.houseID]?<i className='fas fa-arrow-up'></i>:<i className='fas fa-arrow-right'></i>}</td>
                                 <td className='td-center'>{moment(h.lease?.startDate).format('MM/DD/YYYY') +
                                     ' --- ' + moment(h.lease?.endDate).format('MM/DD/YYYY')}</td>
                                     <td >{ h.tenants.map(t=>`${t.fullName} ${t.phone}   ${t.email}` ).map(t=>{
                                     return <>{t}<br></br></>;
                                     }) } </td>
-                                <td className='accounting-alright'>${totalBalance}</td>
+                                <td className='accounting-alright'>${totalBalance} new{'=>'} {h.leaseBalanceDueInfo?.totalBalance }</td>
                                 <td className='accounting-alright'>${lastPaymentAmount}</td>
                                 <td className='accounting-alright'>{lastPaymentDate}</td>
                                 
@@ -164,6 +165,19 @@ export default function LeaseReport() {
                                             <div className="card shadow mb-4">
                                                 <div className="card-header py-3">
                                                     <h6 className="m-0 font-weight-bold text-primary">Details</h6>                                                                                                        
+                                                </div>
+                                                <div className="card-body">
+                                                    <table className='table'>
+                                                        <tbody>
+                                                            <tr><td>Life time total new</td><td>{h.leaseBalanceDueInfo.totalPaid}</td><td>Life time total old</td><td>{h.leaseInfo.totalPayments}</td></tr>
+                                                            <tr><td>Date</td><td>Type</td><td>Amount</td><td>prev</td><td>balance</td></tr>
+                                                            {
+                                                                h.leaseBalanceDueInfo.paymnetDuesInfo.map(info => {
+                                                                    return <tr><td>{info.date}</td><td>{info.paymentOrDueTransactionType}</td><td>{info.paymentOrDueAmount}</td><td>{info.previousBalance}</td><td>{info.newBalance}</td></tr>
+                                                                })
+                                                            }
+                                                        </tbody>
+                                                    </table>
                                                 </div>
                                                 <div className="card-body">
                                                     <table className='table'>

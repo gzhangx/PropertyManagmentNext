@@ -14,7 +14,8 @@ export type ALLFieldNames = '' | 'address' | 'city' | 'zip' | 'ownerName' | 'rec
     | 'workerName' | 'taxName' | 'taxID' | 'state'
     | 'reasonOfTermination' | 'terminationDate' | 'terminationComments'
     | 'id'
-    | 'contactPerson'| 'website' | 'zellerId' | 'venmoId' |'paypalId'
+    | 'contactPerson' | 'website' | 'zellerId' | 'venmoId' | 'paypalId'
+    | 'rentDueDay'
     ;
 
 

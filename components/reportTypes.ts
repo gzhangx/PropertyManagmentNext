@@ -127,6 +127,8 @@ export interface ILeaseInfo {
     comment: string;
     monthlyRent: number;
     contractDates: any;
+
+    rentDueDay: number;
 }
 
 export interface ITenantInfo {
