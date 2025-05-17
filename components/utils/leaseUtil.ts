@@ -10,6 +10,15 @@ export type HouseWithLease = IHouseInfo & {
     leaseInfo?: ILeaseInfoWithPmtInfo;
 }
 
+interface INewLeaseBalance {
+    paymentOrDueAmount: number;
+    paymentOrDueTransactionType: 'Payment' | 'Due';
+    date: string;
+    previousBalance?: number;
+    newBalance: number; //current balance before payment is applied
+}
+
+//old
 interface IPaymentOfMonth {
     paid: number;
     paymentDate: string;
@@ -83,7 +92,6 @@ export async function getLeaseUtilForHouse(houseID: string) {
         });
         return unleasedPayments;
     }
-
 
     function calculateLeaseBalances(l: ILeaseInfo, payments: IPaymentForLease[], monthlyDueDate: number, today: string | Date | moment.Moment) {        
         const monthlyInfo: IPaymentOfMonth[] = [];
@@ -264,4 +272,92 @@ export async function getAllMaintenanceForHouse(houseID: string) {
         ]
     });
     return allPayments;
+}
+
+
+
+function generateLeaseBalance(
+    payments: IPaymentForLease[],
+    lease: ILeaseInfo,
+    endDateOverride?: string
+): INewLeaseBalance[] {
+    const result: INewLeaseBalance[] = [];    
+
+    // Determine the effective end date (override takes precedence, then termination, then lease end)
+    // Collect all potential end dates (excluding null values)
+    const potentialEndDates: moment.Moment[] = [];
+
+    if (lease.endDate) potentialEndDates.push(moment(lease.endDate));
+    if (lease.terminationDate) potentialEndDates.push(moment(lease.terminationDate));
+    if (endDateOverride) potentialEndDates.push(moment(endDateOverride));
+
+    // Determine effective end date - earliest of provided dates or today if none
+    const effectiveEndDate = potentialEndDates.length > 0
+        ? moment.min(potentialEndDates)
+        : moment(); // Default to today if no end dates provided
+
+    // 1. Generate all rent due dates between lease start and effective end date
+    const rentDueDates: INewLeaseBalance[] = [];
+    const startDate = moment(lease.startDate);
+
+    // Calculate first rent due date
+    let currentDueDate = moment(startDate);
+    if (startDate.date() > lease.rentDueDay) {
+        // If lease started after due day, first rent is due next month
+        currentDueDate.add(1, 'month');
+    }
+    currentDueDate.date(lease.rentDueDay);
+
+    // Generate all due dates until effective end date
+    while (currentDueDate.isSameOrBefore(effectiveEndDate)) {
+        rentDueDates.push({
+            paymentOrDueAmount: lease.monthlyRent,
+            paymentOrDueTransactionType: 'Due',
+            date: currentDueDate.format('YYYY-MM-DD'),
+            previousBalance: 0, // Will be updated later
+            newBalance: 0       // Will be updated later
+        });
+        // Move to next month
+        currentDueDate = moment(currentDueDate).add(1, 'month');
+    }
+
+    // Create payment transactions
+    const paymentTransactions: INewLeaseBalance[] = payments.map(payment => ({
+        paymentOrDueAmount: payment.receivedAmount,
+        paymentOrDueTransactionType: 'Payment',
+        date: payment.receivedDate,
+        previousBalance: 0, // Will be updated later
+        newBalance: 0       // Will be updated later
+    }));
+
+    // Combine and sort all transactions by date
+    const allTransactions: INewLeaseBalance[] = [...rentDueDates, ...paymentTransactions];
+    allTransactions.sort((a, b) => {
+        const dateDiff = moment(a.date).diff(moment(b.date));
+        // If dates are equal, process Due before Payment
+        if (dateDiff === 0) {
+            return a.paymentOrDueTransactionType === 'Due' ? -1 : 1;
+        }
+        return dateDiff;
+    });
+
+    // Calculate balances in chronological order
+    let balance = 0;
+    for (const transaction of allTransactions) {
+        const previousBalance = balance;
+
+        if (transaction.paymentOrDueTransactionType === 'Due') {
+            balance += transaction.paymentOrDueAmount;
+        } else {
+            balance -= transaction.paymentOrDueAmount;
+        }
+
+        result.push({
+            ...transaction,
+            previousBalance,
+            newBalance: balance
+        });
+    }
+
+    return result;
 }
