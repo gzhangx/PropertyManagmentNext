@@ -11,7 +11,7 @@ export type HouseWithLease = IHouseInfo & {
     leaseBalanceDueInfo?: ILeaseInfoWithPaymentDueHistory;
 }
 
-interface INewLeaseBalance {
+export interface INewLeaseBalance {
     paymentOrDueAmount: number;
     paymentOrDueTransactionType: 'Payment' | 'Due';
     date: string;
@@ -402,8 +402,9 @@ function calculateLeaseBalancesNew(
             const lastn: INewLeaseBalance[] = []; 
             //return paymnetDuesInfo;
             let cnt = 0;
-            for (let pos = paymnetDuesInfo.length; pos >= 0; pos--) {
+            for (let pos = paymnetDuesInfo.length - 1; pos >= 0; pos--) {
                 const objAtPos = paymnetDuesInfo[pos];
+                if (!objAtPos) break;
                 lastn.push(objAtPos);
                 if (objAtPos.paymentOrDueTransactionType === 'Due') {
                     cnt++;

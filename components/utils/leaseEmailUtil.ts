@@ -1,8 +1,9 @@
 import moment from 'moment';
 import { getUserOptions } from '../api'
 import { IHouseInfo, ILeaseInfo, IPageRelatedState, ITenantInfo } from '../reportTypes';
-import { gatherLeaseInfomation, HouseWithLease, ILeaseInfoWithPmtInfo } from './leaseUtil';
+import { gatherLeaseInfomation, HouseWithLease, ILeaseInfoWithPaymentDueHistory, ILeaseInfoWithPmtInfo, INewLeaseBalance } from './leaseUtil';
 import { IStringLogger } from '../types';
+import { formatAccounting } from './reportUtils';
 
 
 export const paymentEmailSubject = 'paymentEmailSubject';
@@ -34,185 +35,264 @@ const START = '$';
 const MATCHCHAR = '{';
 const ENDMATCHCHAR = '}'
 const verbs = [
-    '$LoopMonthly{',
+    'LoopMonthly',
     //'$PaymentMonth{',
-    //'$PaymentDate{',
-    '$Date',
-    '$Type',
-    '$Amount',
-    '$RentDue',    
-    '$Balance',
-    '$PreviousBalance',
-    '$Renters',
-    '$CurrentBalance',
-    '$Date{',
-    '$LastPaymentDate{',
-    '$LastPaymentAmount',
+    //'$PaymentDate{',    
+    'Type',
+    'Amount',
+    'RentDue',    
+    'Balance',
+    'PreviousBalance',
+    'Renters',
+    'CurrentBalance',
+    'Date',
+    'LastPaymentDate',
+    'LastPaymentAmount',
+    'Today',
 ] as const;
 type TagNames = typeof verbs[number];
-type TAG = {
-    tag: TagNames;
-    parts: (string | TAG)[];
+
+
+interface IParsedTag {
+    type: 'text' | 'tag';
+    name: string;
+    children: IParsedTag[];
+    text: string;
 }
-function parser(s: string, pos: number, level: number) {
-    const parts: (string | TAG)[] = [];
+function parseTaggedString(input: string) {
 
-    
-    let curBuffer = '';
-    let inSTART = false;
-    let lastChar = '';
-    for (; pos < s.length; pos++) {
-        const v = s[pos];
-        if (lastChar === '\\') {
-            if (v === '{' || v === '}') {
-                lastChar = '';
-                curBuffer += v;
-                continue;
+    const result: IParsedTag[] = [];
+    let i = 0;
+
+    const isEOF = () => i >= input.length;
+    const peek = () => (isEOF() ? '' : input[i]);
+    const consume = () => input[i++];
+
+    function parse() {
+        const nodes: IParsedTag[] = [];
+        while (!isEOF()) {
+            if (peek() === '$' && i + 1 < input.length && /[a-zA-Z0-9]/.test(input[i + 1])) {
+                const tag = parseTag();
+                if (tag) nodes.push(tag);
+            } else {
+                const text = parseText();
+                if (text) nodes.push({
+                    type: 'text',
+                    name: '',
+                    children: [],
+                    text,
+                });
             }
-            curBuffer += lastChar;
-            lastChar = '';
         }
-        if (v === '\\') {
-            lastChar = v;
-            continue;
+        return nodes;
+    }
+
+    function parseTag(): IParsedTag {
+        if (peek() !== '$') return null;
+        consume(); // Skip $
+
+        let name = '';
+        while (/[a-zA-Z0-9]/.test(peek()) && !isEOF()) {
+            name += consume();
         }
-        if (v === START) {
-            inSTART = true;
-            parts.push(curBuffer);
-            curBuffer = v;
-        } else if (inSTART) {
-            curBuffer += v;
-            const who = verbs.indexOf(curBuffer as TagNames);
-            if (who >= 0) {
-                const tag: TAG = {
-                    tag: curBuffer as TagNames,
-                    parts: [],
-                }
-                curBuffer = '';
-                inSTART = false;
-                parts.push(tag);
-                if (tag.tag.endsWith(MATCHCHAR)) {
-                    const prt = parser(s, pos + 1, level + 1);
-                    tag.parts = prt.parts;
-                    pos = prt.pos;
+
+        if (!name) return null;
+
+        let children: IParsedTag[] = [];
+        let text = '';
+
+        if (peek() === '{') {
+            consume(); // Skip {
+            const content = parseBracedContent();
+            if (content !== null) {
+                // Store the original position
+                const originalInput = input;
+                const originalIndex = i;
+
+                // Parse the content as a new input
+                input = content;
+                i = 0;
+                children = parse();
+
+                // Restore original state
+                input = originalInput;
+                i = originalIndex;
+
+                // If we have simple text content, store it in data
+                if (children.length === 1 && typeof children[0] === 'string') {
+                    text = children[0];
+                    children = [];
                 }
             }
-        } else if (v === ENDMATCHCHAR && level !== 0) { //if level is 0, that is a bad match
-            parts.push(curBuffer);
-            break;
-        } else {
-            curBuffer += v;
+            if (peek() === '}') {
+                consume(); // Skip }
+            }
         }
-        lastChar = v;
+
+        return {
+            type: 'tag',
+            name, children, text
+        };
     }
-    if (curBuffer) {
-        parts.push(curBuffer);
+
+    function parseText() {
+        let text = '';
+        while (!isEOF()) {
+            const char = peek();
+            if (char === '\\') {
+                consume(); // Skip escape character
+                if (!isEOF()) {
+                    // Add the next character literally
+                    text += consume();
+                }
+            } else if (char === '$') {
+                // Only treat as tag start if followed by valid tag name character
+                if (i + 1 < input.length && /[a-zA-Z0-9]/.test(input[i + 1])) {
+                    break;
+                }
+                text += consume();
+            } else {
+                text += consume();
+            }
+        }
+        return text;
     }
-    console.log('parsing result', parts,pos)
-    return {
-        parts,
-        pos,
+
+    function parseBracedContent() {
+        let content = '';
+        let braceCount = 1; // Start at 1 because we already consumed the opening {
+
+        while (!isEOF()) {
+            const char = peek();
+            if (char === '\\') {
+                consume(); // Skip escape character
+                if (!isEOF()) {
+                    content += consume();
+                }
+            } else if (char === '{') {
+                braceCount++;
+                content += consume();
+            } else if (char === '}') {
+                braceCount--;
+                if (braceCount === 0) {
+                    // Don't consume the closing brace - let the parent do that
+                    break;
+                }
+                content += consume();
+            } else {
+                content += consume();
+            }
+        }
+
+        return braceCount === 0 ? content : null;
     }
+
+    return parse();
 }
 
-
-function doReplace(text: string, house: HouseWithLease, tenants: ITenantInfo[],  logger: IStringLogger) {
-    const tags = parser(text, 0, 0);
-    const monthlyInfo = house.leaseBalanceDueInfo.paymnetDuesInfo;
-    const output: string = tags.parts.reduce((acc: string, tag: TAG) => {
-        if (typeof tag === 'string') {
-            return acc + tag;
+type IMainContext = {
+    house: HouseWithLease;
+    tenants: ITenantInfo[];
+}
+function doReplaceOnContext(logger: IStringLogger, tags: IParsedTag[], mainContext: IMainContext, curPaymentDueInfo?: INewLeaseBalance) {    
+    const output: string = tags.reduce((acc: string, tag) => {
+        if (tag.type === 'text') {
+            return acc + tag.text;
         } else {
-            switch (tag.tag) {
-                case '$LoopMonthly{':
-                    if (!tag.parts.length) {
-                        logger(`Warning, ${tag.tag} expecting contents`);                        
+            switch (tag.name as TagNames) {
+                case 'LoopMonthly': //context name, repeat count
+                    if (!tag.children.length) {
+                        logger(`Warning, ${tag.name} expecting contents`);
                     } else {
-                        const p0 = tag.parts[0];
-                        if (typeof p0 !== 'string') {
-                            logger(`Warning, ${tag.tag} expecting number, as first parameter`);
+                        const p0 = tag.children[0];
+                        if (!p0 || typeof p0.text !== 'string') {
+                            logger(`Warning, ${tag.name} expecting number, as first parameter`);
                         } else {
-                            const matched = p0.match(/(\d+)[ ]*,(.*)/);
+                            const matched = p0.text.match(/(\d+)[ ]*,(.*)/);
                             if (!matched) {
-                                logger(`Warning, ${tag.tag} expecting number, as first parameter`);
+                                logger(`Warning, ${tag.name} expecting number, as first parameter`);
                             } else {
+                                acc += matched[2];
                                 const loops = parseInt(matched[1]);
-                                //acc += matched[2];                                
+                                //acc += matched[2];
+                                const lastn = mainContext.house.leaseBalanceDueInfo.getLastNMonth(loops);
                                 for (let i = 0; i < loops; i++) {
-                                    const curMonthlyInfo = monthlyInfo[i];
+                                    const curMonthlyInfo = lastn[i];
                                     if (!curMonthlyInfo) break;
-                                    acc += matched[2];
-                                    for (let pi = 1; pi < tag.parts.length; pi++) {
-                                        const ptg = tag.parts[pi]; 
-                                        if (typeof ptg === 'string') {
-                                            acc += ptg;
-                                        } else {
-                                            switch (ptg.tag) {
-                                                case '$PreviousBalance':
-                                                    acc += '$' + curMonthlyInfo.previousBalance.toFixed(2);
-                                                    break;
-                                                case '$Balance':
-                                                    acc += '$'+curMonthlyInfo.newBalance.toFixed(2);
-                                                    break;
-                                                case '$Amount':
-                                                    acc += '$' + curMonthlyInfo.paymentOrDueAmount.toFixed(2);
-                                                    break;
-                                                case '$Date{':
-                                                    if (ptg.parts.length && typeof ptg.parts[0] === 'string') {
-                                                        acc += moment(curMonthlyInfo.date).format(ptg.parts[0]);
-                                                    } else {
-                                                        logger(`Warning, ${ptg.tag} no format specified`)
-                                                        acc += curMonthlyInfo.date;
-                                                    }
-                                                    break;
-                                                case '$Type':
-                                                    acc += curMonthlyInfo.paymentOrDueTransactionType;
-                                                    break;                                                
-                                                case '$RentDue':
-                                                    acc += '$' + house.leaseInfo.monthlyRent.toFixed(2);
-                                                    break;
-                                            }
-                                        }
-                                    }
+                                    acc += doReplaceOnContext(logger, tag.children, mainContext, curMonthlyInfo);                                    
                                 }
                             }
                         }
                     }
                     break;
-                case '$Date{':
-                    if (typeof tag.parts[0] === 'string') {
-                        acc += moment().format(tag.parts[0]);
+                
+                /// loop related
+                case 'PreviousBalance':
+                    acc += formatAccounting(curPaymentDueInfo?.previousBalance);
+                    break;
+                case 'Balance':
+                    acc += formatAccounting(curPaymentDueInfo?.newBalance);
+                    break;
+                case 'Amount':
+                    acc += formatAccounting(curPaymentDueInfo?.paymentOrDueAmount);
+                    break;
+                case 'Date':
+                    if (tag.children.length && typeof tag.children[0] === 'string') {
+                        acc += moment(curPaymentDueInfo?.date).format(tag.children[0]);
                     } else {
-                        logger(`Warning, ${tag.tag} has no formatting`);
+                        logger(`Warning, ${tag.name} no format specified`)
+                        acc += curPaymentDueInfo?.date;
+                    }
+                    break;
+                case 'Type':
+                    acc += curPaymentDueInfo?.paymentOrDueTransactionType;
+                    break;
+                case 'RentDue':
+                    acc += formatAccounting(mainContext.house.leaseInfo.monthlyRent);
+                    break;
+                /// end loop related
+                case 'Today':
+                    if (typeof tag.children[0] === 'string') {
+                        acc += moment().format(tag.children[0]);
+                    } else {
+                        logger(`Warning, ${tag.name} has no formatting`);
                         acc += new Date().toISOString();
-                    }                    
-                    break;
-                case '$CurrentBalance':
-                    {
-                        const amt = house.leaseBalanceDueInfo.totalBalance?.toFixed(2);
-                        acc += amt ? '$' + amt : '';
                     }
                     break;
-                case '$Renters':
-                    acc += tenants.map(t => t.firstName).join(' and ');
+                case 'CurrentBalance':
+                    {
+                        const amt = mainContext.house.leaseBalanceDueInfo.totalBalance?.toFixed(2);
+                        acc += amt ? formatAccounting(amt) : '';
+                    }
                     break;
-                case '$LastPaymentDate{':
-                    if (typeof tag.parts[0] === 'string') {
-                        acc += moment(house.leaseInfo.lastPaymentDate).format(tag.parts[0]);
+                case 'Renters':
+                    acc += mainContext.tenants.map(t => t.firstName).join(' and ');
+                    break;
+                case 'LastPaymentDate':
+                    if (typeof tag.children[0] === 'string') {
+                        acc += moment(mainContext.house.leaseInfo.lastPaymentDate).format(tag.children[0]);
                     } else {
-                        acc += moment(house.leaseInfo.lastPaymentDate).format('YYYY-MM-DD');
+                        acc += moment(mainContext.house.leaseInfo.lastPaymentDate).format('YYYY-MM-DD');
                     }
                     break;
-                case '$LastPaymentAmount':
+                case 'LastPaymentAmount':
                     {
-                        const lamt = house.leaseInfo.lastPaymentAmount;
-                        acc += lamt ? '$' + lamt : '';
+                        const lamt = mainContext.house.leaseInfo.lastPaymentAmount;
+                        acc += lamt ? formatAccounting(lamt) : '';
                     }
                     break;
             }
         }
         return acc;
     }, '') as string;
+    return output;
+}
+function doReplace(text: string, house: HouseWithLease, tenants: ITenantInfo[],  logger: IStringLogger) {
+    const tags = parseTaggedString(text);
+
+    const output = doReplaceOnContext(logger, tags, {
+        house, tenants,
+    });
     
     return output;
 }
