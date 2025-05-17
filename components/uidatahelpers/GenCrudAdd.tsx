@@ -208,7 +208,7 @@ export const GenCrudAdd = (props: IGenGrudAddProps) => {
 
     return <div className={dspClassName} tabIndex={-1} role="dialog" >
         <Dialog dialogInfo={errDlgPrm}></Dialog>        
-        <div className="modal-dialog" role="document" style={{ maxWidth: '60%' }}>
+        <div className="modal-dialog" role="document" style={{ maxWidth: '60%', maxHeight:'95%', overflowY:'auto' }}>
         <div className="modal-content">
             <div className="modal-header">
                     <h5 className="modal-title">{desc}</h5>
