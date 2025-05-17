@@ -253,14 +253,16 @@ export async function gatherLeaseInfomation(house: HouseWithLease, date?: Date) 
     }
     const payments = await finder.loadLeasePayments(lease);
     const leaseBalance = finder.calculateLeaseBalances(lease, payments, 5, new Date());
+    const leaseBalanceDueInfo = finder.calculateLeaseBalancesNew(payments, lease, new Date());
 
     leaseBalance.monthlyInfo.reverse();
     house.lease = lease;
     house.leaseInfo = leaseBalance;
+    house.leaseBalanceDueInfo = leaseBalanceDueInfo;
     return {
         lease,
         leaseBalance,
-        leaseWithPaymentDueHistory: finder.calculateLeaseBalancesNew(payments, lease, new Date()),
+        leaseBalanceDueInfo,
     };
 }
 

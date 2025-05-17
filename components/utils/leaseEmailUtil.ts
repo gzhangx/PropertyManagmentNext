@@ -40,7 +40,6 @@ const verbs = [
     '$Date',
     '$Type',
     '$Amount',
-    '$DueDate{',
     '$RentDue',    
     '$Balance',
     '$PreviousBalance',
