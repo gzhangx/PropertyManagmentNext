@@ -28,6 +28,8 @@ export interface ILeaseInfoWithPaymentDueHistory {
     monthlyRent: number;
 
     getLastNMonth: (n: number) => INewLeaseBalance[];
+
+    totalPaid: number; //debug
 }
 
 //old
@@ -371,9 +373,9 @@ function calculateLeaseBalancesNew(
         const previousBalance = balance;
 
         if (transaction.paymentOrDueTransactionType === 'Due') {
-            balance += transaction.paymentOrDueAmount;
+            balance = round2(balance + transaction.paymentOrDueAmount);
         } else {
-            balance -= transaction.paymentOrDueAmount;
+            balance = round2(balance - transaction.paymentOrDueAmount);
         }
 
         paymnetDuesInfo.push({
@@ -392,6 +394,8 @@ function calculateLeaseBalancesNew(
         monthlyRent: lease.monthlyRent,
         paymnetDuesInfo,
         totalBalance: 0,
+
+        totalPaid: 0, //debug
         getLastNMonth(n) {
             const lastn: INewLeaseBalance[] = []; 
             //return paymnetDuesInfo;
@@ -412,6 +416,7 @@ function calculateLeaseBalancesNew(
         if (pdi.paymentOrDueTransactionType === 'Payment') {
             paymentDuesAndBalanceInfo.lastPaymentAmount = pdi.paymentOrDueAmount;
             paymentDuesAndBalanceInfo.lastPaymentDate = pdi.date;
+            paymentDuesAndBalanceInfo.totalPaid = round2(paymentDuesAndBalanceInfo.totalPaid + pdi.paymentOrDueAmount);
         }
         paymentDuesAndBalanceInfo.totalBalance = pdi.newBalance;
     }
