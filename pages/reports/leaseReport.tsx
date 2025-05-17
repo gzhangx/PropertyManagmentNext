@@ -169,7 +169,7 @@ export default function LeaseReport() {
                                                 <div className="card-body">
                                                     <table className='table'>
                                                         <tbody>
-                                                            <tr><td colSpan={2}> lease.totalPayments</td><td colSpan={2}> lease.totalMissing</td></tr>                                                            
+                                                            <tr><td>Life time total new</td><td>{h.leaseBalanceDueInfo.totalPaid}</td><td>Life time total old</td><td>{h.leaseInfo.totalPayments}</td></tr>
                                                             <tr><td>Date</td><td>Type</td><td>Amount</td><td>prev</td><td>balance</td></tr>
                                                             {
                                                                 h.leaseBalanceDueInfo.paymnetDuesInfo.map(info => {
