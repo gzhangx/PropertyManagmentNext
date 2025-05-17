@@ -208,18 +208,21 @@ function doReplaceOnContext(logger: IStringLogger, tags: IParsedTag[], mainConte
                         if (!p0 || typeof p0.text !== 'string') {
                             logger(`Warning, ${tag.name} expecting number, as first parameter`);
                         } else {
-                            const matched = p0.text.match(/(\d+)[ ]*,(.*)/);
+                            const matched = p0.text.match(/(?<loop>\d+)[ ]*,( \n)*(?<text>.*)/);
                             if (!matched) {
                                 logger(`Warning, ${tag.name} expecting number, as first parameter`);
                             } else {
-                                acc += matched[2];
-                                const loops = parseInt(matched[1]);
+                                //acc += matched[2];
+                                const loops = parseInt(matched.groups.loop);
                                 //acc += matched[2];
                                 const lastn = mainContext.house.leaseBalanceDueInfo.getLastNMonth(loops);
+                                const children = [...tag.children];
+                                children[0] = { ...children[0] };
+                                children[0].text = matched.groups.text;
                                 for (let i = 0; i < loops; i++) {
                                     const curMonthlyInfo = lastn[i];
                                     if (!curMonthlyInfo) break;
-                                    acc += doReplaceOnContext(logger, tag.children, mainContext, curMonthlyInfo);                                    
+                                    acc += doReplaceOnContext(logger, children, mainContext, curMonthlyInfo);                                    
                                 }
                             }
                         }
