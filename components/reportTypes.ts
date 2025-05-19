@@ -129,6 +129,7 @@ export interface ILeaseInfo {
     contractDates: any;
 
     rentDueDay: number;
+    firstMonthProratedRent: number;
 }
 
 export interface ITenantInfo {

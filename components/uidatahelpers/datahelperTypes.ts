@@ -16,6 +16,7 @@ export type ALLFieldNames = '' | 'address' | 'city' | 'zip' | 'ownerName' | 'rec
     | 'id'
     | 'contactPerson' | 'website' | 'zellerId' | 'venmoId' | 'paypalId'
     | 'rentDueDay'
+    | 'firstMonthProratedRent'
     ;
 
 

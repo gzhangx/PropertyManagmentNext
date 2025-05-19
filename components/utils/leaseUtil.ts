@@ -111,6 +111,7 @@ export async function getLeaseUtilForHouse(houseID: string) {
         return unleasedPayments;
     }
 
+    //old dont use
     function calculateLeaseBalances(l: ILeaseInfo, payments: IPaymentForLease[], monthlyDueDate: number, today: string | Date | moment.Moment) {        
         const monthlyInfo: IPaymentOfMonth[] = [];
         const now = moment.utc(today);
@@ -333,16 +334,29 @@ function calculateLeaseBalancesNew(
 
     // Calculate first rent due date
     let currentDueDate = moment(startDate);
+    let isFirstMonth = true;
     if (startDate.date() > lease.rentDueDay) {
         // If lease started after due day, first rent is due next month
+        isFirstMonth = false;
+        rentDueDates.push({
+            paymentOrDueAmount: lease.firstMonthProratedRent ||  lease.monthlyRent,
+            paymentOrDueTransactionType: 'Due',
+            date: currentDueDate.format('YYYY-MM-DD'),
+            previousBalance: 0, // Will be updated later
+            newBalance: 0       // Will be updated later
+        });
         currentDueDate.add(1, 'month');
     }
     currentDueDate.date(lease.rentDueDay);
 
     // Generate all due dates until effective end date
     while (currentDueDate.isSameOrBefore(effectiveEndDate)) {
+        let rentDue = lease.monthlyRent;
+        if (isFirstMonth && lease.firstMonthProratedRent) {
+            rentDue = lease.firstMonthProratedRent;
+        }        
         rentDueDates.push({
-            paymentOrDueAmount: lease.monthlyRent,
+            paymentOrDueAmount: rentDue,
             paymentOrDueTransactionType: 'Due',
             date: currentDueDate.format('YYYY-MM-DD'),
             previousBalance: 0, // Will be updated later
@@ -350,6 +364,7 @@ function calculateLeaseBalancesNew(
         });
         // Move to next month
         currentDueDate = moment(currentDueDate).add(1, 'month');
+        isFirstMonth = false;
     }
 
     // Create payment transactions
