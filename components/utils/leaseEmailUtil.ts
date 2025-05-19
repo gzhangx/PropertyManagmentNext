@@ -4,6 +4,7 @@ import { IHouseInfo, ILeaseInfo, IPageRelatedState, ITenantInfo } from '../repor
 import { gatherLeaseInfomation, HouseWithLease, ILeaseInfoWithPaymentDueHistory, ILeaseInfoWithPmtInfo, INewLeaseBalance } from './leaseUtil';
 import { IStringLogger } from '../types';
 import { formatAccounting } from './reportUtils';
+import { renderRenderBalanceEmailBodyToText } from './DirectEmailBodyContent';
 
 
 export const paymentEmailSubject = 'paymentEmailSubject';
@@ -30,10 +31,6 @@ export async function getPaymentEmailConfig() {
 
 
 
-
-const START = '$';
-const MATCHCHAR = '{';
-const ENDMATCHCHAR = '}'
 const verbs = [
     'LoopMonthly',
     //'$PaymentMonth{',
@@ -337,7 +334,13 @@ export async function formateEmail(mainCtx: IPageRelatedState, house: HouseWithL
     const mailtos = tenants.map(t => t.email);
 
     const subject = (doReplace(template.subject, house, tenants,logger));
-    const body = (doReplace(template.text, house, tenants,logger));
+    //const body = (doReplace(template.text, house, tenants,logger));
+    const body = renderRenderBalanceEmailBodyToText({
+        house,
+        tenants,
+        contactEmail: '',
+        contactPhone: '',
+    })
     
     return {
         subject, 

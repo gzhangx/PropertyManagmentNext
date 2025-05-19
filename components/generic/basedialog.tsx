@@ -11,7 +11,7 @@ export function BaseDialog(props: IGenericDialogProps) {
     const { children, show, raw} = props;
     const dspClassName = `modal ${show ? ' modal-show ' : 'modal'}`;
     return raw ? children : <div className={dspClassName} tabIndex={-1} role="dialog">
-        <div className="modal-dialog" style={props.rootDialogStyle} role="document">
+        <div className="modal-dialog gg-modal-dialog-scrollable " style={props.rootDialogStyle} role="document">
             <div className="modal-content">
                 {children}
             </div>
@@ -33,7 +33,7 @@ export function CloseableDialog(props: IClosableDialogProps) {
     const test = <button type="button" className="btn btn-secondary" data-dismiss="modal" onClick={onClose}>Close</button>
     return <BaseDialog {...props}>
         <>
-            <div className="modal-dialog-scrollable">
+            <div className="modal-dialog gg-modal-dialog-scrollable ">
                 <div className="modal-content">
                     {
                         props.title && <div className="modal-header">

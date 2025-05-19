@@ -163,3 +163,11 @@ tr:nth-child(even) {
     font-weight: bolder;
     color:#000
   }
+
+
+  .gg-modal-dialog-scrollable 
+    {
+      max-width: 90%;
+      max-height: 95%;
+      overflow-y: auto;
+    }
