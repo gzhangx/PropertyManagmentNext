@@ -27,9 +27,12 @@ export interface ILeaseInfoWithPaymentDueHistory {
 
     monthlyRent: number;
 
+    balanceForwarded: number;
+
     getLastNMonth: (n: number) => INewLeaseBalance[];
 
     totalPaid: number; //debug
+    lastNPaymentAndDue: INewLeaseBalance[];
 }
 
 //old
@@ -397,23 +400,31 @@ function calculateLeaseBalancesNew(
         paymnetDuesInfo,
         totalBalance: 0,
 
+        balanceForwarded: 0,
         totalPaid: 0, //debug
-        getLastNMonth(n) {
-            const lastn: INewLeaseBalance[] = []; 
-            //return paymnetDuesInfo;
-            let cnt = 0;
-            for (let pos = paymnetDuesInfo.length - 1; pos >= 0; pos--) {
-                const objAtPos = paymnetDuesInfo[pos];
-                if (!objAtPos) break;
-                lastn.push(objAtPos);
-                if (objAtPos.paymentOrDueTransactionType === 'Due') {
-                    cnt++;
-                    if (cnt === n) break;
-                }
-            }
-            return lastn;
-        },
+        getLastNMonth: null,
+        lastNPaymentAndDue: null,
     };
+
+    paymentDuesAndBalanceInfo.getLastNMonth = (n) => {
+        const lastn: INewLeaseBalance[] = [];
+        //return paymnetDuesInfo;
+        let cnt = 0;
+        for (let pos = paymnetDuesInfo.length - 1; pos >= 0; pos--) {
+            const objAtPos = paymnetDuesInfo[pos];
+            if (!objAtPos) break;
+            paymentDuesAndBalanceInfo.balanceForwarded = objAtPos.previousBalance;            
+            lastn.push(objAtPos);
+            if (objAtPos.paymentOrDueTransactionType === 'Due') {
+                cnt++;
+                if (cnt === n) break;
+            }
+        }
+        const reversed = lastn.reverse();
+        return reversed;
+    }
+
+    paymentDuesAndBalanceInfo.lastNPaymentAndDue = paymentDuesAndBalanceInfo.getLastNMonth(3); //default to 3.  This is needed as balance forward is setup here here
 
     for (const pdi of paymnetDuesInfo) {
         if (pdi.paymentOrDueTransactionType === 'Payment') {

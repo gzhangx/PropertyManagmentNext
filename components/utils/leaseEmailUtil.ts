@@ -45,6 +45,7 @@ const verbs = [
     'PreviousBalance',
     'Renters',
     'CurrentBalance',
+    'BalanceForwarded',
     'Date',
     'LastPaymentDate',
     'LastPaymentAmount',
@@ -203,28 +204,15 @@ function doReplaceOnContext(logger: IStringLogger, tags: IParsedTag[], mainConte
                 case 'LoopMonthly': //context name, repeat count
                     if (!tag.children.length) {
                         logger(`Warning, ${tag.name} expecting contents`);
-                    } else {
-                        const p0 = tag.children[0];
-                        if (!p0 || typeof p0.text !== 'string') {
-                            logger(`Warning, ${tag.name} expecting number, as first parameter`);
-                        } else {
-                            const matched = p0.text.match(/(?<loop>\d+)[ ]*,( \n)*(?<text>.*)/);
-                            if (!matched) {
-                                logger(`Warning, ${tag.name} expecting number, as first parameter`);
-                            } else {
-                                //acc += matched[2];
-                                const loops = parseInt(matched.groups.loop);
-                                //acc += matched[2];
-                                const lastn = mainContext.house.leaseBalanceDueInfo.getLastNMonth(loops);
-                                const children = [...tag.children];
-                                children[0] = { ...children[0] };
-                                children[0].text = matched.groups.text;
-                                for (let i = 0; i < loops; i++) {
-                                    const curMonthlyInfo = lastn[i];
-                                    if (!curMonthlyInfo) break;
-                                    acc += doReplaceOnContext(logger, children, mainContext, curMonthlyInfo);                                    
-                                }
-                            }
+                    } else {                                                
+                        //const loops = parseInt(matched.groups.loop);                                
+                        //const lastn = mainContext.house.leaseBalanceDueInfo.getLastNMonth(loops);
+                        const lastn = mainContext.house.leaseBalanceDueInfo.lastNPaymentAndDue;
+                        const children = [...tag.children];
+                        //children[0] = { ...children[0] };
+                        //children[0].text = matched.groups.text;
+                        for (const curMonthlyInfo of lastn) {
+                            acc += doReplaceOnContext(logger, children, mainContext, curMonthlyInfo);
                         }
                     }
                     break;
@@ -237,7 +225,11 @@ function doReplaceOnContext(logger: IStringLogger, tags: IParsedTag[], mainConte
                     acc += formatAccounting(curPaymentDueInfo?.newBalance);
                     break;
                 case 'Amount':
-                    acc += formatAccounting(curPaymentDueInfo?.paymentOrDueAmount);
+                    let amt = curPaymentDueInfo?.paymentOrDueAmount;
+                    if (curPaymentDueInfo.paymentOrDueTransactionType === 'Payment') {
+                        amt = -amt;
+                    }
+                    acc += formatAccounting(amt);
                     break;
                 case 'Date':
                     if (tag.children.length && typeof tag.children[0] === 'string') {
@@ -283,6 +275,9 @@ function doReplaceOnContext(logger: IStringLogger, tags: IParsedTag[], mainConte
                         const lamt = mainContext.house.leaseInfo.lastPaymentAmount;
                         acc += lamt ? formatAccounting(lamt) : '';
                     }
+                    break;
+                case 'BalanceForwarded':
+                    acc += formatAccounting(mainContext.house.leaseBalanceDueInfo.balanceForwarded);
                     break;
             }
         }
