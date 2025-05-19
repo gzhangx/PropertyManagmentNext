@@ -5,25 +5,39 @@ import { gatherLeaseInfomation, HouseWithLease, ILeaseInfoWithPaymentDueHistory,
 import { IStringLogger } from '../types';
 import { formatAccounting } from './reportUtils';
 import { renderRenderBalanceEmailBodyToText } from './DirectEmailBodyContent';
+import { startCase } from 'lodash';
 
 
 export const paymentEmailSubject = 'paymentEmailSubject';
 export const paymentEmailText = 'paymentEmailText';
+
+export const paymentEmailContactPhone = 'paymentEmailContactPhone';
+export const paymentEmailContactEmail = 'paymentEmailContactEmail';
+
 export const googleSmtpUser = 'googleSmtpUser';
 export const googleSmtpPass = 'googleSmtpPass';
-export async function getPaymentEmailConfig() {
-    return getUserOptions([]).then(res => {
-        const subject = res.find(r => r.id === paymentEmailSubject)?.data || '';
-        const text = res.find(r => r.id === paymentEmailText)?.data || '';
 
-        const user = res.find(r => r.id === googleSmtpUser)?.data || '';
-        const pass = res.find(r => r.id === googleSmtpPass)?.data || '';
-        return {
-            subject,
-            text,
-            user,
-            pass
-        }
+export const paymentEmailProps = [
+    paymentEmailSubject,
+    paymentEmailText,
+    paymentEmailContactPhone,
+    paymentEmailContactEmail,
+    googleSmtpUser,
+    googleSmtpPass,
+] as const;
+
+export function getPaymentEmailDesc(name: typeof paymentEmailProps[number]) {
+    return startCase(name);
+}
+
+export type IPaymentEmailConfig = Record<typeof paymentEmailProps[number], string>;
+export async function getPaymentEmailConfig(): Promise<IPaymentEmailConfig> {
+    return getUserOptions([]).then(res => {
+        const retObj: IPaymentEmailConfig = {} as IPaymentEmailConfig;
+        paymentEmailProps.forEach(name => {
+            retObj[name] = res.find(r => r.id === name)?.data || '';
+        })        
+        return retObj;
     })
 }
 
@@ -333,13 +347,14 @@ export async function formateEmail(mainCtx: IPageRelatedState, house: HouseWithL
     //const mailtos = mailToIds.map(id => (tenantMaps.idDesc.get(id) as any)?.email || `UnableToGetName${id}`).join(';');
     const mailtos = tenants.map(t => t.email);
 
-    const subject = (doReplace(template.subject, house, tenants,logger));
+    const subject = (doReplace(template.paymentEmailSubject, house, tenants, logger));
+    const rentEmailConfig = await getPaymentEmailConfig();
     //const body = (doReplace(template.text, house, tenants,logger));
     const body = renderRenderBalanceEmailBodyToText({
         house,
         tenants,
-        contactEmail: '',
-        contactPhone: '',
+        contactEmail: rentEmailConfig.paymentEmailContactEmail,
+        contactPhone: rentEmailConfig.paymentEmailContactPhone,
     })
     
     return {
