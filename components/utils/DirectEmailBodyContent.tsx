@@ -23,22 +23,30 @@ export function DirectEmailBodyContent(props: RenderProps) {
             Your Rent Payment of {lastPaymentAmount} was received on {lastPaymentDate}.
             Here is your balance in details,
             <table>
-                <tr><td colSpan={2}> Balance Forwarded </td><td>{ formatAccounting(leaseBalanceDueInfo.balanceForwarded)}</td > </tr>
                 < tr > <td>Date </td><td>Transaction</td > <td>Amount </td></tr >
+                <tr><td colSpan={2}> Balance Forwarded </td><td>{ formatAccounting(leaseBalanceDueInfo.balanceForwarded)}</td > </tr>
                 {
-                    leaseBalanceDueInfo.lastNPaymentAndDue.map((info, key)=>{
-                        return <tr key={key}><td>{standardFormatDate(info.date)} </td><td>{info.paymentOrDueTransactionType}</td> <td>{ formatAccounting(info.paymentOrDueAmount)} </td></tr >
+                    leaseBalanceDueInfo.lastNPaymentAndDue.map((info, key) => {
+                        let amt = info.paymentOrDueAmount;
+                        let type: string = info.paymentOrDueTransactionType;
+                        if (info.paymentOrDueTransactionType === 'Payment') {
+                            amt = -amt;
+                        } else {
+                            type = 'Rent Due';
+                        }
+                        return <tr key={key}><td>{standardFormatDate(info.date)} </td><td>{type}</td> <td>{ formatAccounting(amt)} </td></tr >
                     })
                 }
                 <tr><td colSpan={2} > Current Balance </td><td>{ formatAccounting(leaseBalanceDueInfo.totalBalance)}</td > </tr>
             </table>
+            <br></br>
 
-            Please let me know if you have any questions or concerns.
-            Thank you
+            Please let me know if you have any questions or concerns.<br></br>
+            Thank you<br></br>
+            **************************************************************************************************************************<br></br>
+            This is an automatically generated email.Please do not reply, as this email address is not monitored.<br></br>
+            If you have any questions or concerns, feel free to contact us by email at {props.contactEmail} { props.contactPhone}.<br/>
             **************************************************************************************************************************
-            This is an automatically generated email.Please do not reply, as this email address is not monitored.
-            If you have any questions or concerns, feel free to contact us by email at {props.contactEmail} { props.contactPhone}.
-            ********************************************************************************************************************** ****
         </div>
     </>
 }

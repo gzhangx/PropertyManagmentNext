@@ -191,7 +191,7 @@ export const paymentInfoDef: ITableAndSheetMappingInfo<ICustEmailInfo> = {
         };
         return cust.paymentUIRelated_showRenterConfirmationScreen && <CloseableDialog show={!!emailPreview.html}
             rootDialogStyle={{
-                maxWidth: '1000px'
+                maxWidth: '99%'
             }}
             setShow={closePreview}
             footer={<div className="modal-footer">

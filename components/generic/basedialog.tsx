@@ -33,21 +33,11 @@ export function CloseableDialog(props: IClosableDialogProps) {
     const test = <button type="button" className="btn btn-secondary" data-dismiss="modal" onClick={onClose}>Close</button>
     return <BaseDialog {...props}>
         <>
-            <div className="modal-dialog gg-modal-dialog-scrollable ">
-                <div className="modal-content">
-                    {
-                        props.title && <div className="modal-header">
-                            <h5 className="modal-title">{props.title}</h5>
-                            <button type="button" className="close">
-                                <span aria-hidden="true" onClick={onClose}>&times;</span>
-                            </button>
-                        </div>
-                    }
+            
                     {
                         props.children
                     }
-                </div>
-            </div>
+            
             {
                 props.footer ? props.footer : <div className="modal-footer">
                     <button type="button" className="btn btn-secondary" data-dismiss="modal" onClick={onClose}>Close</button>
