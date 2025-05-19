@@ -23,7 +23,7 @@ export interface IGenGrudAddProps extends IGenGrudProps {
     columnInfo: IDBFieldDef[];
     editItem?: ItemType;
     setEditItem: React.Dispatch<React.SetStateAction<ItemType>>;
-    doAdd: (data: ItemType, id: FieldValueType) => Promise<{ id: string; message: string; affectedRows?: number; changedRows?: number; }>;
+    //doAdd: (data: ItemType, id: FieldValueType) => Promise<{ id: string; message: string; affectedRows?: number; changedRows?: number; }>; //defined in GenCrudProps
     //onOK?: (data?:ItemType) => void;
     onCancel: (data?:ItemType) => void;
     onError?: (err: { message: string; missed: any; }) => void;
