@@ -285,8 +285,12 @@ function getStdSearchInfo(mainCtx:IPageRelatedState, itm: ItemType, columnInfo: 
         switch(c.type) {
             case 'date':
             case 'datetime':
-                const mm = moment(v);
-                res.push([mm.format('YYYY-MM-DD'), mm.format('MM/DD/YYYY')])
+                if (v === null || v === '') {
+                    res.push([])
+                } else {
+                    const mm = moment(v);
+                    res.push([mm.format('YYYY-MM-DD'), mm.format('MM/DD/YYYY')])
+                }
                     break;
             case 'decimal':
                 res.push([(v??'').toString(), formatAccounting(v)]);

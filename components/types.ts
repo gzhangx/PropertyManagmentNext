@@ -123,7 +123,7 @@ export function isColumnSecurityField(field: IDBFieldDef) {
 export type FieldValueType = string | number | null;
 
 
-export type AllDateTypes = string | Date | moment.Moment;
+export type AllDateTypes = string | Date | moment.Moment | null;
 
 
 export type IStringLogger = (s: string) => void;

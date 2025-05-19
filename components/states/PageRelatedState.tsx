@@ -271,6 +271,7 @@ export function PageRelatedContextWrapper(props: {
         topBarMessagesCfg,
         timezone: rootCtx.userInfo.timezone,
         browserTimeToUTCDBTime: (bt: AllDateTypes) => {            
+            if (bt == null) return null;
             if (typeof bt === 'string') {
                 return momentTimezone.tz(bt, rootCtx.userInfo.timezone).utc().format(FULLYYYYMMDDHHMMSSFormat)
             }
@@ -280,6 +281,7 @@ export function PageRelatedContextWrapper(props: {
             return bt.utc().format(FULLYYYYMMDDHHMMSSFormat);
         },
         utcDbTimeToZonedTime: (utc: AllDateTypes, format?: 'YYYY-MM-DD' | 'YYYY-MM-DD HH:mm:ss') => {
+            if (utc == null) return null;
             try {               
                 //console.log('from utc', utc, ' to ', rootCtx.userInfo.timezone, momentTimezone.tz(moment.utc(utc), rootCtx.userInfo.timezone).format(format || FULLYYYYMMDDHHMMSSFormat))
                 return momentTimezone.tz(moment.utc(utc), rootCtx.userInfo.timezone).format(format || FULLYYYYMMDDHHMMSSFormat);
