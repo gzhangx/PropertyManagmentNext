@@ -35,7 +35,9 @@ export default function () {
     }, [currentPath]);    
 
     return <div>
-        <CloseableDialog show={!!mainCtx.loadingDlgContent} title={ mainCtx.loadingDlgTitle } setShow={() => {
+        <CloseableDialog show={!!mainCtx.loadingDlgContent} title={mainCtx.loadingDlgTitle}
+            rootDialogStyle={{zIndex: 2000}}
+            setShow={() => {
             mainCtx.showLoadingDlg(null);
         }}>
             {
