@@ -36,7 +36,7 @@ export default withRouter(function MainDashboard(props) {
   }
   return (
     <div>
-      <div id="wrapper" style={{position:'fixed', zIndex: 1,}}>
+      <div id="wrapper" style={{position:'fixed', zIndex: 1,width:'100%',}}>
         <MainSideBar sections={sections} otherPages={otherPages}></MainSideBar>        
           <div id="content-wrapper" className="d-flex flex-column">
             <div id="content">
