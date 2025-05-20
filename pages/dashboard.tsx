@@ -40,7 +40,7 @@ export default withRouter(function MainDashboard(props) {
       <div id="wrapper" style={{position:'fixed', zIndex: 1,width:'100%',}}>
         <MainSideBar sections={sections} otherPages={otherPages}></MainSideBar>        
           <div id="content-wrapper" className="d-flex flex-column">
-            <div id="content">
+          <div id="content" className='gg-all-scrollable'>
             {(rstate.sideBarStates['showNotSousedTopBar'] || mainCtx.topBarMessagesCfg.items.length > 0 || mainCtx.topBarErrorsCfg.items.length > 0) &&  <TopBar />}
             <div style={pageStyles}>
               {
