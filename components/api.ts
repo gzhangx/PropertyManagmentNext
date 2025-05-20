@@ -516,3 +516,17 @@ export async function sendEmail(to: string[], subject: string, html?: string) {
         html,
     });
 }
+
+
+export interface IExpenseCategories {
+    expenseCategoryID: string;
+    expenseCategoryName: string;
+}
+
+export async function getExpenseCategories(): Promise<IExpenseCategories[]> {
+    return sqlGet({
+        table: 'expenseCategories',        
+    } as ISqlRequest).then((r: { rows: IExpenseCategories[] }) => {
+        return r.rows;
+    });
+}
