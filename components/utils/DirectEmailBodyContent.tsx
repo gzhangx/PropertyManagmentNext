@@ -24,7 +24,7 @@ export function DirectEmailBodyContent(props: RenderProps) {
 
             Your Rent Payment of {lastPaymentAmount} was received on {lastPaymentDate}.<br></br>
             Here is your balance in details,<br></br>
-            <table>
+            <table style={{borderBlockColor:'black', borderBlockWidth:'1px'}}>
                 < tr > <td>Date </td><td>Transaction</td > <td>Amount </td></tr >
                 <tr><td colSpan={2}> Balance Forwarded: </td><td>{ formatAccounting(leaseBalanceDueInfo.balanceForwarded)}</td > </tr>
                 {
@@ -39,14 +39,14 @@ export function DirectEmailBodyContent(props: RenderProps) {
                         return <tr key={key}><td>{standardFormatDate(info.date)} </td><td>{type}</td> <td>{ formatAccounting(amt)} </td></tr >
                     })
                 }
-                <tr><td colSpan={2}  className='strong'> Current Balance:</td><td>{ formatAccounting(leaseBalanceDueInfo.totalBalance)}</td > </tr>
+                <tr><td colSpan={2} >Current Balance:</td><td>{ formatAccounting(leaseBalanceDueInfo.totalBalance)}</td > </tr>
                 
             </table>
             <br></br>
             Other Deposit Information:<br></br>
             Security Deposit Received: { formatAccounting(props.house.lease.deposit)}<br></br>
             {
-props.house.lease.petDeposit && <><br></br>Pet Depsoist Received:{formatAccounting(props.house.lease.petDeposit)}
+props.house.lease.petDeposit && <>Pet Depsoist Received: {formatAccounting(props.house.lease.petDeposit)}  (none refundable)<br></br>
 </>
             }
             
