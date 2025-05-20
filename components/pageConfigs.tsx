@@ -52,7 +52,8 @@ const inputPages: LocalPageInfo[] = [
     },
     {
         name: 'Leases',
-        page: LeaseList(),
+        table: 'leaseInfo',
+        //page: LeaseList(),
         //table: 'leaseInfo',
     },
     {

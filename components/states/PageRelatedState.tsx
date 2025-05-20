@@ -148,6 +148,16 @@ export function PageRelatedContextWrapper(props: {
                 break;
             case 'tenantInfo':
                 parser.descGetter = (obj) => obj.fullName;
+                res.specialOptionGenerator = (row) => {
+                    const allOps = res.rows.map(r => {
+                        return {
+                            label: r.desc,
+                            value: r.id,
+                            selected: false,
+                        }
+                    });
+                    return [{ label: '', value: '', }].concat(allOps);
+                };
                 break;
             case 'leaseInfo':
                 parser.descGetter = (obj: ILeaseInfo) => obj.houseID+'-'+obj.startDate?.substring(0,10) + '-' + obj.endDate?.substring(0,10)+'-'+obj.leaseID;

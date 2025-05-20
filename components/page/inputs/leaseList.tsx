@@ -1,6 +1,7 @@
 import React  from 'react';
 import {GenList} from '../../uidatahelpers/GenList';
 
+//no longer used
 export function LeaseList() {
     return <GenList table={'leaseInfo'} title={'Leases List'}
         displayFields={[
