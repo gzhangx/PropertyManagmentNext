@@ -30,3 +30,28 @@ export default function SetDefaultLeaseDueDay() {
     </table>
     </div>
 }
+
+
+function OutlinedTextBox(props: {
+    text: string;
+    label: string;
+}) {
+    return <div>
+        <label style={{
+            userSelect: 'none',
+            display: 'block',
+            position: 'absolute',
+            left: '0px',
+            top: '0px',
+            padding: '0px',
+            transformOrigin: 'left top 0px',
+            transform: 'translate(14px, -6px) scale(0.75)',
+        }}>{props.label}</label>
+        <div style={{
+            position: 'relative',
+            display: 'inline-flex',
+        }}>
+            <input></input>
+        </div>
+    </div>
+}

@@ -4,7 +4,8 @@ import { ItemTypeDict } from "./uidatahelpers/datahelperTypes";
 //export type TYPEDBTables = 'ownerInfo' | 'rentPaymentInfo' | 'houseInfo';
 
 export type TableNames = 'rentPaymentInfo' | 'houseInfo' | 'maintenanceRecords' | 'ownerInfo' | 'leaseInfo' | 'tenantInfo' | 'workerComp' | 'userInfo'
-    | 'googleApiCreds' | 'workerInfo' | 'userOptions';
+    | 'googleApiCreds' | 'workerInfo' | 'userOptions'
+    | 'expenseCategories';
 export interface ISqlDeleteResponse {
     affectedRows: number;
 }
