@@ -212,7 +212,7 @@ export const paymentInfoDef: ITableAndSheetMappingInfo<ICustEmailInfo> = {
                 <button type="button" className="btn btn-secondary" data-dismiss="modal" onClick={closePreview}>Close</button>
             </div>}
         >
-            <table className="table-NOborder">
+            <table className="table-NOborder centered-table ">
                 <tr >
                     <td className="td20PercentWidth">Email To:</td>
                     <td className="td80PercentWidth">
