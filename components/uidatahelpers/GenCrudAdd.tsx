@@ -1,19 +1,14 @@
-import React, { useState, useEffect } from 'react';
-import { createAndLoadHelper } from './datahelpers';
+import React, { useEffect } from 'react';
 import { get } from 'lodash';
-import { EditTextDropdown, } from '../generic/EditTextDropdown';
-import * as bluebird from 'bluebird';
 import {Dialog, createDialogPrms} from '../dialog'
-import { DisplayCustomFormatFieldOriginalDataSufix, FieldValueType, IDBFieldDef, isColumnSecurityField, TableNames } from '../types';
+import { DisplayCustomFormatFieldOriginalDataSufix, IDBFieldDef, isColumnSecurityField, TableNames } from '../types';
 import { IEditTextDropdownItem } from '../generic/GenericDropdown';
 import { IGenGrudProps } from './GenCrud';
 import * as RootState from '../states/RootState'
 import moment from 'moment';
-import { ALLFieldNames, DataToDbSheetMapping, ICrudAddCustomObj, ItemType, ItemTypeDict } from './datahelperTypes';
+import { DataToDbSheetMapping, ICrudAddCustomObj, ItemType, } from './datahelperTypes';
 import { usePageRelatedContext } from '../states/PageRelatedState';
-import { IHelper } from '../reportTypes';
 import GrkEditableDropdown from '../generic/GrkEditableDropdown';
-import { TextAlignment } from 'pdf-lib';
 
 
 
@@ -234,11 +229,11 @@ export const GenCrudAdd = (props: IGenGrudAddProps) => {
                     columnInfo.map((c, cind) => {
                         if (isCreateAddNewItem) { //operation === 'Add') { //  !editItem
                             //create                            
-                            if (c.type === 'date') {
-                                editItem.data[c.field] = mainCtx.browserTimeToUTCDBTime(moment())//  moment().format('YYYY-MM-DD');
-                            } else {
+                            //if (c.type === 'date') {
+                            //    editItem.data[c.field] = mainCtx.browserTimeToUTCDBTime(moment())//  moment().format('YYYY-MM-DD');
+                            //} else {
                                 if (c.isId) return null;
-                            }
+                            //}
                         } else {
                             //modify
                             if (c.isId) return <div className='row' key={cind}>{editItem.data[c.field] || ''}</div>

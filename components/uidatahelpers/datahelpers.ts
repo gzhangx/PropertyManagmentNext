@@ -180,7 +180,12 @@ export function createHelper(rootCtx: RootState.IRootPageState, ctx: IPageRelate
             const submitData = accModelFields().reduce((acc, f) => {
                 acc[f.field] = data.data[f.field];
                 if (f.type === 'date' || f.type === 'datetime') {
-                    acc[f.field] = ctx.browserTimeToUTCDBTime(data.data[f.field]);
+                    const dateVal = data.data[f.field];
+                    if (dateVal) {
+                        acc[f.field] = ctx.browserTimeToUTCDBTime(dateVal);
+                    } else {
+                        acc[f.field] = null;
+                    }
                 }
                 fieldTypeMapping.set(f.field, f);                
                 return acc;

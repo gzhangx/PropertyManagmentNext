@@ -206,6 +206,8 @@ export const GenCrud = (props: IGenGrudProps) => {
         columnInfo.map((c, cind) => {
             if (c.type === 'date' || c.type === 'datetime') {
                 editItem.data[c.field] = moment().format('YYYY-MM-DD');
+            } else if (c.type === 'decimal' || c.type === 'int') {
+                editItem.data[c.field] = 0;
             } else {
                 editItem.data[c.field] = '';
             }
