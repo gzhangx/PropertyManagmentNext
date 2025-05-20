@@ -75,31 +75,6 @@ export function RenterEmailConfig() {
                 
             </div>                        
         </div>
-        <div className="form-group bg-gray-100 text-gray-900">
-            <div className="container">
-                <div className="row">Usage:  { `Rent Payment of $LastPaymentAmount Was Received `}</div>
-                <div className="row">{ ` Dear $Renters, <br>
-
-Your Rent Payment of $LastPaymentAmount was received on $LastPaymentDate{MM/DD/YYYY}.
-Here is your balance in details, 
-<table>
-<tr><td colspan=2>Balance Forwarded</td><td>$BalanceForwarded</td></tr>
-<tr><td>Date</td><td>Transaction</td><td>Amount</td></tr>
-$LoopMonthly{
-<tr><td>$Date{MM/DD/YYYY}</td><td>$Type</td><td>$Amount</td></tr>
-}
-<tr><td colspan=2>Current Balance</td><td>$CurrentBalance</td></tr>
-</table>
-
-Please let me know if you have any questions or concerns. 
-Thank you
-**************************************************************************************************************************
-This is an automatically generated email. Please do not reply, as this email address is not monitored.
-If you have any questions or concerns, feel free to contact us by email at x y.
-**************************************************************************************************************************`}</div>
-            </div>
-        </div>
-        <div className="form-group">
-        </div>            
+          
     </div>)
 }
