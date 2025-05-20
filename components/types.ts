@@ -5,7 +5,9 @@ import { ItemTypeDict } from "./uidatahelpers/datahelperTypes";
 
 export type TableNames = 'rentPaymentInfo' | 'houseInfo' | 'maintenanceRecords' | 'ownerInfo' | 'leaseInfo' | 'tenantInfo' | 'workerComp' | 'userInfo'
     | 'googleApiCreds' | 'workerInfo' | 'userOptions'
-    | 'expenseCategories';
+    | 'expenseCategories'
+    | 'paymentType'
+    ;
 export interface ISqlDeleteResponse {
     affectedRows: number;
 }
