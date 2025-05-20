@@ -41,7 +41,7 @@ export function RenterEmailConfig() {
                                             />
                                     </div>
                                     }
-                                    return <div className="form-group">
+                                    return <div className="form-group"> {getPaymentEmailDesc(name)}
                                         <input type="text" className="form-control form-control-user"
                                             name={name}
                                             placeholder={getPaymentEmailDesc(name)}
