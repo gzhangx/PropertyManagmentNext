@@ -309,10 +309,13 @@ function calculateLeaseBalancesNew(
     // Determine the effective end date (override takes precedence, then termination, then lease end)
     // Collect all potential end dates (excluding null values)
     const potentialEndDates: moment.Moment[] = [];
+    function extendEndDate(endDay: string | Date | moment.Moment) {
+        return moment(endDay).add(1, 'days').startOf('day').subtract(1, 'second');
+    }
 
-    if (lease.endDate) potentialEndDates.push(moment(lease.endDate));
-    if (lease.terminationDate) potentialEndDates.push(moment(lease.terminationDate));
-    if (endDateOverride) potentialEndDates.push(moment(endDateOverride));
+    if (lease.endDate) potentialEndDates.push(extendEndDate(lease.endDate));
+    if (lease.terminationDate) potentialEndDates.push(extendEndDate(lease.terminationDate));
+    if (endDateOverride) potentialEndDates.push(extendEndDate(endDateOverride));
 
     // Determine effective end date - earliest of provided dates or today if none
     const effectiveEndDate = potentialEndDates.length > 0
