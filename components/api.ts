@@ -518,12 +518,14 @@ export async function sendEmail(to: string[], subject: string, html?: string) {
 }
 
 
-export interface IExpenseCategories {
+//not used
+interface IExpenseCategories {
     expenseCategoryID: string;
     expenseCategoryName: string;
 }
 
-export async function getExpenseCategories(): Promise<IExpenseCategories[]> {
+//not used
+async function getExpenseCategories(): Promise<IExpenseCategories[]> {
     return sqlGet({
         table: 'expenseCategories',        
     } as ISqlRequest).then((r: { rows: IExpenseCategories[] }) => {

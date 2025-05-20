@@ -164,7 +164,10 @@ export function PageRelatedContextWrapper(props: {
                 };
                 break;
             case 'expenseCategories':
-                parser.descGetter = obj => obj.expenseCategoryname;
+                parser.descGetter = obj => obj.expenseCategoryName;
+                break;
+            case 'paymentType':
+                parser.descGetter = obj => obj.paymentTypeName;
                 break;
             default:
                 console.log(`Error, id desc sorter not set for ${table}`);
