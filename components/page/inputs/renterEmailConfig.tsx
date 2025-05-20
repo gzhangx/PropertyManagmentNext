@@ -1,10 +1,21 @@
 import { useEffect, useState } from "react";
 import * as api from '../../api'
 import { getPaymentEmailConfig, getPaymentEmailDesc, googleSmtpPass, googleSmtpUser, IPaymentEmailConfig, paymentEmailProps, paymentEmailSubject, paymentEmailText } from "../../utils/leaseEmailUtil";
+import { TextFieldOutlined } from "../../uidatahelpers/wrappers/muwrappers";
 
 
-
+import { createTheme, ThemeProvider } from '@mui/material/styles';
+const darkTheme = createTheme({
+    palette: {
+        mode: 'dark', // Force dark mode for this page
+    },
+});
 export function RenterEmailConfig() {
+    return <ThemeProvider theme={darkTheme}>
+        <RenterEmailConfigUnthemed></RenterEmailConfigUnthemed>
+    </ThemeProvider>
+}
+export function RenterEmailConfigUnthemed() {
     const [configData, setConfigData] = useState<IPaymentEmailConfig>(paymentEmailProps.reduce((acc, name) => {
         acc[name] = '';
         return acc;
@@ -17,9 +28,9 @@ export function RenterEmailConfig() {
     return (<div className="bg-gradient-primary">
         <div className="container">
 
-            <div className="row justify-content-center">
-                <div className="col-lg-12">
-                    <div className="p-5">
+            <div className="row justify-content-center ">
+                <div className="col-lg-12 ">
+                    <div className="p-5 gg-modal-dialog-scrollable">
                         <div className="text-center">
                             <h1 className="h4 text-gray-900 mb-4">Email Config</h1>
                         </div>
@@ -41,18 +52,16 @@ export function RenterEmailConfig() {
                                             />
                                     </div>
                                     }
-                                    return <div className="form-group"> {getPaymentEmailDesc(name)}
-                                        <input type="text" className="form-control form-control-user"
-                                            name={name}
-                                            placeholder={getPaymentEmailDesc(name)}
-                                            value={configData[name]}
+                                    return <div className="form-group">
+                                        <TextFieldOutlined label={getPaymentEmailDesc(name)} value={configData[name]}                                            
+                                            style={{ width: '100%' }}
                                             onChange={e => {
                                                 setConfigData({
                                                     ...configData,
                                                     [name]: e.target.value
                                                 })
                                             }}
-                                        />
+                                        ></TextFieldOutlined>                                        
                                     </div>
                                 })
                             }                            
