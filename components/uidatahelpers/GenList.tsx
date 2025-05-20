@@ -212,9 +212,9 @@ export function GenList(props: ITableAndSheetMappingInfo<unknown>) {
 
     const doAdd = (data: ItemType, id: FieldValueType) => {
         return helper.saveData(data,id, true, secCtx.foreignKeyLoopkup).then(res => {
-            const isUpdateExisting = !!id;  //if  we have id it is updateExisting
+            //const isUpdateExisting = !!id;  //if  we have id it is updateExisting
             //setLoading(true);
-            reload(columnInf, isUpdateExisting);  //force reload on update (for google sheet comp)
+            reload(columnInf, true);  //force reload on everything //force reload on update (for google sheet comp)
             return res;
         }).catch(err => {
             //setLoading(false);
@@ -225,7 +225,7 @@ export function GenList(props: ITableAndSheetMappingInfo<unknown>) {
     const doDelete=( ids: string[], data: ItemType ) => {
         //setLoading(true);
         helper.deleteData(ids, secCtx.foreignKeyLoopkup, data).then(() => {
-            reload(columnInf);
+            reload(columnInf, true);
         })
     }
     const displayFields=  displayColumnByTable[table]?.displayColumns || props.displayFields||helper.getModelFields().map(f => f.isId? null:f).filter(x => x);
@@ -237,7 +237,7 @@ export function GenList(props: ITableAndSheetMappingInfo<unknown>) {
                     <GenCrud
                         //fkDefs={getFKDefs()}
                     paggingInfo={paggingInfo} setPaggingInfo={setPaggingInfo}
-                    reload = {()=>reload(columnInf)}
+                    reload = {(forceFullReload)=>reload(columnInf, forceFullReload)}
                     pageState = {pageState}
                         {...props}
                         displayFields={displayFields}

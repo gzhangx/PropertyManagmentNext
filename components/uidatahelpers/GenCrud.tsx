@@ -57,7 +57,7 @@ export interface IGenGrudProps extends ITableAndSheetMappingInfo<unknown> {
     //fkDefs?: IFKDefs;
     doDelete: (ids: string[], data: ItemType) => void;
     idCol?: { field: string; }
-    reload?: () => Promise<void>;    
+    reload: (forceFullReload:boolean) => Promise<void>;    
     fullTextSearchInTyping: IFullTextSearchPart;
     setFullTextSearchInTyping: ReactSetStateType<IFullTextSearchPart>;
     //customDisplayFunc?: (value: any, fieldDef: IDBFieldDef) => React.JSX.Element;
