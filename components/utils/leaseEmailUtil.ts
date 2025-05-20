@@ -13,6 +13,7 @@ export const paymentEmailText = 'paymentEmailText';
 
 export const paymentEmailContactPhone = 'paymentEmailContactPhone';
 export const paymentEmailContactEmail = 'paymentEmailContactEmail';
+export const paymentEmailSenderName = 'paymentEmailSenderName';
 
 export const googleSmtpUser = 'googleSmtpUser';
 export const googleSmtpPass = 'googleSmtpPass';
@@ -22,6 +23,7 @@ export const paymentEmailProps = [
     paymentEmailText,
     paymentEmailContactPhone,
     paymentEmailContactEmail,
+    paymentEmailSenderName,
     googleSmtpUser,
     googleSmtpPass,
 ] as const;
