@@ -15,7 +15,7 @@ import { RenterEmailConfig } from './page/inputs/renterEmailConfig'
 
 import * as dev2 from '../pages/util/dev2'
 
-import type { JSX } from "react";
+import type { CSSProperties, JSX } from "react";
 import { TableNames } from './types'
 
 import GoogleSheetConfigPage from '../pages/config/googleSheetConfig'
@@ -26,6 +26,7 @@ type LocalPageInfo = {
     name: string;
     page?: JSX.Element;
     table?: TableNames;
+    pageOuterStyles?: CSSProperties;
 }
 
 
@@ -71,7 +72,10 @@ const inputPages: LocalPageInfo[] = [
    
 ];
 
-const allSections = [
+const allSections: {
+    name: string;
+    pages: LocalPageInfo[];    
+}[] = [
     {
         name: ' PM Reports',
         pages: [            
@@ -89,7 +93,7 @@ const allSections = [
             },
             {
                 name: 'Yearly 1099 Report',
-                page: <YearlyMaintenanceReport/>,
+                page: <YearlyMaintenanceReport />,                
             },            
         ]
     },
@@ -106,7 +110,9 @@ const allSections = [
             },
             {
                 name: 'Renter Email Config',
-                page: <RenterEmailConfig></RenterEmailConfig>
+                page: <RenterEmailConfig></RenterEmailConfig>,
+                pageOuterStyles: {},
+                
             }
         ]
     }, {
@@ -115,7 +121,6 @@ const allSections = [
             {
                 name: 'Google Sheet Imports 2',
                 page: <dev2.DevelopPage />,
-                selected: true,
             },
         ]
     }
@@ -128,7 +133,7 @@ const { sections, sideBarContentLookup } = allSections.reduce((acc, sec) => {
     const section = {
         name,
         displayName: name,
-        pages: sec.pages.map(p => ({ name: getPgName(p), displayName: p.name, selected: p.selected })),
+        pages: sec.pages.map(p => ({ name: getPgName(p), displayName: p.name })),
     }
     acc.sectionsByName[name] = section;
     acc.sections.push(section);

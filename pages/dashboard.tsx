@@ -30,6 +30,7 @@ export default withRouter(function MainDashboard(props) {
   const sideBarItem = sideBarContentLookup.get(currentActivePage);
   //console.log('-----------> sidebar item ', sideBarItem.name, sideBarItem.table, currentActivePage)
   let page = sideBarItem?.page;
+  const pageStyles = sideBarItem?.pageOuterStyles || { margin: '30px' };
   if (sideBarItem?.table) {
     const prms = getGenListParms(mainCtx, sideBarItem?.table);
     page = <GenList {...prms}></GenList>
@@ -41,7 +42,7 @@ export default withRouter(function MainDashboard(props) {
           <div id="content-wrapper" className="d-flex flex-column">
             <div id="content">
             {(rstate.sideBarStates['showNotSousedTopBar'] || mainCtx.topBarMessagesCfg.items.length > 0 || mainCtx.topBarErrorsCfg.items.length > 0) &&  <TopBar />}
-              <div style={{margin:'30px'}}>
+            <div style={pageStyles}>
               {
               page || <OriginalDashboard />
               }

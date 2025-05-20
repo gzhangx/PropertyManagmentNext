@@ -168,6 +168,6 @@ tr:nth-child(even) {
   .gg-modal-dialog-scrollable 
     {
       max-width: 90%;
-      max-height: 95%;
+      max-height: 95vh;
       overflow-y: auto;
     }

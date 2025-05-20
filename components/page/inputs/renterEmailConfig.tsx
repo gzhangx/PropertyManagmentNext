@@ -6,6 +6,13 @@ import { TextFieldOutlined } from "../../uidatahelpers/wrappers/muwrappers";
 
 import { createTheme, ThemeProvider } from '@mui/material/styles';
 const darkTheme = createTheme({
+    components: {
+        MuiContainer: {
+            defaultProps: {
+                disableGutters: true, // Removes default padding
+            },
+        },
+      },
     palette: {
         mode: 'dark', // Force dark mode for this page
     },
@@ -29,7 +36,7 @@ export function RenterEmailConfigUnthemed() {
         <div className="container">
 
             <div className="row justify-content-center ">
-                <div className="col-lg-12 ">
+                <div className="col-lg-12  ">
                     <div className="p-5 gg-modal-dialog-scrollable">
                         <div className="text-center">
                             <h1 className="h4 text-gray-900 mb-4">Email Config</h1>
