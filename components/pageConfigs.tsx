@@ -1,10 +1,5 @@
 import { IMainSideBarSection } from './page/sidebar'
 import { HouseList } from './page/inputs/houseList'
-import { RentpaymentInfo } from './page/inputs/rentpaymentInfo'
-import { OwnerList } from './page/inputs/ownerList'
-
-import { TenantList } from './page/inputs/tenantList'
-import { LeaseList } from './page/inputs/leaseList'
 
 
 import YearlyMaintenanceReport from '../pages/reports/yearlyMaintenanceReport';
@@ -12,6 +7,7 @@ import RentReport from '../pages/reports/rentReport';
 import CashFlowRpt from '../pages/reports/cashFlowReport';
 import { getLeasePage } from '../pages/reports/autoAssignLeases'
 import { RenterEmailConfig } from './page/inputs/renterEmailConfig'
+import EstimatedTaxReport from '../pages/reports/taxReport';
 
 import * as dev2 from '../pages/util/dev2'
 
@@ -94,7 +90,11 @@ const allSections: {
             {
                 name: 'Yearly 1099 Report',
                 page: <YearlyMaintenanceReport />,                
-            },            
+            },
+            {
+                name: 'Tax Estimate (test)',
+                page: <EstimatedTaxReport/>
+            },
         ]
     },
     {
