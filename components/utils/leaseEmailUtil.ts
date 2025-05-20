@@ -357,6 +357,7 @@ export async function formateEmail(mainCtx: IPageRelatedState, house: HouseWithL
         tenants,
         contactEmail: rentEmailConfig.paymentEmailContactEmail,
         contactPhone: rentEmailConfig.paymentEmailContactPhone,
+        senderName: rentEmailConfig.paymentEmailSenderName,
     })
     
     return {
