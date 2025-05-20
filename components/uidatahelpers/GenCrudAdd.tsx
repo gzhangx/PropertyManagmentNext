@@ -270,7 +270,12 @@ export const GenCrudAdd = (props: IGenGrudAddProps) => {
                         const createSelectionFromOptions = (options: IEditTextDropdownItem[], colField: string) => {                            
                             
                             if (isCreateAddNewItem && options.length > 0) { //props.operation === 'Add'
-                                options[0].selected = true;
+                                const curSelection = options.filter(o => o.value === get(editItem.data, colField))[0];
+                                if (curSelection) {
+                                    curSelection.selected = true;
+                                } else {
+                                    options[0].selected = true;
+                                }
                             } else {
                                 const curSelection = options.filter(o => o.value === get(editItem.data, colField))[0];
                                 if (curSelection) {
