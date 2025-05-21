@@ -24,9 +24,12 @@ export function DirectEmailBodyContent(props: RenderProps) {
 
             Your Rent Payment of {lastPaymentAmount} was received on {lastPaymentDate}.<br></br>
             Here is your balance in details,<br></br>
-            <table style={{borderBlockColor:'black', borderBlockWidth:'1px'}}>
-                < tr > <td>Date </td><td>Transaction</td > <td>Amount </td></tr >
-                <tr><td colSpan={2}> Balance Forwarded: </td><td>{ formatAccounting(leaseBalanceDueInfo.balanceForwarded)}</td > </tr>
+            <table style={{ width: '60%', borderStyle: 'solid', borderBlockWidth: '1px', borderCollapse: 'collapse',   marginLeft: '15px', marginTop: '15px', marginRight:'15px', marginBottom:'15px',}}>
+                < tr > <td style={{ borderStyle: 'solid', borderBlockWidth: '1px', paddingLeft:'15px', paddingRight:'15px', paddingTop:'15px', paddingBottom:'15px', }}>Date </td>
+                <td style={{borderStyle: 'solid', borderBlockWidth: '1px', paddingLeft:'15px', paddingRight:'15px', paddingTop:'15px', paddingBottom:'15px', }}>Transaction</td >
+                <td style={{borderStyle: 'solid', borderBlockWidth: '1px',  paddingLeft:'15px', paddingRight:'15px', paddingTop:'15px', paddingBottom:'15px',}}>Amount </td></tr >
+                <tr><td colSpan={2} style={{ textAlign:'right',  borderStyle: 'solid', borderBlockWidth: '1px',  paddingLeft:'15px', paddingRight:'15px', paddingTop:'15px', paddingBottom:'15px',}}> Previous Balance: </td>
+                    <td style={{borderStyle: 'solid', borderBlockWidth: '1px',  paddingLeft:'15px', paddingRight:'15px', paddingTop:'15px', paddingBottom:'15px',}}>{ formatAccounting(leaseBalanceDueInfo.balanceForwarded)}</td > </tr>
                 {
                     leaseBalanceDueInfo.lastNPaymentAndDue.map((info, key) => {
                         let amt = info.paymentOrDueAmount;
@@ -36,10 +39,13 @@ export function DirectEmailBodyContent(props: RenderProps) {
                         } else {
                             type = 'Rent Due';
                         }
-                        return <tr key={key}><td>{standardFormatDate(info.date)} </td><td>{type}</td> <td>{ formatAccounting(amt)} </td></tr >
+                        return <tr key={key}><td style={{borderStyle: 'solid', borderBlockWidth: '1px', paddingLeft:'15px', paddingRight:'15px', paddingTop:'15px', paddingBottom:'15px',}}>{standardFormatDate(info.date)} </td>
+                        <td style={{borderStyle: 'solid', borderBlockWidth: '0.5px',  paddingLeft:'15px', paddingRight:'15px', paddingTop:'15px', paddingBottom:'15px',}}>{type}</td> 
+                        <td style={{borderStyle: 'solid', borderBlockWidth: '1px', paddingLeft:'15px', paddingRight:'15px', paddingTop:'15px', paddingBottom:'15px',}}>{ formatAccounting(amt)} </td></tr >
                     })
                 }
-                <tr><td colSpan={2} >Current Balance:</td><td>{ formatAccounting(leaseBalanceDueInfo.totalBalance)}</td > </tr>
+                <tr><td colSpan={2} style={{ textAlign:'right', borderStyle: 'solid', borderBlockWidth: '1px', paddingLeft:'15px', paddingRight:'15px', paddingTop:'15px', paddingBottom:'15px', }}>Current Balance:</td>
+                <td style={{borderStyle: 'solid', borderBlockWidth: '1px', paddingLeft:'15px', paddingRight:'15px', paddingTop:'15px', paddingBottom:'15px',}}>{ formatAccounting(leaseBalanceDueInfo.totalBalance)}</td > </tr>
                 
             </table>
             <br></br>
