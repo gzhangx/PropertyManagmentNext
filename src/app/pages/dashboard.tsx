@@ -1,6 +1,6 @@
 
 import { useEffect, useState } from 'react';
-import { withRouter } from 'next/router'
+//import { withRouter } from 'next/router'
 import { useRootPageContext, getSideBarCurrentSelectedItemName } from "../components/states/RootState"
 import {MainSideBar} from '../components/page/sidebar'
 import { TopBar } from '../components/page/topbar'
@@ -12,7 +12,7 @@ import { GenList } from '../components/uidatahelpers/GenList';
 import { getGenListParms } from '../components/uidatahelpers/datahelpers';
 import { usePageRelatedContext } from '../components/states/PageRelatedState';
 import Login from './Login'
-export default withRouter(function MainDashboard(props) {
+export default function MainDashboard() {
   //const { state, setMainState } = props;  
   const rstate = useRootPageContext();
   const mainCtx = usePageRelatedContext();
@@ -53,7 +53,7 @@ export default withRouter(function MainDashboard(props) {
       </div>                    
     </div>
   )
-});
+}
 
 /*
 <a className="scroll-to-top rounded" href="#page-top">

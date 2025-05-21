@@ -1,5 +1,5 @@
 import react, {useState} from 'react';
-import { useRouter } from 'next/router'
+import { useRouter, usePathname, useSearchParams } from 'next/navigation'
 import * as api from '../components/api';
 import { Dialog, createDialogPrms } from '../components/dialog';
 import { useRootPageContext } from "../components/states/RootState"

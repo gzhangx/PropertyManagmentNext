@@ -1,7 +1,7 @@
 import * as api from '../../components/api'
 import { gatherLeaseInfomation, getLeaseUtilForHouse, HouseWithLease, ILeaseInfoWithPmtInfo } from '../../components/utils/leaseUtil';
 import { IHouseInfo, ILeaseInfo, IPayment } from '../../components/reportTypes';
-import { useEffect, useState } from 'react';
+import { Fragment, useEffect, useState } from 'react';
 import { usePageRelatedContext } from '../../components/states/PageRelatedState';
 import Link from 'next/link';
 import { formateEmail } from '../../components/utils/leaseEmailUtil';
@@ -284,8 +284,8 @@ export default function AutoAssignLeases() {
             </thead>
             <tbody>
                 {
-                    houses.map(house => {
-                        return <><tr>
+                    houses.map((house, key) => {
+                        return <Fragment key={key}><tr>
                             <td>{house.address} </td><td>
                                 <button className='btn btn-primary' onClick={() => {
                                     if (!house.leaseInfo) {
@@ -376,7 +376,7 @@ export default function AutoAssignLeases() {
                                 </td>
                             </tr>
                             }
-                        </>
+                        </Fragment>
                     })               
                 }
             </tbody>

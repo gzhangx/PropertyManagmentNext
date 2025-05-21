@@ -277,7 +277,7 @@ export default function CashFlowReport() {
                 <thead>
                     <tr><th style={{verticalAlign:"middle"}}>Houses</th>
                     <th className='accounting-alright' style={{verticalAlign:"middle"}}>Total</th>{
-                        selectedHouses.map(house => <th className='accounting-alright' style={{textAlign:"center", verticalAlign:"middle"}}>{house.address}</th>)
+                        selectedHouses.map((house,key) => <th key={key} className='accounting-alright' style={{textAlign:"center", verticalAlign:"middle"}}>{house.address}</th>)
                     }</tr>
                 </thead>   
                 <thead>

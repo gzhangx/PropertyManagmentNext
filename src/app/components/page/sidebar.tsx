@@ -1,6 +1,8 @@
 import Link from 'next/link'
 import { PageNavTab } from './navTab';
 import { useEffect, type JSX } from 'react';
+
+import { useRouter, usePathname, useSearchParams } from 'next/navigation'
 import {
     useRootPageContext,
     activeSideBarItem, isSidebarItemActive,
@@ -28,6 +30,7 @@ interface IMainSideBarProps {
 export function MainSideBar(props : IMainSideBarProps) {    
     const rs = useRootPageContext();
 
+    const router = useRouter();
     // useEffect(() => {
     //     props.sections.forEach(section => {
     //         section.pages.forEach(page => {
@@ -48,16 +51,24 @@ export function MainSideBar(props : IMainSideBarProps) {
             //const curActiveName = rs.sideBarStates[getSideBarCurrentActiveItemKey()] as string;
             
             //rs.sideBarStates[getSideBarCurrentActiveItemKey()] = itemName;
-            //rs.setSideBarStates({ ...rs.sideBarStates });
+            //rs.setSideBarStates({ ...rs.sideBarStates });            
+            console.log('replacing with ', name)
+            //router.replace(name);
+            try {
+                history.replaceState(null, '', `/${NAVPrefix}/${ name }`);
+            } catch { }
             activeSideBarItem(rs, name);
         }
     }
     const getItemLink = (itm: IMainSideBarItem, ind: number) => {        
         //const itemName = getSideBarItemKey(itm.name);
         //const active = rs.sideBarStates[getSideBarCurrentActiveItemKey()] === itemName;
+        return getItemLinkSimple(itm.name, ind, itm.displayName);
         const active = isSidebarItemActive(rs, itm.name);
 
-        return <Link className = "collapse-item" href={`/${NAVPrefix}/${itm.name}`} key={ind} >
+        return <Link className="collapse-item" href={`/${NAVPrefix}/${itm.name}`} onClick={() => {
+            
+        }} key={ind} >
             <>{itm.displayName} {active && <i className="fas fa-anchor"></i>}</>
         </Link>
 
@@ -66,11 +77,11 @@ export function MainSideBar(props : IMainSideBarProps) {
         </Link>
         return <a className="collapse-item" href="#" onClick={getLinkOnClick(itm.name) as any} key={ind}>{itm.displayName} {active && <i className="fas fa-anchor"></i>    }</a>;
     }
-    const getItemLinkSimple = (name: string, ind:number) => {
+    const getItemLinkSimple = (name: string, ind:number, displayName?: string) => {
         //const itemName = getSideBarItemKey(name);
         //const active = rs.sideBarStates[getSideBarCurrentActiveItemKey()] === itemName;
         const active = isSidebarItemActive(rs, name);
-        return <a className="collapse-item" href="#" onClick={getLinkOnClick(name) as any} key={ind}>{name} {active && <i className="fas fa-anchor"></i>    }</a>;
+        return <a className="collapse-item" href="#" onClick={getLinkOnClick(name) as any} key={ind}>{displayName ?? name} {active && <i className="fas fa-anchor"></i>    }</a>;
     }
     return <ul className="navbar-nav bg-gradient-primary sidebar sidebar-dark accordion" id="accordionSidebar">
 
@@ -84,7 +95,7 @@ export function MainSideBar(props : IMainSideBarProps) {
         <hr className="sidebar-divider my-0" />
 
         <li className="nav-item active">
-            <Link className="nav-link" href={`/${NAVPrefix}/dashboard`} >
+            <Link className="nav-link" href={`/${NAVPrefix}/dashboard`} onClick={getLinkOnClick('dashboard') as any} >
                 <i className="fas fa-fw fa-tachometer-alt"></i>
                 <span >Dashboard</span>
             </Link>
@@ -108,7 +119,7 @@ export function MainSideBar(props : IMainSideBarProps) {
                     <>
                         <h6 className="collapse-header">Custom Components:</h6>
                         {
-                            ['Developers', 'Admins'].map(getItemLinkSimple)
+                            ['Developers', 'Admins'].map((name, ind)=>getItemLinkSimple(name, ind))
                         }
                         <a className="collapse-item" href="#">NA</a>
                     </>

@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from 'react';
+import React, {Fragment, useEffect, useState} from 'react';
 import { IHouseInfo, IPayment, ITenantInfo } from '../../components/reportTypes';
 import { getLeases} from '../../components/api'
 import { usePageRelatedContext } from '../../components/states/PageRelatedState';
@@ -143,7 +143,7 @@ export default function LeaseReport() {
                                 }
                             }
 
-                            return <><tr key={key}>
+                            return <Fragment key={key}><tr key={key}>
                                 <td className='td-center' style={{cursor:'pointer'}} onClick={async () => {
                                     setLeaseExpanded({ ...leaseExpanded, [h.houseID]: !leaseExpanded[h.houseID] });
                                     const hlInfo = await gatherLeaseInfomation(h);
@@ -212,7 +212,7 @@ export default function LeaseReport() {
                                         </td>
                                     </tr>
                                 }
-                            </>
+                            </Fragment>
                         })
                     }
                 </table>

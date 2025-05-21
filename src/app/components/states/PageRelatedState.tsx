@@ -1,3 +1,4 @@
+'use client'
 import React, { useState, useEffect, useContext, JSX } from 'react';
 import { getModel, getSheetAuthInfo, IGoogleSheetAuthInfo, sqlGet } from '../api';
 

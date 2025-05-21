@@ -4,7 +4,7 @@ import DemoGraphicsRow from './demoGraphicsRow'
 import { gatherLeaseInfomation, getAllMaintenanceForHouse, getAllPaymentForHouse, HouseWithLease, ILeaseInfoWithPmtInfo } from '../utils/leaseUtil';
 import { IExpenseData, IHouseInfo, IPayment, ITenantInfo } from '../reportTypes';
 import { usePageRelatedContext } from '../states/PageRelatedState';
-import { useEffect, useState } from 'react';
+import { Fragment, useEffect, useState } from 'react';
 import { getLeases } from '../api';
 import { orderBy, set } from 'lodash';
 import { formatAccounting, standardFormatDate, removeZeroHourMinuteSeconds } from '../utils/reportUtils';
@@ -290,7 +290,7 @@ function HouseWithRenterAndLeaseInfo(props: {
 
                 </div>
                 <div className="row no-gutters align-items-center">
-                    <div className='col mr-2'>{ h.tenants? h.tenants.map(t=>(<>{t.email}  {t.phone}</>)).map(e=>(<>{e}<br></br></>)):''}</div>                    
+                    <div className='col mr-2'>{ h.tenants? h.tenants.map(t=>(<>{t.email}  {t.phone}</>)).map((e, ind)=>(<Fragment key={ind}>{e}<br></br></Fragment>)):''}</div>                    
                 </div>              
 
             </div>

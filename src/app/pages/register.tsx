@@ -1,6 +1,6 @@
 import react, {useState} from 'react'
 import Link from 'next/link'
-import { useRouter } from 'next/router'
+import { useRouter, usePathname, useSearchParams } from 'next/navigation'
 import { GetInfoDialogHelper } from '../components/generic/basedialog';
 import { registerUser } from '../components/api'
 const emailRegx = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/;
