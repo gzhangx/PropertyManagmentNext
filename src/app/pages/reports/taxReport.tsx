@@ -1,15 +1,23 @@
 'use client'
-import { DataGrid, GridCellEditStopParams, GridCellEditStopReasons, GridColDef, GridSingleSelectColDef, MuiEvent } from '@mui/x-data-grid';
+import { DataGrid, GridActionsCellItem, GridCellEditStopParams, GridCellEditStopReasons, GridColDef, GridRowModes, GridRowModesModel, GridSingleSelectColDef, MuiEvent } from '@mui/x-data-grid';
 import React, { ChangeEvent, useEffect, useRef, useState } from "react";
 import { IPdfTextItem, parsePdfFile, PdfScript } from "../../../components/utils/pdfFileUtil";
 import { startCase } from "lodash";
-import { getUserOptions } from "../../../components/api";
+import { getUserOptions, updateUserOptions } from "../../../components/api";
 import Box from '@mui/material/Box';
 import { Button, TextField } from '@mui/material';
-
+import { formatAccounting } from '@/src/components/utils/reportUtils';
+import * as uuid from 'uuid';
+import Table from '@mui/material/Table';
+import TableBody from '@mui/material/TableBody';
+import TableCell from '@mui/material/TableCell';
+import TableContainer from '@mui/material/TableContainer';
+import TableHead from '@mui/material/TableHead';
+import TableRow from '@mui/material/TableRow';
+import Paper from '@mui/material/Paper';
 
 interface W2Info {
-    id: number;
+    id: string;
     income: number;
     fedTax: number;
     stateTax: number;
@@ -116,7 +124,7 @@ function getPdfLocTracker() {
     function parseW2(lines: string[][]): W2Info {
         let state: 'find-fed' | 'fed' | 'find-state' | 'state' | 'done' = 'find-fed';
         const res = {
-            id: 0,
+            id: '',
             income: 0,
             fedTax: 0,
             stateTax: 0,
@@ -332,13 +340,21 @@ export async function getPaymentEmailConfigRaw(): Promise<ITaxReportDBConfig> {
 }
 
 
+const W2Fields = ['income', 'fedTax', 'stateTax'] as const;
+type W2FieldsTypes = typeof W2Fields[number];
+async function saveAllW2RowsToDb(allW2s: W2Info[]) {
+    await updateUserOptions('estimatedTaxReportW2Information', JSON.stringify(allW2s));
+    return allW2s;
+}
+
 export default function TaxReport() {
     const [w2s, setW2s] = useState<W2Info[]>([]);
     const [newItem, setNewItem] = useState({
         income: '',
         fedTax: '',
         stateTax: '',
-      });
+    });
+        
     useEffect(() => {
         getPaymentEmailConfigRaw().then(strDict => {
             const w2InfoStr = strDict['estimatedTaxReportW2Information'];
@@ -347,13 +363,60 @@ export default function TaxReport() {
             }
         })
     }, []);
+
     
+    
+    
+    const stdColFormats: any = {
+        editable: true,
+        valueGetter: (v: any) => formatAccounting(v),
+        valueSetter: (v: string, row: W2Info, fieldInfo: GridColDef<W2Info>) => {
+            console.log(v, v.replace(/[\$|,]/g, ''), row, 'next',fieldInfo);
+            let ret = parseFloat(v.replace(/[\$|,]/g, ''));
+            console.log(ret);
+            if (isNaN(ret)) ret = 0;
+            row[fieldInfo.field as W2FieldsTypes] = ret;
+            return row;
+        },
+        align: 'right',
+        headerAlign: 'right',
+    }
     // Columns configuration
     const columns: GridColDef<W2Info, any, any>[] = [
-        { field: 'id', headerName: 'ID', width: 70 },
-        { field: 'income', headerName: 'Income ($)', width: 130, type: 'number', editable: true, },
-        { field: 'fedTax', headerName: 'Federal Tax ($)', width: 150, type: 'number', editable: true, },
-        { field: 'stateTax', headerName: 'State Tax ($)', width: 150, type: 'number', editable: true, },        
+        
+        {
+            field: 'income', headerName: 'Income ($)', width: 130, ...stdColFormats,  },
+        { field: 'fedTax', headerName: 'Federal Tax ($)', width: 150, ...stdColFormats, },
+        { field: 'stateTax', headerName: 'State Tax ($)', width: 150, ...stdColFormats, },        
+        {
+            field: 'actions',
+            type: 'actions',
+            headerName: 'Actions',
+            width: 100,
+            cellClassName: 'actions',
+            getActions: (actProp) => {
+                return [
+                    <GridActionsCellItem
+                        icon={<i className='fas fa-floppy-disk'></i>}
+                        label="Edit"
+                        className="textPrimary"
+                        onClick={(id) => { }}
+                        color="inherit"
+                    />,
+                    <GridActionsCellItem
+                        icon={<i className='fas fa-xmark'></i>}
+                        label="Delete"
+                        onClick={async () => {
+                            console.log('del id', 'actProp', actProp) //id and row
+                            const newW2s = w2s.filter(w => w.id !== actProp.id);
+                            await saveAllW2RowsToDb(newW2s);
+                            setW2s(newW2s);
+                        }}
+                        color="inherit"
+                    />,
+                ];
+            },
+          },
     ];
 
     // Handle input change for new item
@@ -363,31 +426,21 @@ export default function TaxReport() {
     };
 
     // Add new item to the grid
-    const handleAddItem = () => {
+    const handleAddItem = async () => {
         if (newItem.income && newItem.fedTax && newItem.stateTax) {
             const itemToAdd = {
-                id: 0,
+                id: uuid.v1(),
                 income: parseFloat(newItem.income),
                 fedTax: parseFloat(newItem.fedTax),
                 stateTax: parseFloat(newItem.stateTax),
             };
-            setW2s([...w2s, itemToAdd].map((itm, idx) => {
-                return {                    
-                    ...itm,
-                    id: idx,
-                }
-            }));
+            const allW2s = await saveAllW2RowsToDb([...w2s, itemToAdd]);
+            setW2s(allW2s);
             setNewItem({ income: '', fedTax: '', stateTax: '' });
         }
     };
 
-    const handleCellEditCommit = (params: any) => {
-        setW2s(w2s.map(item =>
-            item.id === params.id
-                ? { ...item, [params.field]: params.value }
-                : item
-        ));
-    };
+    
     return (
         <div style={{ height: 500, width: '100%' }}>
             <Box mb={2} display="flex" gap={2} alignItems="flex-end">
@@ -423,26 +476,35 @@ export default function TaxReport() {
                     Add Entry
                 </Button>
             </Box>
-            <DataGrid
-                rows={w2s}
-                columns={columns}
-                onCellEditStop={(params: GridCellEditStopParams, event: MuiEvent) => {
-                    if (params.reason === GridCellEditStopReasons.cellFocusOut) {
-                        //event.defaultMuiPrevented = true;
-                    }
-                    console.log('edit stop prms ', params)
-                }}
-                processRowUpdate={(updatedRow, originalRow) => {
-                    console.log(updatedRow, originalRow)
-                    return updatedRow;
-                }
-                    
-                  }
-                initialState={{
-                    pagination: { paginationModel: { pageSize: 5, page: 0 } }
-                }}
-                pageSizeOptions={[5]}
-            />
+            <TableContainer component={Paper}>
+                <Table sx={{ minWidth: 650 }} aria-label="simple table">
+                    <TableHead>
+                        <TableRow>                            
+                            <TableCell align="right">Income</TableCell>
+                            <TableCell align="right">Federal Tax</TableCell>
+                            <TableCell align="right">State Tax</TableCell>
+                            <TableCell align="right">Action</TableCell>
+                        </TableRow>
+                    </TableHead>
+                    <TableBody>
+                        {w2s.map((row) => (
+                            <TableRow
+                                key={row.id}
+                                sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
+                            >                                
+                                <TableCell align="right">{formatAccounting(row.income)}</TableCell>
+                                <TableCell align="right">{formatAccounting(row.fedTax)}</TableCell>
+                                <TableCell align="right">{formatAccounting(row.stateTax)}</TableCell>     
+                                <TableCell><i className='fas fa-xmark' onClick={async () => {
+                                    const newW2s = w2s.filter(w => w.id !== row.id);
+                                    await saveAllW2RowsToDb(newW2s);
+                                    setW2s(newW2s);
+                                }}></i> </TableCell>
+                            </TableRow>
+                        ))}
+                    </TableBody>
+                </Table>
+            </TableContainer>
         </div>
     );
 }
