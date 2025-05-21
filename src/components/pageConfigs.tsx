@@ -6,7 +6,7 @@ import YearlyMaintenanceReport from '../app/pages/reports/yearlyMaintenanceRepor
 import RentReport from '../app/pages/reports/rentReport';
 import CashFlowRpt from '../app/pages/reports/cashFlowReport';
 import { getLeasePage } from '../app/pages/reports/autoAssignLeases'
-import { RenterEmailConfig } from './page/inputs/renterEmailConfig'
+import { RenterEmailConfig } from '../app/pages/config/renterEmailConfig'
 import EstimatedTaxReport from '../app/pages/reports/taxReport';
 
 import * as dev2 from '../app/pages/util/dev2'
