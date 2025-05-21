@@ -67,10 +67,11 @@ export async function reloadHouses(prms: IPageParms, pageState: IPageStates) {
 }
 
 export function getMappingColumnInfo(curPage: IPageInfo): IDBFieldDef[] {
+    if (!curPage.sheetMapping) return [];
     const mappingColumnInfo = curPage.sheetMapping.mapping.map(name => {
-        return curPage.allFields.find(f => f.field === name);
+        return curPage.allFields?.find(f => f.field === name);
     }).filter(x => x);
-    return mappingColumnInfo;
+    return mappingColumnInfo as IDBFieldDef[];
 }
 export async function genericPageLoader(prms: IPageParms, pageState: IPageStates) {
     const sheetId = pageState.sheetId;
@@ -99,7 +100,7 @@ export async function genericPageLoader(prms: IPageParms, pageState: IPageStates
     //let extraProcessSheetData: (pg: ISheetRowData[], pageState: IPageStates) => Promise<ISheetRowData[]> = pageState.curPage.extraProcessSheetData || ((x, _) => Promise.resolve(x));
     pageState.sheetId = sheetId;
       
-    for (const fd of pageState.curPage.allFields) {
+    for (const fd of pageState.curPage.allFields || []) {
         if (fd.foreignKey && fd.foreignKey.table) {
             await prms.pageCtx.loadForeignKeyLookup(fd.foreignKey.table);
         }
@@ -116,7 +117,7 @@ export async function genericPageLoader(prms: IPageParms, pageState: IPageStates
     stdProcessSheetData(pageDetails.dataRows, {
         ...pageState,
         ...hi,
-    }, prms.pageCtx, canHaveNullPrimaryIdTables[pageState.curPage.table]);
+    }, prms.pageCtx, canHaveNullPrimaryIdTables[pageState.curPage.table as 'tenantInfo']);
 
     const mappingColumnInfo = getMappingColumnInfo(pageState.curPage);
     const rowComparer: IRowComparer =
@@ -201,9 +202,9 @@ export function getDisplayHeaders(params: IPageParms, curPageState: IPageStates)
     if (!curPageState.curPage) return null;
     const table = curPageState.curPage.table;
     if (!curPageState.curPage.displayColumnInfo) {
-        curPageState.curPage.displayColumnInfo = curPageState.curPage.sheetMapping.mapping.map(fname => {
-            const def = curPageState.curPage.allFields.find(f => f.field === fname);
-            if (def.foreignKey && def.foreignKey.field === 'houseID') {
+        curPageState.curPage.displayColumnInfo = curPageState.curPage.sheetMapping?.mapping.map(fname => {
+            const def = curPageState.curPage.allFields?.find(f => f.field === fname);
+            if (def && def.foreignKey && def.foreignKey.field === 'houseID') {
                 return {
                     ...def,
                     field: 'address', //def.field as ALLFieldNames,
@@ -214,12 +215,12 @@ export function getDisplayHeaders(params: IPageParms, curPageState: IPageStates)
         })
     }
     const dbInserter: IDbInserter = inserter.getDbInserter(params.pageCtx, table, true);
-    const requiredFields = curPageState.curPage.allFields.filter(f => {
+    const requiredFields = curPageState.curPage.allFields?.filter(f => {
         return !f.isId && f.required && !f.userSecurityField;
     });
     const validRow = (importSheetData: IStringDict) => {
         const missingFields:string[] = [];
-        requiredFields.forEach(f => {
+        requiredFields?.forEach(f => {
             const v = importSheetData[f.field];
             if (!v) {
                 if (v !== 0) missingFields.push(f.field);
@@ -230,7 +231,7 @@ export function getDisplayHeaders(params: IPageParms, curPageState: IPageStates)
         }
         return '';
     }
-    return  curPageState.curPage.displayColumnInfo.map((colInfo, key) => {
+    return  curPageState.curPage.displayColumnInfo?.map((colInfo, key) => {
         const fieldName = colInfo.field;
         let dspVal = colInfo.name;
         const insertBtnCheck = curPageState.curPage.showCreateButtonColumn === colInfo.field;
@@ -264,7 +265,7 @@ export function getDisplayHeaders(params: IPageParms, curPageState: IPageStates)
                                     //break;
                                 }
                             } catch (err) {
-                                const errStr = `Error createViaInserter ${table} ${err.message}`;
+                                const errStr = `Error createViaInserter ${table} ${(err as any).message}`;
                                 console.log('stdProcess caught errStr', errStr);
                                 console.log('stdProcess caught err',err);
                                 params.showProgress('');
@@ -313,7 +314,7 @@ export async function backFillSheetIds(curPageState: IPageStates) {
         return;
     }
     const ids = curPageState.pageDetails.dataRows.map(x => x.needBackUpdateSheetWithId || x.matchedToId || '');
-    return await updateSheet('update', curPageState.sheetId, curPageState.curPage.sheetMapping.sheetName, {
+    return await updateSheet('update', curPageState.sheetId, curPageState.curPage.sheetMapping?.sheetName as string, {
         row: 1,
         values: ids.map(id => [id]),
     }).then(res => {
@@ -339,7 +340,7 @@ export async function updateRowData(params: IPageParms, table: TableNames, sheet
         }));
         params.showProgress('');
     } catch (err) {
-        const errStr = `Error create payment ${err.message}`;
+        const errStr = `Error create payment ${(err as any).message}`;
         console.log(errStr);
         console.log(err);
         params.showProgress('');
@@ -378,7 +379,7 @@ export function getDeleteExtraFromDbItems(pagePrms: IPageParms, curPageState: IP
                     ...state,
                     pageDetails: {
                         ...state.pageDetails,
-                        dbMatchData: state.pageDetails.dbMatchData.filter(x => idFields.map(f=>x.dbItemData[f]).join(',') !== ids.join(',')),
+                        dbMatchData: state.pageDetails.dbMatchData?.filter(x => idFields.map(f=>x.dbItemData[f]).join(',') !== ids.join(',')),
                     }
                 }))
             })

@@ -7,7 +7,7 @@ export interface ISiteConfig {
     baseUrl: string;
 }
 
-let sitConfig:ISiteConfig = null;
+let sitConfig:ISiteConfig | null = null;
 export async function getConfig() : Promise<ISiteConfig> {
     const site = process.env.SITE || 'local1';
     const baseURL = process.env.BASE_URL || 'http://192.168.0.40';
@@ -36,8 +36,8 @@ import {
     IOwnerInfo,
 } from './reportTypes';
 
-export async function doPost(path: string, data: object, method: httpRequest.HttpRequestMethod = 'POST', authToken: string = ''): Promise<any> {
-    const headers = {
+export async function doPost(path: string, data: object | undefined, method: httpRequest.HttpRequestMethod = 'POST', authToken: string = ''): Promise<any> {
+    const headers: Record<string,string> = {
         "Content-Type": "application/json",
         //"Authorization": `Bearer ${access_token}`,
     };        
@@ -128,7 +128,7 @@ export function localStorageGetItem(name: string): string {
         //runnng on server
         return '';
     }
-    return localStorage.getItem(name);
+    return localStorage.getItem(name) as string;
 }
 
 export function localStorageSetItem(name: string, value: string) {
@@ -158,14 +158,18 @@ export function removeLoginToken() {
 
 
 
-export async function registerUser({ username, firstName, lastName }) {
+export async function registerUser(props: {
+    username: string;
+    firstName: string;
+    lastName: string;
+}) {
     console.log('in register')
 
 }
 
 
 
-export async function resetPassword({ username }) {
+export async function resetPassword(props: { username: string; }) {
     console.log('in reset')
 
 }
@@ -212,7 +216,7 @@ export function sqlDelete(table: TableNames, ids: string[]): Promise<ISqlDeleteR
 }
 
 export async function getModel(name: TableNames) : Promise<IGetModelReturn> {
-    return doPost(`getModel?name=${name}`, null, 'GET') as Promise<IGetModelReturn>;
+    return doPost(`getModel?name=${name}`, null as any as object, 'GET') as Promise<IGetModelReturn>;
 }
 
 
@@ -323,12 +327,12 @@ type QueryConstraints = {
 }
 
 // Used by cashflow
-export async function getPaymnents(inp: QueryConstraints = {}) : Promise<IPayment[]> {
+export async function getPaymnents(inp: QueryConstraints = {}) : Promise<IPayment[]|undefined> {
     return sqlGet({
         table: 'rentPaymentInfo',
         ...inp,
     }).then((r: { rows: IPayment[] }) => {
-        if (!r.rows) return null;
+        if (!r.rows) return undefined;
         return r.rows.map(r => {
             const paymentTypeName = r.paymentTypeName || r.paymentTypeID;
             return {
@@ -336,7 +340,7 @@ export async function getPaymnents(inp: QueryConstraints = {}) : Promise<IPaymen
                 paymentTypeName,
                 date: r.receivedDate,
                 amount: r.receivedAmount,
-            }
+            } as IPayment;
         });
     })    
 }
@@ -483,7 +487,7 @@ export async function updateSheet(op: 'update' | 'append', id: string, range: st
 }
 
 export async function deleteSheetRow(id: string, sheetName: string, row: number) {
-    return await doPost(`misc/sheet/deleteRow/${id}/${sheetName}/${row}`, null);
+    return await doPost(`misc/sheet/deleteRow/${id}/${sheetName}/${row}`, undefined);
 }
 
 

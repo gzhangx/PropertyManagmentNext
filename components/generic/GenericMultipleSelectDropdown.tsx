@@ -38,7 +38,7 @@ export function GenericMultiSelectDropdown(props: IGenericMultiSelectDropdownPro
     const showClass = `dropdown-list dropdown-menu dropdown-menu-right shadow animated--grow-in ${show && 'show'}`;
 
     if (!mounted) return <li></li>;
-    return <li className="nav-item dropdown no-arrow mx-1 navbar-nav" ref={topNode} onClick={e => {
+    return <li className="nav-item dropdown no-arrow mx-1 navbar-nav" ref={topNode as any} onClick={e => {
         //nav-link dropdown-toggle
         e.preventDefault();
         setShow(!show);

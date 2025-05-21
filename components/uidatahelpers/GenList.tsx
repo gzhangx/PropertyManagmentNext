@@ -5,7 +5,7 @@ import { createHelper } from './datahelpers';
 import * as RootState from '../states/RootState'
 import { DisplayCustomFormatFieldOriginalDataSufix, FieldValueType, IDBFieldDef, IFullTextSearchPart, ISqlOrderDef, ISqlRequestWhereItem, ReactSetStateType } from '../types';
 import { usePageRelatedContext } from '../states/PageRelatedState';
-import { ITableAndSheetMappingInfo, ItemType, ItemTypeDict } from './datahelperTypes';
+import { ALLFieldNames, ITableAndSheetMappingInfo, ItemType, ItemTypeDict } from './datahelperTypes';
 import { getPageFilterSorterErrors } from './defs/util';
 import { orderBy } from 'lodash';
 import moment from 'moment';
@@ -178,7 +178,7 @@ export function GenList(props: ITableAndSheetMappingInfo<unknown>) {
             if (props.orderColunmInfo) {
                 columnInfo = props.orderColunmInfo(columnInfo);
             }
-            const displayColumns = getDspFieldInfo(props, columnInfo);
+            const displayColumns = getDspFieldInfo(props, columnInfo) as IDBFieldDef[];
             setDisplayColumnByTable(prev => ({
                 ...prev,
                 [table]: {
@@ -277,9 +277,9 @@ export function getDspFieldInfo(props: ITableAndSheetMappingInfo<unknown>, allCo
 function getStdSearchInfo(mainCtx:IPageRelatedState, itm: ItemType, columnInfo: IDBFieldDef[]) {
     const res: string[][] = [];
     for (const c of columnInfo) {
-        let v = itm.data[c.field] as string;
+        let v = itm.data[c.field as ALLFieldNames] as string;
         if (c.displayCustomFormatField) {
-            itm.data[c.field + DisplayCustomFormatFieldOriginalDataSufix] = v;
+            itm.data[c.field + DisplayCustomFormatFieldOriginalDataSufix as ALLFieldNames] = v;
             v = c.displayCustomFormatField(itm.data, c.field);
         }
         switch(c.type) {
@@ -329,7 +329,7 @@ interface ISortingAndPaggingInfo {
 
 
 function checkItem(r: ItemType, search: IFullTextSearchPart,displayColumnInfo: IDBFieldDef[]) {
-    return r.searchInfo.find((fieldAry, pos) => {
+    return r.searchInfo?.find((fieldAry, pos) => {
         return !!fieldAry.find(rowCellStr => checkOneFieldMatch(rowCellStr, displayColumnInfo[pos], search).searchMatchSuccess);
     });
 }

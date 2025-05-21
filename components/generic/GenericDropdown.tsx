@@ -10,9 +10,9 @@ export interface IGenericDropdownProps {
     items: IEditTextDropdownItem[];
     onSelectionChanged: (itm: IEditTextDropdownItem) => void;
 
-    setCurDisplayValue?: (string) => void;
+    setCurDisplayValue?: (dv: string) => void;
     curDisplayValue?: string;
-    setShow?: (boolean) => void;
+    setShow?: (show: boolean) => void;
     show?: boolean;
 
     opts?: IGenericDropdownPropsOptional;
@@ -37,16 +37,16 @@ export function GenericDropdown(props: IGenericDropdownProps) {
     let show = showInner;
     let setShow = setShowInner;
     if (props.setShow) {
-        show = props.show;
-        setShow = props.setShow;
+        show = !!props.show;
+        setShow = props.setShow as any;
     }
     const [curDisplayValueInner, setCurDisplayValueInner] = useState<string>('');
 
     let curDisplayValue = curDisplayValueInner;
     let setCurDisplayValue = setCurDisplayValueInner
     if (props.setCurDisplayValue) {
-        setCurDisplayValue = props.setCurDisplayValue;
-        curDisplayValue = props.curDisplayValue;
+        setCurDisplayValue = props.setCurDisplayValue as any;
+        curDisplayValue = props.curDisplayValue as any;
     }
     const [showByButton, setShowByButton] = useState<boolean>(false);
     //const getSelectedText = () => (props.selected ? props.selected.label || props.selected.value : '');
@@ -84,10 +84,10 @@ export function GenericDropdown(props: IGenericDropdownProps) {
     const showClass = `dropdown-list ${className || 'dropdown-menu dropdown-menu-right shadow animated--grow-in'} ${show && 'show'}`;
     
     const dblClickTimer = useRef<NodeJS.Timeout>(null);
-    return <li className="nav-item dropdown no-arrow mx-1 navbar-nav" ref={topNode} onClick={e => {
+    return <li className="nav-item dropdown no-arrow mx-1 navbar-nav" ref={topNode as any} onClick={e => {
         console.log(e.detail, 'detailssssss')
         e.preventDefault();
-        clearTimeout(dblClickTimer.current);
+        clearTimeout(dblClickTimer.current as any);
         if (e.detail === 1) {
             dblClickTimer.current = setTimeout(() => {
                 setShow(!show);        
@@ -104,7 +104,7 @@ export function GenericDropdown(props: IGenericDropdownProps) {
             <a className="" href="#"
                 data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                 <div className="input-group">
-                        <input type="text" className="form-control bg-light border-0 small" placeholder={opts.placeHolder || '' }
+                        <input type="text" className="form-control bg-light border-0 small" placeholder={opts?.placeHolder || '' }
                             aria-label="Search" aria-describedby="basic-addon2"
                             value={curDisplayValue}
                             onChange={e => {
@@ -128,9 +128,9 @@ export function GenericDropdown(props: IGenericDropdownProps) {
         }
         <div className={showClass}>
             {
-                (opts.mapItems ?? defaultItemsMapper)({
+                (opts?.mapItems ?? defaultItemsMapper)({
                     items,                    
-                    opts,
+                    opts: opts as any,
                     curDisplayValue,
                     showByButton,
                     itemFormaterParam: {
@@ -154,7 +154,7 @@ export function GenericDropdown(props: IGenericDropdownProps) {
 
 
 interface IItemFormatterParams {
-    onSelectionChanged: (any) => void;    
+    onSelectionChanged: (c:any) => void;    
     getDefaultSelectChangesFunc: (data: IEditTextDropdownItem) => (() => void);    
 }
 interface IItemMapperParams {

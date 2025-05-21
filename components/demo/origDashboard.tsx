@@ -251,9 +251,9 @@ function HouseWithRenterAndLeaseInfo(props: {
     const textClsName = ` text-xs font-weight-bold text-uppercase mb-1 text-primary`;
     const h = props.house;
 
-    const valueClsName = h.leaseInfo?.totalBalance > 0 ? 'text-danger' : '';
+    const valueClsName = h.leaseInfo?.totalBalance as number > 0 ? 'text-danger' : '';
 
-    function showLeaseDate(date: string, who: string) {
+    function showLeaseDate(date: string | null | undefined, who: string) {
         if (!date) return `Unknown ${who}Date`;
         const str = moment(date).format('MM/DD/YYYY');
         if (who === 'Start') {

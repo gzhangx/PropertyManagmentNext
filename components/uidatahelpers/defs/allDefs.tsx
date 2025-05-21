@@ -1,5 +1,5 @@
 import { TableNames } from "../../types";
-import { ITableAndSheetMappingInfo } from "../datahelperTypes";
+import { ALLFieldNames, ITableAndSheetMappingInfo } from "../datahelperTypes";
 
 export const workerInfoDef: ITableAndSheetMappingInfo<unknown> = {
     table: 'workerInfo',
@@ -204,7 +204,7 @@ export const leaseInfoDef: ITableAndSheetMappingInfo<unknown> = {
             } else if (c.field === 'endDate') {
                 editItem.data[c.field] = '';
             }
-            console.log('debugremove lease', c.field, editItem.data[c.field])
+            console.log('debugremove lease', c.field, editItem.data[c.field as ALLFieldNames])
         }
     },
 }
@@ -235,6 +235,6 @@ export const tableNameToDefinitions = [tenantInfoDef, houseInfoDef, paymentInfoD
     leaseInfoDef,
     ownerInfoDef,
 ].reduce((acc, pp) => {
-    acc.set(pp.table, pp);
+    acc.set(pp.table, pp as any);
     return acc;
 }, new Map<TableNames, ITableAndSheetMappingInfo<unknown>>());

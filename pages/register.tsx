@@ -13,15 +13,15 @@ export default function register() {
         firstName: '',
         lastName: '',
     });
-    const setVal = (name, e) => {
+    const setVal = (name: string, e: any) => {
         setMainState({
             ...state,
             [name]: e.target.value,
         })
     }
 
-    const getSetValFunc = name => {
-        return e => setVal(name, e);
+    const getSetValFunc = (name: string) => {
+        return (e:any) => setVal(name, e);
     }
 
     const register = () => {
@@ -42,7 +42,7 @@ export default function register() {
         })
     }
 
-    const commingSoon = e => {
+    const commingSoon = (e:any) => {
         e.preventDefault();
         infoDlg.setDialogText('Not implemented')        
     }

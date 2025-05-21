@@ -12,9 +12,9 @@ export default function GrkEditableDropdown(props: IGrkEditableDropdownProps) {
     const [inputValue, setInputValue] = useState('');
     const [highlightedIndex, setHighlightedIndex] = useState(-1);
     const [showAllOptions, setShowAllOptions] = useState(false);
-    const containerRef = useRef(null);
-    const inputRef = useRef(null);
-    const listRef = useRef(null);
+    const containerRef = useRef<any>(null);
+    const inputRef = useRef<any>(null);
+    const listRef = useRef<any>(null);
     
     const options = props.items;
 
@@ -62,7 +62,7 @@ export default function GrkEditableDropdown(props: IGrkEditableDropdownProps) {
     };
 
     // Handle input change
-    const handleInputChange = (e) => {
+    const handleInputChange = (e: any) => {
         setInputValue(e.target.value);
         setIsOpen(true);
         setShowAllOptions(false);

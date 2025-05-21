@@ -97,7 +97,7 @@ type IDetailParams = {
     YYYY: string;
 };
 
-function GenerateByCatData(state: IYearlyMaintenanceReportState, setShowDetail: React.Dispatch<React.SetStateAction<IDetailParams>>) {    
+function GenerateByCatData(state: IYearlyMaintenanceReportState, setShowDetail: React.Dispatch<React.SetStateAction<IDetailParams | null>>) {    
     const workerIds = state.dspWorkerIds || [];
     const catIds = state.byWorkerByCat.catIds || [];
     const dataBy = state.byWorkerByCat.byCats;
@@ -280,7 +280,7 @@ export default function YearlyMaintenanceReport() {
         lookUpWorkerName,
     });
     
-    const showProgress = progressText => setState(prev => {
+    const showProgress = (progressText: string) => setState(prev => {
         return {
             ...prev,
             progressText,
@@ -310,8 +310,8 @@ export default function YearlyMaintenanceReport() {
                 }
                 return acc;
             }, {
-                ownerDict: {},
-                houseDict: {},
+                ownerDict: {} as { [name: string]: boolean; },
+                houseDict: {} as { [name: string]: string; },
                 owners: [] as string[],
             });
             const curOwnerOptions = owners.owners.map(o => {
@@ -335,7 +335,7 @@ export default function YearlyMaintenanceReport() {
                 if (!state.showCategories[row.expenseCategoryId]) return false;
                 return true;
             });
-            const showWorkers = {};
+            const showWorkers = {} as { [name: string]: boolean; };
             const reduInfo = rows.reduce((acc, row) => {
                 if (row.date < acc.minDate) {
                     console.log('useing min date (orig,new)', acc.minDate, row.date);
@@ -573,7 +573,7 @@ function getDataForYYYY(state: IYearlyMaintenanceReportState, setState: React.Di
         }
         return d.date >= startDate && d.date <= endDate;
     });
-    const showWorkers = {};
+    const showWorkers = {} as { [name: string]: boolean; };
     const workerIdsAcc = rawData.reduce((acc, r) => {
         const workerId = getDspWorker(state, r)
         if (!acc.found[workerId]) {

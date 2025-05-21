@@ -27,7 +27,7 @@ export default withRouter(function MainDashboard(props) {
 
   //const [pageState, setPageState] = pstate;
   const currentActivePage = getSideBarCurrentSelectedItemName(rstate);
-  const sideBarItem = sideBarContentLookup.get(currentActivePage);
+  const sideBarItem = sideBarContentLookup.get(currentActivePage as string);
   //console.log('-----------> sidebar item ', sideBarItem.name, sideBarItem.table, currentActivePage)
   let page = sideBarItem?.page;
   const pageStyles = sideBarItem?.pageOuterStyles || { margin: '30px' };

@@ -35,11 +35,11 @@ function number_format(number: number | string, decimals?: number, dec_point?: s
     // *     return: '1 234,56'
     number = (number + '').replace(',', '').replace(' ', '');
     var n = !isFinite(+number) ? 0 : +number,
-        prec = !isFinite(+decimals) ? 0 : Math.abs(decimals),
+        prec = !isFinite(decimals as any) ? 0 : Math.abs(decimals as any),
         sep = (typeof thousands_sep === 'undefined') ? ',' : thousands_sep,
         dec = (typeof dec_point === 'undefined') ? '.' : dec_point,
         s = '',
-        toFixedFix = function (n, prec) {
+        toFixedFix = function (n: number, prec: number) {
             var k = Math.pow(10, prec);
             return '' + Math.round(n * k) / k;
         };
@@ -56,29 +56,29 @@ function number_format(number: number | string, decimals?: number, dec_point?: s
 }
 
 // all from react-char-js, can't get to install so copied
-function reforwardRef(ref, value) {
+function reforwardRef(ref: any, value: any) {
     if (typeof ref === "function") {
         ref(value);
     } else if (ref) {
         ref.current = value;
     }
 }
-function setOptions(chart, nextOptions) {
+function setOptions(chart: any, nextOptions: any) {
     const options = chart.options;
     if (options && nextOptions) {
         Object.assign(options, nextOptions);
     }
 }
-function setLabels(currentData, nextLabels) {
+function setLabels(currentData: any, nextLabels: any) {
     currentData.labels = nextLabels;
 }
 const defaultDatasetIdKey = "label";
-function setDatasets(currentData, nextDatasets) {
+function setDatasets(currentData: any, nextDatasets: any) {
     let datasetIdKey = arguments.length > 2 && arguments[2] !== void 0 ? arguments[2] : defaultDatasetIdKey;
-    const addedDatasets = [];
-    currentData.datasets = nextDatasets.map((nextDataset) => {
+    const addedDatasets: any[] = [];
+    currentData.datasets = nextDatasets.map((nextDataset: any) => {
         // given the new set, find it's current match
-        const currentDataset = currentData.datasets.find((dataset) => dataset[datasetIdKey] === nextDataset[datasetIdKey]);
+        const currentDataset = currentData.datasets.find((dataset: any) => dataset[datasetIdKey] === nextDataset[datasetIdKey]);
         // There is no original to update, so simply add new one
         if (!currentDataset || !nextDataset.data || addedDatasets.includes(currentDataset)) {
             return {
@@ -90,7 +90,7 @@ function setDatasets(currentData, nextDatasets) {
         return currentDataset;
     });
 }
-function cloneData(data) {
+function cloneData(data: any) {
     //let datasetIdKey = arguments.length > 1 && arguments[1] !== void 0 ? arguments[1] : defaultDatasetIdKey;
     const nextData = {
         labels: [],
@@ -100,10 +100,10 @@ function cloneData(data) {
     setDatasets(nextData, data.datasets); //,datasetIdKey
     return nextData;
 }
-function ChartComponent(props, ref) {
+function ChartComponent(props: any, ref: any) {
     const { height = 150, width = 300, redraw = false, datasetIdKey, type, data, options, plugins = [], fallbackContent, updateMode, ...canvasProps } = props;
     const canvasRef = React.useRef(null);
-    const chartRef = React.useRef(null);
+    const chartRef = React.useRef<any>(null);
     const renderChart = () => {
         if (!canvasRef.current) return;
         chartRef.current = new ChartJS(canvasRef.current, {
@@ -182,7 +182,7 @@ function ChartComponent(props, ref) {
 }
 const Chart = /*#__PURE__*/ React.forwardRef(ChartComponent);
 
-function createTypedChart(type, registerables) {
+function createTypedChart(type: string, registerables: any) {
     ChartJS.register(registerables);
     return /*#__PURE__*/ React.forwardRef((props: any, ref) =>/*#__PURE__*/ React.createElement(Chart, Object.assign({}, props, {
         ref: ref,
@@ -250,7 +250,7 @@ export function EarningsGraph(props: PropWithPayments) {
         }, {
             months: [],
             dataDict: {},
-        } as MonthAndData);
+        } as unknown as MonthAndData);
 
 
         allRentReportData.dataAry = allRentReportData.months.map(m => {
@@ -314,7 +314,7 @@ export function EarningsGraph(props: PropWithPayments) {
             mode: 'index',
             caretPadding: 10,
             callbacks: {
-                label: function (tooltipItem, chart) {
+                label: function (tooltipItem: any, chart: any) {
                     var datasetLabel = chart.datasets[tooltipItem.datasetIndex].label || '';
                     return datasetLabel + ': $' + number_format(tooltipItem.yLabel);
                 }

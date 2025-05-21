@@ -2,7 +2,7 @@ import React  from 'react';
 import {GenList} from '../../uidatahelpers/GenList';
 
 //No longer used, override by page defs.
-export function OwnerList(props) {   
+export function OwnerList(props: any) {   
     return <GenList {...props} table={'ownerInfo'} title={'Owner List'}
         displayFields={[
             //{ field: 'userID', desc: 'Owner', foreignKey: { table: 'userInfo', field: 'userID' }, required: true, isId: true, },

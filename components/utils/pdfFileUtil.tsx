@@ -47,7 +47,7 @@ export async function parsePdfFile(data: Uint8Array) {
             const rpage: IParsedPdfPage = {
                 width: page.view[2],    
                 height,
-                items: textContent.items.map(itm => {
+                items: textContent.items.map((itm: any) => {
                     const ritm: IPdfTextItem= {
                         str: itm.str,
                         height: itm.height,

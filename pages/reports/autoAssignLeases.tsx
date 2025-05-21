@@ -1,6 +1,6 @@
 import * as api from '../../components/api'
 import { gatherLeaseInfomation, getLeaseUtilForHouse, HouseWithLease, ILeaseInfoWithPmtInfo } from '../../components/utils/leaseUtil';
-import { IHouseInfo, ILeaseInfo } from '../../components/reportTypes';
+import { IHouseInfo, ILeaseInfo, IPayment } from '../../components/reportTypes';
 import { useEffect, useState } from 'react';
 import { usePageRelatedContext } from '../../components/states/PageRelatedState';
 import Link from 'next/link';
@@ -36,7 +36,7 @@ export default function AutoAssignLeases() {
         setProcessingHouseId(houseID);
         mainCtx.showLoadingDlg('Fixing ' + house.address);
         const finder = await getLeaseUtilForHouse(houseID);
-        const all = await finder.matchAndAddLeaseToTransactions((pos, pmt) => {
+        const all = (await finder.matchAndAddLeaseToTransactions((pos, pmt) => {
             if (!pmt) {
                 setTopBarMessages(state => {
                     return [...state, {
@@ -48,6 +48,7 @@ export default function AutoAssignLeases() {
                 });
             } else {
                 const lease = finder.allLeases.find(l => l.leaseID === pmt.leaseID);
+                if (!lease) return;
                 setTopBarMessages(state => {
                     return [...state, {
                         clsColor: 'bg-success',
@@ -57,7 +58,7 @@ export default function AutoAssignLeases() {
                     }]
                 });
             }
-        });
+        })) as IPayment[];
 
         const noLeases = all.filter(t => !t.leaseID);
         if (noLeases.length) {
@@ -72,7 +73,7 @@ export default function AutoAssignLeases() {
         }
         
         const lease = await finder.findLeaseForDate(new Date());
-        house.lease = lease;
+        house.lease = lease as ILeaseInfo;
         return lease;
     }
 
@@ -114,7 +115,7 @@ export default function AutoAssignLeases() {
 
 
     const processOneHouse = async (house: HouseWithLease, expand = false) => {
-        if (house.leaseInfo) {
+        if (house.leaseInfo && house.lease) {
             const leaseID = house.lease.leaseID;
             if (expand) {
                 setLeaseExpanded({

@@ -87,7 +87,7 @@ export interface IDialogInfoHelper {
     setDialogText: (text: string) => void;
     setDialogAction: (text: string, onClose: () => void)=>void;
     dialogState: IDialogState;
-    getDialog: () => JSX.Element;
+    getDialog: () => JSX.Element | string;
 }
 
 export function GetInfoDialogHelper(): IDialogInfoHelper {
@@ -95,7 +95,7 @@ export function GetInfoDialogHelper(): IDialogInfoHelper {
         text: '',
     });
     const setDialogText = (text: string) => setDialogState({ text });
-    const infoHelper = {
+    const infoHelper: IDialogInfoHelper = {
         setDialogText,
         setDialogAction: (text, onClose) => setDialogState({
             text,

@@ -8,17 +8,14 @@ import { GetInfoDialogHelper } from '../components/generic/basedialog';
 export default function ForgetPassword() {
     const router = useRouter();
     const infoDlg = GetInfoDialogHelper();
-    const commingSoon = e => {
-        e.preventDefault();
-        infoDlg.setDialogText('Not implemented')        
-    }
+    
     const [state, setState] = useState({
         email: '',
     });
     const [dialogInfo, setDialogInfo] = useState({
         show: false
     });
-    const submit = e => {
+    const submit = (e:any) => {
         e.preventDefault();
         if (!api.emailRegx.test(state.email)) {
             return infoDlg.setDialogText('Invalid email format '+state.email);
@@ -30,7 +27,7 @@ export default function ForgetPassword() {
             }); 
         });
     };
-    const showDialog = (msg, title='Info', onClose: ()=>void) => {
+    const showDialog = (msg: string, title='Info', onClose: ()=>void) => {
         infoDlg.setDialogAction(msg, onClose)
     }
     return <div className="container">

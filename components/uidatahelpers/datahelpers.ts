@@ -47,12 +47,12 @@ import { ALLFieldNames, DataToDbSheetMapping, ITableAndSheetMappingInfo, ItemTyp
 
 
 /// if ctx exists, means it is from DB and need update zone
-export function stdFormatValue(def: IDBFieldDef, v: string | number, fieldName?: string, ctx?: IPageRelatedState): { error?: string; v: string | number; } {
+export function stdFormatValue(def: IDBFieldDef, v: string | number | null | undefined, fieldName?: string, ctx?: IPageRelatedState): { error?: string; v: string | number; } {
     if (def.type === 'decimal') {
         if (v === null || v === undefined || v === '') {
             if (!def.required) {
                 return {
-                    v: null,
+                    v: null as any,
                 }
             }
             //acc[fieldName] = 'invalid(null)';
@@ -61,7 +61,7 @@ export function stdFormatValue(def: IDBFieldDef, v: string | number, fieldName?:
             console.log('Invalid data for ', fieldName, v, def);
             return {
                 error: 'invalid(null)',
-                v,
+                v: v as any,
             }
         }
         if (typeof v === 'string') {
@@ -95,7 +95,7 @@ export function stdFormatValue(def: IDBFieldDef, v: string | number, fieldName?:
     if (def.type === 'date' || def.type === 'datetime') {
         if (!v && !def.required) {
             return {
-                v: null,
+                v: null as any,
             }
         }
         const mt = moment.utc(v);
@@ -105,7 +105,7 @@ export function stdFormatValue(def: IDBFieldDef, v: string | number, fieldName?:
             console.log('Invalid data for DatEEE ', fieldName, v, def);
             return {
                 error: `bad date ${fieldName}:${v}`,
-                v,
+                v: v as any,
             }
         } else {
             if (def.type === 'date') {
@@ -117,12 +117,12 @@ export function stdFormatValue(def: IDBFieldDef, v: string | number, fieldName?:
             const dateStr = ctx ? ctx.utcDbTimeToZonedTime(v as string, dateFmt) : mt.format(dateFmt);
             //acc[fieldName] = dateStr;
             return {
-                v: dateStr,
+                v: dateStr as any,
             }
         }
     }
     return {
-        v,
+        v: v as any,
     }
 }
 
@@ -131,7 +131,7 @@ export function createHelper(rootCtx: RootState.IRootPageState, ctx: IPageRelate
     const googleSheetId: string = ctx.googleSheetAuthInfo.googleSheetId;    
     //sheetMapping?: DataToDbSheetMapping
     const { table, sheetMapping } = props; 
-    if (!table) return null;
+    if (!table) return null as any;
 
     const accModel = () => ctx.modelsProp.models.get(table);
     const accModelFields = () => get(accModel(), 'fields', [] as IDBFieldDef[]);
@@ -143,13 +143,13 @@ export function createHelper(rootCtx: RootState.IRootPageState, ctx: IPageRelate
             const model = accModel();
             //innerState.dateFields = model.fields.filter(f => f.type === 'date').map(f => f.field);
             //populateState();
-            return model;
+            return model as any;
         },        
         loadData: async (opts = {} as IHelperOpts) => {
             //fields: array of field names
             const { whereArray, order, rowCount, offset } = opts;
             const modFields = accModelFields().map(f => f.field);
-            const viewFields = get(accModel(), 'view.fields', []).map(f => f.name || f.field);
+            const viewFields = get(accModel(), 'view.fields', []).map((f:any) => f.name || f.field);
             const res = (await sqlGet({
                 table,
                 fields: modFields.concat(viewFields),
@@ -157,7 +157,7 @@ export function createHelper(rootCtx: RootState.IRootPageState, ctx: IPageRelate
                 whereArray,
                 order,
                 rowCount, offset,
-                groupByArray:null,
+                groupByArray: null as any,
             })) as {
                 total: number;
                 rows: any[];
@@ -175,12 +175,12 @@ export function createHelper(rootCtx: RootState.IRootPageState, ctx: IPageRelate
             }
             return res;
         },
-        saveData: async (data: ItemType, id: string, saveToSheet: boolean, foreignKeyLookup: IForeignKeyLookupMap) => {
+        saveData: async (data: ItemType, id: FieldValueType, saveToSheet: boolean, foreignKeyLookup: IForeignKeyLookupMap) => {
             const fieldTypeMapping: Map<string, IDBFieldDef> = new Map();
             const submitData = accModelFields().reduce((acc, f) => {
-                acc[f.field] = data.data[f.field];
+                acc[f.field] = (data.data as any)[f.field];
                 if (f.type === 'date' || f.type === 'datetime') {
-                    const dateVal = data.data[f.field];
+                    const dateVal = (data.data as any)[f.field];
                     if (dateVal) {
                         acc[f.field] = ctx.browserTimeToUTCDBTime(dateVal);
                     } else {
@@ -189,7 +189,7 @@ export function createHelper(rootCtx: RootState.IRootPageState, ctx: IPageRelate
                 }
                 fieldTypeMapping.set(f.field, f);                
                 return acc;
-            }, {});
+            }, {} as any);
 
             const sqlRes = await sqlAdd(table, submitData, !id);;
             if (!saveToSheet) return sqlRes;
@@ -209,7 +209,7 @@ export function createHelper(rootCtx: RootState.IRootPageState, ctx: IPageRelate
                 //const originalValues = data._vdOriginalRecord ? mapFuns.getSheetValuesFromData(data._vdOriginalRecord): null;
 
                 if (id) {
-                    const foundRow = await mapFuns.findItemOnSheet(data, googleSheetId, id);
+                    const foundRow = await mapFuns.findItemOnSheet(data, googleSheetId, id as any);
                     if (foundRow === 'NOT FOUND') {
 
                     } else {
@@ -356,7 +356,7 @@ function getSheetMappingFuncs(fields: IDBFieldDef[], sheetMapping: DataToDbSheet
     function getSheetValuesFromData(data: ItemTypeDict) {
         const fieldNameToForeignkeyCombo = fields.reduce((acc, f) => {
             if (f.foreignKey && f.foreignKey.table) {
-                acc.set(f.field as ALLFieldNames, foreignKeyLookup.get(f.foreignKey.table));
+                acc.set(f.field as ALLFieldNames, foreignKeyLookup.get(f.foreignKey.table) as any);
             }
             return acc;
         }, new Map() as Map<ALLFieldNames, IForeignKeyCombo>);
@@ -419,7 +419,7 @@ function getSheetMappingFuncs(fields: IDBFieldDef[], sheetMapping: DataToDbSheet
                 if (!def) return val;
                 return stdFormatValue(def, val, fieldName, ctx).v;
             }
-            const originalValues = getSheetValuesFromData(data._vdOriginalRecord);
+            const originalValues = getSheetValuesFromData(data._vdOriginalRecord as any);
             for (let row = 0; row < sheetData.values.length; row++) {
                 const rowData = sheetData.values[row];
                 let ok = true;
@@ -431,12 +431,12 @@ function getSheetMappingFuncs(fields: IDBFieldDef[], sheetMapping: DataToDbSheet
                     if (matchToLower(rowData[pos], fielName) !== matchToLower(originalValues[pos], fielName, mainCtx)) {
                         ok = false;
                         if (debugKeepMatching) {
-                            console.log('!! not matching row', row, fielName, `rowData= '${rowData[pos]}' matchToLowerRowData='${matchToLower(rowData[pos], fielName)}'`, ` original ${originalValues[pos]} data '${data[fielName]}'`, 'f=', matchToLower(data[fielName] as string, fielName))
+                            console.log('!! not matching row', row, fielName, `rowData= '${rowData[pos]}' matchToLowerRowData='${matchToLower(rowData[pos], fielName)}'`, ` original ${originalValues[pos]} data '${data.data[fielName]}'`, 'f=', matchToLower(data.data[fielName] as string, fielName))
                         }
                         if (!debugKeepMatching) break;
                     } else {
                         console.log('matched ', row, fielName, rowData[pos], 'row=', row)
-                        console.log('matching row', row, fielName, 'rowData', rowData[pos], 'f=', matchToLower(rowData[pos], fielName), `data '${data[fielName]}'`, 'f=', matchToLower(data[fielName] as string, fielName))
+                        console.log('matching row', row, fielName, 'rowData', rowData[pos], 'f=', matchToLower(rowData[pos], fielName), `data '${data.data[fielName]}'`, 'f=', matchToLower(data.data[fielName] as string, fielName))
                         debugKeepMatching = true;
                     }
                     pos++;
@@ -486,12 +486,12 @@ export async function createAndLoadHelper(rootCtx: RootState.IRootPageState, ctx
 
 export function getGenListParms(ctx: IPageRelatedState, table: TableNames): ITableAndSheetMappingInfo<unknown> {
     const def = tableNameToDefinitions.get(table);
-    const allFields = ctx.modelsProp.models.get(table).fields;
+    const allFields = ctx.modelsProp.models.get(table)?.fields as IDBFieldDef[];
     return {
         ...def,
         table,
         allFields,
-        displayFields: def.displayFields || allFields.map(f => {
+        displayFields: def?.displayFields || allFields.map(f => {
             if (f.foreignKey && f.foreignKey.field === 'houseID') {
                 return {
                     ...f,
@@ -501,7 +501,7 @@ export function getGenListParms(ctx: IPageRelatedState, table: TableNames): ITab
             }
             if (f.isId) return null;
             return f;
-        }).filter(x=>x),
+        }).filter(x=>x) as IDBFieldDef[],
         //sheetMapping: def.sheetMapping,
     };
 }

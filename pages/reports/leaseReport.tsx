@@ -160,7 +160,7 @@ export default function LeaseReport() {
                                 
                             </tr>
                                 {
-                                    leaseExpanded[h.houseID] && h.leaseInfo && <tr>
+                                    leaseExpanded[h.houseID] && h.leaseInfo && h.leaseBalanceDueInfo  && <tr>
                                         <td colSpan={4}>
                                             <div className="card shadow mb-4">
                                                 <div className="card-header py-3">

@@ -82,7 +82,7 @@ export async function loadMaintenanceData(rootCtx: IRootPageState, mainCtx: IPag
 }
 
 export async function loadDataWithMonthRange(rootCtx: IRootPageState, mainCtx: IPageRelatedState, loader: GenLoaderFunc, selectedMonths: string[], dateField: 'receivedDate' | 'date', comment: string) {    
-    let whereArray: ISqlRequestWhereItem[];
+    let whereArray: ISqlRequestWhereItem[]|undefined = undefined;
     if (selectedMonths.length > 0) {
         const startDate = mainCtx.browserTimeToUTCDBTime(selectedMonths[0] + '-01');
         const endDateMoment = moment(selectedMonths[selectedMonths.length - 1] + '-01').add(1, 'month');
@@ -148,7 +148,7 @@ export function getMonthAry(monSel: MonthSelections) {
 }
 
 
-export function formatAccounting(number: number | string) {
+export function formatAccounting(number: number | string | null | undefined) {
     const num = Number(number);
     if (isNaN(num)) {
       return 'Invalid Input';
@@ -171,7 +171,8 @@ export function DoubleAryToCsv(data: string[][]): string {
     }).join('\r\n');
 }
 
-export function removeZeroHourMinuteSeconds(str: string) {
+export function removeZeroHourMinuteSeconds(str: string | null | undefined) {
+    if (!str) return '';
     while (str.endsWith(':00')) {
         str = str.substring(0, str.length - 3);
     }
@@ -196,8 +197,8 @@ export function standardGenListColumnFormatter(val: any, def: IDBFieldDef): stri
     return val;
 }
 
-export function standardFormatDate(date: string | Date):string {
-
+export function standardFormatDate(date: string | Date | undefined | null): string {
+    if (!date) return '';
     const mDate = moment(date);
     if (!mDate.isValid()) return '';
     return mDate.format('MM/DD/YYYY');

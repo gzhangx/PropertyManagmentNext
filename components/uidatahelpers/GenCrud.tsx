@@ -5,7 +5,7 @@ import { EditTextDropdown } from '../generic/EditTextDropdown';
 import { GenCrudAdd } from './GenCrudAdd';
 import { ISqlOrderDef, SortOps, IPageFilter, IPageState, IDBFieldDef, TableNames, SQLOPS, FieldValueType, IFullTextSearchPart, ReactSetStateType,  } from '../types'
 //import { IFKDefs} from './GenCrudTableFkTrans'
-import { ICrudAddCustomObj, ITableAndSheetMappingInfo, ItemType } from './datahelperTypes';
+import { ALLFieldNames, ICrudAddCustomObj, ITableAndSheetMappingInfo, ItemType } from './datahelperTypes';
 import { usePageRelatedContext } from '../states/PageRelatedState';
 import moment from 'moment';
 import { BaseDialog } from '../generic/basedialog';
@@ -76,7 +76,7 @@ export const GenCrud = (props: IGenGrudProps) => {
     const [dspState, setDspState] = useState<'Add' | 'Update' | 'dsp'>('dsp');
     const [editItem, setEditItem] = useState<ItemType>({
         data: {},
-        _vdOriginalRecord: null,
+        _vdOriginalRecord: undefined,
         searchInfo: [],
     });    
     //const [enableAllCustFilters, setEnableAllCustFilters] = useState(false);    
@@ -118,7 +118,7 @@ export const GenCrud = (props: IGenGrudProps) => {
     const PageLookRangeMax = 3;
     const calcPage = () => {
         let changed = false;
-        const getLastPage = (total, pageSize) => {
+        const getLastPage = (total: number, pageSize: number) => {
             const lst = Math.trunc(total / pageSize);
             if (lst * pageSize === total) return lst - 1;
             return lst;
@@ -158,7 +158,7 @@ export const GenCrud = (props: IGenGrudProps) => {
     const baseColumnMap: { [name: string]: IDBFieldDef } = columnInfo.reduce((acc, col) => {
         acc[col.field] = col;
         return acc;
-    }, {});
+    }, {} as any);
     const columnMap: { [name: string]: IDBFieldDef } = displayFields.reduce((acc, col) => {
         let val = col;
         if (typeof col === 'string') {
@@ -181,7 +181,7 @@ export const GenCrud = (props: IGenGrudProps) => {
     const fkDefLookup: { [name: string]: IDBFieldDef } = columnInfo.reduce((acc, col) => {
         acc[col.field] = col;
         return acc;
-    }, {});
+    }, {} as any);
 
     const displayFieldsStripped = displayFields.map(f => {
         if (typeof f === 'string') return f;
@@ -205,11 +205,11 @@ export const GenCrud = (props: IGenGrudProps) => {
     const addNew = async () => {
         columnInfo.map((c, cind) => {
             if (c.type === 'date' || c.type === 'datetime') {
-                editItem.data[c.field] = moment().format('YYYY-MM-DD');
+                editItem.data[c.field as ALLFieldNames] = moment().format('YYYY-MM-DD');
             } else if (c.type === 'decimal' || c.type === 'int') {
-                editItem.data[c.field] = 0;
+                editItem.data[c.field as ALLFieldNames] = 0;
             } else {
-                editItem.data[c.field] = '';
+                editItem.data[c.field as ALLFieldNames] = '';
             }
         });
         if (props.customAddNewDefaults) {
@@ -238,9 +238,9 @@ export const GenCrud = (props: IGenGrudProps) => {
         const fieldSorts = getPageSorts(pageState, table) || []; //get(pageProps, [table, 'sorts'], []);
         const fieldSortFound = fieldSorts.filter(s => s.name === field)[0];
         const fieldSort = fieldSortFound || ({} as ISqlOrderDef);
-        const getIconDesc = (op:string) => opToIcon[op] || 'fas fa-minus';
+        const getIconDesc = (op:string) => opToIcon[op as 'asc'] || 'fas fa-minus';
         const shortIcon = getIconDesc(fieldSort.op);
-        const onSortClick = e => {
+        const onSortClick = (e: any) => {
             e.preventDefault();
             const sort = fieldSortFound || ({
                 name: field,
@@ -264,7 +264,7 @@ export const GenCrud = (props: IGenGrudProps) => {
     const filterOptions = ['=', '!=', '<', '<=', '>', '>='].map(value => ({ value, label: value, selected: false }));
     const defaultFilter = filterOptions.filter(x => x.value === '=')[0];
     if (defaultFilter) defaultFilter.selected = true;
-    const makePageButtons = (inds, desc?:string) => inds.map((ind, keyId) => <button className="btn btn-primary" type="button" key={keyId} onClick={e => {
+    const makePageButtons = (inds: any, desc?:string) => inds.map((ind: any, keyId: number) => <button className="btn btn-primary" type="button" key={keyId} onClick={e => {
         e.preventDefault();
         setPaggingInfo({ ...paggingInfo, pos: ind })
     }}>{desc || ind + 1}</button>)
@@ -363,6 +363,7 @@ export const GenCrud = (props: IGenGrudProps) => {
                                             
                                             {
                                                 customFiltersEnabled[table] && customFiltersEnabled[table][name] &&
+                                                props.customHeaderFilterFunc && 
                                                 props.customHeaderFilterFunc(mainCtx, pageState, columnMap[name])
                                             }
                                         </th>
@@ -379,12 +380,12 @@ export const GenCrud = (props: IGenGrudProps) => {
                                             {
                                                 displayFieldsStripped.map((fn, findIndex) => {
                                                     const def = fkDefLookup[fn];                                                    
-                                                    const val = row.data[fn]
+                                                    const val = row.data[fn as ALLFieldNames]
                                                     let dsp = val;
                                                     if (def && def.foreignKey && def.foreignKey.table) {
                                                         const fkk = mainCtx.foreignKeyLoopkup.get(def.foreignKey.table);
                                                         if (fkk) {
-                                                            const desc = fkk.idDesc.get(val)?.desc;
+                                                            const desc = fkk.idDesc.get(val as string)?.desc;
                                                             if (desc) {
                                                                 dsp = desc;
                                                             } else {
@@ -397,12 +398,12 @@ export const GenCrud = (props: IGenGrudProps) => {
                                                         }
                                                     }
 
-                                                    let fullTextSearchHighLight: IFullTextSearchCheckOneFieldMatch = null;
+                                                    let fullTextSearchHighLight: IFullTextSearchCheckOneFieldMatch | null = null;
                                                     let dspLine: (React.JSX.Element | string) = standardGenListColumnFormatter(dsp, def);
                                                     let dspClass = '';
                                                     if (props.fullTextSearchInTyping.val) {
-                                                        fullTextSearchHighLight = checkOneFieldMatch(row.searchInfo?.[findIndex]?.[0] || val, def, props.fullTextSearchInTyping);                                
-                                                        if (!fullTextSearchHighLight.searchMatchSuccess && row.searchInfo[findIndex]?.[1]) {
+                                                        fullTextSearchHighLight = checkOneFieldMatch(row.searchInfo?.[findIndex]?.[0] || val as string, def, props.fullTextSearchInTyping);                                
+                                                        if (!fullTextSearchHighLight.searchMatchSuccess && row.searchInfo?.[findIndex]?.[1]) {
                                                             fullTextSearchHighLight = checkOneFieldMatch(row.searchInfo?.[findIndex]?.[1] || dspLine, def, props.fullTextSearchInTyping);
                                                         }                                                        
                                                         if (fullTextSearchHighLight) {
@@ -410,7 +411,7 @@ export const GenCrud = (props: IGenGrudProps) => {
                                                                 if (fullTextSearchHighLight.lightAll) {
                                                                     dspClass = 'fulTextHightLightYellow';
                                                                 } else {                                                                    
-                                                                    dspLine = getSerchHighlightDsp(dspLine, def, props.fullTextSearchInTyping)
+                                                                    dspLine = getSerchHighlightDsp(dspLine, def, props.fullTextSearchInTyping) as string
                                                                 }
                                                             }
                                                         }
@@ -432,7 +433,7 @@ export const GenCrud = (props: IGenGrudProps) => {
                                                     () => {
                                                         setDeleteConfirm({
                                                             showDeleteConfirmation: true,
-                                                            deleteIds: idCols.map(c => row.data[c.field]),
+                                                            deleteIds: idCols.map(c => row.data[c.field as ALLFieldNames]) as string[],
                                                             deleteRowData: row,
                                                         });
                                                         //props.doDelete(idCols.map(c => row[c.field]), row)
@@ -610,7 +611,7 @@ function getSerchHighlightDsp(dspLine: string, def: IDBFieldDef, fullTextSearchI
     } else if (def.displayType === 'date') {
         function findDateMatch(fullDate: string, searchStr: string): { start: number; end: number; }[] {
             if (!/^\d{2}\/\d{2}\/\d{4}$/.test(fullDate)) {
-                return null;
+                return null as any;
             }            
             const [mm, dd, yyyy] = fullDate.split('/');
             const originalDate = fullDate; // MM/DD/YYYY
@@ -655,7 +656,7 @@ function getSerchHighlightDsp(dspLine: string, def: IDBFieldDef, fullTextSearchI
                 //impossible to have only date
             }            
 
-            return null; // no match found
+            return null as any; // no match found
         }
 
         const starEnds = findDateMatch(dspLine, fullTextSearchInTyping.val);        

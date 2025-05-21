@@ -197,7 +197,7 @@ export type IModelsProps = {
 }
 
 export interface IHelperOpts {
-    whereArray: ISqlRequestWhereItem[];
+    whereArray?: ISqlRequestWhereItem[];
     order?: ISqlOrderDef[];
     rowCount?: number;
     offset?: number;
@@ -266,11 +266,11 @@ export interface IPageRelatedState {
 
 
     timezone: TimeZoneType;
-    browserTimeToUTCDBTime: (bt: AllDateTypes) => string;
-    utcDbTimeToZonedTime: (utc: AllDateTypes, format?: 'YYYY-MM-DD' | 'YYYY-MM-DD HH:mm:ss') => string | null;
+    browserTimeToUTCDBTime: (bt: AllDateTypes | undefined | null) => string | null;
+    utcDbTimeToZonedTime: (utc: AllDateTypes | undefined, format?: 'YYYY-MM-DD' | 'YYYY-MM-DD HH:mm:ss') => string | null;
     
 
-    showLoadingDlg: (content: string | JSX.Element, title?: string) => void;
+    showLoadingDlg: (content: string | JSX.Element | null, title?: string) => void;
     loadingDlgContent: string | JSX.Element | null;
     loadingDlgTitle: string;
 }
