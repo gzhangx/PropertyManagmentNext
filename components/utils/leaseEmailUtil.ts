@@ -6,6 +6,7 @@ import { IStringLogger } from '../types';
 import { formatAccounting } from './reportUtils';
 import { renderRenderBalanceEmailBodyToText } from './DirectEmailBodyContent';
 import { startCase } from 'lodash';
+import { RenterEmailConfig } from '../page/inputs/renterEmailConfig';
 
 
 export const paymentEmailSubject = 'paymentEmailSubject';
@@ -29,6 +30,9 @@ export const paymentEmailProps = [
 ] as const;
 
 export function getPaymentEmailDesc(name: typeof paymentEmailProps[number]) {
+    switch(name){
+        case 'paymentEmailContactEmail': return 'Payment Email BCC'
+    }
     return startCase(name);
 }
 
