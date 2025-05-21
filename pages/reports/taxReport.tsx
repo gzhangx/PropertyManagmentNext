@@ -1,5 +1,5 @@
-
-//import { DataGrid, GridColDef } from '@mui/x-data-grid';
+'use client'
+import { DataGrid, GridColDef } from '@mui/x-data-grid';
 import React, { ChangeEvent, useEffect, useRef, useState } from "react";
 import { IPdfTextItem, parsePdfFile, PdfScript } from "../../components/utils/pdfFileUtil";
 import { startCase } from "lodash";
@@ -341,7 +341,6 @@ export default function TaxReport() {
         })
     }, []);
     
-    /*
     const columns: GridColDef<W2Info>[] = [
         { field: 'name', headerName: 'Name', width: 200, editable: true, },
         {
@@ -383,7 +382,6 @@ export default function TaxReport() {
                 checkboxSelection
                 disableRowSelectionOnClick
             />
-            */
     return <div className="row">
         <Box sx={{ height: 400, width: '100%' }}>
             
