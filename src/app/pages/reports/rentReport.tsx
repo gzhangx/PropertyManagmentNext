@@ -1,16 +1,16 @@
 import React, { useState, useEffect } from "react";
 
-import { EditTextDropdown  } from '../../components/generic/EditTextDropdown';
+import { EditTextDropdown  } from '../../../components/generic/EditTextDropdown';
 import {    
     IHouseInfo,
-} from '../../components/reportTypes';
+} from '../../../components/reportTypes';
 
-import { usePageRelatedContext } from "../../components/states/PageRelatedState";
-import { useRootPageContext } from "../../components/states/RootState";
-import { IEditTextDropdownItem } from "../../components/generic/GenericDropdown";
-import { CloseableDialog } from "../../components/generic/basedialog";
+import { usePageRelatedContext } from "../../../components/states/PageRelatedState";
+import { useRootPageContext } from "../../../components/states/RootState";
+import { IEditTextDropdownItem } from "../../../components/generic/GenericDropdown";
+import { CloseableDialog } from "../../../components/generic/basedialog";
 import { orderBy } from "lodash";
-import { filterPaymentsForRent, formatAccounting, getMonthAry, IPaymentWithDateMonthPaymentType, loadDataWithMonthRange, loadPayment, MonthSelections } from "../../components/utils/reportUtils";
+import { filterPaymentsForRent, formatAccounting, getMonthAry, IPaymentWithDateMonthPaymentType, loadDataWithMonthRange, loadPayment, MonthSelections } from "../../../components/utils/reportUtils";
 
 
 const amtDsp = (amt: number) => {

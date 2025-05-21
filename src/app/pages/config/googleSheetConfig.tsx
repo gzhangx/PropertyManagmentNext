@@ -1,7 +1,7 @@
 import React from 'react';
-import { saveGoodSheetAuthInfo, } from '../../components/api';
+import { saveGoodSheetAuthInfo, } from '../../../components/api';
 
-import { usePageRelatedContext } from '../../components/states/PageRelatedState';
+import { usePageRelatedContext } from '../../../components/states/PageRelatedState';
 
 
 export default function GoogleSheetConfigPage() {        

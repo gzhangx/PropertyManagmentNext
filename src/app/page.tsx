@@ -3,13 +3,13 @@ import * as React from 'react';
 import {
   useRootPageContext,
   activeSideBarItem,
-} from "./components/states/RootState"
+} from "../components/states/RootState"
 
-import { sideBarContentLookup } from './components/pageConfigs'
+import { sideBarContentLookup } from '../components/pageConfigs'
 import { useEffect } from 'react'
-import { NAVPrefix } from './components/nav/consts'
-import { usePageRelatedContext } from './components/states/PageRelatedState'
-import { CloseableDialog } from './components/generic/basedialog'
+import { NAVPrefix } from '../components/nav/consts'
+import { usePageRelatedContext } from '../components/states/PageRelatedState'
+import { CloseableDialog } from '../components/generic/basedialog'
 import Dashboard from './pages/dashboard';
 
 function getWindowLocationHash() {

@@ -1,10 +1,10 @@
 import react, {useState} from 'react';
 import { useRouter, usePathname, useSearchParams } from 'next/navigation'
-import * as api from '../components/api';
-import { Dialog, createDialogPrms } from '../components/dialog';
-import { useRootPageContext } from "../components/states/RootState"
+import * as api from '../../components/api';
+import { Dialog, createDialogPrms } from '../../components/dialog';
+import { useRootPageContext } from "../../components/states/RootState"
 import Link from 'next/link';
-import { usePageRelatedContext } from '../components/states/PageRelatedState';
+import { usePageRelatedContext } from '../../components/states/PageRelatedState';
 
 export default function Login() {    
     const router = useRouter();

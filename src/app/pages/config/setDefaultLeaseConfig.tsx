@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
-import * as api from '../../components/api';
-import { ILeaseInfo } from '../../components/reportTypes';
+import * as api from '../../../components/api';
+import { ILeaseInfo } from '../../../components/reportTypes';
 
 export default function SetDefaultLeaseDueDay() {
     const [leases, setLeases] = useState<ILeaseInfo[]>([]);

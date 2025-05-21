@@ -1,11 +1,11 @@
 'use client'
-import './styles/sb-admin-2.css'
-import './styles/gg-editable-dropdown.css'
-import './styles/tags-input.css'
-import './styles/global.css'
+import '../styles/sb-admin-2.css'
+import '../styles/gg-editable-dropdown.css'
+import '../styles/tags-input.css'
+import '../styles/global.css'
 
-import * as RootState from './components/states/RootState'
-import { PageRelatedContextWrapper } from './components/states/PageRelatedState'
+import * as RootState from '../components/states/RootState'
+import { PageRelatedContextWrapper } from '../components/states/PageRelatedState'
 
 
 

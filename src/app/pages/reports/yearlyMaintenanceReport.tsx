@@ -5,23 +5,23 @@ import {
     getWorkerInfo,
     doPost,
     getOwnerInfo,
-} from '../../components/api';
+} from '../../../components/api';
 import moment from 'moment';
-import { EditTextDropdown  } from '../../components/generic/EditTextDropdown';
+import { EditTextDropdown } from '../../../components/generic/EditTextDropdown';
 import { sortBy, words } from "lodash";
 import {
     IWorkerInfo,
     IMaintenanceRawData,
     IHouseInfo,
-} from '../../components/reportTypes';
+} from '../../../components/reportTypes';
 
-import { CloseableDialog } from '../../components/generic/basedialog'
-import { CreateSaveButton} from '../../components/generic/SaveFile'
-import { IEditTextDropdownItem } from "../../components/generic/GenericDropdown";
-import { exportMultiple1099, exportOne1099, I1099Info } from "../../components/report/util/1099";
-import { round2 } from "../../components/report/util/utils";
-import { usePageRelatedContext } from "../../components/states/PageRelatedState";
-import { DoubleAryToCsv, formatAccounting } from "../../components/utils/reportUtils";
+import { CloseableDialog } from '../../../components/generic/basedialog'
+import { CreateSaveButton } from '../../../components/generic/SaveFile'
+import { IEditTextDropdownItem } from "../../../components/generic/GenericDropdown";
+import { exportMultiple1099, exportOne1099, I1099Info } from "../../../components/report/util/1099";
+import { round2 } from "../../../components/report/util/utils";
+import { usePageRelatedContext } from "../../../components/states/PageRelatedState";
+import { DoubleAryToCsv, formatAccounting } from "../../../components/utils/reportUtils";
 import { TextAlignment } from "pdf-lib";
 
 interface IShowDetailsData {

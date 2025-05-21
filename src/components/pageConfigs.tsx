@@ -2,21 +2,21 @@ import { IMainSideBarSection } from './page/sidebar'
 import { HouseList } from './page/inputs/houseList'
 
 
-import YearlyMaintenanceReport from '../pages/reports/yearlyMaintenanceReport';
-import RentReport from '../pages/reports/rentReport';
-import CashFlowRpt from '../pages/reports/cashFlowReport';
-import { getLeasePage } from '../pages/reports/autoAssignLeases'
+import YearlyMaintenanceReport from '../app/pages/reports/yearlyMaintenanceReport';
+import RentReport from '../app/pages/reports/rentReport';
+import CashFlowRpt from '../app/pages/reports/cashFlowReport';
+import { getLeasePage } from '../app/pages/reports/autoAssignLeases'
 import { RenterEmailConfig } from './page/inputs/renterEmailConfig'
-import EstimatedTaxReport from '../pages/reports/taxReport';
+import EstimatedTaxReport from '../app/pages/reports/taxReport';
 
-import * as dev2 from '../pages/util/dev2'
+import * as dev2 from '../app/pages/util/dev2'
 
 import type { CSSProperties, JSX } from "react";
 import { TableNames } from './types'
 
-import GoogleSheetConfigPage from '../pages/config/googleSheetConfig'
+import GoogleSheetConfigPage from '../app/pages/config/googleSheetConfig'
 
-import NewLeaseReport from '../pages/reports/leaseReport'
+import NewLeaseReport from '../app/pages/reports/leaseReport'
 
 type LocalPageInfo = {
     name: string;

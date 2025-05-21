@@ -1,9 +1,8 @@
 import react, {useState} from 'react';
 import { useRouter, usePathname, useSearchParams } from 'next/navigation'
-import * as api from '../components/api';
-import { Dialog } from '../components/dialog';
+import * as api from '../../components/api';
 import Link from 'next/link';
-import { GetInfoDialogHelper } from '../components/generic/basedialog';
+import { GetInfoDialogHelper } from '../../components/generic/basedialog';
 
 export default function ForgetPassword() {
     const router = useRouter();

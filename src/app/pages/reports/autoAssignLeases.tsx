@@ -1,12 +1,12 @@
-import * as api from '../../components/api'
-import { gatherLeaseInfomation, getLeaseUtilForHouse, HouseWithLease, ILeaseInfoWithPmtInfo } from '../../components/utils/leaseUtil';
-import { IHouseInfo, ILeaseInfo, IPayment } from '../../components/reportTypes';
+import * as api from '../../../components/api'
+import { gatherLeaseInfomation, getLeaseUtilForHouse, HouseWithLease, ILeaseInfoWithPmtInfo } from '../../../components/utils/leaseUtil';
+import { IHouseInfo, ILeaseInfo, IPayment } from '../../../components/reportTypes';
 import { Fragment, useEffect, useState } from 'react';
-import { usePageRelatedContext } from '../../components/states/PageRelatedState';
+import { usePageRelatedContext } from '../../../components/states/PageRelatedState';
 import Link from 'next/link';
-import { formateEmail } from '../../components/utils/leaseEmailUtil';
-import { CloseableDialog } from '../../components/generic/basedialog';
-import { formatAccounting } from '../../components/utils/reportUtils';
+import { formateEmail } from '../../../components/utils/leaseEmailUtil';
+import { CloseableDialog } from '../../../components/generic/basedialog';
+import { formatAccounting } from '../../../components/utils/reportUtils';
 
 
 export function getLeasePage() {
