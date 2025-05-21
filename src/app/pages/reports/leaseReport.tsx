@@ -129,6 +129,7 @@ export default function LeaseReport() {
                         
                     </tr>
                     </thead>
+                    <tbody>
                     {
                         selectedHouses.map((h, key) => {                                                        
                             let totalBalance = '';
@@ -214,7 +215,8 @@ export default function LeaseReport() {
                                 }
                             </Fragment>
                         })
-                    }
+                        }
+                    </tbody>
                 </table>
             </div>
         </div>
