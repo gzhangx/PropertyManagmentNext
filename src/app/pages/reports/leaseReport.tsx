@@ -1,13 +1,13 @@
 import React, {Fragment, useEffect, useState} from 'react';
-import { IHouseInfo, IPayment, ITenantInfo } from '../../components/reportTypes';
-import { getLeases} from '../../components/api'
-import { usePageRelatedContext } from '../../components/states/PageRelatedState';
-import { EditTextDropdown } from '../../components/generic/EditTextDropdown';
+import { IHouseInfo, IPayment, ITenantInfo } from '../../../components/reportTypes';
+import { getLeases} from '../../../components/api'
+import { usePageRelatedContext } from '../../../components/states/PageRelatedState';
+import { EditTextDropdown } from '../../../components/generic/EditTextDropdown';
 import moment from 'moment';
-import { IEditTextDropdownItem } from '../../components/generic/GenericDropdown';
+import { IEditTextDropdownItem } from '../../../components/generic/GenericDropdown';
 import { orderBy } from 'lodash';
-import { getTenantsForHouse } from '../../components/utils/leaseEmailUtil';
-import { gatherLeaseInfomation, getAllPaymentForHouse, HouseWithLease, ILeaseInfoWithPmtInfo } from '../../components/utils/leaseUtil';
+import { getTenantsForHouse } from '../../../components/utils/leaseEmailUtil';
+import { gatherLeaseInfomation, getAllPaymentForHouse, HouseWithLease, ILeaseInfoWithPmtInfo } from '../../../components/utils/leaseUtil';
 
 
 interface HouseWithTenants extends HouseWithLease {
@@ -151,8 +151,8 @@ export default function LeaseReport() {
                                 }}>{h.address}  { leaseExpanded[h.houseID]?<i className='fas fa-arrow-up'></i>:<i className='fas fa-arrow-right'></i>}</td>
                                 <td className='td-center'>{moment(h.lease?.startDate).format('MM/DD/YYYY') +
                                     ' --- ' + moment(h.lease?.endDate).format('MM/DD/YYYY')}</td>
-                                    <td >{ h.tenants.map(t=>`${t.fullName} ${t.phone}   ${t.email}` ).map(t=>{
-                                    return <>{t}<br></br></>;
+                                    <td >{ h.tenants.map((t)=>`${t.fullName} ${t.phone}   ${t.email}` ).map((t,key_i)=>{
+                                        return <Fragment key={key_i}>{t}<br></br></Fragment>;
                                     }) } </td>
                                 <td className='accounting-alright'>${totalBalance} new{'=>'} {h.leaseBalanceDueInfo?.totalBalance }</td>
                                 <td className='accounting-alright'>${lastPaymentAmount}</td>

@@ -1,20 +1,20 @@
 import React, { useState, useEffect } from "react";
 
-import { EditTextDropdown  } from '../../components/generic/EditTextDropdown';
+import { EditTextDropdown } from '../../../components/generic/EditTextDropdown';
 import {    
     IExpenseData,
     IHouseInfo,
-} from '../../components/reportTypes';
+} from '../../../components/reportTypes';
 
 import moment from 'moment'
-import { usePageRelatedContext } from "../../components/states/PageRelatedState";
-import { useRootPageContext } from "../../components/states/RootState";
-import { IEditTextDropdownItem } from "../../components/generic/GenericDropdown";
-import { CloseableDialog } from "../../components/generic/basedialog";
+import { usePageRelatedContext } from "../../../components/states/PageRelatedState";
+import { useRootPageContext } from "../../../components/states/RootState";
+import { IEditTextDropdownItem } from "../../../components/generic/GenericDropdown";
+import { CloseableDialog } from "../../../components/generic/basedialog";
 import { orderBy } from "lodash";
-import { DoubleAryToCsv, formatAccounting, getMonthAry, IPaymentWithDateMonthPaymentType, loadDataWithMonthRange, loadMaintenanceData, loadPayment, MonthSelections } from "../../components/utils/reportUtils";
-import { round2 } from "../../components/report/util/utils";
-import { CreateSaveButton } from "../../components/generic/SaveFile";
+import { DoubleAryToCsv, formatAccounting, getMonthAry, IPaymentWithDateMonthPaymentType, loadDataWithMonthRange, loadMaintenanceData, loadPayment, MonthSelections } from "../../../components/utils/reportUtils";
+import { round2 } from "../../../components/report/util/utils";
+import { CreateSaveButton } from "../../../components/generic/SaveFile";
 import { MiddlewareNotFoundError } from "next/dist/shared/lib/utils";
 
 

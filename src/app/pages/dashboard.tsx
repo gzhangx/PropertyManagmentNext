@@ -1,16 +1,16 @@
 
 import { useEffect, useState } from 'react';
 //import { withRouter } from 'next/router'
-import { useRootPageContext, getSideBarCurrentSelectedItemName } from "../components/states/RootState"
-import {MainSideBar} from '../components/page/sidebar'
-import { TopBar } from '../components/page/topbar'
-import { Footer } from '../components/page/pageFooter'
+import { useRootPageContext, getSideBarCurrentSelectedItemName } from "../../components/states/RootState"
+import { MainSideBar } from '../../components/page/sidebar'
+import { TopBar } from '../../components/page/topbar'
+import { Footer } from '../../components/page/pageFooter'
 
-import { sections, sideBarContentLookup, otherPages } from '../components/pageConfigs'
-import { OriginalDashboard } from '../components/demo/origDashboard'
-import { GenList } from '../components/uidatahelpers/GenList';
-import { getGenListParms } from '../components/uidatahelpers/datahelpers';
-import { usePageRelatedContext } from '../components/states/PageRelatedState';
+import { sections, sideBarContentLookup, otherPages } from '../../components/pageConfigs'
+import { OriginalDashboard } from '../../components/demo/origDashboard'
+import { GenList } from '../../components/uidatahelpers/GenList';
+import { getGenListParms } from '../../components/uidatahelpers/datahelpers';
+import { usePageRelatedContext } from '../../components/states/PageRelatedState';
 import Login from './Login'
 export default function MainDashboard() {
   //const { state, setMainState } = props;  

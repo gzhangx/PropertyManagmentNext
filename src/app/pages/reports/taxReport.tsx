@@ -1,9 +1,9 @@
 'use client'
 import { DataGrid, GridCellEditStopParams, GridCellEditStopReasons, GridColDef, GridSingleSelectColDef, MuiEvent } from '@mui/x-data-grid';
 import React, { ChangeEvent, useEffect, useRef, useState } from "react";
-import { IPdfTextItem, parsePdfFile, PdfScript } from "../../components/utils/pdfFileUtil";
+import { IPdfTextItem, parsePdfFile, PdfScript } from "../../../components/utils/pdfFileUtil";
 import { startCase } from "lodash";
-import { getUserOptions } from "../../components/api";
+import { getUserOptions } from "../../../components/api";
 import Box from '@mui/material/Box';
 import { Button, TextField } from '@mui/material';
 
