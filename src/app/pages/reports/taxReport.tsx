@@ -1,14 +1,15 @@
 'use client'
-import { DataGrid, GridColDef } from '@mui/x-data-grid';
+import { DataGrid, GridColDef, GridSingleSelectColDef } from '@mui/x-data-grid';
 import React, { ChangeEvent, useEffect, useRef, useState } from "react";
 import { IPdfTextItem, parsePdfFile, PdfScript } from "../../components/utils/pdfFileUtil";
 import { startCase } from "lodash";
 import { getUserOptions } from "../../components/api";
 import Box from '@mui/material/Box';
+import { Button, TextField } from '@mui/material';
 
 
 interface W2Info {
-    name: string;
+    id: number;
     income: number;
     fedTax: number;
     stateTax: number;
@@ -115,6 +116,7 @@ function getPdfLocTracker() {
     function parseW2(lines: string[][]): W2Info {
         let state: 'find-fed' | 'fed' | 'find-state' | 'state' | 'done' = 'find-fed';
         const res = {
+            id: 0,
             income: 0,
             fedTax: 0,
             stateTax: 0,
@@ -332,6 +334,11 @@ export async function getPaymentEmailConfigRaw(): Promise<ITaxReportDBConfig> {
 
 export default function TaxReport() {
     const [w2s, setW2s] = useState<W2Info[]>([]);
+    const [newItem, setNewItem] = useState({
+        income: '',
+        fedTax: '',
+        stateTax: '',
+      });
     useEffect(() => {
         getPaymentEmailConfigRaw().then(strDict => {
             const w2InfoStr = strDict['estimatedTaxReportW2Information'];
@@ -341,50 +348,82 @@ export default function TaxReport() {
         })
     }, []);
     
-    const columns: GridColDef<W2Info>[] = [
-        { field: 'name', headerName: 'Name', width: 200, editable: true, },
-        {
-            field: 'income',
-            headerName: 'Income',
-            type: 'number',
-            width: 150,
-            editable: true,
-        },
-        {
-            field: 'fedTax',
-            headerName: 'Federal Tax',
-            type: 'number',
-            width: 150,
-            editable: true,
-        },
-        {
-            field: 'stateTax',
-            headerName: 'State Tax',
-            type: 'number',
-            width: 150,
-            editable: true,
-        },        
+    // Columns configuration
+    const columns: GridColDef<W2Info, any, any>[] = [
+        { field: 'id', headerName: 'ID', width: 70 },
+        { field: 'income', headerName: 'Income ($)', width: 130, type: 'number' },
+        { field: 'fedTax', headerName: 'Federal Tax ($)', width: 150, type: 'number' },
+        { field: 'stateTax', headerName: 'State Tax ($)', width: 150, type: 'number' },        
     ];
-    
-    
-    
-    
-    return <div className="row">
-        <Box sx={{ height: 400, width: '100%' }}>
+
+    // Handle input change for new item
+    const handleInputChange = (e: any) => {
+        const { name, value } = e.target;
+        setNewItem(prev => ({ ...prev, [name]: parseFloat(value) || '' }));
+    };
+
+    // Add new item to the grid
+    const handleAddItem = () => {
+        if (newItem.income && newItem.fedTax && newItem.stateTax) {
+            const itemToAdd = {
+                id: 0,
+                income: parseFloat(newItem.income),
+                fedTax: parseFloat(newItem.fedTax),
+                stateTax: parseFloat(newItem.stateTax),
+            };
+            setW2s([...w2s, itemToAdd].map((itm, idx) => {
+                return {                    
+                    ...itm,
+                    id: idx,
+                }
+            }));
+            setNewItem({ income: '', fedTax: '', stateTax: '' });
+        }
+    };
+
+    return (
+        <div style={{ height: 500, width: '100%' }}>
+            <Box mb={2} display="flex" gap={2} alignItems="flex-end">
+                <TextField
+                    name="income"
+                    label="Income ($)"
+                    type="number"
+                    value={newItem.income}
+                    onChange={handleInputChange}
+                    size="small"
+                />
+                <TextField
+                    name="fedTax"
+                    label="Federal Tax ($)"
+                    type="number"
+                    value={newItem.fedTax}
+                    onChange={handleInputChange}
+                    size="small"
+                />
+                <TextField
+                    name="stateTax"
+                    label="State Tax ($)"
+                    type="number"
+                    value={newItem.stateTax}
+                    onChange={handleInputChange}
+                    size="small"
+                />
+                <Button
+                    variant="contained"
+                    onClick={handleAddItem}
+                    disabled={!newItem.income || !newItem.fedTax || !newItem.stateTax}
+                >
+                    Add Entry
+                </Button>
+            </Box>
             <DataGrid
                 rows={w2s}
                 columns={columns}
                 initialState={{
-                    pagination: {
-                        paginationModel: {
-                            pageSize: 5,
-                        },
-                    },
+                    pagination: { paginationModel: { pageSize: 5, page: 0 } }
                 }}
                 pageSizeOptions={[5]}
-                checkboxSelection
-                disableRowSelectionOnClick
             />
-        </Box>
-    </div>
+        </div>
+    );
 }
