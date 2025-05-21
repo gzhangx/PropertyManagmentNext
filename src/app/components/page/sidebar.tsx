@@ -57,6 +57,7 @@ export function MainSideBar(props : IMainSideBarProps) {
     const getItemLink = (itm: IMainSideBarItem, ind: number) => {        
         //const itemName = getSideBarItemKey(itm.name);
         //const active = rs.sideBarStates[getSideBarCurrentActiveItemKey()] === itemName;
+        return getItemLinkSimple(itm.name, ind, itm.displayName);
         const active = isSidebarItemActive(rs, itm.name);
 
         return <Link className="collapse-item" href={`/${NAVPrefix}/${itm.name}`} onClick={() => {
@@ -70,11 +71,11 @@ export function MainSideBar(props : IMainSideBarProps) {
         </Link>
         return <a className="collapse-item" href="#" onClick={getLinkOnClick(itm.name) as any} key={ind}>{itm.displayName} {active && <i className="fas fa-anchor"></i>    }</a>;
     }
-    const getItemLinkSimple = (name: string, ind:number) => {
+    const getItemLinkSimple = (name: string, ind:number, displayName?: string) => {
         //const itemName = getSideBarItemKey(name);
         //const active = rs.sideBarStates[getSideBarCurrentActiveItemKey()] === itemName;
         const active = isSidebarItemActive(rs, name);
-        return <a className="collapse-item" href="#" onClick={getLinkOnClick(name) as any} key={ind}>{name} {active && <i className="fas fa-anchor"></i>    }</a>;
+        return <a className="collapse-item" href="#" onClick={getLinkOnClick(name) as any} key={ind}>{displayName ?? name} {active && <i className="fas fa-anchor"></i>    }</a>;
     }
     return <ul className="navbar-nav bg-gradient-primary sidebar sidebar-dark accordion" id="accordionSidebar">
 
@@ -112,7 +113,7 @@ export function MainSideBar(props : IMainSideBarProps) {
                     <>
                         <h6 className="collapse-header">Custom Components:</h6>
                         {
-                            ['Developers', 'Admins'].map(getItemLinkSimple)
+                            ['Developers', 'Admins'].map((name, ind)=>getItemLinkSimple(name, ind))
                         }
                         <a className="collapse-item" href="#">NA</a>
                     </>

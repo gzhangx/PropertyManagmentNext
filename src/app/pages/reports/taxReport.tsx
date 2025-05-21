@@ -368,7 +368,10 @@ export default function TaxReport() {
     
     
     
-    <DataGrid
+    
+    return <div className="row">
+        <Box sx={{ height: 400, width: '100%' }}>
+            <DataGrid
                 rows={w2s}
                 columns={columns}
                 initialState={{
@@ -382,9 +385,6 @@ export default function TaxReport() {
                 checkboxSelection
                 disableRowSelectionOnClick
             />
-    return <div className="row">
-        <Box sx={{ height: 400, width: '100%' }}>
-            
         </Box>
     </div>
 }

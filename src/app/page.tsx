@@ -18,11 +18,9 @@ export default function DataGridDemo() {
   const rs = useRootPageContext();
   const mainCtx = usePageRelatedContext();  
   
-  const asPath = window.location.hash;
-  console.log('pathname in page', asPath, 'location.pathname', window.location.hash)
+  const asPath = window.location.hash;  
   const path = (new RegExp(`${NAVPrefix}\/(.*)$`).exec(asPath) || [])[1];
   const currentPath = path; // || router.query.route; 
-  console.log('cur path', path, (new RegExp(`${NAVPrefix}\/(.*)$`).exec(asPath) || []))
   const onLoad = async () => {
     if (currentPath && typeof currentPath === 'string') {
       const curSel = sideBarContentLookup.get(currentPath);

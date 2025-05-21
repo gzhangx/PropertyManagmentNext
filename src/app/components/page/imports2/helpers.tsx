@@ -13,6 +13,7 @@ import * as inserter from './loads/inserter';
 import { deleteById, updateSheet } from '../../api';
 import { IDBFieldDef, TableNames } from '../../types';
 import { stdFormatValue } from '../../uidatahelpers/datahelpers';
+import { Fragment } from 'react';
 
 export async function createEntity(params: IPageParms, changeRow: ISheetRowData, inserter: IDbInserter, fields: IDBFieldDef[]) {
     //const state = curPageState;
@@ -237,7 +238,7 @@ export function getDisplayHeaders(params: IPageParms, curPageState: IPageStates)
         const insertBtnCheck = curPageState.curPage.showCreateButtonColumn === colInfo.field;
         if (insertBtnCheck) {
             {
-                return <>{ dspVal} <button className='btn btn-primary' onClick={async () => {
+                return <Fragment key={key}>{ dspVal} <button className='btn btn-primary' onClick={async () => {
                     let processedCount = 0, updatedCount = 0;
                     for (let i = 0; i < curPageState.pageDetails.dataRows.length; i++) {
                         const curRow = curPageState.pageDetails.dataRows[i];
@@ -298,7 +299,7 @@ export function getDisplayHeaders(params: IPageParms, curPageState: IPageStates)
                         }
                     }))
                     params.showProgress('done');
-                }}>Process All Imports</button></>
+                }}>Process All Imports</button></Fragment>
             }
         }
         return <td key={key}>{            
