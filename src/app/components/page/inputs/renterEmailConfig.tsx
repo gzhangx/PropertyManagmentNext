@@ -43,9 +43,9 @@ export function RenterEmailConfigUnthemed() {
                         </div>
                         <form className="user">
                             {
-                                paymentEmailProps.map(name => {
+                                paymentEmailProps.map((name, key) => {
                                     if (name === 'paymentEmailText') {
-                                        return <div className="form-group">
+                                        return <div className="form-group" key={key}>
                                             <textarea className="form-control "
                                                 name="txtText" placeholder="body"
                                                 rows={10}
@@ -59,7 +59,7 @@ export function RenterEmailConfigUnthemed() {
                                             />
                                     </div>
                                     }
-                                    return <div className="form-group">
+                                    return <div className="form-group" key={key}>
                                         <TextFieldOutlined label={getPaymentEmailDesc(name)} value={configData[name]}                                            
                                             style={{ width: '100%' }}
                                             onChange={e => {

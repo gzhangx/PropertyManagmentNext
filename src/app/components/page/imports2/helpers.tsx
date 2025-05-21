@@ -238,7 +238,7 @@ export function getDisplayHeaders(params: IPageParms, curPageState: IPageStates)
         const insertBtnCheck = curPageState.curPage.showCreateButtonColumn === colInfo.field;
         if (insertBtnCheck) {
             {
-                return <Fragment key={key}>{ dspVal} <button className='btn btn-primary' onClick={async () => {
+                return <td key={key}>{ dspVal} <button className='btn btn-primary' onClick={async () => {
                     let processedCount = 0, updatedCount = 0;
                     for (let i = 0; i < curPageState.pageDetails.dataRows.length; i++) {
                         const curRow = curPageState.pageDetails.dataRows[i];
@@ -299,7 +299,7 @@ export function getDisplayHeaders(params: IPageParms, curPageState: IPageStates)
                         }
                     }))
                     params.showProgress('done');
-                }}>Process All Imports</button></Fragment>
+                }}>Process All Imports</button></td>
             }
         }
         return <td key={key}>{            
