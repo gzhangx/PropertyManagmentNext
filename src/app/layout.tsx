@@ -7,9 +7,6 @@ import './styles/global.css'
 import * as RootState from './components/states/RootState'
 import { PageRelatedContextWrapper } from './components/states/PageRelatedState'
 
-import { useRouter, usePathname, useSearchParams } from 'next/navigation'
-
-
 
 
 
@@ -17,10 +14,7 @@ export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
-}>) {
-
-  const asPath = window.location.hash;
-  console.log('pathname in page', asPath, 'location.pathname', window.location.hash)
+}>) {  
 
   return (
     <html lang="en">

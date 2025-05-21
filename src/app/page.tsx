@@ -12,13 +12,16 @@ import { usePageRelatedContext } from './components/states/PageRelatedState'
 import { CloseableDialog } from './components/generic/basedialog'
 import Dashboard from './pages/dashboard';
 
+function getWindowLocationHash() {
+  if (typeof window === 'undefined' || !window) return '';
+  return window.location.hash;
+}
 
 export default function DataGridDemo() {
 
   const rs = useRootPageContext();
-  const mainCtx = usePageRelatedContext();  
-  
-  const asPath = window.location.hash;  
+  const mainCtx = usePageRelatedContext();    
+  const asPath = getWindowLocationHash();  
   const path = (new RegExp(`${NAVPrefix}\/(.*)$`).exec(asPath) || [])[1];
   const currentPath = path; // || router.query.route; 
   const onLoad = async () => {
