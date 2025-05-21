@@ -1,3 +1,4 @@
+'use client'
 import { createContext, SetStateAction, useContext, useState, Dispatch } from 'react';
 //import {IPageState} from '../types'
 

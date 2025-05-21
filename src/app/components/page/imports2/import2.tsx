@@ -4,7 +4,7 @@ import { EditTextDropdown } from '../../generic/EditTextDropdown'
 import { IPageRelatedState } from '../../reportTypes';
 import { keyBy,  } from 'lodash'
 import { GetInfoDialogHelper } from '../../generic/basedialog';
-import { useRouter } from 'next/router'
+import { useRouter, usePathname, useSearchParams } from 'next/navigation'
 
 import { BaseDialog } from '../../generic/basedialog'
 import {  IPageStates, IStringDict, IPageParms, ISheetRowData, IDisplayColumnInfo, IPageInfo, IDbInserter } from './types'

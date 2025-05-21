@@ -1,6 +1,8 @@
 import Link from 'next/link'
 import { PageNavTab } from './navTab';
 import { useEffect, type JSX } from 'react';
+
+import { useRouter, usePathname, useSearchParams } from 'next/navigation'
 import {
     useRootPageContext,
     activeSideBarItem, isSidebarItemActive,
@@ -57,7 +59,9 @@ export function MainSideBar(props : IMainSideBarProps) {
         //const active = rs.sideBarStates[getSideBarCurrentActiveItemKey()] === itemName;
         const active = isSidebarItemActive(rs, itm.name);
 
-        return <Link className = "collapse-item" href={`/${NAVPrefix}/${itm.name}`} key={ind} >
+        return <Link className="collapse-item" href={`/${NAVPrefix}/${itm.name}`} onClick={() => {
+            
+        }} key={ind} >
             <>{itm.displayName} {active && <i className="fas fa-anchor"></i>}</>
         </Link>
 

@@ -7,7 +7,7 @@ import * as api from '../../api'
 import { formateEmail } from "../../utils/leaseEmailUtil";
 import { orderBy } from "lodash";
 import { customHeaderFilterFuncWithHouseIDLookup, genericCustomHeaderFilterFunc } from "./util";
-import { IDBFieldDef } from "../../../components/types";
+import { IDBFieldDef } from "../../types";
 
 const table = 'rentPaymentInfo';
 
