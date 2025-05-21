@@ -47,8 +47,8 @@ export function CrudFilter(props: ICrudTagFilterProps) {
     const [showAllOptions, setShowAllOptions] = useState(false);
 
     const [curInputText, setCurInputText] = useState('');
-    const inputRef = useRef(null);
-    const listRef = useRef(null);
+    const inputRef = useRef<any>(null);
+    const listRef = useRef<any>(null);
 
     const [modeSelState, setModeSelState] = useState<DropdownSimpleState>({
         show: false,
@@ -84,7 +84,7 @@ export function CrudFilter(props: ICrudTagFilterProps) {
         if (!workingOnFilter.id) {
             workingOnFilter.id = uuid.v1();
             workingOnFilter.field = t.value;
-            const field = props.columnInfo.find(c => c.field === t.value);
+            const field = props.columnInfo.find(c => c.field === t.value) as IDBFieldDef;
             if (field.foreignKey) {
                 workingOnFilter.op = '=';
             } else if (field.type === 'string') {
@@ -99,7 +99,7 @@ export function CrudFilter(props: ICrudTagFilterProps) {
             return;
         }
         if (!workingOnFilter.val) {
-            const field = props.columnInfo.find(c => c.field === workingOnFilter.field);
+            const field = props.columnInfo.find(c => c.field === workingOnFilter.field) as IDBFieldDef;
             workingOnFilter.val = t.value;
             workingOnFilter.valDescUIOnly = t.label;
             if (field.type === 'string') {
@@ -127,7 +127,7 @@ export function CrudFilter(props: ICrudTagFilterProps) {
                 }) : [];
             case 'op':
                 const originalList = ['=', '!=', '<', '<=', '>', '>=', 'like'];
-                const field = props.columnInfo.find(c => c.field === workingOnFilter.field);
+                const field = props.columnInfo.find(c => c.field === workingOnFilter.field) as IDBFieldDef;
                 let listToUse = originalList;
                 if (field.type === 'decimal' || field.type === 'int') {
                     listToUse = listToUse.filter(x => x !== 'like');

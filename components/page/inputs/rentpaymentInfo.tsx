@@ -1,7 +1,7 @@
 import React from 'react';
 import {GenList} from '../../uidatahelpers/GenList';
 
-export function RentpaymentInfo(props) {   
+export function RentpaymentInfo(props: any) {   
     return <GenList {...props} table={'rentPaymentInfo'} title={'Payments List'}
         displayFields={[
             { field: 'receivedDate', 'desc': 'ReceivedDate', type: 'date' },

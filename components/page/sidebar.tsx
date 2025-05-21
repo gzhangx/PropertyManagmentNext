@@ -17,7 +17,7 @@ export interface IMainSideBarItem {
 export interface IMainSideBarSection {
     name: string;
     displayName: string;
-    pages?: IMainSideBarItem[];
+    pages: IMainSideBarItem[];
     headerJSX?: JSX.Element;
     bodyJSX?: JSX.Element;
 }

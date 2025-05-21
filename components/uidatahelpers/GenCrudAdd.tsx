@@ -6,7 +6,7 @@ import { IEditTextDropdownItem } from '../generic/GenericDropdown';
 import { IGenGrudProps } from './GenCrud';
 import * as RootState from '../states/RootState'
 import moment from 'moment';
-import { DataToDbSheetMapping, ICrudAddCustomObj, ItemType, } from './datahelperTypes';
+import { ALLFieldNames, DataToDbSheetMapping, ICrudAddCustomObj, ItemType, } from './datahelperTypes';
 import { usePageRelatedContext } from '../states/PageRelatedState';
 import GrkEditableDropdown from '../generic/GrkEditableDropdown';
 
@@ -16,7 +16,7 @@ import GrkEditableDropdown from '../generic/GrkEditableDropdown';
 //export type ItemType = ItemTypeDict & { _vdOriginalRecord: ItemTypeDict; }; //{ [key: string]: FieldValueType; };
 export interface IGenGrudAddProps extends IGenGrudProps {
     columnInfo: IDBFieldDef[];
-    editItem?: ItemType;
+    editItem: ItemType;
     setEditItem: React.Dispatch<React.SetStateAction<ItemType>>;
     //doAdd: (data: ItemType, id: FieldValueType) => Promise<{ id: string; message: string; affectedRows?: number; changedRows?: number; }>; //defined in GenCrudProps
     //onOK?: (data?:ItemType) => void;
@@ -56,7 +56,7 @@ export const GenCrudAdd = (props: IGenGrudAddProps) => {
         if (col.isId && !col.userSecurityField) {
             return {
                 idName: col.field,
-                id: editItem.data[col.field],
+                id: editItem?.data[col.field as ALLFieldNames] as string,
             };
         }
         return acc;
@@ -75,15 +75,16 @@ export const GenCrudAdd = (props: IGenGrudAddProps) => {
     const requiredFieldsMap = requiredFields.reduce((acc, f) => {
         acc[f] = true;
         return acc;
-    }, {});
+    }, {} as any);
 
 
     //const [errorText, setErrorText] = useState('');
     //const [addNewForField, setAddNewForField] = useState('');
     //const [optsData, setOptsData] = useState<{[keyName:string]:IEditTextDropdownItem[]}>({});
-    const handleChange = e => {
+    const handleChange = (e:any) => {
         const { name, value } = e.target;
-        editItem.data[name] = value;
+        if (!editItem) return;
+        editItem.data[name as ALLFieldNames] = value;
         setEditItem({
             ...editItem, 
             data: {
@@ -92,11 +93,12 @@ export const GenCrudAdd = (props: IGenGrudAddProps) => {
          });
     }
 
-    const handleSubmit = async e => {
+    const handleSubmit = async (e:any) => {
         e.preventDefault();
 
+        if (!editItem) return;
         const data = editItem;
-        const missed = requiredFields.filter(r => !data.data[r]);
+        const missed = requiredFields.filter(r => !data.data[r as ALLFieldNames]);
         if (missed.length === 0) {
             const ret = await doAdd(data, id);            
             //handleChange(e, ret);
@@ -199,8 +201,8 @@ export const GenCrudAdd = (props: IGenGrudAddProps) => {
     // useEffect(() => {
     //     loadColumnInfo(columnInfo);
     // }, [columnInfo]);
-    const checkErrorInd = c => {
-        if (requiredFieldsMap[c.field] && !editItem[c.field])
+    const checkErrorInd = (c:any) => {
+        if (requiredFieldsMap[c.field] && editItem && !editItem.data[c.field as ALLFieldNames])
             return "alert-danger";
         return '';
     }
@@ -236,13 +238,13 @@ export const GenCrudAdd = (props: IGenGrudAddProps) => {
                             //}
                         } else {
                             //modify
-                            if (c.isId) return <div className='row' key={cind}>{editItem.data[c.field] || ''}</div>
+                            if (c.isId) return <div className='row' key={cind}>{editItem.data[c.field as ALLFieldNames] || ''}</div>
                             if (c.displayCustomFormatField) {
-                                editItem.data[c.field] = editItem.data[c.field + DisplayCustomFormatFieldOriginalDataSufix];
+                                editItem.data[c.field as ALLFieldNames] = editItem.data[c.field + DisplayCustomFormatFieldOriginalDataSufix as ALLFieldNames];
                             }
                         }
                         if (isColumnSecurityField(c)) {
-                            editItem.data[c.field] = '';
+                            editItem.data[c.field as ALLFieldNames] = '';
                             return null;  
                         } 
 
@@ -287,7 +289,7 @@ export const GenCrudAdd = (props: IGenGrudAddProps) => {
                                 <GrkEditableDropdown items={options}
                                     onSelectionChanged={
                                         async (s: IEditTextDropdownItem) => {                                            
-                                            editItem.data[colField] = s.value;
+                                            editItem.data[colField as ALLFieldNames] = s.value;
                                             let newItem = editItem;
                                             if (props.customEditItemOnChange) {
                                                 newItem = await props.customEditItemOnChange(mainCtx, colField, setCrudAddCustomObjMap, newItem, isCreateAddNewItem); // operation === 'Add'
@@ -311,7 +313,7 @@ export const GenCrudAdd = (props: IGenGrudAddProps) => {
                             const optKey = c.foreignKey.table;
                             foreignSel = createSelection(optKey, c.field);
                         }
-                        const specialFeighKey = crudAddCustomObjMap[c.field];
+                        const specialFeighKey = (crudAddCustomObjMap as any)[c.field];
                         if (specialFeighKey) {
                             foreignSel = createSelectionFromOptions(specialFeighKey.options, c.field);
                         }
@@ -327,7 +329,7 @@ export const GenCrudAdd = (props: IGenGrudAddProps) => {
                             <td className={checkErrorInd(c)} style={style}>
                                 {
                                     foreignSel || <input type="text" className="form-control bg-light border-0 small" placeholder={c.field}                
-                                        value={editItem.data[c.field]} name={c.field} onChange={handleChange} />
+                                        value={editItem.data[c.field as ALLFieldNames] as string} name={c.field} onChange={handleChange} />
                                 }
                             </td>
                             <td className={checkErrorInd(c)}>{checkErrorInd(c) && '*'}</td>

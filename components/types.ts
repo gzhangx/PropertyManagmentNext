@@ -29,7 +29,7 @@ export interface ISqlRequestFieldDef {
 export interface ISqlRequestWhereItem {
     field: string;
     op: SQLOPS;
-    val: string | number | (string | number)[];
+    val: string | number | (string | number)[] | null;
 }
 
 
@@ -38,9 +38,9 @@ export interface IPageFilter {
     table: string;
     field: string;
     op: SQLOPS;
-    val: string;
+    val: string | null | undefined;
 
-    valDescUIOnly: string;
+    valDescUIOnly: string | null | undefined;
 };
 
 export interface IFullTextSearchPart {

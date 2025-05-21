@@ -1,8 +1,14 @@
 
-import { ChangeEvent, useRef, useState } from "react";
+//import { DataGrid, GridColDef } from '@mui/x-data-grid';
+import React, { ChangeEvent, useEffect, useRef, useState } from "react";
 import { IPdfTextItem, parsePdfFile, PdfScript } from "../../components/utils/pdfFileUtil";
+import { startCase } from "lodash";
+import { getUserOptions } from "../../components/api";
+import Box from '@mui/material/Box';
+
 
 interface W2Info {
+    name: string;
     income: number;
     fedTax: number;
     stateTax: number;
@@ -32,8 +38,8 @@ function getPdfLocTracker() {
         mat.allYs.sort((a, b) => a - b);
         const yKeysToDelete = [];
         const combineYDist = 3;
-        let lastValToUse: number = null;
-        let lastY: number = null;
+        let lastValToUse: number | null = null;
+        let lastY: number = 0;
         for (const y of mat.allYs) {
             const row = mat.matrix[y];
             if (lastValToUse === null) {
@@ -59,13 +65,7 @@ function getPdfLocTracker() {
     }
     function getLinesAsArray(pageWidth: number) {
         mergeY();
-        ////if (getRTS(item) === '0,11,1,0')
-        const getRTS = cell => {
-            if (cell.R && cell.R[0] && cell.R[0].TS) {
-                return cell.R[0].TS.join(',');
-            }
-            return '';
-        }
+        ////if (getRTS(item) === '0,11,1,0')        
         const combineXDist = 4;
 
         const columnSepAt = pageWidth / 6; //if prev x is < 6 but this item >  6, they belong to different columns
@@ -75,7 +75,7 @@ function getPdfLocTracker() {
             const row = mat.matrix[y];
             let firstY = 0;
             const items: IPdfTextItem[] = [];
-            let lastItem: IPdfTextItem = null;
+            let lastItem: IPdfTextItem | null = null;
             for (const item of row.sort((a, b) => a.x - b.x)) {                
                     firstY = item.y;
                     if (item.x > pageWidth/3) continue;
@@ -118,6 +118,7 @@ function getPdfLocTracker() {
             income: 0,
             fedTax: 0,
             stateTax: 0,
+            name:'new',
         }
         for (const line of lines) {
             switch (state) {
@@ -161,7 +162,7 @@ function getPdfLocTracker() {
 
 //pdfjsLib.GlobalWorkerOptions.workerPort = new Worker('//mozilla.github.io/pdf.js/build/pdf.worker.mjs', { type: 'module' });
 // The workerSrc property shall be specified.
-export default function TaxReport() {
+export function TaxReportOld() {
     const [file, setFile] = useState<File>();    
 
     const [w2s, setW2s] = useState<W2Info[]>([]);
@@ -275,17 +276,21 @@ export default function TaxReport() {
 
 
 export const FileUploader = (props: { handleFile: (file:File) => void; }) => {  // Create a reference to the hidden file input element
-    const hiddenFileInput = useRef(null);
+    const hiddenFileInput = useRef<HTMLInputElement>(null);
 
     // Programatically click the hidden file input element
     // when the Button component is clicked
-    const handleClick = event => {
-        hiddenFileInput.current.click();
+    const handleClick = () => {
+        if (hiddenFileInput.current) {
+            hiddenFileInput.current.click();
+        }
     };  // Call a function (passed as a prop from the parent component)
     // to handle the user-selected file 
-    const handleChange = event => {
-        const fileUploaded: File = event.target.files[0];
-        props.handleFile(fileUploaded);
+    const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+        const fileUploaded: File | undefined = event.target.files?.[0];
+        if (fileUploaded) {
+            props.handleFile(fileUploaded);
+        }
     }; return (
         <>
             <button className="btn btn-success" onClick={handleClick}>
@@ -303,3 +308,85 @@ export const FileUploader = (props: { handleFile: (file:File) => void; }) => {  
 
 
 
+
+
+export const taxReportDBSaveProps = [
+    'estimatedTaxReportW2Information',
+] as const;
+
+export function getEstimatedTaxReportNames(name: typeof taxReportDBSaveProps[number]) {
+    return startCase(name);
+}
+
+export type ITaxReportDBConfig = Record<typeof taxReportDBSaveProps[number], string>;
+export async function getPaymentEmailConfigRaw(): Promise<ITaxReportDBConfig> {
+    return getUserOptions([]).then(res => {
+        const retObj: ITaxReportDBConfig = {} as ITaxReportDBConfig;
+        taxReportDBSaveProps.forEach(name => {
+            retObj[name] = res.find(r => r.id === name)?.data || '';
+        })        
+        return retObj;
+    })
+}
+
+
+export default function TaxReport() {
+    const [w2s, setW2s] = useState<W2Info[]>([]);
+    useEffect(() => {
+        getPaymentEmailConfigRaw().then(strDict => {
+            const w2InfoStr = strDict['estimatedTaxReportW2Information'];
+            if (w2InfoStr) {
+                setW2s(JSON.parse(w2InfoStr));
+            }
+        })
+    }, []);
+    
+    /*
+    const columns: GridColDef<W2Info>[] = [
+        { field: 'name', headerName: 'Name', width: 200, editable: true, },
+        {
+            field: 'income',
+            headerName: 'Income',
+            type: 'number',
+            width: 150,
+            editable: true,
+        },
+        {
+            field: 'fedTax',
+            headerName: 'Federal Tax',
+            type: 'number',
+            width: 150,
+            editable: true,
+        },
+        {
+            field: 'stateTax',
+            headerName: 'State Tax',
+            type: 'number',
+            width: 150,
+            editable: true,
+        },        
+    ];
+    
+    
+    
+    <DataGrid
+                rows={w2s}
+                columns={columns}
+                initialState={{
+                    pagination: {
+                        paginationModel: {
+                            pageSize: 5,
+                        },
+                    },
+                }}
+                pageSizeOptions={[5]}
+                checkboxSelection
+                disableRowSelectionOnClick
+            />
+            */
+    return <div className="row">
+        <Box sx={{ height: 400, width: '100%' }}>
+            
+        </Box>
+    </div>
+}

@@ -48,7 +48,7 @@ function isValid(val: string, colInfo: IDBFieldDef): boolean {
     return true;
 }
 
-function stdOnChange(pageState: IPageState, colInfo: IDBFieldDef, table: TableNames, val: string, id: string, valObj: IPageFilter, op: SQLOPS) {
+function stdOnChange(pageState: IPageState, colInfo: IDBFieldDef, table: TableNames, val: string | null | undefined, id: string, valObj: IPageFilter | undefined, op: SQLOPS) {
     const { pageProps } = pageState;
     const pfse = getPageFilterSorterErrors(pageState, table);
     const origFilters: IPageFilter[] = pfse.filters;
@@ -81,24 +81,24 @@ export function genericCustomHeaderFilterFunc(pageState: IPageState, colInfo: ID
         const fromId = `${CUST_FILTER_HEADER}_${table}_${colInfo.field}_from`;
         const toId = `${CUST_FILTER_HEADER}_${table}_${colInfo.field}_to`;
 
-        const fromValObj = origFilters.find((f) => f.id === fromId);
-        const toValObj = origFilters.find((f) => f.id === toId);
+        const fromValObj = origFilters.find((f) => f.id === fromId) as IPageFilter;
+        const toValObj = origFilters.find((f) => f.id === toId) as IPageFilter;
 
         const fromError = pfse.filterErrors[fromId];
         const toError = pfse.filterErrors[toId];
         if (colInfo.type === 'date' || colInfo.type === 'datetime') {
             return <div className="flex flex-row gap-2">
                 <div>
-                    <DatePicker selectsMultiple={null} selected={fromValObj?.val ? moment(fromValObj.val).toDate() : null}
+                    <DatePicker selectsMultiple={null as any} selected={fromValObj?.val ? moment(fromValObj.val).toDate() : null}
                         monthsShown={2} isClearable={true} showYearDropdown={false} showMonthDropdown={false} dateFormat="yyyy-MM-dd" placeholderText={colInfo.field + ' from'}
-                        onChange={(date) => {
+                        onChange={(date: any) => {
                     stdOnChange(pageState, colInfo, table, date?moment(date as any).format('YYYY-MM-DD'):null, fromId, fromValObj, '>=');
                     }}></DatePicker>
                 </div>
                 <div>
-                    <DatePicker selectsMultiple={null} selected={toValObj?.val ? moment(toValObj.val).toDate() : null}
+                    <DatePicker selectsMultiple={null as any} selected={toValObj?.val ? moment(toValObj.val).toDate() : null}
                         monthsShown={2} isClearable={true} showYearDropdown={false} showMonthDropdown={false} dateFormat="yyyy-MM-dd" placeholderText={colInfo.field + '  to'}
-                        onChange={(date) => {
+                        onChange={(date: any) => {
                     stdOnChange(pageState, colInfo, table, date?moment(date as any).format('YYYY-MM-DD'):null, toId, toValObj, '<');
                     }}></DatePicker>
                 </div>

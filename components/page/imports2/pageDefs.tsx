@@ -33,7 +33,7 @@ export function getPageDefs() {
             //deleteById: paymentLoader.deleteById,
             //displayItem: paymentLoader.displayItem,
             showCreateButtonColumn: 'receivedAmount',
-        },
+        } as IPageInfo,
         houseLoader.housePageInfo,        
         {
             ...allDefs.leaseInfoDef,            
@@ -118,7 +118,7 @@ export const createHouseFunc = (params:IPageParms, state: IPageStates, data: { [
                         }}>Create</button>
 
                         <button className='btn btn-success' onClick={() => {
-                            params.setDlgContent(null);
+                            params.setDlgContent(null as any);
                         }}>Close</button>
                     </div>
                 </div>

@@ -169,7 +169,7 @@ export function doCalc({
                 desc: pmt.notes,
             }))
         } as IPaymentRow;
-    }).filter(x => x);
+    }).filter(x => x) as IPaymentRow[];
     const res = {
         totalPayments: sumBy(curWorkerComp.map(cmpToLease), 'total'),
         totalPaymentComp: totalEarned,
@@ -194,7 +194,7 @@ export function doCalc({
     } as ICompCalcResult;
 
     const reimbusements: IReimbursement[] = maintenanceRecordsByExpCat.cats.map((mr, key) => {
-        if (!mr.reimburse) return;
+        if (!mr.reimburse) return [] as IReimbursement[];
         return {
             name: mr.name,
             amount: mr.total,
@@ -206,8 +206,8 @@ export function doCalc({
                     desc: itm.description
                 }
             })
-        }
-    }).filter(x => x);
+        } as IReimbursement;
+    }).filter(x => x) as IReimbursement[];
 
     const reimbusementsFlattened = reimbusements.reduce((acc, r) => {
         const drs = r.rows.map(rr => {
@@ -235,12 +235,12 @@ export function doCalc({
     res.reimbusementTotal = reimbusementTotal;
     res.totalToBePaid = (totalEarned + maintenanceRecordsByExpCat.total);
 
-    const generateCsv = (curMonth) => {
+    const generateCsv = (curMonth: string) => {
         const doPad = true;
         const padRight = (s: string, len: number) => doPad ? (s || '').toString().padEnd(len) : s;
 
 
-        const padNum = (num, w: number) => `\$${parseFloat(num).toFixed(2).padStart(w || 5)}`;
+        const padNum = (num: string| number, w: number) => `\$${parseFloat(num as string).toFixed(2).padStart(w || 5)}`;
 
         const cmpiMapper: IFormatField[] = [
             {
@@ -292,7 +292,7 @@ export function doCalc({
         const allColMaps = cmpiMapper.concat(rembiMapper);
         const fromColMapToCsv = (allColMaps:IFormatField[]) => {
             const mapper = allColMaps.map((fmt) => {
-                return x => {
+                return (x:any) => {
                     const v = typeof x === 'string' ? x : fmt.field ? x[fmt.field] : '';
                     const padder = fmt.format || padRight;
                     return padder(v, fmt.title.length)
@@ -338,17 +338,17 @@ export function doCalc({
                 title: a.title.trim(),
             }
         }));
-        const setColWidth = testSet => {
+        const setColWidth = (testSet: string[][]) => {
             const colWidth = testSet.reduce((acc, r) => {
                 return r.reduce((acc, ri, i) => {
-                    if ((acc[i] || 0) < ri.length) {
-                        acc[i] = ri.length;
+                    if (((acc[i] || 0) as number) < ri.length) {
+                        acc[i] = ri.length as any;
                     }
                     return acc;
                 }, acc);
             }, []);
             allColMaps.forEach((c, i) => {
-                c.title = c.title.trim().padEnd(colWidth[i]);
+                c.title = c.title.trim().padEnd(colWidth[i] as any);
             });
         };
         setColWidth(testSet);

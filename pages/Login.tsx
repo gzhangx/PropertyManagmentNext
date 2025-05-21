@@ -53,7 +53,7 @@ export default function Login() {
         })
     };
 
-    const commingSoon = e => {
+    const commingSoon = (e:any) => {
         e.preventDefault();
         dlgPrm.setDialogInfo({
             show: true,

@@ -13,7 +13,7 @@ export interface IMonthRangeProps {
     setSelectedHouses: (a: any) => void;    
 }
 
-export function MonthRange(props) {
+export function MonthRange(props: any) {
     const jjctx = props.jjctx as IMonthRangeProps;
     const {
         allMonthes,

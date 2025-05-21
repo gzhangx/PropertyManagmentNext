@@ -77,7 +77,7 @@ export async function getLeaseUtilForHouse(houseID: string) {
     }), r => r.startDate, 'desc');
 
 
-    function findLeaseForDate(date: string | Date | moment.Moment): ILeaseInfo {
+    function findLeaseForDate(date: string | Date | moment.Moment): ILeaseInfo | null {
         const pd = moment.utc(date);
         for (const l of allLeases) {
             if (moment.utc(l.startDate).isBefore(pd)) {
@@ -102,12 +102,14 @@ export async function getLeaseUtilForHouse(houseID: string) {
             ]
         });
     
-        unleasedPayments.forEach(p => {
-            const l = findLeaseForDate(p.receivedDate);
-            if (l) {
-                p.leaseID = l.leaseID;
-            }
-        });
+        if (unleasedPayments) {
+            unleasedPayments.forEach(p => {
+                const l = findLeaseForDate(p.receivedDate);
+                if (l) {
+                    p.leaseID = l.leaseID;
+                }
+            });
+        }
         return unleasedPayments;
     }
 
@@ -126,7 +128,7 @@ export async function getLeaseUtilForHouse(houseID: string) {
         //const terminationDate = l.terminationDate ? moment(l.terminationDate) : null;
         while (curMon.isSameOrBefore(lastDueMonth)) {
             const month = curMon.format(YYYYMMFormat);
-            const checkTerminated = (str: string) => str && curMon.isSameOrBefore(moment(str));
+            const checkTerminated = (str: string | null | undefined) => str && curMon.isSameOrBefore(moment(str));
             const checkEnded = (str: string) => str && curMon.isAfter(moment(str));
             const isTerminated = checkTerminated(l.terminationDate);
             const ended = checkEnded(l.endDate);
@@ -188,7 +190,7 @@ export async function getLeaseUtilForHouse(houseID: string) {
         }, {
             totalPayments: 0,
             totalBalance: 0,
-            payments: [],
+            payments: [] as IPaymentForLease[],
             monthlyInfo,
             lastPaymentDate: '',
             lastPaymentAmount: 0,
@@ -233,6 +235,7 @@ export async function getLeaseUtilForHouse(houseID: string) {
         }, 
         matchAndAddLeaseToTransactions: async (onProgress: (pos: number, pmt?: IPayment) => void) => {
             const all = await matchAllTransactions();
+            if (!all) return all;
             onProgress(all.length);
             let pos = 0;
             for (const t of all) {
@@ -256,8 +259,8 @@ export async function gatherLeaseInfomation(house: HouseWithLease, date?: Date) 
         return 'Lease not found';
     }
     const payments = await finder.loadLeasePayments(lease);
-    const leaseBalance = finder.calculateLeaseBalances(lease, payments, 5, new Date());
-    const leaseBalanceDueInfo = finder.calculateLeaseBalancesNew(payments, lease, new Date());
+    const leaseBalance = finder.calculateLeaseBalances(lease, payments || [], 5, new Date());
+    const leaseBalanceDueInfo = finder.calculateLeaseBalancesNew(payments || [], lease, new Date());
 
     leaseBalance.monthlyInfo.reverse();
     house.lease = lease;
@@ -420,8 +423,8 @@ function calculateLeaseBalancesNew(
 
         balanceForwarded: 0,
         totalPaid: 0, //debug
-        getLastNMonth: null,
-        lastNPaymentAndDue: null,
+        getLastNMonth: null as any,
+        lastNPaymentAndDue: null as any,
     };
 
     paymentDuesAndBalanceInfo.getLastNMonth = (n) => {
@@ -431,7 +434,7 @@ function calculateLeaseBalancesNew(
         for (let pos = paymnetDuesInfo.length - 1; pos >= 0; pos--) {
             const objAtPos = paymnetDuesInfo[pos];
             if (!objAtPos) break;
-            paymentDuesAndBalanceInfo.balanceForwarded = objAtPos.previousBalance;            
+            paymentDuesAndBalanceInfo.balanceForwarded = objAtPos.previousBalance || 0;            
             lastn.push(objAtPos);
             if (objAtPos.paymentOrDueTransactionType === 'Due') {
                 cnt++;

@@ -25,7 +25,7 @@ function getSheetId(mainCtx: IPageRelatedState) : string {
 
 
 export function ImportPage() {
-    const [dlgContent, setDlgContent] = useState<JSX.Element>(null);
+    const [dlgContent, setDlgContent] = useState<JSX.Element>(null as any);
     const router = useRouter();
     const [reloads, setReloads] = useState({
         reloadUsers: 0,
@@ -123,9 +123,9 @@ export function ImportPage() {
                                 <div className="h5 mb-0 font-weight-bold text-gray-800">
                                     <EditTextDropdown items={pages.map(p => {
                                         return {
-                                            label: p.sheetMapping.sheetName,
+                                            label: p.sheetMapping?.sheetName as string,
                                             value: p,
-                                            selected: p.sheetMapping.sheetName === 'House Info'
+                                            selected: p.sheetMapping?.sheetName === 'House Info'
                                         }
                                     })
                                     }
@@ -140,7 +140,7 @@ export function ImportPage() {
                                                     fieldDefs = await mainCtx.modelsProp.getTableModel(pg.table);
                                                     curPage.allFields = fieldDefs;
                                                     if (!curPage.displayColumnInfo) {
-                                                        curPage.displayColumnInfo = curPage.sheetMapping.mapping.map(mapName => {
+                                                        curPage.displayColumnInfo = curPage.sheetMapping?.mapping.map(mapName => {
                                                             const found = fieldDefs.find(f => f.field === mapName);
                                                             if (!found) {
                                                                 console.log(`Cant find column ${mapName}`);
@@ -149,8 +149,8 @@ export function ImportPage() {
                                                         }).filter(x=>x).map(f => {
                                                             return {
                                                                 ...f,
-                                                                field: f.field as ALLFieldNames,
-                                                                name: f.name || '',
+                                                                field: f?.field as ALLFieldNames,
+                                                                name: f?.name || '',
                                                             };
                                                         })
                                                     }
@@ -265,7 +265,7 @@ function stdTryDisplayItemForCreate(params: IPageParms, state: IPageStates, shee
         }
         return <div style={{ color: 'red' }}>{sheetRow.displayData[field]}</div>
     }
-    return null;
+    return null as any;
 }
 
 function displayItems(pagePrms: IPageParms, curPageState: IPageStates) {
@@ -291,8 +291,8 @@ function displayItems(pagePrms: IPageParms, curPageState: IPageStates) {
                 return dspRes;
             }
             return {
-                sort: sheetRow.displayData[cmpSortField], dsp: <tr key={ind}>{
-                    dspCi.map((dc, ck) => {
+                sort: sheetRow.displayData[cmpSortField as any], dsp: <tr key={ind}>{
+                    dspCi?.map((dc, ck) => {
                         return <td key={ck}>{
                             showItem(dc)
                         }</td>
@@ -323,7 +323,7 @@ function displayExtraDbItems(pagePrms: IPageParms, curPageState: IPageStates) {
         deleteFunction,
     }) => {
             return {
-                sort: dbRow.dbItemData[cmpSortField], dsp: <tr key={rowInd}>{                    
+                sort: dbRow.dbItemData[cmpSortField as any], dsp: <tr key={rowInd}>{                    
                     dspCi.map((dc, ck) => {
                         let dspVal: string | number | JSX.Element = 'DB-' + pagePrms.pageCtx.translateForeignLeuColumn(dc, dbRow.dbItemData);
                         //let dspVal: string | number | JSX.Element = 'DB-' +  dbRow.dbItemData[dc.field];

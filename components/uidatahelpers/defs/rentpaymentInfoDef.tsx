@@ -2,11 +2,12 @@ import { CloseableDialog } from "../../generic/basedialog";
 import { IEditTextDropdownItem } from "../../generic/GenericDropdown";
 import { IHouseInfo, ILeaseInfo, ITenantInfo } from "../../reportTypes";
 import { gatherLeaseInfomation, HouseWithLease } from "../../utils/leaseUtil";
-import { ICrudAddCustomObj, ITableAndSheetMappingInfo, ItemType, ItemTypeDict } from "../datahelperTypes";
+import { ALLFieldNames, ICrudAddCustomObj, ITableAndSheetMappingInfo, ItemType, ItemTypeDict } from "../datahelperTypes";
 import * as api from '../../api'
 import { formateEmail } from "../../utils/leaseEmailUtil";
 import { orderBy } from "lodash";
 import { customHeaderFilterFuncWithHouseIDLookup, genericCustomHeaderFilterFunc } from "./util";
+import { IDBFieldDef } from "@/components/types";
 
 const table = 'rentPaymentInfo';
 
@@ -51,7 +52,7 @@ export const paymentInfoDef: ITableAndSheetMappingInfo<ICustEmailInfo> = {
     customEditItemOnChange: async (mainCtx, fieldName: string, setCustomFieldMapping, editItem, isNew) => {
         if (!isNew) return editItem;
         const ret: ItemType = {
-            data: { [fieldName]: editItem.data[fieldName] }
+            data: { [fieldName]: editItem.data[fieldName as ALLFieldNames] }
         };
         if (fieldName === 'houseID' && !editItem.data['leaseID']) {
             //auto populate latest lease
@@ -107,7 +108,7 @@ export const paymentInfoDef: ITableAndSheetMappingInfo<ICustEmailInfo> = {
                 }
                 const options: IEditTextDropdownItem[] = [];
                 for (let ti = 1; ti <= 5; ti++) {
-                    const tenantId = lease[`tenant${ti}`];
+                    const tenantId = lease[`tenant${ti}` as 'tenant1'];
                     if (tenantId) {
                         const tenantTranslated = (mainCtx.translateForeignLeuColumnToObject({
                             field: 'tenantID',
@@ -126,8 +127,8 @@ export const paymentInfoDef: ITableAndSheetMappingInfo<ICustEmailInfo> = {
                                 label: tenantTranslated.fullName,
                                 value: tenantTranslated.fullName,
                             })
-                            if (!ret.data['paidBy']) {
-                                ret.data['paidBy'] = tenantTranslated.fullName;
+                            if (!ret.data['paidBy' as ALLFieldNames]) {
+                                ret.data['paidBy' as ALLFieldNames] = tenantTranslated.fullName;
                             }
                         }
                     }
@@ -161,7 +162,7 @@ export const paymentInfoDef: ITableAndSheetMappingInfo<ICustEmailInfo> = {
     orderColunmInfo(cols) {
         const orders = ['houseID', 'receivedDate', 'receivedAmount', 'paymentTypeName', 'notes'];
 
-        const firsts = orders.map(o => cols.find(c => c.field === o)).filter(c => c);
+        const firsts: IDBFieldDef[] = orders.map(o => cols.find(c => c.field === o)).filter(c => c) as IDBFieldDef[];
         const lasts = cols.filter(c => !orders.includes(c.field));
         return firsts.concat(lasts);
     },

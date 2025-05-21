@@ -4,7 +4,7 @@ import { GenericDropdown, IEditTextDropdownItem, IGenericDropdownProps } from '.
 
 
 interface IEditTextDropdownProps extends IGenericDropdownProps {    
-    formatDisplay?: (IEditTextDropdownItem) => string;    
+    formatDisplay?: (itm: IEditTextDropdownItem) => string;    
 }
 
 export function EditTextDropdown(props: IEditTextDropdownProps) {

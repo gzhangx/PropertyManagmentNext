@@ -14,7 +14,7 @@ export function getDbInserter(pageCtx: IPageRelatedState, name: TableNames, doCr
                 }
             }
             return sqlAdd(name,
-                saveData, doCreate
+                saveData as any, doCreate
             ).then(res => {
                 console.log(`sql add ${name}`, res);
                 return res;

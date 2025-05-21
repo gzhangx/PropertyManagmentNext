@@ -17,6 +17,8 @@ interface RenderProps {
 
 export function DirectEmailBodyContent(props: RenderProps) {    
     const leaseBalanceDueInfo = props.house.leaseBalanceDueInfo;
+    if (!leaseBalanceDueInfo) return null;
+    if (!props.house.lease) return;
     const lastPaymentAmount = formatAccounting(leaseBalanceDueInfo.lastPaymentAmount);
     const lastPaymentDate = standardFormatDate(leaseBalanceDueInfo.lastPaymentDate);
     return <>

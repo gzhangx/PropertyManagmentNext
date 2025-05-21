@@ -142,7 +142,7 @@ async function write1099PdfFields(formData: Form1099Info, existingPdfBytes: Arra
                 ff.setText(w);
             }
         } catch (err) {
-            console.log('PDFTextField err due to next minify', err.message);
+            console.log('PDFTextField err due to next minify', (err as any).message);
         }
     });
     const bytes = await pdfDoc.save();

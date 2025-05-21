@@ -1,4 +1,12 @@
-export default function BoardItemHalfSmall(props) {
+export default function BoardItemHalfSmall(props: {
+    onClick?: () => void;
+    iconName?: string;
+    mainClsName?: string;
+    textClsName?: string;
+    title: string;
+    valueClsName?: string;
+    value: string | React.JSX.Element;
+}) {
     const iconClassName = `fas fa-calendar fa-2x text-gray-300 ${props.iconName || 'fa - calendar'}`
     const mainClsName = `card shadow h-100 py-2 ${props.mainClsName || 'border-left-primary'}`;
     const textClsName = `text-xs font-weight-bold text-uppercase mb-1 ${props.textClsName || 'text-primary'}`;

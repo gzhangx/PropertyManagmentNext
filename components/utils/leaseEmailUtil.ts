@@ -1,6 +1,6 @@
 import moment from 'moment';
 import { getUserOptions } from '../api'
-import { IHouseInfo, ILeaseInfo, IPageRelatedState, ITenantInfo } from '../reportTypes';
+import { IForeignKeyCombo, IHouseInfo, ILeaseInfo, IPageRelatedState, ITenantInfo } from '../reportTypes';
 import { gatherLeaseInfomation, HouseWithLease, ILeaseInfoWithPaymentDueHistory, ILeaseInfoWithPmtInfo, INewLeaseBalance } from './leaseUtil';
 import { IStringLogger } from '../types';
 import { formatAccounting } from './reportUtils';
@@ -102,7 +102,7 @@ function parseTaggedString(input: string) {
     }
 
     function parseTag(): IParsedTag {
-        if (peek() !== '$') return null;
+        if (peek() !== '$') return null as any as IParsedTag;
         consume(); // Skip $
 
         let name = '';
@@ -110,7 +110,7 @@ function parseTaggedString(input: string) {
             name += consume();
         }
 
-        if (!name) return null;
+        if (!name) return null as any as IParsedTag;
 
         let children: IParsedTag[] = [];
         let text = '';
@@ -209,6 +209,8 @@ type IMainContext = {
     tenants: ITenantInfo[];
 }
 function doReplaceOnContext(logger: IStringLogger, tags: IParsedTag[], mainContext: IMainContext, curPaymentDueInfo?: INewLeaseBalance) {    
+    const leaseBalanceDueInfo = mainContext.house.leaseBalanceDueInfo;
+    if (!leaseBalanceDueInfo) return 'no mainContext.house.leaseBalanceDueInfo';
     const output: string = tags.reduce((acc: string, tag) => {
         if (tag.type === 'text') {
             return acc + tag.text;
@@ -220,7 +222,7 @@ function doReplaceOnContext(logger: IStringLogger, tags: IParsedTag[], mainConte
                     } else {                                                
                         //const loops = parseInt(matched.groups.loop);                                
                         //const lastn = mainContext.house.leaseBalanceDueInfo.getLastNMonth(loops);
-                        const lastn = mainContext.house.leaseBalanceDueInfo.lastNPaymentAndDue;
+                        const lastn = leaseBalanceDueInfo.lastNPaymentAndDue;
                         const children = [...tag.children];
                         //children[0] = { ...children[0] };
                         //children[0].text = matched.groups.text;
@@ -238,8 +240,8 @@ function doReplaceOnContext(logger: IStringLogger, tags: IParsedTag[], mainConte
                     acc += formatAccounting(curPaymentDueInfo?.newBalance);
                     break;
                 case 'Amount':
-                    let amt = curPaymentDueInfo?.paymentOrDueAmount;
-                    if (curPaymentDueInfo.paymentOrDueTransactionType === 'Payment') {
+                    let amt = curPaymentDueInfo?.paymentOrDueAmount || 0;
+                    if (curPaymentDueInfo?.paymentOrDueTransactionType === 'Payment') {
                         amt = -amt;
                     }
                     acc += formatAccounting(amt);
@@ -256,7 +258,7 @@ function doReplaceOnContext(logger: IStringLogger, tags: IParsedTag[], mainConte
                     acc += curPaymentDueInfo?.paymentOrDueTransactionType;
                     break;
                 case 'RentDue':
-                    acc += formatAccounting(mainContext.house.leaseInfo.monthlyRent);
+                    acc += formatAccounting(mainContext.house.leaseInfo?.monthlyRent);
                     break;
                 /// end loop related
                 case 'Today':
@@ -269,7 +271,7 @@ function doReplaceOnContext(logger: IStringLogger, tags: IParsedTag[], mainConte
                     break;
                 case 'CurrentBalance':
                     {
-                        const amt = mainContext.house.leaseBalanceDueInfo.totalBalance?.toFixed(2);
+                        const amt = leaseBalanceDueInfo.totalBalance?.toFixed(2);
                         acc += amt ? formatAccounting(amt) : '';
                     }
                     break;
@@ -278,19 +280,19 @@ function doReplaceOnContext(logger: IStringLogger, tags: IParsedTag[], mainConte
                     break;
                 case 'LastPaymentDate':
                     if (typeof tag.children[0] === 'string') {
-                        acc += moment(mainContext.house.leaseInfo.lastPaymentDate).format(tag.children[0]);
+                        acc += moment(mainContext.house.leaseInfo?.lastPaymentDate).format(tag.children[0]);
                     } else {
-                        acc += moment(mainContext.house.leaseInfo.lastPaymentDate).format('YYYY-MM-DD');
+                        acc += moment(mainContext.house.leaseInfo?.lastPaymentDate).format('YYYY-MM-DD');
                     }
                     break;
                 case 'LastPaymentAmount':
                     {
-                        const lamt = mainContext.house.leaseInfo.lastPaymentAmount;
+                        const lamt = mainContext.house.leaseInfo?.lastPaymentAmount;
                         acc += lamt ? formatAccounting(lamt) : '';
                     }
                     break;
                 case 'BalanceForwarded':
-                    acc += formatAccounting(mainContext.house.leaseBalanceDueInfo.balanceForwarded);
+                    acc += formatAccounting(leaseBalanceDueInfo.balanceForwarded);
                     break;
             }
         }
@@ -311,10 +313,10 @@ function doReplace(text: string, house: HouseWithLease, tenants: ITenantInfo[], 
 export async function getTenantsForHouse(mainCtx: IPageRelatedState, house: HouseWithLease) {
     const mailToIds = [];
     for (let i = 1; i <= 5; i++) {
-        const id = house.lease?.['tenant' + i];
+        const id = house.lease?.['tenant' + i as 'tenant1'];
         if (id) mailToIds.push(id);
     }
-    const tenantMaps = mainCtx.foreignKeyLoopkup.get('tenantInfo');
+    const tenantMaps = mainCtx.foreignKeyLoopkup.get('tenantInfo') as IForeignKeyCombo;
     const tenants = mailToIds.map(id => (tenantMaps.idDesc.get(id) as unknown as ITenantInfo)).filter(x=>x);
     return tenants;
 }

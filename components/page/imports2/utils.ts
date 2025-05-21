@@ -19,7 +19,7 @@ import { IPageRelatedState } from '../../reportTypes';
 
 export async function loadPageSheetDataRaw(sheetId: string, pageState: IPageStates): Promise<IPageDataDetails> {
     const curPage: IPageInfo = pageState.curPage;
-    if (!curPage) return;
+    if (!curPage) return null as any;
     let sheetIdField: SheetIdFieldNames = '';
     const allFields = pageState.curPage.allFields || [];
     {
@@ -29,9 +29,9 @@ export async function loadPageSheetDataRaw(sheetId: string, pageState: IPageStat
             sheetIdField = sheetIdFieldDef.field as SheetIdFieldNames;
         }
     }
-    return googleSheetRead(sheetId, 'read', `'${curPage.sheetMapping.sheetName}'!${curPage.sheetMapping.range}`).then((r) => {
+    return googleSheetRead(sheetId, 'read', `'${curPage.sheetMapping?.sheetName}'!${curPage.sheetMapping?.range}`).then((r) => {
         if (!r || !r.values || !r.values.length) {
-            console.log(`no data for ${curPage.sheetMapping.sheetName}`);
+            console.log(`no data for ${curPage.sheetMapping?.sheetName}`);
             return null;
         }
 
@@ -48,7 +48,7 @@ export async function loadPageSheetDataRaw(sheetId: string, pageState: IPageStat
         //     }
         // })        
         const dataRows: ISheetRowData[] = r.values.slice(1).map(rr => {
-            const importSheetData = curPage.sheetMapping.mapping.reduce((acc, f, ind) => {
+            const importSheetData = curPage.sheetMapping?.mapping.reduce((acc, f, ind) => {
                 if (f) {
                     acc[f] = rr[ind];
                     //const specFunc = specialFields.get(f);
@@ -70,15 +70,15 @@ export async function loadPageSheetDataRaw(sheetId: string, pageState: IPageStat
                 matcherName: '',
                 displayData: {},
                 sheetIdField,
-            } as ISheetRowData;
-        }).filter(x => x.importSheetData[curPage.sheetMustExistField]);
+            } as any as ISheetRowData;
+        }).filter(x => x.importSheetData[curPage.sheetMustExistField as any]);
         if (sheetIdField) {
             const duplicateIds = new Map<string, number>();
             dataRows.forEach(r => {
-                const id = (r[sheetIdField] || '').trim();
+                const id = ((r as any)[sheetIdField] || '').trim();
                 if (id) {
                     duplicateIds.set(id, (duplicateIds.get(id) || 0) + 1);
-                    const cnt = duplicateIds.get(id);
+                    const cnt: number = duplicateIds.get(id) as number;
                     if (cnt > 1) {
                         r.invalid = `duplicate id for ${sheetIdField} found for ${id} cnt=${cnt}`;
                     }
@@ -89,7 +89,7 @@ export async function loadPageSheetDataRaw(sheetId: string, pageState: IPageStat
             dataRows,
             sheetIdField,
         };
-        return ret;
+        return ret as any;
     }).catch(err => {
         console.log(err);
         throw err;
@@ -104,7 +104,7 @@ export function matchItems(pageDetails: IPageDataDetails, dbData: IDbSaveData[],
             dbItemData,
             dataType: 'DB',
             matchedToKey: null,
-        } as IDbRowMatchData;
+        } as any as IDbRowMatchData;
     });
     pageDetails.dbMatchData = dbMatchData;
     const sheetIdField = pageDetails.sheetIdField;
@@ -223,11 +223,11 @@ function toResolvedForeignKeyIdName(fieldName: string) {
 
 export function stdProcessSheetData(sheetData: ICompRowData[], pageState: IPageStates, mainCtx: IPageRelatedState, allowNullIds?: boolean): IStringDict[] {
     const allFields = pageState.curPage.allFields;
-    const fieldNames = pageState.curPage.sheetMapping.mapping.filter(f => f);
-    const getDef = (name: string) => allFields.find(f => f.field === name);
+    const fieldNames = pageState.curPage.sheetMapping?.mapping.filter(f => f);
+    const getDef = (name: string) => allFields?.find(f => f.field === name);
     return sheetData.map(sd => {        
         const acc = (sd as ISheetRowData).importSheetData || (sd as IDbRowMatchData).dbItemData;
-        fieldNames.forEach(fieldName => {
+        fieldNames?.forEach(fieldName => {
             let v = acc[fieldName];
             const def = getDef(fieldName);
             if (!def) {
@@ -301,7 +301,7 @@ export function stdProcessSheetData(sheetData: ICompRowData[], pageState: IPageS
                                 }
                             }
                         } else {
-                            v = null;
+                            v = null as any;
                         }
                     } else {
                         switch (def.type) {
@@ -357,20 +357,20 @@ export function stdProcessSheetData(sheetData: ICompRowData[], pageState: IPageS
         //const displayData = stdDisplayField(fieldNames, { ...acc }, pageState);
         //sd.displayData = displayData;
         const obj = acc;
-        sd.displayData = fieldNames.reduce((acc, fieldName) => {
+        sd.displayData = fieldNames?.reduce((acc, fieldName) => {
             let dsp = obj[fieldName];
             const fkdef = getDef(fieldName);
-            if (fkdef.foreignKey) {
+            if (fkdef?.foreignKey) {
                 if (dsp) {
                     dsp = `${dsp}-${obj[toResolvedForeignKeyIdName(fieldName)]}`;
                 } else {
                     dsp = '';
                 }
             }
-            acc[fieldName] = dsp;
+            (acc as any)[fieldName] = dsp;
             return acc;
         }, {});   
-        return sd.displayData;
+        return sd.displayData as any;
     });
 }
 

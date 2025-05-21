@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useContext, JSX } from 'react';
 import { getModel, getSheetAuthInfo, IGoogleSheetAuthInfo, sqlGet } from '../api';
 
-import { AllDateTypes, IDBFieldDef, IPagePropsByTable, TableNames } from '../types'
+import { AllDateTypes, IDBFieldDef, IGetModelReturn, IPagePropsByTable, TableNames } from '../types'
 
 import {    
     IForeignKeyCombo,
@@ -19,7 +19,7 @@ import { IEditTextDropdownItem } from '../generic/GenericDropdown';
 import { orderBy } from 'lodash';
 
 import momentTimezone from 'moment-timezone';
-import { ItemType, ItemTypeDict } from '../uidatahelpers/datahelperTypes';
+import { ALLFieldNames, ItemType, ItemTypeDict } from '../uidatahelpers/datahelperTypes';
 
 const PageRelatedContext = React.createContext({} as IPageRelatedState);
 
@@ -70,7 +70,7 @@ export function PageRelatedContextWrapper(props: {
     const topBarMessagesCfg = generateTopBarNotifyOpt();
     function reloadGoogleSheetAuthInfo() {
         return getSheetAuthInfo().then(auth => {
-            if (!auth) return; //not setup yet
+            if (!auth) return null as any as IGoogleSheetAuthInfo; //not setup yet
             if (auth.error) {
                 rootCtx.checkLoginExpired(auth);
             } else {            
@@ -85,7 +85,7 @@ export function PageRelatedContextWrapper(props: {
 
 
     async function getTableModel(table: TableNames) :Promise<IDBFieldDef[]> {
-        let mod = models.get(table);
+        let mod = models.get(table) as IGetModelReturn;
         if (!mod) {
             mod = await getModel(table);
             models.set(table, mod);
@@ -114,7 +114,7 @@ export function PageRelatedContextWrapper(props: {
             //whereArray,
             //order,
             //rowCount, offset,
-            groupByArray: null,
+            groupByArray: undefined,
         })) as {
             total: number;
             rows: any[];
@@ -122,7 +122,7 @@ export function PageRelatedContextWrapper(props: {
         };
         if (rootCtx.checkLoginExpired(sqlRes)) {
             console.log('Login expired, reload page');
-            return;
+            return null as unknown as IForeignKeyCombo;
         }
         const idField = fields.filter(f => f.isId && !f.userSecurityField)[0].field;
         const parser = {
@@ -233,7 +233,7 @@ export function PageRelatedContextWrapper(props: {
 
     function translateForeignLeuColumnToObject(def: IDBFieldDef, data: ItemType): ItemType | string {
         const etb = def.foreignKey?.table;
-        const val = data.data[def.field] as string;
+        const val = data.data[def.field as ALLFieldNames] as string;
         if (!etb) {
             return val;
         }
@@ -241,7 +241,7 @@ export function PageRelatedContextWrapper(props: {
         if (!lookup) {
             return val; //not loaded yet
         }
-        return { data: lookup.idObj.get(val) };
+        return { data: lookup.idObj.get(val) as ItemTypeDict };
     }
 
     function getAllForeignKeyLookupItems(table: TableNames): ItemType[] | null {
@@ -286,7 +286,7 @@ export function PageRelatedContextWrapper(props: {
         topBarErrorsCfg,
         topBarMessagesCfg,
         timezone: rootCtx.userInfo.timezone,
-        browserTimeToUTCDBTime: (bt: AllDateTypes) => {            
+        browserTimeToUTCDBTime: (bt: AllDateTypes | null | undefined) => {            
             if (bt == null) return null;
             if (typeof bt === 'string') {
                 return momentTimezone.tz(bt, rootCtx.userInfo.timezone).utc().format(FULLYYYYMMDDHHMMSSFormat)
@@ -296,7 +296,7 @@ export function PageRelatedContextWrapper(props: {
             }            
             return bt.utc().format(FULLYYYYMMDDHHMMSSFormat);
         },
-        utcDbTimeToZonedTime: (utc: AllDateTypes, format?: 'YYYY-MM-DD' | 'YYYY-MM-DD HH:mm:ss') => {
+        utcDbTimeToZonedTime: (utc: AllDateTypes | null | undefined, format?: 'YYYY-MM-DD' | 'YYYY-MM-DD HH:mm:ss') => {
             if (utc == null) return null;
             try {               
                 //console.log('from utc', utc, ' to ', rootCtx.userInfo.timezone, momentTimezone.tz(moment.utc(utc), rootCtx.userInfo.timezone).format(format || FULLYYYYMMDDHHMMSSFormat))
