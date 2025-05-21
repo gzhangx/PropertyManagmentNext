@@ -1,5 +1,5 @@
 'use client'
-import { DataGrid, GridColDef, GridSingleSelectColDef } from '@mui/x-data-grid';
+import { DataGrid, GridCellEditStopParams, GridCellEditStopReasons, GridColDef, GridSingleSelectColDef, MuiEvent } from '@mui/x-data-grid';
 import React, { ChangeEvent, useEffect, useRef, useState } from "react";
 import { IPdfTextItem, parsePdfFile, PdfScript } from "../../components/utils/pdfFileUtil";
 import { startCase } from "lodash";
@@ -351,9 +351,9 @@ export default function TaxReport() {
     // Columns configuration
     const columns: GridColDef<W2Info, any, any>[] = [
         { field: 'id', headerName: 'ID', width: 70 },
-        { field: 'income', headerName: 'Income ($)', width: 130, type: 'number' },
-        { field: 'fedTax', headerName: 'Federal Tax ($)', width: 150, type: 'number' },
-        { field: 'stateTax', headerName: 'State Tax ($)', width: 150, type: 'number' },        
+        { field: 'income', headerName: 'Income ($)', width: 130, type: 'number', editable: true, },
+        { field: 'fedTax', headerName: 'Federal Tax ($)', width: 150, type: 'number', editable: true, },
+        { field: 'stateTax', headerName: 'State Tax ($)', width: 150, type: 'number', editable: true, },        
     ];
 
     // Handle input change for new item
@@ -381,6 +381,13 @@ export default function TaxReport() {
         }
     };
 
+    const handleCellEditCommit = (params: any) => {
+        setW2s(w2s.map(item =>
+            item.id === params.id
+                ? { ...item, [params.field]: params.value }
+                : item
+        ));
+    };
     return (
         <div style={{ height: 500, width: '100%' }}>
             <Box mb={2} display="flex" gap={2} alignItems="flex-end">
@@ -419,6 +426,18 @@ export default function TaxReport() {
             <DataGrid
                 rows={w2s}
                 columns={columns}
+                onCellEditStop={(params: GridCellEditStopParams, event: MuiEvent) => {
+                    if (params.reason === GridCellEditStopReasons.cellFocusOut) {
+                        //event.defaultMuiPrevented = true;
+                    }
+                    console.log('edit stop prms ', params)
+                }}
+                processRowUpdate={(updatedRow, originalRow) => {
+                    console.log(updatedRow, originalRow)
+                    return updatedRow;
+                }
+                    
+                  }
                 initialState={{
                     pagination: { paginationModel: { pageSize: 5, page: 0 } }
                 }}
