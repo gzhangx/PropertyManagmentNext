@@ -30,6 +30,7 @@ interface IMainSideBarProps {
 export function MainSideBar(props : IMainSideBarProps) {    
     const rs = useRootPageContext();
 
+    const router = useRouter();
     // useEffect(() => {
     //     props.sections.forEach(section => {
     //         section.pages.forEach(page => {
@@ -50,7 +51,12 @@ export function MainSideBar(props : IMainSideBarProps) {
             //const curActiveName = rs.sideBarStates[getSideBarCurrentActiveItemKey()] as string;
             
             //rs.sideBarStates[getSideBarCurrentActiveItemKey()] = itemName;
-            //rs.setSideBarStates({ ...rs.sideBarStates });
+            //rs.setSideBarStates({ ...rs.sideBarStates });            
+            console.log('replacing with ', name)
+            //router.replace(name);
+            try {
+                history.replaceState(null, '', `/${NAVPrefix}/${ name }`);
+            } catch { }
             activeSideBarItem(rs, name);
         }
     }
@@ -89,7 +95,7 @@ export function MainSideBar(props : IMainSideBarProps) {
         <hr className="sidebar-divider my-0" />
 
         <li className="nav-item active">
-            <Link className="nav-link" href={`/${NAVPrefix}/dashboard`} >
+            <Link className="nav-link" href={`/${NAVPrefix}/dashboard`} onClick={getLinkOnClick('dashboard') as any} >
                 <i className="fas fa-fw fa-tachometer-alt"></i>
                 <span >Dashboard</span>
             </Link>
