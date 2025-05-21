@@ -1,4 +1,4 @@
-
+'use client'
 import { useEffect, useState } from 'react';
 //import { withRouter } from 'next/router'
 import { useRootPageContext, getSideBarCurrentSelectedItemName } from "../../components/states/RootState"
