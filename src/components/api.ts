@@ -513,9 +513,10 @@ export async function updateUserOptions(name: string, value: string) {
 }
 
 
-export async function sendEmail(to: string[], subject: string, html?: string) {
+export async function sendEmail(to: string[], cc: string, subject: string, html?: string) {
     return await doPost('util/sendMail', {
         to,
+        cc,
         subject,
         html,
     });

@@ -333,6 +333,7 @@ export async function formateEmail(mainCtx: IPageRelatedState, house: HouseWithL
             subject: 'no lease found',
             body: 'no lease found',
             mailtos: [],
+            paymentEmailContactEmail: '',
         }
     }
     let last2 = '';
@@ -366,5 +367,6 @@ export async function formateEmail(mainCtx: IPageRelatedState, house: HouseWithL
         subject, 
         body,
         mailtos,
+        paymentEmailContactEmail: rentEmailConfig.paymentEmailContactEmail
     }
 }
