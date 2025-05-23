@@ -227,6 +227,7 @@ export const GenCrudAdd = (props: IGenGrudAddProps) => {
                 </button>
             </div>                
                 <table className='centered-table'>
+                    <tbody>
                 {
                     columnInfo.map((c, cind) => {
                         if (isCreateAddNewItem) { //operation === 'Add') { //  !editItem
@@ -238,7 +239,7 @@ export const GenCrudAdd = (props: IGenGrudAddProps) => {
                             //}
                         } else {
                             //modify
-                            if (c.isId) return <div className='row' key={cind}>{editItem.data[c.field as ALLFieldNames] || ''}</div>
+                            if (c.isId) return <tr className='row' key={cind}><td>{editItem.data[c.field as ALLFieldNames] || ''}</td></tr>
                             if (c.displayCustomFormatField) {
                                 editItem.data[c.field as ALLFieldNames] = editItem.data[c.field + DisplayCustomFormatFieldOriginalDataSufix as ALLFieldNames];
                             }
@@ -335,7 +336,8 @@ export const GenCrudAdd = (props: IGenGrudAddProps) => {
                             <td className={checkErrorInd(c)}>{checkErrorInd(c) && '*'}</td>
                         </tr>
                     })
-                }
+                        }
+                    </tbody>
                 </table>
             {                
                     <div className="modal-footer">
