@@ -405,7 +405,7 @@ export default function TaxReport() {
     }
 
 
-    const totalIncome = calculateTotalIncome(allTaxSnap);
+    const adjustedGrossIncome = calculateTotalIncome(allTaxSnap);
     return (
         <div style={{ height: 500, width: '100%' }}>
             <Box mb={2} display="flex" gap={2} alignItems="flex-end">
@@ -480,24 +480,47 @@ export default function TaxReport() {
                 borderRadius: 2,
                 boxShadow: 2,
             }}>
-                <TextFieldOutlined label='Interests' value={allTaxSnap.incomeInfo.taxableInterest2b.toString()} onChange={async e => {
-                    allTaxSnap.incomeInfo.taxableInterest2b = parseFloat(e.target.value) || 0;
-                    await saveAllTaxSnaps();
-                }} />
-                <TextFieldOutlined label='Dividents' value={allTaxSnap.incomeInfo.ordinaryDividends3b.toString()} onChange={async e => {
-                    allTaxSnap.incomeInfo.ordinaryDividends3b = parseFloat(e.target.value) || 0;
-                    await saveAllTaxSnaps();
-                }} />
+                {
+                    generateAccountingTextField('Interests', allTaxSnap.incomeInfo, 'taxableInterest2b')
+                }
+                {
+                    generateAccountingTextField('Dividents', allTaxSnap.incomeInfo, 'ordinaryDividends3b')
+                }
+                {
+                    generateAccountingTextField('Real Estate Tax', allTaxSnap.expenseInfo, 'realEstateTax')
+                }
+                {
+                    generateAccountingTextField('Chariable donations', allTaxSnap.expenseInfo, 'cashDonations')
+                }
 
                 <div>
-                    <label>Calculated Income</label>
-                    <label style={{ margin: 4 }}>{totalIncome }</label>
+                    <label>Calculated adjustedGrossIncome</label>
+                    <label style={{ margin: 4 }}>{adjustedGrossIncome }</label>
+                </div>
+                <div>
+                    <label>Calculated Total Income</label>
+                    <label style={{ margin: 4 }}>{allTaxSnap.calculated.totalIncome_1040line15}</label>
                 </div>
                 
             </Box>
         </div>
     );
+
+    function generateAccountingTextField<T, K extends keyof T >(label: string, obj: T, path: K) {
+        const val = obj[path];
+        return <TextFieldOutlined label={label} value={formatAccounting(val as string)} onChange={async e => {
+            const resVal = e.target.value;
+            let setVal = 0;
+            if (resVal) {
+                setVal = parseFloat(resVal.replace(/[^0-9.-]+/g, ''));                
+            }
+            obj[path] = setVal as T[K];
+            await saveAllTaxSnaps();
+        }} />
+    }
+    
 }
+
 
 
 interface IncomeInfo {    
@@ -608,15 +631,15 @@ function calculateTotalIncome(snap: AllTaxSnapShot): number {
         });
         scheduleACalcInfo.push({
             lineNumber: '5b',
-            amount: snap.expenseInfo.realEstateTax,
+            amount: snap.expenseInfo.realEstateTax || 0,
             description: 'state and local real estate taxes',
         });
         scheduleACalcInfo.push({
             lineNumber: '5c',
-            amount: snap.expenseInfo.personalPropertyTax,
+            amount: snap.expenseInfo.personalPropertyTax || 0,
             description: 'state and local personal property taxes',
         });
-        const line5d = stateIncomeTax + snap.expenseInfo.realEstateTax + snap.expenseInfo.personalPropertyTax;
+        const line5d = stateIncomeTax + (snap.expenseInfo.realEstateTax || 0) + (snap.expenseInfo.personalPropertyTax || 0);
         scheduleACalcInfo.push({
             lineNumber: '5d',
             amount: line5d,
@@ -639,13 +662,20 @@ function calculateTotalIncome(snap: AllTaxSnapShot): number {
 
         scheduleACalcInfo.push({
             lineNumber: '14',
-            amount: snap.expenseInfo.cashDonations,
+            amount: snap.expenseInfo.cashDonations || 0,
             description: 'Donations to charity',
         });
-        snap.calculated.scheduleADeduction = line5e + snap.expenseInfo.cashDonations;
+        snap.calculated.scheduleADeduction = line5e + (snap.expenseInfo.cashDonations || 0);
         snap.calculated.scheduleACalcInfo = scheduleACalcInfo;
 
+        const stdDed = snap.fillingStatus === 'married' ? 21900 : 14600;
+        if (snap.calculated.scheduleADeduction < stdDed) {
+            snap.calculated.scheduleADeduction = stdDed;
+        }   
     }
+
+    calculateScheduleA();
+    snap.calculated.totalIncome_1040line15 = adjustedGrossIncome - snap.calculated.scheduleADeduction;
     return adjustedGrossIncome;
 }   
 
