@@ -15,6 +15,9 @@ import TableContainer from '@mui/material/TableContainer';
 import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
 import Paper from '@mui/material/Paper';
+import { TextFieldOutlined } from '@/src/components/uidatahelpers/wrappers/muwrappers';
+import { round2 } from '@/src/components/report/util/utils';
+import { init } from 'next/dist/compiled/webpack/webpack';
 
 interface W2Info {
     id: string;
@@ -342,13 +345,13 @@ export async function getPaymentEmailConfigRaw(): Promise<ITaxReportDBConfig> {
 
 const W2Fields = ['income', 'fedTax', 'stateTax'] as const;
 type W2FieldsTypes = typeof W2Fields[number];
-async function saveAllW2RowsToDb(allW2s: W2Info[]) {
-    await updateUserOptions('estimatedTaxReportW2Information', JSON.stringify(allW2s));
-    return allW2s;
+async function saveIncomeInfoToDb(snap: AllTaxSnapShot) {
+    await updateUserOptions('estimatedTaxReportW2Information', JSON.stringify(snap));
+    return snap;
 }
 
 export default function TaxReport() {
-    const [w2s, setW2s] = useState<W2Info[]>([]);
+    const [allTaxSnap, setAllTaxSnap] = useState<AllTaxSnapShot>(initializeAllTaxSnapShot());
     const [newItem, setNewItem] = useState({
         income: '',
         fedTax: '',
@@ -357,67 +360,23 @@ export default function TaxReport() {
         
     useEffect(() => {
         getPaymentEmailConfigRaw().then(strDict => {
-            const w2InfoStr = strDict['estimatedTaxReportW2Information'];
-            if (w2InfoStr) {
-                setW2s(JSON.parse(w2InfoStr));
+            const incomeInfoStr = strDict['estimatedTaxReportW2Information'];
+            if (incomeInfoStr) {
+                const initial = initializeAllTaxSnapShot();
+                let loaded: AllTaxSnapShot = JSON.parse(incomeInfoStr);
+                if (!loaded || !loaded.incomeInfo) {
+                    loaded = initial;
+                }
+                setAllTaxSnap({
+                    ...initial,
+                    ...loaded,
+                });
             }
         })
     }, []);
 
     
     
-    
-    const stdColFormats: any = {
-        editable: true,
-        valueGetter: (v: any) => formatAccounting(v),
-        valueSetter: (v: string, row: W2Info, fieldInfo: GridColDef<W2Info>) => {
-            console.log(v, v.replace(/[\$|,]/g, ''), row, 'next',fieldInfo);
-            let ret = parseFloat(v.replace(/[\$|,]/g, ''));
-            console.log(ret);
-            if (isNaN(ret)) ret = 0;
-            row[fieldInfo.field as W2FieldsTypes] = ret;
-            return row;
-        },
-        align: 'right',
-        headerAlign: 'right',
-    }
-    // Columns configuration
-    const columns: GridColDef<W2Info, any, any>[] = [
-        
-        {
-            field: 'income', headerName: 'Income ($)', width: 130, ...stdColFormats,  },
-        { field: 'fedTax', headerName: 'Federal Tax ($)', width: 150, ...stdColFormats, },
-        { field: 'stateTax', headerName: 'State Tax ($)', width: 150, ...stdColFormats, },        
-        {
-            field: 'actions',
-            type: 'actions',
-            headerName: 'Actions',
-            width: 100,
-            cellClassName: 'actions',
-            getActions: (actProp) => {
-                return [
-                    <GridActionsCellItem
-                        icon={<i className='fas fa-floppy-disk'></i>}
-                        label="Edit"
-                        className="textPrimary"
-                        onClick={(id) => { }}
-                        color="inherit"
-                    />,
-                    <GridActionsCellItem
-                        icon={<i className='fas fa-xmark'></i>}
-                        label="Delete"
-                        onClick={async () => {
-                            console.log('del id', 'actProp', actProp) //id and row
-                            const newW2s = w2s.filter(w => w.id !== actProp.id);
-                            await saveAllW2RowsToDb(newW2s);
-                            setW2s(newW2s);
-                        }}
-                        color="inherit"
-                    />,
-                ];
-            },
-          },
-    ];
 
     // Handle input change for new item
     const handleInputChange = (e: any) => {
@@ -434,13 +393,19 @@ export default function TaxReport() {
                 fedTax: parseFloat(newItem.fedTax),
                 stateTax: parseFloat(newItem.stateTax),
             };
-            const allW2s = await saveAllW2RowsToDb([...w2s, itemToAdd]);
-            setW2s(allW2s);
+            allTaxSnap.incomeInfo.w2s = [...allTaxSnap.incomeInfo.w2s, itemToAdd]
+            await saveAllTaxSnaps();
             setNewItem({ income: '', fedTax: '', stateTax: '' });
         }
     };
 
-    
+    async function saveAllTaxSnaps() {
+        await saveIncomeInfoToDb(allTaxSnap);
+        setAllTaxSnap({ ...allTaxSnap });
+    }
+
+
+    const totalIncome = calculateTotalIncome(allTaxSnap);
     return (
         <div style={{ height: 500, width: '100%' }}>
             <Box mb={2} display="flex" gap={2} alignItems="flex-end">
@@ -487,7 +452,7 @@ export default function TaxReport() {
                         </TableRow>
                     </TableHead>
                     <TableBody>
-                        {w2s.map((row) => (
+                        {allTaxSnap.incomeInfo.w2s.map((row) => (
                             <TableRow
                                 key={row.id}
                                 sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
@@ -496,15 +461,226 @@ export default function TaxReport() {
                                 <TableCell align="right">{formatAccounting(row.fedTax)}</TableCell>
                                 <TableCell align="right">{formatAccounting(row.stateTax)}</TableCell>     
                                 <TableCell><i className='fas fa-xmark' onClick={async () => {
-                                    const newW2s = w2s.filter(w => w.id !== row.id);
-                                    await saveAllW2RowsToDb(newW2s);
-                                    setW2s(newW2s);
+                                    allTaxSnap.incomeInfo.w2s = allTaxSnap.incomeInfo.w2s.filter(w => w.id !== row.id);
+                                    await saveAllTaxSnaps();
                                 }}></i> </TableCell>
                             </TableRow>
                         ))}
                     </TableBody>
                 </Table>
             </TableContainer>
+            <Box sx={{
+                display: "flex",
+                flexDirection: "column",
+                gap: 2, // Spacing between inputs
+                maxWidth: 400,
+                margin: "auto",
+                padding: 2,
+                border: "1px solid #ccc",
+                borderRadius: 2,
+                boxShadow: 2,
+            }}>
+                <TextFieldOutlined label='Interests' value={allTaxSnap.incomeInfo.taxableInterest2b.toString()} onChange={async e => {
+                    allTaxSnap.incomeInfo.taxableInterest2b = parseFloat(e.target.value) || 0;
+                    await saveAllTaxSnaps();
+                }} />
+                <TextFieldOutlined label='Dividents' value={allTaxSnap.incomeInfo.ordinaryDividends3b.toString()} onChange={async e => {
+                    allTaxSnap.incomeInfo.ordinaryDividends3b = parseFloat(e.target.value) || 0;
+                    await saveAllTaxSnaps();
+                }} />
+
+                <div>
+                    <label>Calculated Income</label>
+                    <label style={{ margin: 4 }}>{totalIncome }</label>
+                </div>
+                
+            </Box>
         </div>
     );
+}
+
+
+interface IncomeInfo {    
+    taxableInterest2b: number;
+    ordinaryDividends3b: number;
+    w2s: W2Info[];
+}
+
+
+interface CalculateInfo {
+    lineNumber: string;
+    amount: number;
+    description?: string;
+}
+interface AllTaxSnapShot {
+    fillingStatus: 'married';
+    incomeInfo: IncomeInfo;
+    expenseInfo: {
+        medicalExpenses: number;
+        realEstateTax: number;
+        personalPropertyTax: number;
+        cashDonations: number;
+    };
+    calculated: {        
+        adjustedGrossIncome_1040line11: number;
+        totalIncome_1040line15: number;
+        calculatedTax_16: number;
+        childTaxCredit_19: number;
+        form1040_line22_taxAfterChild: number;
+        totalTax_form1040_line24: number;
+
+        scheduleACalcInfo: CalculateInfo[];
+        scheduleADeduction: number;
+    };
+}
+
+function initializeAllTaxSnapShot(): AllTaxSnapShot {
+    return {
+        fillingStatus: 'married',
+        incomeInfo: {
+            taxableInterest2b: 0,
+            ordinaryDividends3b: 0,
+            w2s: [],
+        },
+        expenseInfo: {
+            medicalExpenses: 0,
+            realEstateTax: 0,
+            personalPropertyTax: 0,
+            cashDonations: 0,
+        },
+        calculated: {
+            adjustedGrossIncome_1040line11: 0,
+            totalIncome_1040line15: 0,
+            calculatedTax_16: 0,
+            childTaxCredit_19: 0,
+            form1040_line22_taxAfterChild: 0,
+            totalTax_form1040_line24: 0,
+
+            scheduleACalcInfo: [],
+            scheduleADeduction: 0,
+        }
+    };
+}   
+
+
+function calculateTotalIncome(snap: AllTaxSnapShot): number {
+    const incomeInfo = snap.incomeInfo;
+    let adjustedGrossIncome = round2(incomeInfo.taxableInterest2b + incomeInfo.ordinaryDividends3b);
+    let stateIncomeTax = 0;
+    for (const w2 of incomeInfo.w2s) {
+        adjustedGrossIncome = round2(adjustedGrossIncome + w2.income);
+        stateIncomeTax = round2(stateIncomeTax + (w2.stateTax || 0));
+    }
+    snap.calculated.adjustedGrossIncome_1040line11 = adjustedGrossIncome;
+
+
+    function calculateScheduleA() {
+        const scheduleACalcInfo: CalculateInfo[] = [];
+        scheduleACalcInfo.push({
+            lineNumber: '1',
+            amount: snap.expenseInfo.medicalExpenses,
+            description: 'Medical and dental expenses',
+        });
+        scheduleACalcInfo.push({
+            lineNumber: '2',
+            amount: adjustedGrossIncome,
+            description: '1040 line 11, adjusted gross income',
+        });
+        scheduleACalcInfo.push({
+            lineNumber: '3',
+            amount: adjustedGrossIncome * 0.075,
+            description: 'adjusted gross income * 7.5%',
+        });
+
+        let line4 = snap.expenseInfo.medicalExpenses - adjustedGrossIncome * 0.075;
+        if (line4 < 0) {
+            line4 = 0;
+        }
+        scheduleACalcInfo.push({
+            lineNumber: '4',
+            amount: line4,
+            description: 'Subtract line 3 from line 1. If line 3 is more than line 1, enter -0',
+        });
+        scheduleACalcInfo.push({
+            lineNumber: '5a',
+            amount: stateIncomeTax,
+            description: 'state and local taxes or sales tax',
+        });
+        scheduleACalcInfo.push({
+            lineNumber: '5b',
+            amount: snap.expenseInfo.realEstateTax,
+            description: 'state and local real estate taxes',
+        });
+        scheduleACalcInfo.push({
+            lineNumber: '5c',
+            amount: snap.expenseInfo.personalPropertyTax,
+            description: 'state and local personal property taxes',
+        });
+        const line5d = stateIncomeTax + snap.expenseInfo.realEstateTax + snap.expenseInfo.personalPropertyTax;
+        scheduleACalcInfo.push({
+            lineNumber: '5d',
+            amount: line5d,
+            description: 'add 5a-c, ',
+        });
+
+        const StdDED5e = snap.fillingStatus === 'married' ? 10000 : 5000;
+        const line5e = line5d > StdDED5e ? StdDED5e : line5d;
+        //Depend on status!!!!!!!!  
+        scheduleACalcInfo.push({
+            lineNumber: '5e',
+            amount: line5e,
+            description: 'Enter the smaller of line 5d or $10,000 ($5,000 if married filing ',
+        });
+
+        //home mortgage interest nothing
+        //points from 1098
+        //investment intersst form 4952
+        //total interest paid ==> 0
+
+        scheduleACalcInfo.push({
+            lineNumber: '14',
+            amount: snap.expenseInfo.cashDonations,
+            description: 'Donations to charity',
+        });
+        snap.calculated.scheduleADeduction = line5e + snap.expenseInfo.cashDonations;
+        snap.calculated.scheduleACalcInfo = scheduleACalcInfo;
+
+    }
+    return adjustedGrossIncome;
+}   
+
+interface TaxBracket {
+    lower: number;
+    upper: number;
+    rate: number;
+}
+
+const bracketsMarriedFileJoinyly: TaxBracket[] = [
+    { lower: 0, upper: 22000, rate: 0.10 },
+    { lower: 22001, upper: 89450, rate: 0.12 },
+    { lower: 89451, upper: 190750, rate: 0.22 },
+    { lower: 190751, upper: 364200, rate: 0.24 },
+    { lower: 364201, upper: 462500, rate: 0.32 },
+    { lower: 462501, upper: 693750, rate: 0.35 },
+    { lower: 693751, upper: Infinity, rate: 0.37 }
+];
+
+function calculateTax(brackets: TaxBracket[], income: number): number {
+    // 2023 Tax Brackets for Married Filing Jointly
+    
+
+    let tax = 0;
+    let previousLimit = 0;
+
+    for (const bracket of brackets) {
+        if (income > bracket.lower) {
+            const taxableAmount = Math.min(income, bracket.upper) - previousLimit;
+            if (taxableAmount > 0) {
+                tax += taxableAmount * bracket.rate;
+            }
+            previousLimit = bracket.upper;
+        }
+    }
+
+    return tax;
 }
