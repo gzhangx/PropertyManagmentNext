@@ -459,7 +459,12 @@ export default function TaxReport() {
                             >                                
                                 <TableCell align="right">{formatAccounting(row.income)}</TableCell>
                                 <TableCell align="right">{formatAccounting(row.fedTax)}</TableCell>
-                                <TableCell align="right">{formatAccounting(row.stateTax)}</TableCell>     
+                                <TableCell align="right">{formatAccounting(row.stateTax)}
+                                    <TextField value={row.stateTax} onChange={async e => {
+                                        row.stateTax = parseFloat(e.target.value);
+                                        await saveAllTaxSnaps();
+                                    }}></TextField>
+                                </TableCell>     
                                 <TableCell><i className='fas fa-xmark' onClick={async () => {
                                     allTaxSnap.incomeInfo.w2s = allTaxSnap.incomeInfo.w2s.filter(w => w.id !== row.id);
                                     await saveAllTaxSnaps();
@@ -672,6 +677,7 @@ function calculateTotalIncome(snap: AllTaxSnapShot): number {
         if (snap.calculated.scheduleADeduction < stdDed) {
             snap.calculated.scheduleADeduction = stdDed;
         }   
+        console.log('scheduleADeduction', snap.calculated.scheduleADeduction, line5e, snap.expenseInfo.cashDonations);
     }
 
     calculateScheduleA();

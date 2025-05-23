@@ -52,7 +52,7 @@ export function MainSideBar(props : IMainSideBarProps) {
             
             //rs.sideBarStates[getSideBarCurrentActiveItemKey()] = itemName;
             //rs.setSideBarStates({ ...rs.sideBarStates });            
-            console.log('replacing with ', name)
+            //console.log('replacing with ', name)
             //router.replace(name);
             //try {
             //    history.replaceState(null, '', `/${NAVPrefix}/${ name }`);
