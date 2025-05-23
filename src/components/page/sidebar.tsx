@@ -8,7 +8,7 @@ import {
     activeSideBarItem, isSidebarItemActive,
 } from "../states/RootState"
 
-import { NAVPrefix } from '../nav/consts'
+import { navgateTo, NAVPrefix } from '../nav/consts'
 
 
 export interface IMainSideBarItem {
@@ -54,9 +54,10 @@ export function MainSideBar(props : IMainSideBarProps) {
             //rs.setSideBarStates({ ...rs.sideBarStates });            
             console.log('replacing with ', name)
             //router.replace(name);
-            try {
-                history.replaceState(null, '', `/${NAVPrefix}/${ name }`);
-            } catch { }
+            //try {
+            //    history.replaceState(null, '', `/${NAVPrefix}/${ name }`);
+            //} catch { }
+            navgateTo(name);
             activeSideBarItem(rs, name);
         }
     }
