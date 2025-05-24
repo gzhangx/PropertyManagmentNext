@@ -81,13 +81,16 @@ export function MultipleSelectChip(props: {
     const theme = useTheme();
     const [items, setItems] = React.useState<MultipleSelectChipItemDef[]>([]);
 
+    console.log('props.selectedIds', props.selectedIds);
     useEffect(() => {
         const selectedIds = props.selectedIds;
+        console.log('selectedIds in effect', selectedIds);
         if (selectedIds) {
             const selectedItems = props.allItems.filter(item => selectedIds.includes(item.id));
+            console.log('selectedIds in effect items', selectedItems, 'allItems', props.allItems);  
             setItems(selectedItems);
         }
-    }, [props.selectedIds]);
+    }, [props.selectedIds, props.allItems.length]);
 
     function getStyles(item: MultipleSelectChipItemDef, selected: readonly MultipleSelectChipItemDef[], theme: Theme) {
         return {
