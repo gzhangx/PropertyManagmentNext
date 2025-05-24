@@ -4,8 +4,8 @@ import { IPdfTextItem, parsePdfFile, PdfScript } from "../../../components/utils
 import { startCase } from "lodash";
 import { getUserOptions, updateUserOptions } from "../../../components/api";
 import Box from '@mui/material/Box';
-import { Button, InputAdornment, TextField, Theme, useTheme } from '@mui/material';
-import { formatAccounting } from '@/src/components/utils/reportUtils';
+import { Button, InputAdornment, MenuItem, Select, TextField, Theme, useTheme } from '@mui/material';
+import { formatAccounting, getMonthAry, IPaymentWithDateMonthPaymentType, loadDataWithMonthRange, loadMaintenanceData, loadPayment, MonthSelections } from '@/src/components/utils/reportUtils';
 import * as uuid from 'uuid';
 import Table from '@mui/material/Table';
 import TableBody from '@mui/material/TableBody';
@@ -18,7 +18,9 @@ import { CurrencyFormatTextField, MultipleSelectChip, NumberFormatTextField } fr
 import { round2 } from '@/src/components/report/util/utils';
 
 
-import { IHouseInfo } from "@/src/components/reportTypes";
+import { IExpenseData, IHouseInfo } from "@/src/components/reportTypes";
+import { useRootPageContext } from "@/src/components/states/RootState";
+import { usePageRelatedContext } from "@/src/components/states/PageRelatedState";
 
 
 interface W2Info {
@@ -352,6 +354,35 @@ async function saveIncomeInfoToDb(snap: AllTaxSnapShot) {
     return snap;
 }
 
+
+
+type RentReportCellData = {
+    amount: number;
+    payments: IPaymentWithDateMonthPaymentType[];
+}
+
+type RentReportIncomeExpenseRowData = {
+    income: { [paymentType: string]: RentReportCellData };
+    totalIncome: number;
+}
+
+type AllRentReportData = {
+    [houseID: string]: RentReportIncomeExpenseRowData;
+}
+
+
+type ExpenseCellData = {
+    amount: number;
+    expenses: IExpenseData[];
+}
+type RentReportExpenseRowData = {
+    expense: { [paymentType: string]: ExpenseCellData };
+    totalExpense: number;
+}
+type ExpenseReportData = {
+    [houseID: string]: RentReportExpenseRowData;
+}
+
 export default function TaxReport() {
     const [allTaxSnap, setAllTaxSnap] = useState<AllTaxSnapShot>(initializeAllTaxSnapShot());
     const [newItem, setNewItem] = useState({
@@ -360,6 +391,16 @@ export default function TaxReport() {
         stateTax: '',
     });
         
+    const rootCtx = useRootPageContext();
+    const mainCtx = usePageRelatedContext();
+
+    const [curMonthSelection, setCurMonthSelection] = useState<MonthSelections>('Y2D');
+    const [selectedMonths, setSelectedMonths] = useState<string[]>(getMonthAry(curMonthSelection));
+    const [allOwners, setAllOwners] = useState<{ label: string; value: string; }[]>([]);
+
+    const [allRentReportData, setAllRentReportData] = useState<AllRentReportData>({});
+    const [expenseReportData, setExpenseReportData] = useState<ExpenseReportData>({});
+    
     useEffect(() => {
         getPaymentEmailConfigRaw().then(strDict => {
             const incomeInfoStr = strDict['estimatedTaxReportW2Information'];
@@ -377,6 +418,129 @@ export default function TaxReport() {
         })
     }, []);
 
+
+    const loadData = async () => {        
+            if (selectedMonths.length === 0) return;
+            
+            
+            const paymentData: IPaymentWithDateMonthPaymentType[] = await loadDataWithMonthRange(rootCtx, mainCtx, loadPayment, selectedMonths, 'receivedDate', 'Rent Payment');
+            //setAllPaymentData(paymentData);
+            
+            const ownerDc = paymentData.reduce((acc, pmt) => {
+                const ownerName = pmt.addressObj?.ownerName;
+                if (!acc.dict[ownerName]) {
+                    acc.owners.push(ownerName);
+                    acc.dict[ownerName] = true;
+                }
+                return acc;
+            }, {
+                dict: {} as { [owner: string]: boolean; },
+                owners: [] as string[],
+            });
+            ownerDc.owners.sort((a, b) => a.localeCompare(b));
+            setAllOwners([
+                { label: 'All', value: '' },            
+            ].concat(ownerDc.owners.map(o => ({
+                label: o,
+                value: o,
+            }))));
+    
+            
+            //const allHouses = mainCtx.getAllForeignKeyLookupItems('houseInfo') as IHouseInfo[];
+            //selectedMonths        
+            
+            const allRentReportDataAndMisc = paymentData.reduce((acc,pmt) => {            
+                let houseIcomExp = acc.rptData[pmt.houseID];
+                if (!houseIcomExp) {
+                    houseIcomExp = {
+                        income: {},
+                        totalIncome: 0,
+                    };
+                    acc.rptData[pmt.houseID] = houseIcomExp;
+                }
+                let pmpTypeData = houseIcomExp.income[pmt.paymentTypeName];
+                if (!pmpTypeData) {   
+                    pmpTypeData = {
+                        amount: 0,
+                        payments: [],
+                    };
+                    houseIcomExp.income[pmt.paymentTypeName] = pmpTypeData;
+                }
+                pmpTypeData.amount = round2(pmpTypeData.amount + pmt.amount);
+                pmpTypeData.payments.push(pmt);
+                houseIcomExp.totalIncome = round2(houseIcomExp.totalIncome + pmt.amount);
+    
+                if (!acc.paymentTypeData.existing[pmt.paymentTypeName]) {
+                    acc.paymentTypeData.paymentTypes.push(pmt.paymentTypeName);
+                    acc.paymentTypeData.existing[pmt.paymentTypeName] = true;
+                }
+                return acc;
+            }, {
+                rptData: {} as AllRentReportData,
+                paymentTypeData: {
+                    existing: {},
+                    paymentTypes: [] as string[],
+                } as { 
+                    existing: { [paymentType: string]: boolean; };
+                    paymentTypes: string[];
+                } ,
+            });
+    
+            setAllRentReportData(allRentReportDataAndMisc.rptData);            
+        }
+    
+    
+        async function loadExpenseData() {
+            const expenseData: IExpenseData[] = await loadDataWithMonthRange(rootCtx, mainCtx, loadMaintenanceData, selectedMonths, 'date', 'ExpenseData');
+            const expenseRes = expenseData.reduce((acc, exp) => {
+                let houseExp = acc.expenseData[exp.houseID];
+                if (!houseExp) {
+                    houseExp = {
+                        expense: {},
+                        totalExpense: 0,
+                    };
+                    acc.expenseData[exp.houseID] = houseExp;
+                }
+    
+                let expCatData = houseExp.expense[exp.expenseCategoryName];
+                if (!expCatData) {
+                    expCatData = {
+                        amount: 0,
+                        expenses: [],
+                    };
+                    houseExp.expense[exp.expenseCategoryName] = expCatData;
+                }
+    
+                expCatData.amount = round2(expCatData.amount + exp.amount);
+                houseExp.totalExpense = round2(houseExp.totalExpense + exp.amount);
+                expCatData.expenses.push(exp);
+    
+                if (!acc.expenseCatData.existing[exp.expenseCategoryName]) {
+                    acc.expenseCatData.expenseCats.push(exp.expenseCategoryName);
+                    acc.expenseCatData.existing[exp.expenseCategoryName] = true;
+                }
+                return acc;
+            }, {
+                expenseData: {} as ExpenseReportData,
+                expenseCatData: {
+                    existing: {} as { [expenseCat: string]: boolean; },
+                    expenseCats: [] as string[],
+                }
+            });
+    
+            setExpenseReportData(expenseRes.expenseData);            
+        }
+    
+        async function loadAll() {
+            await mainCtx.checkLoadForeignKeyForTable('maintenanceRecords');
+            await loadData();
+            await loadExpenseData();
+            mainCtx.showLoadingDlg('');        
+        }
+        useEffect(() => {
+            mainCtx.showLoadingDlg('Loading Rent Report...');
+            loadAll();
+        }, [selectedMonths.join(',')]);
     
     
 
@@ -408,8 +572,34 @@ export default function TaxReport() {
 
 
     const adjustedGrossIncome = calculateTotalIncome(allTaxSnap);
+
+    const yearSelections = ['All', 'LastMonth', 'Last3Month', 'Y2D', 'LastYear'].map(value => ({
+        value,
+        label: value,
+        selected: value === curMonthSelection
+    }));
     return (
         <div style={{ height: 500, width: '100%' }}>
+            <Box mb={2} display={'flex'} gap={2} alignItems={"flex-end"}>
+                <Select
+                    value={curMonthSelection}
+                    label="Year Selection"
+                    onChange={e => {
+                        const tv = e.target.value;
+                        let selected: string = '';
+                        if (typeof tv === 'string') {
+                            selected = tv;
+                        }
+                        setCurMonthSelection(selected as MonthSelections);
+                        setSelectedMonths(getMonthAry(selected as MonthSelections));
+                    }}
+                    
+                >
+                    {
+                        yearSelections.map((item) => (<MenuItem key={item.value} value={item.value}>{ item.label}</MenuItem>))
+                    }
+                </Select>
+            </Box>
             <Box mb={2} display="flex" gap={2} alignItems="flex-end">
                 <TextField
                     name="income"
@@ -513,20 +703,23 @@ export default function TaxReport() {
                     <MultipleSelectChip
                         label="Houses"
                         allItems={
-                        [{
-                            id: '1',
-                            name:'Item1'
-                        },
+                            [{
+                                id: '1',
+                                name: 'Item1'
+                            },
                             {
                                 id: '2',
                                 name: 'Item2'
-                                }, {
-                                    id: '3',
-                                    name: 'Item 3'
-                                }]
+                            }, {
+                                id: '3',
+                                name: 'Item 3'
+                            }]
                             
                         }
                         selectedIds={['3']}
+                        onChange={async (items) => { 
+
+                        }}
                     />
                 </div>
 
