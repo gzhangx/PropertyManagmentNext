@@ -30,7 +30,7 @@ export function NumberFormatTextField(props: NumberFormatTextFieldProps) {
         customInput={TextField}
         //variant='outlined'
         thousandSeparator={true}
-        decimalScale={props.decimalScale || 2}
+        decimalScale={props.decimalScale ?? 2}
         fixedDecimalScale={true}
         allowNegative={props.allowNegative || false}
         defaultValue={props.defaultValue}

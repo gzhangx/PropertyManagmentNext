@@ -489,9 +489,12 @@ export default function TaxReport() {
                 borderRadius: 2,
                 boxShadow: 2,
             }}>
-                {
-                    generateAccountingTextField('Kids Under 17', allTaxSnap, 'numberOfKidsUnder17')
-                }
+                <NumberFormatTextField label='Number of Kids' value={allTaxSnap.numberOfKidsUnder17} decimalScale={0}
+                    onChange={async e => {
+                        allTaxSnap.numberOfKidsUnder17 = e.target.value ? parseInt(e.target.value) : 0;
+                        await saveAllTaxSnaps();
+                    }}
+                ></NumberFormatTextField>                
                 {
                     generateAccountingTextField('Interests', allTaxSnap.incomeInfo, 'taxableInterest2b')
                 }
