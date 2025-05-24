@@ -490,6 +490,9 @@ export default function TaxReport() {
                 boxShadow: 2,
             }}>
                 {
+                    generateAccountingTextField('Kids Under 17', allTaxSnap, 'numberOfKidsUnder17')
+                }
+                {
                     generateAccountingTextField('Interests', allTaxSnap.incomeInfo, 'taxableInterest2b')
                 }
                 {
@@ -509,6 +512,18 @@ export default function TaxReport() {
                 <div>
                     <label>Calculated Total Income</label>
                     <label style={{ margin: 4 }}>{allTaxSnap.calculated.totalIncome_1040line15}</label>
+                </div>
+                <div>
+                    <label>Calculated Tax</label>
+                    <label style={{ margin: 4 }}>{allTaxSnap.calculated.calculatedTax_16}</label>
+                </div>
+                <div>
+                    <label>Child Tax Credit</label>
+                    <label style={{ margin: 4 }}>{allTaxSnap.calculated.childTaxCredit_19}</label>
+                </div>
+                <div>
+                    <label>Form 1040 line 22 tax after child</label>
+                    <label style={{ margin: 4 }}>{allTaxSnap.calculated.totalTax_form1040_line24}</label>
                 </div>
                 
             </Box>
@@ -547,6 +562,7 @@ interface CalculateInfo {
 }
 interface AllTaxSnapShot {
     fillingStatus: 'married';
+    numberOfKidsUnder17: number;
     incomeInfo: IncomeInfo;
     expenseInfo: {
         medicalExpenses: number;
@@ -562,6 +578,8 @@ interface AllTaxSnapShot {
         form1040_line22_taxAfterChild: number;
         totalTax_form1040_line24: number;
 
+        form1040_line237_taxDue: number;
+
         scheduleACalcInfo: CalculateInfo[];
         scheduleADeduction: number;
     };
@@ -570,6 +588,7 @@ interface AllTaxSnapShot {
 function initializeAllTaxSnapShot(): AllTaxSnapShot {
     return {
         fillingStatus: 'married',
+        numberOfKidsUnder17: 0,
         incomeInfo: {
             taxableInterest2b: 0,
             ordinaryDividends3b: 0,
@@ -588,6 +607,7 @@ function initializeAllTaxSnapShot(): AllTaxSnapShot {
             childTaxCredit_19: 0,
             form1040_line22_taxAfterChild: 0,
             totalTax_form1040_line24: 0,
+            form1040_line237_taxDue: 0,
 
             scheduleACalcInfo: [],
             scheduleADeduction: 0,
@@ -686,24 +706,82 @@ function calculateTotalIncome(snap: AllTaxSnapShot): number {
     }
 
     calculateScheduleA();
+    
     snap.calculated.totalIncome_1040line15 = adjustedGrossIncome - snap.calculated.scheduleADeduction;
-    return adjustedGrossIncome;
-}   
 
+    snap.calculated.calculatedTax_16 = calculateTax2024TaxtTable(snap.calculated.totalIncome_1040line15);// calculateTax(bracketsMarriedFileJoinyly, snap.calculated.totalIncome_1040line15);
+
+
+    calculateForm8812CreditsForQualifyingChildren(snap);
+
+    snap.calculated.totalTax_form1040_line24 = snap.calculated.calculatedTax_16 - snap.calculated.childTaxCredit_19;
+    snap.calculated.form1040_line237_taxDue = round2(snap.calculated.totalTax_form1040_line24 - (snap.incomeInfo.w2s.reduce((acc, w2) => acc + (w2.fedTax || 0), 0) || 0));
+    return adjustedGrossIncome;
+}
+
+
+function calculateForm8812CreditsForQualifyingChildren(snap: AllTaxSnapShot) {
+    const line3 = snap.calculated.adjustedGrossIncome_1040line11;
+    const line5 = (snap.numberOfKidsUnder17 || 0) * 2000;
+    const line8 = line5;
+
+    const line9 = snap.fillingStatus === 'married' ? 400000 : 200000;
+    let line10 = line3 - line9;
+    if (line10 < 0) {
+        line10 = 0;
+    } else {
+        line10 = Math.trunc(line10 + 999 / 1000) * 1000;
+    }
+    const line11 = line10 * 0.05;
+    if (line8 < line11) return;
+
+    const line12 = line8 - line11;
+    const line13 = snap.calculated.calculatedTax_16;
+    const line14 = Math.min(line12, line13);
+    snap.calculated.childTaxCredit_19 = line14;
+    //Child Tax Credit Limit Worksheets A and  ignored, assume  taxes is the one
+
+}
+
+
+function calculateTax2024TaxtTable(income: number): number {
+    // 2024 Tax Brackets for Married Filing Jointly
+    let rate = 0;
+    let sub = 0;
+    if (income < 201050) {
+        rate = 0.22;
+        sub = 9894;
+    } else if (income < 383900) {
+        rate = 0.24;
+        sub = 13915;
+    } else if (income < 243725) {
+        rate = 0.32;
+        sub = 22313.5;
+    } else if (income < 609350) {
+        rate = 0.35;
+        sub = 29625.25;
+    } else {
+        rate = 0.37;
+        sub = 41812.25;
+    }
+    return round2(income * rate - sub);
+ 
+}
 interface TaxBracket {
-    lower: number;
+    
     upper: number;
     rate: number;
 }
 
+
 const bracketsMarriedFileJoinyly: TaxBracket[] = [
-    { lower: 0, upper: 22000, rate: 0.10 },
-    { lower: 22001, upper: 89450, rate: 0.12 },
-    { lower: 89451, upper: 190750, rate: 0.22 },
-    { lower: 190751, upper: 364200, rate: 0.24 },
-    { lower: 364201, upper: 462500, rate: 0.32 },
-    { lower: 462501, upper: 693750, rate: 0.35 },
-    { lower: 693751, upper: Infinity, rate: 0.37 }
+    { upper: 23200, rate: 0.10 },
+    { upper: 94300, rate: 0.12 },
+    { upper: 201050, rate: 0.22 },
+    { upper: 383900, rate: 0.24 },
+    { upper: 487450, rate: 0.32 },
+    { upper: 731200, rate: 0.35 },
+    { upper: Infinity, rate: 0.37 }
 ];
 
 function calculateTax(brackets: TaxBracket[], income: number): number {
@@ -714,14 +792,14 @@ function calculateTax(brackets: TaxBracket[], income: number): number {
     let previousLimit = 0;
 
     for (const bracket of brackets) {
-        if (income > bracket.lower) {
+        if (income > previousLimit) {
             const taxableAmount = Math.min(income, bracket.upper) - previousLimit;
             if (taxableAmount > 0) {
-                tax += taxableAmount * bracket.rate;
-            }
+                tax = round2(tax + taxableAmount * bracket.rate);
+            } else break;
             previousLimit = bracket.upper;
-        }
+        } else break;
     }
 
-    return tax;
+    return round2(tax);
 }
