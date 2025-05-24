@@ -556,7 +556,9 @@ export default function TaxReport() {
 
 interface IncomeInfo {    
     taxableInterest2b: number;
+    qualifiedDividends3a: number;
     ordinaryDividends3b: number;
+    section199ADividents: number;
     w2s: W2Info[];
 }
 
@@ -588,6 +590,8 @@ interface AllTaxSnapShot {
 
         scheduleACalcInfo: CalculateInfo[];
         scheduleADeduction: number;
+
+        form8582LossLimitionsTotalLossAllowed: number;  //if 0, no loss allowed
     };
 }
 
@@ -597,7 +601,9 @@ function initializeAllTaxSnapShot(): AllTaxSnapShot {
         numberOfKidsUnder17: 0,
         incomeInfo: {
             taxableInterest2b: 0,
+            qualifiedDividends3a: 0,
             ordinaryDividends3b: 0,
+            section199ADividents: 0,
             w2s: [],
         },
         expenseInfo: {
@@ -617,6 +623,8 @@ function initializeAllTaxSnapShot(): AllTaxSnapShot {
 
             scheduleACalcInfo: [],
             scheduleADeduction: 0,
+
+            form8582LossLimitionsTotalLossAllowed: 0,
         }
     };
 }   
@@ -723,6 +731,30 @@ function calculateTotalIncome(snap: AllTaxSnapShot): number {
 
     snap.calculated.totalTax_form1040_line24 = snap.calculated.calculatedTax_16 - snap.calculated.childTaxCredit_19;
     snap.calculated.form1040_line237_taxDue = round2(snap.calculated.totalTax_form1040_line24 - (snap.incomeInfo.w2s.reduce((acc, w2) => acc + (w2.fedTax || 0), 0) || 0));
+
+
+    function form8582Limitions(
+        line1bTotalLosses: number, //only losses allowed,
+        line1aIncomes: number,
+        line1cPriorYearLosses: number,
+    ) {        
+        if (line1bTotalLosses > 0) line1bTotalLosses = 0;
+        const line1d = round2(line1aIncomes + line1bTotalLosses + line1cPriorYearLosses);
+        const line4Loss = line1d> 0? 0: Math.abs(line1d);
+        const part2Line5 = 150000;
+        const part2Line6AGI = snap.calculated.adjustedGrossIncome_1040line11;
+        let line7 = part2Line5 - part2Line6AGI;
+        if (line7 < 0) line7 = 0;
+        const line8 = line7 * 0.5;
+        const line9 = Math.min(Math.abs(line4Loss), line8);
+
+        const line10 = line1aIncomes;
+        const line11TotalLossAllowed = line1bTotalLosses + line9;
+
+        snap.calculated.form8582LossLimitionsTotalLossAllowed = line11TotalLossAllowed;
+    }
+
+    form8582Limitions(0, 0, 0); //TODO: add totall income/loss
     return adjustedGrossIncome;
 }
 
