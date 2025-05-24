@@ -571,6 +571,7 @@ export default function TaxReport() {
     }
 
 
+    const allHouses = (mainCtx.getAllForeignKeyLookupItems('houseInfo') || []).map(r=>r.data) as IHouseInfo[];
     const adjustedGrossIncome = calculateTotalIncome(allTaxSnap);
 
     const yearSelections = ['All', 'LastMonth', 'Last3Month', 'Y2D', 'LastYear'].map(value => ({
@@ -703,22 +704,13 @@ export default function TaxReport() {
                     <MultipleSelectChip
                         label="Houses"
                         allItems={
-                            [{
-                                id: '1',
-                                name: 'Item1'
-                            },
-                            {
-                                id: '2',
-                                name: 'Item2'
-                            }, {
-                                id: '3',
-                                name: 'Item 3'
-                            }]
+                            allHouses.map(h=>({id: h.houseID, name: h.address}))
                             
                         }
-                        selectedIds={['3']}
+                        selectedIds={allTaxSnap.incomeInfo.selectedHouseIDs || []}
                         onChange={async (items) => { 
-
+                            allTaxSnap.incomeInfo.selectedHouseIDs = items.map(i => i.id);
+                            await saveAllTaxSnaps();
                         }}
                     />
                 </div>
@@ -775,6 +767,8 @@ interface IncomeInfo {
     ordinaryDividends3b: number;
     section199ADividents: number;
     w2s: W2Info[];
+
+    selectedHouseIDs: string[];
 }
 
 
@@ -820,6 +814,7 @@ function initializeAllTaxSnapShot(): AllTaxSnapShot {
             ordinaryDividends3b: 0,
             section199ADividents: 0,
             w2s: [],
+            selectedHouseIDs: [],
         },
         expenseInfo: {
             medicalExpenses: 0,
