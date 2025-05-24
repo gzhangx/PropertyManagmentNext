@@ -651,6 +651,7 @@ function calculateTotalIncome(snap: AllTaxSnapShot): number {
             description: 'adjusted gross income * 7.5%',
         });
 
+        //i.e. only medical expenses over 7.5% of AGI are deductible
         let line4 = snap.expenseInfo.medicalExpenses - adjustedGrossIncome * 0.075;
         if (line4 < 0) {
             line4 = 0;
