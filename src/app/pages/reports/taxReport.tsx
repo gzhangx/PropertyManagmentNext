@@ -459,11 +459,15 @@ export default function TaxReport() {
                             >                                
                                 <TableCell align="right">{formatAccounting(row.income)}</TableCell>
                                 <TableCell align="right">{formatAccounting(row.fedTax)}</TableCell>
-                                <TableCell align="right">{formatAccounting(row.stateTax)}
+                                <TableCell align="right">
                                     <CurrencyFormatTextField variant='standard' value={row.stateTax} onChange={async e => {
                                         row.stateTax = parseFloat(e.target.value);
-                                        await saveAllTaxSnaps();
-                                    }}></CurrencyFormatTextField>
+                                    }}
+                                        onBlur={async e => {                                            
+                                            await saveAllTaxSnaps();
+                                        }
+                                        }
+                                    ></CurrencyFormatTextField>
                                 </TableCell>     
                                 <TableCell><i className='fas fa-xmark' onClick={async () => {
                                     allTaxSnap.incomeInfo.w2s = allTaxSnap.incomeInfo.w2s.filter(w => w.id !== row.id);
