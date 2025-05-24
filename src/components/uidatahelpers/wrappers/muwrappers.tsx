@@ -1,5 +1,6 @@
-import { InputAdornment } from '@mui/material';
+import { Box, Chip, FormControl, InputAdornment, InputLabel, MenuItem, OutlinedInput, Select, SelectChangeEvent, Theme, useTheme } from '@mui/material';
 import TextField, { OutlinedTextFieldProps, TextFieldProps,  } from '@mui/material/TextField';
+import React, { useEffect } from 'react';
 import { NumericFormat } from "react-number-format";
 
 export function TextFieldOutlined(props: Omit<OutlinedTextFieldProps,'variant'>) {
@@ -58,4 +59,98 @@ export function CurrencyFormatTextField(props: NumberFormatTextFieldProps) {
         };
     }
     return <NumberFormatTextField {...newProps}></NumberFormatTextField>
+}
+
+
+
+
+
+
+export interface MultipleSelectChipItemDef {
+    id: string;
+    name: string;
+}
+export function MultipleSelectChip(props: {
+    allItems: MultipleSelectChipItemDef[];
+    label: string;
+    selectedIds?: string[];
+}) {
+    const ITEM_HEIGHT = 48;
+    const ITEM_PADDING_TOP = 8;
+    const theme = useTheme();
+    const [items, setItems] = React.useState<MultipleSelectChipItemDef[]>([]);
+
+    useEffect(() => {
+        const selectedIds = props.selectedIds;
+        if (selectedIds) {
+            const selectedItems = props.allItems.filter(item => selectedIds.includes(item.id));
+            setItems(selectedItems);
+        }
+    }, [props.selectedIds]);
+
+    function getStyles(item: MultipleSelectChipItemDef, selected: readonly MultipleSelectChipItemDef[], theme: Theme) {
+        return {
+            fontWeight: selected.find(i => i.id === item.id)
+                ? theme.typography.fontWeightMedium
+                : theme.typography.fontWeightRegular,
+        };
+    }
+
+    const handleChange = (event: SelectChangeEvent<MultipleSelectChipItemDef[]>) => {
+        const {
+            target: { value },
+        } = event;
+        let setItm: MultipleSelectChipItemDef[];
+        if (typeof value === 'string') {
+            //should never happen
+            const ids = value.split(',');
+            setItm = props.allItems.filter(item => ids.includes(item.id));
+        } else {
+            setItm = value;
+        }
+        setItems(setItm);
+    };
+
+    return (
+        <div>
+            <FormControl sx={{ m: 1, width: 300 }}>
+                <InputLabel>{props.label}</InputLabel>
+                <Select
+                    //labelId="multiple-chip-label"
+                    //id="multiple-chip"
+                    multiple
+                    value={items}
+                    onChange={handleChange}
+                    input={<OutlinedInput
+                        //id="select-multiple-chip"
+                        label={props.label} />}
+                    renderValue={(selected) => (
+                        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
+                            {selected.map((value) => (
+                                <Chip key={value.id} label={value.name} />
+                            ))}
+                        </Box>
+                    )}
+                    MenuProps={{
+                        PaperProps: {
+                            style: {
+                                maxHeight: ITEM_HEIGHT * 4.5 + ITEM_PADDING_TOP,
+                                //width: 250,
+                            },
+                        },
+                    }}
+                >
+                    {props.allItems.map((item) => (
+                        <MenuItem
+                            key={item.id}
+                            value={item as any}
+                            style={getStyles(item, items, theme)}
+                        >
+                            {item.name}
+                        </MenuItem>
+                    ))}
+                </Select>
+            </FormControl>
+        </div>
+    );
 }

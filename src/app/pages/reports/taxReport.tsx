@@ -1,5 +1,5 @@
 'use client'
-import React, { ChangeEvent, useEffect, useRef, useState } from "react";
+import React, { ChangeEvent, use, useEffect, useRef, useState } from "react";
 import { IPdfTextItem, parsePdfFile, PdfScript } from "../../../components/utils/pdfFileUtil";
 import { startCase } from "lodash";
 import { getUserOptions, updateUserOptions } from "../../../components/api";
@@ -14,15 +14,10 @@ import TableContainer from '@mui/material/TableContainer';
 import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
 import Paper from '@mui/material/Paper';
-import { CurrencyFormatTextField, NumberFormatTextField } from '@/src/components/uidatahelpers/wrappers/muwrappers';
+import { CurrencyFormatTextField, MultipleSelectChip, NumberFormatTextField } from '@/src/components/uidatahelpers/wrappers/muwrappers';
 import { round2 } from '@/src/components/report/util/utils';
 
-import OutlinedInput from '@mui/material/OutlinedInput';
-import InputLabel from '@mui/material/InputLabel';
-import MenuItem from '@mui/material/MenuItem';
-import FormControl from '@mui/material/FormControl';
-import Select, { SelectChangeEvent } from '@mui/material/Select';
-import Chip from '@mui/material/Chip';
+
 import { IHouseInfo } from "@/src/components/reportTypes";
 
 
@@ -515,7 +510,9 @@ export default function TaxReport() {
                     generateAccountingTextField('Chariable donations', allTaxSnap.expenseInfo, 'cashDonations')
                 }
                 <div>
-                    <MultipleSelectChip allItems={
+                    <MultipleSelectChip
+                        label="Houses"
+                        allItems={
                         [{
                             id: '1',
                             name:'Item1'
@@ -523,8 +520,14 @@ export default function TaxReport() {
                             {
                                 id: '2',
                                 name: 'Item2'
-                            }]
-                    }/>
+                                }, {
+                                    id: '3',
+                                    name: 'Item 3'
+                                }]
+                            
+                        }
+                        selectedIds={['3']}
+                    />
                 </div>
 
                 <div>
@@ -863,80 +866,3 @@ function calculateTax(brackets: TaxBracket[], income: number): number {
 }
 
 
-
-interface MultipleSelectChipItems {
-    id: string;
-    name: string;
-} 
-function MultipleSelectChip(props: {
-    allItems: MultipleSelectChipItems[];
-}) {
-    const ITEM_HEIGHT = 48;
-    const ITEM_PADDING_TOP = 8;
-    const theme = useTheme();
-    const [items, setItems] = React.useState<MultipleSelectChipItems[]>([]);
-
-    function getStyles(item: MultipleSelectChipItems, selected: readonly MultipleSelectChipItems[], theme: Theme) {
-        return {
-            fontWeight: selected.find(i=>i.id === item.id)
-                ? theme.typography.fontWeightMedium
-                : theme.typography.fontWeightRegular,
-        };
-    }
-    
-    const handleChange = (event: SelectChangeEvent<MultipleSelectChipItems[]>) => {
-        const {
-            target: { value },
-        } = event;
-        console.log('MultipleSelectChipItems select value', value);
-        let setItm: MultipleSelectChipItems[];
-        if (typeof value === 'string') {
-            const ids = value.split(',');
-            setItm = props.allItems.filter(item => ids.includes(item.id));
-        } else {            
-            setItm = value;
-        }           
-        setItems(setItm);
-    };
-
-    return (
-        <div>
-            <FormControl sx={{ m: 1, width: 300 }}>
-                <InputLabel id="demo-multiple-chip-label">Chip</InputLabel>
-                <Select
-                    labelId="demo-multiple-chip-label"
-                    id="demo-multiple-chip"
-                    multiple
-                    value={items}
-                    onChange={handleChange}
-                    input={<OutlinedInput id="select-multiple-chip" label="Chip" />}
-                    renderValue={(selected) => (
-                        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
-                            {selected.map((value) => (
-                                <Chip key={value.id} label={value.name} />
-                            ))}
-                        </Box>
-                    )}
-                    MenuProps={{
-                        PaperProps: {
-                            style: {
-                                maxHeight: ITEM_HEIGHT * 4.5 + ITEM_PADDING_TOP,
-                                //width: 250,
-                            },
-                        },
-                      }}
-                >
-                    {props.allItems.map((item) => (
-                        <MenuItem
-                            key={item.id}
-                            value={item as any}
-                            style={getStyles(item, items, theme)}
-                        >
-                            {item.name}
-                        </MenuItem>
-                    ))}
-                </Select>
-            </FormControl>
-        </div>
-    );
-  }
