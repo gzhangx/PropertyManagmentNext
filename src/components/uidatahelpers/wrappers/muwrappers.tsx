@@ -127,10 +127,17 @@ export function MultipleSelectChip(props: {
                     renderValue={(selected) => (
                         <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
                             {selected.map((value) => (
-                                <Chip key={value.id} label={value.name} />
+                                <Chip key={value.id} label={value.name} onDelete={e => {
+                                    const newItems = items.filter(item => item.id !== value.id);
+                                    setItems(newItems);
+                                }}
+                                    onMouseDown={(event) => {
+                                    event.stopPropagation();
+                                  }}
+                                />
                             ))}
                         </Box>
-                    )}
+                    )}                    
                     MenuProps={{
                         PaperProps: {
                             style: {
