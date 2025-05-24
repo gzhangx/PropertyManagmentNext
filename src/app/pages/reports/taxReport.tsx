@@ -525,7 +525,10 @@ export default function TaxReport() {
                     <label>Form 1040 line 22 tax after child</label>
                     <label style={{ margin: 4 }}>{allTaxSnap.calculated.totalTax_form1040_line24}</label>
                 </div>
-                
+                <div>
+                    <label>Form 1040 line 237 tax due</label>
+                    <label style={{ margin: 4 }}>{allTaxSnap.calculated.form1040_line237_taxDue}</label>
+                </div>
             </Box>
         </div>
     );
