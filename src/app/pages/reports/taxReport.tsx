@@ -15,7 +15,7 @@ import TableContainer from '@mui/material/TableContainer';
 import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
 import Paper from '@mui/material/Paper';
-import { TextFieldOutlined } from '@/src/components/uidatahelpers/wrappers/muwrappers';
+import { NumberFormatTextField, TextFieldOutlined } from '@/src/components/uidatahelpers/wrappers/muwrappers';
 import { round2 } from '@/src/components/report/util/utils';
 import { init } from 'next/dist/compiled/webpack/webpack';
 
@@ -460,10 +460,10 @@ export default function TaxReport() {
                                 <TableCell align="right">{formatAccounting(row.income)}</TableCell>
                                 <TableCell align="right">{formatAccounting(row.fedTax)}</TableCell>
                                 <TableCell align="right">{formatAccounting(row.stateTax)}
-                                    <TextField value={row.stateTax} onChange={async e => {
+                                    <NumberFormatTextField variant='standard' value={row.stateTax} onChange={async e => {
                                         row.stateTax = parseFloat(e.target.value);
                                         await saveAllTaxSnaps();
-                                    }}></TextField>
+                                    }}></NumberFormatTextField>
                                 </TableCell>     
                                 <TableCell><i className='fas fa-xmark' onClick={async () => {
                                     allTaxSnap.incomeInfo.w2s = allTaxSnap.incomeInfo.w2s.filter(w => w.id !== row.id);
@@ -513,7 +513,7 @@ export default function TaxReport() {
 
     function generateAccountingTextField<T, K extends keyof T >(label: string, obj: T, path: K) {
         const val = obj[path];
-        return <TextFieldOutlined label={label} value={formatAccounting(val as string)} onChange={async e => {
+        return <NumberFormatTextField variant='outlined' label={label} value={formatAccounting(val as string)} onChange={async e => {
             const resVal = e.target.value;
             let setVal = 0;
             if (resVal) {
