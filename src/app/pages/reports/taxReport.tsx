@@ -5,7 +5,7 @@ import { IPdfTextItem, parsePdfFile, PdfScript } from "../../../components/utils
 import { startCase } from "lodash";
 import { getUserOptions, updateUserOptions } from "../../../components/api";
 import Box from '@mui/material/Box';
-import { Button, TextField } from '@mui/material';
+import { Button, InputAdornment, TextField } from '@mui/material';
 import { formatAccounting } from '@/src/components/utils/reportUtils';
 import * as uuid from 'uuid';
 import Table from '@mui/material/Table';
@@ -15,7 +15,7 @@ import TableContainer from '@mui/material/TableContainer';
 import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
 import Paper from '@mui/material/Paper';
-import { NumberFormatTextField, TextFieldOutlined } from '@/src/components/uidatahelpers/wrappers/muwrappers';
+import { CurrencyFormatTextField, NumberFormatTextField, TextFieldOutlined } from '@/src/components/uidatahelpers/wrappers/muwrappers';
 import { round2 } from '@/src/components/report/util/utils';
 import { init } from 'next/dist/compiled/webpack/webpack';
 
@@ -460,10 +460,10 @@ export default function TaxReport() {
                                 <TableCell align="right">{formatAccounting(row.income)}</TableCell>
                                 <TableCell align="right">{formatAccounting(row.fedTax)}</TableCell>
                                 <TableCell align="right">{formatAccounting(row.stateTax)}
-                                    <NumberFormatTextField variant='standard' value={row.stateTax} onChange={async e => {
+                                    <CurrencyFormatTextField variant='standard' value={row.stateTax} onChange={async e => {
                                         row.stateTax = parseFloat(e.target.value);
                                         await saveAllTaxSnaps();
-                                    }}></NumberFormatTextField>
+                                    }}></CurrencyFormatTextField>
                                 </TableCell>     
                                 <TableCell><i className='fas fa-xmark' onClick={async () => {
                                     allTaxSnap.incomeInfo.w2s = allTaxSnap.incomeInfo.w2s.filter(w => w.id !== row.id);
@@ -513,7 +513,7 @@ export default function TaxReport() {
 
     function generateAccountingTextField<T, K extends keyof T >(label: string, obj: T, path: K) {
         const val = obj[path];
-        return <NumberFormatTextField variant='outlined' label={label} value={formatAccounting(val as string)} onChange={async e => {
+        return <CurrencyFormatTextField variant='outlined' label={label} value={formatAccounting(val as string)} onChange={async e => {
             const resVal = e.target.value;
             let setVal = 0;
             if (resVal) {
@@ -521,7 +521,8 @@ export default function TaxReport() {
             }
             obj[path] = setVal as T[K];
             await saveAllTaxSnaps();
-        }} />
+        }}                                            
+        />
     }
     
 }

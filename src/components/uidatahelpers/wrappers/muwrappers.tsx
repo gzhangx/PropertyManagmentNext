@@ -1,3 +1,4 @@
+import { InputAdornment } from '@mui/material';
 import TextField, { OutlinedTextFieldProps, TextFieldProps,  } from '@mui/material/TextField';
 import { NumericFormat } from "react-number-format";
 
@@ -18,12 +19,13 @@ export function TextFieldOutlined(props: Omit<OutlinedTextFieldProps,'variant'>)
 }
 
 
-export function NumberFormatTextField(props: TextFieldProps & {
+type NumberFormatTextFieldProps = TextFieldProps & {
     decimalScale?: number;
     allowNegative?: boolean;
     defaultValue?: string | number;
     value: string | number | null;
-}) {
+};
+export function NumberFormatTextField(props: NumberFormatTextFieldProps) {
     return <NumericFormat  {...props}
         customInput={TextField}
         //variant='outlined'
@@ -44,3 +46,16 @@ export function NumberFormatTextField(props: TextFieldProps & {
         
     ></NumericFormat>
 }   
+
+
+export function CurrencyFormatTextField(props: NumberFormatTextFieldProps) {
+    const newProps: NumberFormatTextFieldProps = { ...props };
+    if (!newProps.slotProps) {
+        newProps.slotProps = {
+            input: {
+                startAdornment: <InputAdornment position="start">$</InputAdornment>,
+            }
+        };
+    }
+    return <NumberFormatTextField {...newProps}></NumberFormatTextField>
+}
