@@ -74,6 +74,7 @@ export function MultipleSelectChip(props: {
     allItems: MultipleSelectChipItemDef[];
     label: string;
     selectedIds?: string[];
+    onChange: (items: MultipleSelectChipItemDef[]) => Promise<void>;
 }) {
     const ITEM_HEIGHT = 48;
     const ITEM_PADDING_TOP = 8;
@@ -96,7 +97,7 @@ export function MultipleSelectChip(props: {
         };
     }
 
-    const handleChange = (event: SelectChangeEvent<MultipleSelectChipItemDef[]>) => {
+    const handleChange = async (event: SelectChangeEvent<MultipleSelectChipItemDef[]>) => {
         const {
             target: { value },
         } = event;
@@ -109,6 +110,7 @@ export function MultipleSelectChip(props: {
             setItm = value;
         }
         setItems(setItm);
+        await props.onChange(setItm);
     };
 
     return (
@@ -127,8 +129,9 @@ export function MultipleSelectChip(props: {
                     renderValue={(selected) => (
                         <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
                             {selected.map((value) => (
-                                <Chip key={value.id} label={value.name} onDelete={e => {
+                                <Chip key={value.id} label={value.name} onDelete={async e => {
                                     const newItems = items.filter(item => item.id !== value.id);
+                                    await props.onChange(newItems);
                                     setItems(newItems);
                                 }}
                                     onMouseDown={(event) => {
