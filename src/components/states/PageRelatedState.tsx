@@ -54,6 +54,10 @@ function getInitialExpenseCategoryModel() {
                 table: 'InMemIRSExpenseCategories',
                 field: 'irsExpenseCategoryId',
             }
+        },
+        {
+            field: 'doNotIncludeInTax',
+            type: 'int',
         }
     ];
     const expModel: IGetModelReturn = {

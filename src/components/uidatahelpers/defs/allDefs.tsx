@@ -234,7 +234,8 @@ const expenseCategoryDef: ITableAndSheetMappingInfo<unknown> = {
         //{ field: 'userID', desc: 'Owner', foreignKey: { table: 'userInfo', field: 'userID' }, required: true, isId: true, },
         { field: 'expenseCategoryID', desc: 'ExpensiveCategoryID', required: true, },
         { field: 'expenseCategoryName', desc: 'Name' },
-        { field: 'mappedToTaxExpenseCategoryName', desc: 'mapTo', },        
+        { field: 'mappedToTaxExpenseCategoryName', desc: 'Map to IRS Type', },        
+        { field: 'doNotIncludeInTax', desc:'Dont include in expense tax'}
     ]
 }
 
