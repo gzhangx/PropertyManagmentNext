@@ -18,6 +18,8 @@ import GoogleSheetConfigPage from '../app/pages/config/googleSheetConfig'
 
 import NewLeaseReport from '../app/pages/reports/leaseReport'
 
+import Register from '../app/pages/register'
+
 type LocalPageInfo = {
     name: string;
     page?: JSX.Element;
@@ -150,6 +152,7 @@ const { sections, sideBarContentLookup } = allSections.reduce((acc, sec) => {
     sectionsByName: {} as {[name:string]:IMainSideBarSection},
 });
 
+sideBarContentLookup.set('register', Register);
 
 const otherPages = <></>
 export {
