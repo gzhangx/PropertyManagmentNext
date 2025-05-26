@@ -131,24 +131,21 @@ export default function Login() {
                                             </a>
                                         </form>
                                         <hr />
-                                        <div className="text-center">
-                                                <Link href="forget" legacyBehavior>
-                                                    <a className="small" href="forgot-password.html">Forgot Password?</a>
-                                                </Link>
+                                        <div className="text-center">                                                
+                                                    <a className="small" href="forgot-password.html">Forgot Password?</a>                                                
                                         </div>
-                                        <div className="text-center">
-                                            <Link href="register" legacyBehavior>
+                                        <div className="text-center">                                            
                                                 <a className="small" href="#">Create an Account!</a>
-                                            </Link>
+                                            
                                         </div>
                                         <div className="text-center">
-                                            <Link href="register" legacyBehavior>
+                                            
                                                 <a className="small" href="#" onClick={e => {
                                                     localStorage.removeItem('login.token');    
                                                     localStorage.clear();
                                                     e.preventDefault();
                                                 }}>Clear</a>
-                                            </Link>
+                                            
                                         </div>
                                     </div>
                                 </div>
