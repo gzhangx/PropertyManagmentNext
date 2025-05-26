@@ -12,7 +12,9 @@ import {
     IModelsDict,
     IPageRelatedState,
     IWorkerInfo,
+    TaxExpenseCategories,
     TaxExpenseCategoryDataType,
+    TaxExpenseCategoryNameType,
     TopBarIconNotifyCfg,
 } from '../reportTypes';
 import { useRootPageContext } from './RootState';
@@ -199,7 +201,24 @@ export function PageRelatedContextWrapper(props: {
         switch (table) {
             case 'expenseCategories':
                 //use irs tax categories, and use irs ID, use desc from table if matches id
-                const expenseCatRows = (sqlRes.rows as TaxExpenseCategoryDataType[])
+                const expenseCatDbRows = (sqlRes.rows as TaxExpenseCategoryDataType[]);
+                res.rows = TaxExpenseCategories.map(catName => {
+                    const cat = {
+                        id: catName,
+                        desc: catName,
+                    };
+                    return cat;
+                });
+                expenseCatDbRows.forEach(dbData => {
+                    if (!TaxExpenseCategories.includes(dbData.expenseCategoryID as TaxExpenseCategoryNameType)) {
+                        //no matching dbData, 
+                        res.rows.push({
+                            id: dbData.expenseCategoryID,
+                            desc: dbData.expenseCategoryName,
+                        });                     
+                    } 
+                    // else means we have matchind id in DB, this is taken care of
+                });
                 break;
         }
         //const map: IForeignKeyIdDesc = new Map();

@@ -320,6 +320,7 @@ export type TaxExpenseCategoryDataType = {
     expenseCategoryID: string;
     expenseCategoryName: string;
     mappedToTaxExpenseCategoryName: TaxExpenseCategoryNameType;
+    doNotIncludeInTax: boolean;
     displayOrder: string;
 };
 
