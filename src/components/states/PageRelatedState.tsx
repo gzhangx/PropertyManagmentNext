@@ -31,6 +31,85 @@ const PageRelatedContext = React.createContext({} as IPageRelatedState);
 export function usePageRelatedContext() {
     return useContext(PageRelatedContext);
 }
+
+
+function getInitialExpenseCategoryModel() {
+    const model: IModelsDict = new Map();
+    const fields: IDBFieldDef[] = [
+        {
+            field: 'expenseCategoryID',
+            type: 'string',
+            isId: true,            
+        },
+        {
+            field: 'expenseCategoryName',
+            type: 'string',
+            isId: false,            
+        },
+        {
+            field: 'mappedToTaxExpenseCategoryName',
+            type: 'string',
+            isId: false,
+            foreignKey: {
+                table: 'InMemIRSExpenseCategories',
+                field: 'irsExpenseCategoryId',
+            }
+        }
+    ];
+    const expModel: IGetModelReturn = {
+        fields,
+        fieldMap: fields.reduce((acc, f) => {
+            acc[f.field] = f;
+            return acc;
+        }, {} as Record<string, IDBFieldDef>),
+    }
+    model.set('expenseCategories', expModel);
+
+    const inMemIrsExpFields: IDBFieldDef[] = [
+        {
+            field: 'irsExpenseCategoryId',
+            type: 'string',
+            isId: true,
+        },
+        {
+            field: 'desc',
+            type: 'string',
+            isId: false,
+        },
+    ];
+    const inMemIrsCatModel: IGetModelReturn = {
+        fields: inMemIrsExpFields,
+        fieldMap: inMemIrsExpFields.reduce((acc, f) => {
+            acc[f.field] = f;
+            return acc;
+        }, {} as Record<string, IDBFieldDef>),
+    };
+    model.set('InMemIRSExpenseCategories', inMemIrsCatModel);
+
+    const foreignKeyLoopkup: IForeignKeyLookupMap = new Map();
+
+    const inMemIRSExpenseCategories: IForeignKeyCombo = {
+        rows: [],
+        idObj: new Map(),
+        idDesc: new Map(),
+        descToId: new Map(),
+    }
+    foreignKeyLoopkup.set('InMemIRSExpenseCategories', inMemIRSExpenseCategories);
+    inMemIRSExpenseCategories.rows = TaxExpenseCategories.map(id => ({
+        id,
+        desc: id,
+    }));
+    inMemIRSExpenseCategories.rows.forEach(r => {
+        inMemIRSExpenseCategories.idObj.set(r.id, r);
+        inMemIRSExpenseCategories.idDesc.set(r.id, r);
+        inMemIRSExpenseCategories.descToId.set(r.desc, r);
+    });
+    return {
+        model,
+        foreignKeyLoopkup,
+    };    
+
+}
 export function PageRelatedContextWrapper(props: {
     children: any
 }) {
@@ -49,15 +128,16 @@ export function PageRelatedContextWrapper(props: {
         private_key_id: '',
     } );
 
-    //month selection states    
+    //month selection states
 
-    const [models, setModels] = useState<IModelsDict>(new Map());
+    const initialVals = getInitialExpenseCategoryModel();
+    const [models, setModels] = useState<IModelsDict>(initialVals.model);
 
     const [loadingDlgContent, setLoadingDlgContent] = useState<string | JSX.Element | null>(null);
 
     const [loadingDlgTitle, setLoadingDlgTitle] = useState<string>('Loading');
 
-    const [foreignKeyLoopkup, setForeignKeyLookup] = useState<IForeignKeyLookupMap>(new Map());
+    const [foreignKeyLoopkup, setForeignKeyLookup] = useState<IForeignKeyLookupMap>(initialVals.foreignKeyLoopkup);
 
     function generateTopBarNotifyOpt(): TopBarIconNotifyCfg {
         const [topBarMessages, setTopBarItems] = useState<NotifyIconItem[]>([]);
@@ -105,7 +185,7 @@ export function PageRelatedContextWrapper(props: {
     }
 
     async function loadForeignKeyLookup(table: TableNames, forceReload?: boolean): Promise<IForeignKeyCombo> {
-        if (!forceReload) {
+        if (!forceReload || table === 'InMemIRSExpenseCategories') {
             const lookup = foreignKeyLoopkup.get(table);
             if (lookup) return lookup;
         }

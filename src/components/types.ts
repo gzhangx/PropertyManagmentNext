@@ -7,6 +7,7 @@ export type TableNames = 'rentPaymentInfo' | 'houseInfo' | 'maintenanceRecords' 
     | 'googleApiCreds' | 'workerInfo' | 'userOptions'
     | 'expenseCategories'
     | 'paymentType'
+    | 'InMemIRSExpenseCategories'  //in memory fake table for expensive category mapping
     ;
 export interface ISqlDeleteResponse {
     affectedRows: number;
