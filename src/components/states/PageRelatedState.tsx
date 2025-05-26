@@ -99,6 +99,10 @@ function getInitialExpenseCategoryModel() {
         id,
         desc: id,
     }));
+    inMemIRSExpenseCategories.rows = [{
+        id: '',
+        desc: 'NA',
+    }].concat(inMemIRSExpenseCategories.rows);
     inMemIRSExpenseCategories.rows.forEach(r => {
         inMemIRSExpenseCategories.idObj.set(r.id, r);
         inMemIRSExpenseCategories.idDesc.set(r.id, r);
