@@ -116,6 +116,10 @@ const allSections: {
                 page: <RenterEmailConfig></RenterEmailConfig>,
                 pageOuterStyles: {},
                 
+            },
+            {
+                name: 'ExpenseCategories',
+                table: 'expenseCategories',
             }
         ]
     }, {

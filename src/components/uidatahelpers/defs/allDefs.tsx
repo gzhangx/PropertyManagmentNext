@@ -227,6 +227,17 @@ const ownerInfoDef: ITableAndSheetMappingInfo<unknown> = {
 }
 
 import { paymentInfoDef } from './rentpaymentInfoDef'
+
+const expenseCategoryDef: ITableAndSheetMappingInfo<unknown> = {
+    table: 'expenseCategories',
+    displayFields: [
+        //{ field: 'userID', desc: 'Owner', foreignKey: { table: 'userInfo', field: 'userID' }, required: true, isId: true, },
+        { field: 'expenseCategoryID', desc: 'ExpensiveCategoryID', required: true, },
+        { field: 'expenseCategoryName', desc: 'Name' },
+        { field: 'mappedToTaxExpenseCategoryName', desc: 'mapTo', },        
+    ]
+}
+
 import { customHeaderFilterFuncWithHouseIDLookup, genericCustomerHeaderFilterFuncForString, genericCustomHeaderFilterFunc } from "./util";
 
 export const paymentInfoDefinition = paymentInfoDef;
@@ -234,6 +245,7 @@ export const paymentInfoDefinition = paymentInfoDef;
 export const tableNameToDefinitions = [tenantInfoDef, houseInfoDef, paymentInfoDef, workerInfoDef, maintenanceInfoDef,
     leaseInfoDef,
     ownerInfoDef,
+    expenseCategoryDef,
 ].reduce((acc, pp) => {
     acc.set(pp.table, pp as any);
     return acc;
