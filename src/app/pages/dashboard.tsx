@@ -25,7 +25,7 @@ export default function MainDashboard() {
   
   const currentActivePage = getSideBarCurrentSelectedItemName(rstate);
   const sideBarItem = sideBarContentLookup.get(currentActivePage as string);
-  console.log('currentActivePage', currentActivePage, sideBarItem, rstate.isLoggedIn());
+  //console.log('currentActivePage', currentActivePage, sideBarItem, rstate.isLoggedIn());
   if (!rstate.isLoggedIn()) {
     switch (currentActivePage) {      
       case 'register':        
