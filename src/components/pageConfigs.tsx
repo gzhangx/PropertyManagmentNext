@@ -19,6 +19,7 @@ import GoogleSheetConfigPage from '../app/pages/config/googleSheetConfig'
 import NewLeaseReport from '../app/pages/reports/leaseReport'
 
 import Register from '../app/pages/register'
+import ForgetPassword from '../app/pages/forget';
 
 type LocalPageInfo = {
     name: string;
@@ -153,6 +154,7 @@ const { sections, sideBarContentLookup } = allSections.reduce((acc, sec) => {
 });
 
 sideBarContentLookup.set('register', Register);
+sideBarContentLookup.set('forget-password', ForgetPassword);
 
 const otherPages = <></>
 export {

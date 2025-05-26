@@ -132,14 +132,16 @@ export default function Login() {
                                         </form>
                                         <hr />
                                         <div className="text-center">                                                
-                                                    <a className="small" href="forgot-password.html">Forgot Password?</a>                                                
+                                            <a className="small" href="forgot-password.html" onClick={e => {
+                                                navgateTo('forget-password');
+                                                e.preventDefault();
+                                                    }}>Forgot Password?</a>                                                
                                         </div>
                                         <div className="text-center">                                            
                                             <a className="small" href="#" onClick={e => {
                                                 navgateTo('register');
                                                 e.preventDefault();
-                                                
-                                                }}>Create an Account!</a>
+                                            }}>Create an Account!</a>
                                             
                                         </div>
                                         <div className="text-center">
