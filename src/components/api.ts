@@ -34,6 +34,8 @@ import {
     IMaintenanceRawData,
     IWorkerInfo,
     IOwnerInfo,
+    IGoogleSheetAuthInfo,
+    TaxExpenseCategoryDataType,
 } from './reportTypes';
 
 export async function doPost(path: string, data: object | undefined, method: httpRequest.HttpRequestMethod = 'POST', authToken: string = ''): Promise<any> {
@@ -451,16 +453,6 @@ export async function getMaintenanceFromSheet(): Promise<{ rows:IMaintenanceRawD
 }
 
 
-interface IGoogleAuthInfo {
-    private_key_id: string;
-    private_key: string;
-    client_email: string;
-}
-
-export type IGoogleSheetAuthInfo = {
-    googleSheetId: string;
-    error?: string;
-} & IGoogleAuthInfo;
 
 export async function getSheetAuthInfo(): Promise<IGoogleSheetAuthInfo> {
     const googleAuthInfos = await sqlGet({
@@ -524,16 +516,10 @@ export async function sendEmail(to: string[], cc: string, subject: string, html?
 
 
 //not used
-interface IExpenseCategories {
-    expenseCategoryID: string;
-    expenseCategoryName: string;
-}
-
-//not used
-async function getExpenseCategories(): Promise<IExpenseCategories[]> {
+async function getExpenseCategories(): Promise<TaxExpenseCategoryDataType[]> {
     return sqlGet({
         table: 'expenseCategories',        
-    } as ISqlRequest).then((r: { rows: IExpenseCategories[] }) => {
+    } as ISqlRequest).then((r: { rows: TaxExpenseCategoryDataType[] }) => {
         return r.rows;
     });
 }

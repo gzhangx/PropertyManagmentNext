@@ -1,16 +1,18 @@
 'use client'
 import React, { useState, useEffect, useContext, JSX } from 'react';
-import { getModel, getSheetAuthInfo, IGoogleSheetAuthInfo, sqlGet } from '../api';
+import { getModel, getSheetAuthInfo, sqlGet } from '../api';
 
 import { AllDateTypes, IDBFieldDef, IGetModelReturn, IPagePropsByTable, TableNames } from '../types'
 
 import {    
     IForeignKeyCombo,
     IForeignKeyLookupMap,
+    IGoogleSheetAuthInfo,
     ILeaseInfo,
     IModelsDict,
     IPageRelatedState,
     IWorkerInfo,
+    TaxExpenseCategoryDataType,
     TopBarIconNotifyCfg,
 } from '../reportTypes';
 import { useRootPageContext } from './RootState';
@@ -193,6 +195,13 @@ export function PageRelatedContextWrapper(props: {
                 desc: parser.descGetter(r),
             };
         })
+
+        switch (table) {
+            case 'expenseCategories':
+                //use irs tax categories, and use irs ID, use desc from table if matches id
+                const expenseCatRows = (sqlRes.rows as TaxExpenseCategoryDataType[])
+                break;
+        }
         //const map: IForeignKeyIdDesc = new Map();
         //const descToId: IForeignKeyIdDesc = new Map();
         res.rows.forEach(r => {
