@@ -226,7 +226,7 @@ export const GenCrudAdd = (props: IGenGrudAddProps) => {
                         <span aria-hidden="true" onClick={internalCancel}>&times;</span>
                 </button>
             </div>                
-                <table className='centered-table'>
+                <table className='centered-table' style={{overflowY: 'visible'}}>
                     <tbody>
                 {
                     columnInfo.map((c, cind) => {
