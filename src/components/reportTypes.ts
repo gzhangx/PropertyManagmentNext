@@ -53,6 +53,7 @@ export interface IHouseInfo {
     state: string;
     zip: string;
     disabled?: 'Y' | 'N' | null;
+    cost?: number;
 }
 
 

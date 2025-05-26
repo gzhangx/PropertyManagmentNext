@@ -18,7 +18,7 @@ import { CurrencyFormatTextField, MultipleSelectChip, NumberFormatTextField } fr
 import { round2 } from '@/src/components/report/util/utils';
 
 
-import { IExpenseData, IHouseInfo, TaxExpenseCategories, TaxExpenseCategoryDataType } from "@/src/components/reportTypes";
+import { IExpenseData, IHouseInfo, TaxExpenseCategories, TaxExpenseCategoryDataType, TaxExpenseCategoryNameType } from "@/src/components/reportTypes";
 import { useRootPageContext } from "@/src/components/states/RootState";
 import { usePageRelatedContext } from "@/src/components/states/PageRelatedState";
 
@@ -561,8 +561,39 @@ export default function TaxReport() {
     }
 
 
-    const allHouses = (mainCtx.getAllForeignKeyLookupItems('houseInfo') || []).map(r=>r.data) as IHouseInfo[];
-    const adjustedGrossIncome = calculateTotalIncome(allTaxSnap);
+    const allHouses = (mainCtx.getAllForeignKeyLookupItems('houseInfo') || []).map(r => r.data) as IHouseInfo[];
+    
+    const properties: IPropertyTaxInfo[] = allHouses.filter(h => allTaxSnap.incomeInfo.selectedHouseIDs.includes(h.houseID)).map(h => {
+        const propInfo: IPropertyTaxInfo = {
+            houseID: h.houseID,
+            address: h.address,
+            cost: h.cost || 0,
+            expenses: {} as any,
+            depreciation: 0,
+            totalExpenses: 0,
+
+            income: allRentReportData[h.houseID]?.totalIncome || 0,
+            finalOutputIncomeOrLoss: 0,
+        };
+
+        TaxExpenseCategories.forEach(cat => {
+            const found = expenseReportData[h.houseID]?.expense[cat];
+            if (!found) {
+
+                propInfo.expenses[cat] = 0;                
+                return;    
+            }
+            propInfo.expenses[cat] = found.amount;
+            propInfo.totalExpenses = round2(propInfo.totalExpenses + found.amount);
+        });
+        propInfo.depreciation = round2(propInfo.cost / 27.5); // 27.5 years for residential property
+        propInfo.totalExpenses = round2(propInfo.totalExpenses + propInfo.depreciation);
+        //TODO: add auto miles
+
+        propInfo.finalOutputIncomeOrLoss = round2(propInfo.income - propInfo.totalExpenses);
+        return propInfo;
+    });
+    const adjustedGrossIncome = calculateTotalIncome(allTaxSnap, properties);
 
     const yearSelections = ['All', 'LastMonth', 'Last3Month', 'Y2D', 'LastYear'].map(value => ({
         value,
@@ -664,6 +695,7 @@ export default function TaxReport() {
             <Box sx={{
                 display: "flex",
                 flexDirection: "row",
+                flexWrap: "wrap",
                 gap: 2, // Spacing between inputs
                 //maxWidth: 400,
                 margin: "auto",
@@ -744,10 +776,11 @@ export default function TaxReport() {
             >
                 <div style={{
                     display: 'grid', 
-                    gridTemplateColumns:'auto repeat(14, 1fr)',
+                    gridTemplateColumns:'auto auto  repeat(14, 1fr)',
                 }}>
                     <Fragment key={'header'}>
                         <div>House</div>
+                        <div>Income</div>
                         {
                             TaxExpenseCategories.map(cat => {
                                 return <div key={cat} >{startCase(cat)}</div>;
@@ -755,11 +788,12 @@ export default function TaxReport() {
                         }
                         </Fragment>
                     <Fragment key={'data'}>
-                    {
+                        {                            
                         (allTaxSnap.incomeInfo.selectedHouseIDs || []).map((houseID) => {
-                            const house = allHouses.find(h => h.houseID === houseID);
+                            const house = allHouses.find(h => h.houseID === houseID);                            
                             return <Fragment key={houseID}>
                                 <FormControlLabel control={<Checkbox />} label={house?.address} />
+                                <div>{allRentReportData[houseID]?.totalIncome || 0}</div>
                                 {
                                     TaxExpenseCategories.map(cat => {
                                         return <div key={cat}>
@@ -846,7 +880,7 @@ interface AllTaxSnapShot {
         scheduleACalcInfo: CalculateInfo[];
         scheduleADeduction: number;
 
-        form8582LossLimitionsTotalLossAllowed: number;  //if 0, no loss allowed
+        //form8582LossLimitionsTotalLossAllowed: number;  //if 0, no loss allowed
     };
 }
 
@@ -880,13 +914,25 @@ function initializeAllTaxSnapShot(): AllTaxSnapShot {
             scheduleACalcInfo: [],
             scheduleADeduction: 0,
 
-            form8582LossLimitionsTotalLossAllowed: 0,
+            //form8582LossLimitionsTotalLossAllowed: 0,
         }
     };
 }   
 
 
-function calculateTotalIncome(snap: AllTaxSnapShot): number {
+type IPropertyTaxInfo = {
+    houseID: string;
+    address: string;
+    cost: number;
+    expenses: Record<TaxExpenseCategoryNameType, number>;    
+    depreciation: number;
+    totalExpenses: number;
+
+    income: number; //calculated income or loss for the property
+
+    finalOutputIncomeOrLoss: number; //final income or loss after all calculations
+}
+function calculateTotalIncome(snap: AllTaxSnapShot, properties: IPropertyTaxInfo[]): number {
     const incomeInfo = snap.incomeInfo;
     let adjustedGrossIncome = round2(incomeInfo.taxableInterest2b + incomeInfo.ordinaryDividends3b);
     let stateIncomeTax = 0;
@@ -894,7 +940,19 @@ function calculateTotalIncome(snap: AllTaxSnapShot): number {
         adjustedGrossIncome = round2(adjustedGrossIncome + w2.income);
         stateIncomeTax = round2(stateIncomeTax + (w2.stateTax || 0));
     }
-    snap.calculated.adjustedGrossIncome_1040line11 = adjustedGrossIncome;
+
+    let totalPropertyIncome = 0;
+    for (const prop of properties) {
+        if (prop.finalOutputIncomeOrLoss >= 0) {
+            totalPropertyIncome = round2(totalPropertyIncome + prop.finalOutputIncomeOrLoss);
+            console.log('debugremove Property income added', prop.address, prop.finalOutputIncomeOrLoss, 'for property', prop.address);
+        } else {
+            const limit = form8582Limitions(adjustedGrossIncome, prop.finalOutputIncomeOrLoss, 0);
+            totalPropertyIncome = round2(totalPropertyIncome + Math.min(limit, prop.finalOutputIncomeOrLoss));
+            console.log('debugremove Property loss limited to', prop.address, limit, 'for property', prop.address, 'with final output income/loss', prop.finalOutputIncomeOrLoss);
+        }
+    }
+    snap.calculated.adjustedGrossIncome_1040line11 = round2(adjustedGrossIncome + totalPropertyIncome);
 
 
     function calculateScheduleA() {
@@ -990,27 +1048,29 @@ function calculateTotalIncome(snap: AllTaxSnapShot): number {
 
 
     function form8582Limitions(
+        adjustedGrossIncome_1040line11: number,
         line1bTotalLosses: number, //only losses allowed,
-        line1aIncomes: number,
-        line1cPriorYearLosses: number,
+        //line1aIncomes: number,
+        line1cPriorYearLosses: number, //TODO: add prior year losses
     ) {        
         if (line1bTotalLosses > 0) line1bTotalLosses = 0;
-        const line1d = round2(line1aIncomes + line1bTotalLosses + line1cPriorYearLosses);
+        const line1d = round2(line1bTotalLosses + line1cPriorYearLosses); //line1aIncomes
         const line4Loss = line1d> 0? 0: Math.abs(line1d);
         const part2Line5 = 150000;
-        const part2Line6AGI = snap.calculated.adjustedGrossIncome_1040line11;
+        const part2Line6AGI = adjustedGrossIncome_1040line11;
         let line7 = part2Line5 - part2Line6AGI;
         if (line7 < 0) line7 = 0;
         const line8 = line7 * 0.5;
         const line9 = Math.min(Math.abs(line4Loss), line8);
 
-        const line10 = line1aIncomes;
-        const line11TotalLossAllowed = line1bTotalLosses + line9;
+        //const line10 = line1aIncomes;
+        //const line11TotalLossAllowed = line1bTotalLosses + line9;
 
-        snap.calculated.form8582LossLimitionsTotalLossAllowed = line11TotalLossAllowed;
+        //snap.calculated.form8582LossLimitionsTotalLossAllowed = line11TotalLossAllowed;
+        return -line9;
     }
 
-    form8582Limitions(0, 0, 0); //TODO: add totall income/loss
+    //form8582Limitions(0, 0, 0); //TODO: add totall income/loss
     return adjustedGrossIncome;
 }
 
