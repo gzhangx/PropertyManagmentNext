@@ -107,3 +107,9 @@ export function RootPageStateWrapper(props: { children: any }) {
 export function useRootPageContext(): IRootPageState {
     return useContext(PageNavContext);
 }
+
+
+export function navgateToWithState(state: IRootPageState, name: string, e: any) {
+    e.preventDefault();
+    activeSideBarItem(state, name);
+}
