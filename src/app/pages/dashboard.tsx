@@ -25,9 +25,11 @@ export default function MainDashboard() {
   
   const currentActivePage = getSideBarCurrentSelectedItemName(rstate);
   const sideBarItem = sideBarContentLookup.get(currentActivePage as string);
+  console.log('currentActivePage', currentActivePage, sideBarItem, rstate.isLoggedIn());
   if (!rstate.isLoggedIn()) {
-    switch (currentActivePage) {
+    switch (currentActivePage) {      
       case 'register':        
+      case 'forget-password':
         return sideBarItem?.page || <div> Register page not found</div>;
     }
     return <Login></Login>

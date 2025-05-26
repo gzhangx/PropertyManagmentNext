@@ -3,6 +3,7 @@ import Link from 'next/link'
 import { useRouter, usePathname, useSearchParams } from 'next/navigation'
 import { GetInfoDialogHelper } from '../../components/generic/basedialog';
 import { registerUser } from '../../components/api'
+import { navgateTo } from '@/src/components/nav/consts';
 const emailRegx = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/;
 export default function register() {
     const router = useRouter();    
@@ -104,15 +105,18 @@ export default function register() {
                                 </a>
                             </form>
                             <hr />
-                            <div className="text-center">
-                                <Link href="/forget" legacyBehavior>
-                                    <a className="small" href="forgot-password.html">Forgot Password?</a>
-                                    </Link>
+                            <div className="text-center">                                
+                                <a className="small" href="forgot-password.html" onClick={e => {
+                                    e.preventDefault();
+                                    navgateTo('forget-password');
+                                    }}>Forgot Password?</a>                                
                             </div>
-                            <div className="text-center">
-                                <Link href="/Login" legacyBehavior>
-                                    <a className="small" href="#">Already have an account? Login!</a>
-                                </Link>
+                            <div className="text-center">                                
+                                <a className="small" href="#" onClick={e => {
+                                    e.preventDefault();
+                                    navgateTo('register');
+                                }}>Already have an account? Login!</a>
+                                
                             </div>
                         </div>
                     </div>

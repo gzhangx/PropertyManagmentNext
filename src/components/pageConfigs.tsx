@@ -153,8 +153,8 @@ const { sections, sideBarContentLookup } = allSections.reduce((acc, sec) => {
     sectionsByName: {} as {[name:string]:IMainSideBarSection},
 });
 
-sideBarContentLookup.set('register', Register);
-sideBarContentLookup.set('forget-password', ForgetPassword);
+sideBarContentLookup.set('register', { name: 'register',  page: <Register/> });
+sideBarContentLookup.set('forget-password', { name: 'forget', page: <ForgetPassword/> });
 
 const otherPages = <></>
 export {
