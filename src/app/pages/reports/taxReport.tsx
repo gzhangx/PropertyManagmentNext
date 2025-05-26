@@ -1,11 +1,11 @@
 'use client'
-import React, { ChangeEvent, use, useEffect, useRef, useState } from "react";
+import React, { ChangeEvent, Fragment, use, useEffect, useRef, useState } from "react";
 import { IPdfTextItem, parsePdfFile, PdfScript } from "../../../components/utils/pdfFileUtil";
 import { startCase } from "lodash";
-import { getUserOptions, updateUserOptions } from "../../../components/api";
+import { getUserOptions, updateUserOptions, getExpenseCategories } from "../../../components/api";
 import Box from '@mui/material/Box';
-import { Button, InputAdornment, MenuItem, Select, TextField, Theme, useTheme } from '@mui/material';
-import { formatAccounting, getMonthAry, IPaymentWithDateMonthPaymentType, loadDataWithMonthRange, loadMaintenanceData, loadPayment, MonthSelections } from '@/src/components/utils/reportUtils';
+import { Button, Checkbox, FormControlLabel, FormGroup, InputAdornment, MenuItem, Select, TextField, Theme, useTheme } from '@mui/material';
+import { filterPaymentsForRent, formatAccounting, getMonthAry, IPaymentWithDateMonthPaymentType, loadDataWithMonthRange, loadMaintenanceData, loadPayment, MonthSelections } from '@/src/components/utils/reportUtils';
 import * as uuid from 'uuid';
 import Table from '@mui/material/Table';
 import TableBody from '@mui/material/TableBody';
@@ -18,7 +18,7 @@ import { CurrencyFormatTextField, MultipleSelectChip, NumberFormatTextField } fr
 import { round2 } from '@/src/components/report/util/utils';
 
 
-import { IExpenseData, IHouseInfo } from "@/src/components/reportTypes";
+import { IExpenseData, IHouseInfo, TaxExpenseCategories, TaxExpenseCategoryDataType } from "@/src/components/reportTypes";
 import { useRootPageContext } from "@/src/components/states/RootState";
 import { usePageRelatedContext } from "@/src/components/states/PageRelatedState";
 
@@ -356,13 +356,9 @@ async function saveIncomeInfoToDb(snap: AllTaxSnapShot) {
 
 
 
-type RentReportCellData = {
-    amount: number;
-    payments: IPaymentWithDateMonthPaymentType[];
-}
 
-type RentReportIncomeExpenseRowData = {
-    income: { [paymentType: string]: RentReportCellData };
+type RentReportIncomeExpenseRowData = {    
+    payments: IPaymentWithDateMonthPaymentType[];    
     totalIncome: number;
 }
 
@@ -419,117 +415,111 @@ export default function TaxReport() {
     }, []);
 
 
-    const loadData = async () => {        
-            if (selectedMonths.length === 0) return;
+    const loadData = async () => {
+        if (selectedMonths.length === 0) return;
             
             
-            const paymentData: IPaymentWithDateMonthPaymentType[] = await loadDataWithMonthRange(rootCtx, mainCtx, loadPayment, selectedMonths, 'receivedDate', 'Rent Payment');
-            //setAllPaymentData(paymentData);
+        const paymentData: IPaymentWithDateMonthPaymentType[] = await loadDataWithMonthRange(rootCtx, mainCtx, loadPayment, selectedMonths, 'receivedDate', 'Rent Payment');
+        //setAllPaymentData(paymentData);
             
-            const ownerDc = paymentData.reduce((acc, pmt) => {
-                const ownerName = pmt.addressObj?.ownerName;
-                if (!acc.dict[ownerName]) {
-                    acc.owners.push(ownerName);
-                    acc.dict[ownerName] = true;
-                }
+        const ownerDc = paymentData.reduce((acc, pmt) => {
+            const ownerName = pmt.addressObj?.ownerName;
+            if (!acc.dict[ownerName]) {
+                acc.owners.push(ownerName);
+                acc.dict[ownerName] = true;
+            }
+            return acc;
+        }, {
+            dict: {} as { [owner: string]: boolean; },
+            owners: [] as string[],
+        });
+        ownerDc.owners.sort((a, b) => a.localeCompare(b));
+        setAllOwners([
+            { label: 'All', value: '' },
+        ].concat(ownerDc.owners.map(o => ({
+            label: o,
+            value: o,
+        }))));
+    
+            
+        //const allHouses = mainCtx.getAllForeignKeyLookupItems('houseInfo') as IHouseInfo[];
+        //selectedMonths        
+            
+        const allRentReportDataAndMisc = paymentData.filter(filterPaymentsForRent).reduce((acc, pmt) => {
+            let houseIcomExp = acc.rptData[pmt.houseID];
+            if (!houseIcomExp) {
+                houseIcomExp = {
+                    payments: [],
+                    totalIncome: 0,
+                };
+                acc.rptData[pmt.houseID] = houseIcomExp;
+            }
+            houseIcomExp.payments.push(pmt);
+            houseIcomExp.totalIncome = round2(houseIcomExp.totalIncome + pmt.amount);
+            return acc;
+        }, {
+            rptData: {} as AllRentReportData,
+        });
+    
+        setAllRentReportData(allRentReportDataAndMisc.rptData);
+    }
+    
+    
+    async function loadExpenseData() {
+        const expCatsAry = await getExpenseCategories();
+        const expenseCatMap: Map<string, TaxExpenseCategoryDataType> = new Map();
+        expCatsAry.forEach(cat => {
+            expenseCatMap.set(cat.expenseCategoryName, cat);
+        });
+        const expenseData: IExpenseData[] = await loadDataWithMonthRange(rootCtx, mainCtx, loadMaintenanceData, selectedMonths, 'date', 'ExpenseData');
+        const expenseRes = expenseData.reduce((acc, exp) => {
+            const expCat = expenseCatMap.get(exp.expenseCategoryName);
+            if (!expCat) {
+                console.log('Warning!!! expense category not found', exp.expenseCategoryName, exp);
+                throw new Error(`Expense category ${exp.expenseCategoryName} not found in expense categories.`);
+            }
+            if (expCat.doNotIncludeInTax) {
+                console.log(`Skipping expense ${exp.expenseCategoryName} as it is marked as doNotIncludeInTax.`, exp);
                 return acc;
-            }, {
-                dict: {} as { [owner: string]: boolean; },
-                owners: [] as string[],
-            });
-            ownerDc.owners.sort((a, b) => a.localeCompare(b));
-            setAllOwners([
-                { label: 'All', value: '' },            
-            ].concat(ownerDc.owners.map(o => ({
-                label: o,
-                value: o,
-            }))));
+            }
+            const expCatName = expCat.mappedToTaxExpenseCategoryName || expCat.expenseCategoryName;
+            let houseExp = acc.expenseData[exp.houseID];
+            if (!houseExp) {
+                houseExp = {
+                    expense: {},
+                    totalExpense: 0,
+                };
+                acc.expenseData[exp.houseID] = houseExp;
+            }
     
-            
-            //const allHouses = mainCtx.getAllForeignKeyLookupItems('houseInfo') as IHouseInfo[];
-            //selectedMonths        
-            
-            const allRentReportDataAndMisc = paymentData.reduce((acc,pmt) => {            
-                let houseIcomExp = acc.rptData[pmt.houseID];
-                if (!houseIcomExp) {
-                    houseIcomExp = {
-                        income: {},
-                        totalIncome: 0,
-                    };
-                    acc.rptData[pmt.houseID] = houseIcomExp;
-                }
-                let pmpTypeData = houseIcomExp.income[pmt.paymentTypeName];
-                if (!pmpTypeData) {   
-                    pmpTypeData = {
-                        amount: 0,
-                        payments: [],
-                    };
-                    houseIcomExp.income[pmt.paymentTypeName] = pmpTypeData;
-                }
-                pmpTypeData.amount = round2(pmpTypeData.amount + pmt.amount);
-                pmpTypeData.payments.push(pmt);
-                houseIcomExp.totalIncome = round2(houseIcomExp.totalIncome + pmt.amount);
+            let expCatData = houseExp.expense[expCatName];
+            if (!expCatData) {
+                expCatData = {
+                    amount: 0,
+                    expenses: [],
+                };
+                houseExp.expense[expCatName] = expCatData;
+            }
     
-                if (!acc.paymentTypeData.existing[pmt.paymentTypeName]) {
-                    acc.paymentTypeData.paymentTypes.push(pmt.paymentTypeName);
-                    acc.paymentTypeData.existing[pmt.paymentTypeName] = true;
-                }
-                return acc;
-            }, {
-                rptData: {} as AllRentReportData,
-                paymentTypeData: {
-                    existing: {},
-                    paymentTypes: [] as string[],
-                } as { 
-                    existing: { [paymentType: string]: boolean; };
-                    paymentTypes: string[];
-                } ,
-            });
+            expCatData.amount = round2(expCatData.amount + exp.amount);
+            houseExp.totalExpense = round2(houseExp.totalExpense + exp.amount);
+            expCatData.expenses.push(exp);
     
-            setAllRentReportData(allRentReportDataAndMisc.rptData);            
-        }
+            if (!acc.expenseCatData.existing[expCatName]) {
+                acc.expenseCatData.expenseCats.push(expCatName);
+                acc.expenseCatData.existing[expCatName] = true;
+            }
+            return acc;
+        }, {
+            expenseData: {} as ExpenseReportData,
+            expenseCatData: {
+                existing: {} as { [expenseCat: string]: boolean; },
+                expenseCats: [] as string[],
+            }
+        });
     
-    
-        async function loadExpenseData() {
-            const expenseData: IExpenseData[] = await loadDataWithMonthRange(rootCtx, mainCtx, loadMaintenanceData, selectedMonths, 'date', 'ExpenseData');
-            const expenseRes = expenseData.reduce((acc, exp) => {
-                let houseExp = acc.expenseData[exp.houseID];
-                if (!houseExp) {
-                    houseExp = {
-                        expense: {},
-                        totalExpense: 0,
-                    };
-                    acc.expenseData[exp.houseID] = houseExp;
-                }
-    
-                let expCatData = houseExp.expense[exp.expenseCategoryName];
-                if (!expCatData) {
-                    expCatData = {
-                        amount: 0,
-                        expenses: [],
-                    };
-                    houseExp.expense[exp.expenseCategoryName] = expCatData;
-                }
-    
-                expCatData.amount = round2(expCatData.amount + exp.amount);
-                houseExp.totalExpense = round2(houseExp.totalExpense + exp.amount);
-                expCatData.expenses.push(exp);
-    
-                if (!acc.expenseCatData.existing[exp.expenseCategoryName]) {
-                    acc.expenseCatData.expenseCats.push(exp.expenseCategoryName);
-                    acc.expenseCatData.existing[exp.expenseCategoryName] = true;
-                }
-                return acc;
-            }, {
-                expenseData: {} as ExpenseReportData,
-                expenseCatData: {
-                    existing: {} as { [expenseCat: string]: boolean; },
-                    expenseCats: [] as string[],
-                }
-            });
-    
-            setExpenseReportData(expenseRes.expenseData);            
-        }
+        setExpenseReportData(expenseRes.expenseData);
+    }
     
         async function loadAll() {
             await mainCtx.checkLoadForeignKeyForTable('maintenanceRecords');
@@ -673,9 +663,9 @@ export default function TaxReport() {
             </TableContainer>
             <Box sx={{
                 display: "flex",
-                flexDirection: "column",
+                flexDirection: "row",
                 gap: 2, // Spacing between inputs
-                maxWidth: 400,
+                //maxWidth: 400,
                 margin: "auto",
                 padding: 2,
                 border: "1px solid #ccc",
@@ -739,6 +729,62 @@ export default function TaxReport() {
                     <label>Form 1040 line 237 tax due</label>
                     <label style={{ margin: 4 }}>{allTaxSnap.calculated.form1040_line237_taxDue}</label>
                 </div>
+            </Box>
+            <Box sx={{
+                display: "flex",
+                flexDirection: "column",
+                gap: 2, // Spacing between inputs
+                //maxWidth: 400,
+                margin: "auto",
+                padding: 2,
+                border: "1px solid #ccc",
+                borderRadius: 2,
+                boxShadow: 2,
+            }}                
+            >
+                <div style={{
+                    display: 'grid', 
+                    gridTemplateColumns:'auto repeat(14, 1fr)',
+                }}>
+                    <Fragment key={'header'}>
+                        <div>House</div>
+                        {
+                            TaxExpenseCategories.map(cat => {
+                                return <div key={cat} >{startCase(cat)}</div>;
+                            })
+                        }
+                        </Fragment>
+                    <Fragment key={'data'}>
+                    {
+                        (allTaxSnap.incomeInfo.selectedHouseIDs || []).map((houseID) => {
+                            const house = allHouses.find(h => h.houseID === houseID);
+                            return <Fragment key={houseID}>
+                                <FormControlLabel control={<Checkbox />} label={house?.address} />
+                                {
+                                    TaxExpenseCategories.map(cat => {
+                                        return <div key={cat}>
+                                            {
+                                                expenseReportData[houseID] && expenseReportData[houseID].expense[cat] ? expenseReportData[houseID].expense[cat].amount : 0
+                                            }
+                                        </div>
+                                    })
+                                }
+                            </Fragment>
+                        })
+                        }
+                    </Fragment>
+                </div>
+                <div>test</div>
+                <FormGroup>
+                    {
+                        (allTaxSnap.incomeInfo.selectedHouseIDs || []).map((houseID) => {
+                            const house = allHouses.find(h => h.houseID === houseID);
+                            return <FormControlLabel key={houseID} control={<Checkbox />} label={ house?.address} />
+                        })
+                    }
+                    
+                    
+                </FormGroup>
             </Box>
         </div>
     );

@@ -515,8 +515,7 @@ export async function sendEmail(to: string[], cc: string, subject: string, html?
 }
 
 
-//not used
-async function getExpenseCategories(): Promise<TaxExpenseCategoryDataType[]> {
+export async function getExpenseCategories(): Promise<TaxExpenseCategoryDataType[]> {
     return sqlGet({
         table: 'expenseCategories',        
     } as ISqlRequest).then((r: { rows: TaxExpenseCategoryDataType[] }) => {
