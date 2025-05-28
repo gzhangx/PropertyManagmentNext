@@ -7,6 +7,7 @@ import RentReport from '../app/pages/reports/rentReport';
 import CashFlowRpt from '../app/pages/reports/cashFlowReport';
 import { getLeasePage } from '../app/pages/reports/autoAssignLeases'
 import { RenterEmailConfig } from '../app/pages/config/renterEmailConfig'
+import { CommonConfig } from '../app/pages/config/commonConfig';
 import EstimatedTaxReport from '../app/pages/reports/taxReport';
 
 import * as dev2 from '../app/pages/util/dev2'
@@ -121,6 +122,10 @@ const allSections: {
             {
                 name: 'ExpenseCategories',
                 table: 'expenseCategories',
+            },
+            {
+                name: 'Puppeeter Configs',
+                page: <CommonConfig></CommonConfig>
             },
             {
                 name: 'Browser Control',
