@@ -9,7 +9,7 @@ export interface ISiteConfig {
 
 let sitConfig:ISiteConfig | null = null;
 export async function getConfig() : Promise<ISiteConfig> {
-    const site = process.env.SITE || 'local1';
+    const site = process.env.SITE || 'local';
     const baseURL = process.env.BASE_URL || 'http://192.168.0.40';
     if (sitConfig) return sitConfig;
     sitConfig = {
