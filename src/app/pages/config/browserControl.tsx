@@ -4,8 +4,9 @@ import { Box, Button, TextField } from '@mui/material';
 import * as uuid from 'uuid';
 import { getCommonConfig } from './commonConfig';
 
-async function browserRequest(action: 'goto' | 'type' | 'click' | 'pict' | 'citi', text?: string) {
-    return await api.doPost(`misc/browser/startBrowserControl?action=${action}&${text}`, undefined, 'GET');
+async function browserRequest(action: 'goto' | 'type' | 'click' | 'pict' | 'citi', text?: string, data?: any) {
+    console.log(data, 'debugremove ccfg')
+    return await api.doPost(`misc/browser/startBrowserControl?action=${action}&${text}`, data, 'POST');
 }
 export default function BrowserControl() {
     const [base64String, setbase64String] = useState<string>('');
@@ -33,7 +34,11 @@ export default function BrowserControl() {
 
         }}>Type</Button>
         <Button onClick={async () => {
-            browserRequest('citi', `data=${encodeURIComponent(Buffer.from(JSON.stringify(await getCommonConfig())).toString('base64'))}`)
+            const ccfg = await getCommonConfig();            
+            browserRequest('citi', '', {
+                url: ccfg.CitiUrl,
+                password: ccfg.CitiPass,
+            })
         }}>Get Main Transactions</Button>
         <Box>
             <TextField label="goto" value={gotoUrl} onChange={e => {
