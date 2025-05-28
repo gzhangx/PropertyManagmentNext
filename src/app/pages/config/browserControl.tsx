@@ -1,9 +1,10 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import * as api from '../../../components/api'
 import { Box, Button, TextField } from '@mui/material';
 import * as uuid from 'uuid';
+import { getCommonConfig } from './commonConfig';
 
-async function browserRequest(action: 'goto' | 'type' | 'click' | 'pict', text?: string) {
+async function browserRequest(action: 'goto' | 'type' | 'click' | 'pict' | 'citi', text?: string) {
     return await api.doPost(`misc/browser/startBrowserControl?action=${action}&${text}`, undefined, 'GET');
 }
 export default function BrowserControl() {
@@ -12,6 +13,7 @@ export default function BrowserControl() {
     const [text, setText] = useState<string>('');
     const [position, setPosition] = useState({ x: 0, y: 0 });
 
+    
     return <div>
         <Button onClick={async () => {
             const res = await browserRequest('pict')
@@ -30,6 +32,9 @@ export default function BrowserControl() {
             }
 
         }}>Type</Button>
+        <Button onClick={async () => {
+            browserRequest('citi', `data=${encodeURIComponent(Buffer.from(JSON.stringify(await getCommonConfig())).toString('base64'))}`)
+        }}>Get Main Transactions</Button>
         <Box>
             <TextField label="goto" value={gotoUrl} onChange={e => {
                 setGotoUrl(e.target.value);                

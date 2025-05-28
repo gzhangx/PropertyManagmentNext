@@ -41,7 +41,7 @@ export function CommonConfigUnthemed() {
             setConfigData(res)
         })
     }, [])
-    return (<div className="bg-gradient-primary">
+    return (<div>
         <div className="container">
 
             <div className="row justify-content-center ">
