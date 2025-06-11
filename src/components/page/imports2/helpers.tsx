@@ -105,6 +105,14 @@ export async function genericPageLoader(prms: IPageParms, pageState: IPageStates
         if (fd.foreignKey && fd.foreignKey.table) {
             await prms.pageCtx.loadForeignKeyLookup(fd.foreignKey.table);
         }
+
+        if (fd.forceDefaultIfEmpty) {
+            pageDetails.dataRows.forEach(r => {
+                if (!r.importSheetData[fd.field]) {
+                    r.importSheetData[fd.field] = fd.forceDefaultIfEmpty as string;
+                }
+            })
+        }
     }
 
     const canHaveNullPrimaryIdTables = {
