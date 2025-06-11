@@ -186,7 +186,7 @@ export function matchItems(pageDetails: IPageDataDetails, dbData: IDbSaveData[],
                 }
             }
         } else {
-            {
+            if (ImportMatchkeyDebugRemove) {
                 const dkeys = cmp.getRowKeys(sd.importSheetData, 'Sheet');
                 //debug starts
                 let curFiltered = debugItems;
