@@ -1,5 +1,5 @@
 import React from "react";
-import { ItemTypeDict } from "./uidatahelpers/datahelperTypes";
+import { ALLFieldNames, ItemTypeDict } from "./uidatahelpers/datahelperTypes";
 
 //export type TYPEDBTables = 'ownerInfo' | 'rentPaymentInfo' | 'houseInfo';
 
@@ -109,6 +109,8 @@ export interface IDBFieldDef {
 
     displayType?: 'currency' | 'date'; 
     displayCustomFormatField?: (row: ItemTypeDict, field: string) => string; //format the cell to some combiation of fields.  sfield should be ALLFieldNames
+
+    forceDefaultIfEmpty?: string|number;
 }
 
 export const DisplayCustomFormatFieldOriginalDataSufix = '_OrigData'; //save original data.

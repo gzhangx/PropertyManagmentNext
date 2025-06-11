@@ -154,6 +154,14 @@ export function ImportPage() {
                                                             };
                                                         })
                                                     }
+                                                    const otherFieldOverrideFields = curPage.otherFieldOverrideFields;
+                                                    if (otherFieldOverrideFields) {
+                                                        fieldDefs.forEach(f => {
+                                                            if (otherFieldOverrideFields[f.field]) {
+                                                                f.forceDefaultIfEmpty = otherFieldOverrideFields[f.field];
+                                                            }
+                                                        })
+                                                    }
                                                 }
                                                 dispatchCurPageState(state => {
                                                     return {

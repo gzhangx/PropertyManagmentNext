@@ -12,6 +12,9 @@ export function getDbInserter(pageCtx: IPageRelatedState, name: TableNames, doCr
                 if (fld.type === 'datetime') {
                     saveData[fld.field] = pageCtx.browserTimeToUTCDBTime(saveData[fld.field] as string);
                 }
+                if (!saveData[fld.field] && saveData[fld.field] !== 0 && fld.forceDefaultIfEmpty) {
+                    saveData[fld.field] = fld.forceDefaultIfEmpty;
+                }
             }
             return sqlAdd(name,
                 saveData as any, doCreate

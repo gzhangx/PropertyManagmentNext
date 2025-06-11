@@ -186,6 +186,9 @@ export const leaseInfoDef: ITableAndSheetMappingInfo<unknown> = {
             'rentDueDay',
         ],
     },
+    otherFieldOverrideFields: {
+        rentDueDay: 5,
+    },
     editTitle: 'Add/Edit Lease Record',
     displayFields: 
         [
