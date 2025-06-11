@@ -133,6 +133,7 @@ export async function genericPageLoader(prms: IPageParms, pageState: IPageStates
     {
         name: 'Payment Row Comparer',
         getRowKey: (data: IDbSaveData, makeIdFieldNull: boolean, source: 'DB' | 'Sheet') => {
+            const keyDebugRemove = true;
             const parts = mappingColumnInfo.map(fd => {
                 if (fd.isId && makeIdFieldNull) {
                     return '';
@@ -143,9 +144,9 @@ export async function genericPageLoader(prms: IPageParms, pageState: IPageStates
                         //return YYYYMMDDFormater(data[fd.field] as string)
                     case 'decimal':
                         //return parseFloat(data[fd.field] as string).toFixed(2);
-                        return stdFormatValue(fd, data[fd.field], fd.field, source=== 'DB'? prms.pageCtx: undefined).v;
+                        return (data[fd.field] && keyDebugRemove ? fd.field + '_' : '') + stdFormatValue(fd, data[fd.field], fd.field, source=== 'DB'? prms.pageCtx: undefined).v;
                     default:
-                        return (data[fd.field] as string || '').toString().trim();
+                        return (data[fd.field] && keyDebugRemove ?fd.field + '_':'') + (data[fd.field] as string || '').toString().trim();
                 }
             })                        
             return parts.join('-');
