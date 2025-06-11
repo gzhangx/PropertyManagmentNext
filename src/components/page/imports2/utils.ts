@@ -15,7 +15,7 @@ import {get, keyBy} from "lodash";
 import * as lutil from "./loads/util";
 import { stdFormatValue } from '../../uidatahelpers/datahelpers';
 import { IPageRelatedState } from '../../reportTypes';
-
+export const ImportMatchkeyDebugRemove = true;
 
 export async function loadPageSheetDataRaw(sheetId: string, pageState: IPageStates): Promise<IPageDataDetails> {
     const curPage: IPageInfo = pageState.curPage;
@@ -146,8 +146,10 @@ export function matchItems(pageDetails: IPageDataDetails, dbData: IDbSaveData[],
         }
 
         const key = cmp.getRowKey(sd.importSheetData, false, 'Sheet');  //don't make id null, assume we have id
-        if (key.indexOf('2024-08-01') >= 0) {
-            console.log('debugremove key', key, Object.keys(dbDataKeyed).filter(k => k.indexOf('2024-08-01') >= 0));
+        if (ImportMatchkeyDebugRemove) {
+            if (key.indexOf('2024-08-01') >= 0) {
+                console.log('debugremove key', key, Object.keys(dbDataKeyed).filter(k => k.indexOf('2024-08-01') >= 0));
+            }
         }
         const matchedAll = dbDataKeyed[key];
 

@@ -6,14 +6,14 @@ import {
     IStringDict,
     IPageInfo} from './types'
 
-import { matchItems, loadPageSheetDataRaw, stdProcessSheetData, getHouseState } from './utils'
+import { matchItems, loadPageSheetDataRaw, stdProcessSheetData, getHouseState, ImportMatchkeyDebugRemove } from './utils'
 //const sheetId = '1UU9EYL7ZYpfHV6Jmd2CvVb6oBuQ6ekTR7AWXIlMvNCg';
 
 import * as inserter from './loads/inserter';
 import { deleteById, updateSheet } from '../../api';
 import { IDBFieldDef, TableNames } from '../../types';
 import { stdFormatValue } from '../../uidatahelpers/datahelpers';
-import { Fragment } from 'react';
+
 
 export async function createEntity(params: IPageParms, changeRow: ISheetRowData, inserter: IDbInserter, fields: IDBFieldDef[]) {
     //const state = curPageState;
@@ -132,8 +132,7 @@ export async function genericPageLoader(prms: IPageParms, pageState: IPageStates
     const rowComparer: IRowComparer =
     {
         name: 'Payment Row Comparer',
-        getRowKey: (data: IDbSaveData, makeIdFieldNull: boolean, source: 'DB' | 'Sheet') => {
-            const keyDebugRemove = true;
+        getRowKey: (data: IDbSaveData, makeIdFieldNull: boolean, source: 'DB' | 'Sheet') => {            
             const parts = mappingColumnInfo.map(fd => {
                 if (fd.isId && makeIdFieldNull) {
                     return '';
@@ -144,9 +143,9 @@ export async function genericPageLoader(prms: IPageParms, pageState: IPageStates
                         //return YYYYMMDDFormater(data[fd.field] as string)
                     case 'decimal':
                         //return parseFloat(data[fd.field] as string).toFixed(2);
-                        return (data[fd.field] && keyDebugRemove ? fd.field + '_' : '') + stdFormatValue(fd, data[fd.field], fd.field, source=== 'DB'? prms.pageCtx: undefined).v;
+                        return (data[fd.field] && ImportMatchkeyDebugRemove ? fd.field + '_' : '') + stdFormatValue(fd, data[fd.field], fd.field, source=== 'DB'? prms.pageCtx: undefined).v;
                     default:
-                        return (data[fd.field] && keyDebugRemove ?fd.field + '_':'') + (data[fd.field] as string || '').toString().trim();
+                        return (data[fd.field] && ImportMatchkeyDebugRemove ?fd.field + '_':'') + (data[fd.field] as string || '').toString().trim();
                 }
             })                        
             return parts.join('-');
