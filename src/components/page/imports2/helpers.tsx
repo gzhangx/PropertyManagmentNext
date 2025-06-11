@@ -136,7 +136,7 @@ export async function genericPageLoader(prms: IPageParms, pageState: IPageStates
             })
         });
     }
-    stdProcessSheetData(pageDetails.dataRows, {
+    stdProcessSheetData(pageDetails.dataRows.filter(r=>!r.ignoreThisSheetRowData), {
         ...pageState,
         ...hi,
     }, prms.pageCtx, canHaveNullPrimaryIdTables[pageState.curPage.table as 'tenantInfo']);

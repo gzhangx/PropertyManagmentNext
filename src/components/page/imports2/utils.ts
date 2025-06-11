@@ -70,7 +70,7 @@ export async function loadPageSheetDataRaw(sheetId: string, pageState: IPageStat
                 matcherName: '',
                 displayData: {},
                 sheetIdField,
-                ignoreThisSheetRowData: !!importSheetData[curPage.sheetMustExistField as any],
+                ignoreThisSheetRowData: !importSheetData[curPage.sheetMustExistField as any],
             }  as ISheetRowData;
         });
         if (sheetIdField) {
