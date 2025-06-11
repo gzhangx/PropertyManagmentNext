@@ -143,6 +143,7 @@ export async function genericPageLoader(prms: IPageParms, pageState: IPageStates
     const rowComparer: IRowComparer =
     {
         name: 'Payment Row Comparer',
+        getMappingColumnInfo: () => mappingColumnInfo,
         getRowKey: (data: IDbSaveData, makeIdFieldNull: boolean, source: 'DB' | 'Sheet') => {            
             const parts = mappingColumnInfo.map(fd => {
                 if (fd.isId && makeIdFieldNull) {

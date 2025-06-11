@@ -161,6 +161,18 @@ export function matchItems(pageDetails: IPageDataDetails, dbData: IDbSaveData[],
                 if (matchedItemById) {
                     sd.matchToKey = id;
                     sd.matchedToId = id;
+                    //sd.matchedToIdDataDiffCompInfo = `Sheet:${key} DB ${cmp.getRowKey(matchedItemById.dbItemData, false, 'DB') }`;
+                    sd.matchedToIdDataDiffCompInfo = cmp.getMappingColumnInfo().map(f => {
+                        const sheetVal = sd.importSheetData[f.field];
+                        const dbVal = matchedItemById.dbItemData[f.field];
+                        if (sheetVal !== dbVal) {
+                            if ((sheetVal !== undefined && sheetVal != null && sheetVal !== '') ||
+                                (dbVal !== undefined && dbVal !== null && dbVal !== '')) {
+                                return ` ${f.field} sheet=${sheetVal} db=${dbVal}`;   
+                            }
+                        }
+                        return '';
+                    }).join('');
                     sd.matched = matchedItemById.dbItemData;
                     sd.matcherName = cmp.name + '_byId';
                     matchedItemById.matchedToKey = id;

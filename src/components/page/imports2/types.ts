@@ -74,6 +74,7 @@ export interface ISheetRowData {
     dataType: ROWDataType;
     matchToKey: string;
     matchedToId: string; //if it is matched to an id.
+    matchedToIdDataDiffCompInfo?: string;
     needBackUpdateSheetWithId: string;  //has id in db but not in sheet (for example payment), need to update sheet with id
     matched: IDbSaveData;
     matcherName: string;
@@ -141,6 +142,7 @@ export interface IPageParms {
 
 export interface IRowComparer {
     name: string;
+    getMappingColumnInfo: () => IDBFieldDef[];
     getRowKey: (data: IDbSaveData, makeIdFieldNull: boolean, source: 'DB' | 'Sheet') => string;
     getRowKeys: (data: IDbSaveData, source: 'DB' | 'Sheet') => string[];
     getSheetInvalidValues: (data: IDbSaveData) => string;

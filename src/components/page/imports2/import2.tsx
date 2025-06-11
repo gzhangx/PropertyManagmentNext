@@ -242,8 +242,8 @@ function stdTryDisplayItemForCreate(params: IPageParms, state: IPageStates, shee
         if (sheetRow.invalid) invalidInfo += ' Invalid: ' + sheetRow.invalid; 
         if (sheetRow.sheetDataInvalidDontShowReason) invalidInfo += sheetRow.sheetDataInvalidDontShowReason;
         const doCreate = sheetRow.matchedToId ? false : true;
-        const debugTitle = `(fieldNme=${field} val=${itemVal}) ${invalidInfo} ${sheetRow.sheetDataInvalidDontShowReason}`;
-        const title = doCreate ? `Click to Create ${debugTitle}` : `Click to Update ${debugTitle}`;
+        const debugTitle = `(fieldNme=${field} val=${itemVal}) ${invalidInfo ? 'InvalidInfo=>' + invalidInfo:''} ${sheetRow.sheetDataInvalidDontShowReason || ''}`;
+        const title = doCreate ? `Click to Create ${debugTitle}` : `Click to Update ${debugTitle} MatchIdff ${sheetRow.matchedToIdDataDiffCompInfo}`;
         return <button disabled={!sheetRow.needUpdate || !!sheetRow.invalid} onClick={async () => {
             //setProgressStr('processing')
             if (sheetRow.invalid || !sheetRow.needUpdate) return;
