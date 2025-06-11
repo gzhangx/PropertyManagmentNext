@@ -123,6 +123,17 @@ export async function genericPageLoader(prms: IPageParms, pageState: IPageStates
         'tenantInfo': true,
     }
 
+    const mappedFields: IDBFieldDef[] = (pageState.curPage.sheetMapping?.mapping.map(fname => {
+        const fld = pageState.curPage.allFields?.find(f => f.field === fname);
+        return fld;
+    }).filter(x => x)) as IDBFieldDef[] || [];
+    if (mappedFields) {
+        pageDetails.dataRows.forEach(r => {
+            mappedFields.forEach(f => {
+                if (r.importSheetData[f.field] === undefined) r.importSheetData[f.field] = null as any;
+            })
+        });
+    }
     stdProcessSheetData(pageDetails.dataRows, {
         ...pageState,
         ...hi,
