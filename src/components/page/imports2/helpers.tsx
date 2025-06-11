@@ -108,6 +108,7 @@ export async function genericPageLoader(prms: IPageParms, pageState: IPageStates
 
         if (fd.forceDefaultIfEmpty) {
             pageDetails.dataRows.forEach(r => {
+                if (r.ignoreThisSheetRowData) return;
                 if (!r.importSheetData[fd.field]) {
                     r.importSheetData[fd.field] = fd.forceDefaultIfEmpty as string;
                 }
@@ -129,6 +130,7 @@ export async function genericPageLoader(prms: IPageParms, pageState: IPageStates
     }).filter(x => x)) as IDBFieldDef[] || [];
     if (mappedFields) {
         pageDetails.dataRows.forEach(r => {
+            if (r.ignoreThisSheetRowData) return;
             mappedFields.forEach(f => {
                 if (r.importSheetData[f.field] === undefined) r.importSheetData[f.field] = null as any;
             })
@@ -262,6 +264,7 @@ export function getDisplayHeaders(params: IPageParms, curPageState: IPageStates)
                     let processedCount = 0, updatedCount = 0;
                     for (let i = 0; i < curPageState.pageDetails.dataRows.length; i++) {
                         const curRow = curPageState.pageDetails.dataRows[i];
+                        if (curRow.ignoreThisSheetRowData) continue;
                         processedCount++;                       
                         params.showProgress(`processing ${i}/${curPageState.pageDetails.dataRows.length} updated=${updatedCount}`);
                         if (curRow.dataType === 'Sheet') {

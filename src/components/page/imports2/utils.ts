@@ -48,7 +48,7 @@ export async function loadPageSheetDataRaw(sheetId: string, pageState: IPageStat
         //     }
         // })        
         const dataRows: ISheetRowData[] = r.values.slice(1).map(rr => {
-            const importSheetData = curPage.sheetMapping?.mapping.reduce((acc, f, ind) => {
+            const importSheetData: IStringDict = curPage.sheetMapping!.mapping.reduce((acc, f, ind) => {
                 if (f) {
                     acc[f] = rr[ind];
                     //const specFunc = specialFields.get(f);
@@ -66,15 +66,17 @@ export async function loadPageSheetDataRaw(sheetId: string, pageState: IPageStat
                 matchedToId: '',
                 needBackUpdateSheetWithId: '',
                 importSheetData,
-                matched: null,
+                matched: null as any as IDbSaveData,
                 matcherName: '',
                 displayData: {},
                 sheetIdField,
-            } as any as ISheetRowData;
-        }).filter(x => x.importSheetData[curPage.sheetMustExistField as any]);
+                ignoreThisSheetRowData: !!importSheetData[curPage.sheetMustExistField as any],
+            }  as ISheetRowData;
+        });
         if (sheetIdField) {
             const duplicateIds = new Map<string, number>();
             dataRows.forEach(r => {
+                if (r.ignoreThisSheetRowData) return;
                 const id = ((r as any)[sheetIdField] || '').trim();
                 if (id) {
                     duplicateIds.set(id, (duplicateIds.get(id) || 0) + 1);

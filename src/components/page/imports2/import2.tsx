@@ -295,7 +295,7 @@ function displayItems(pagePrms: IPageParms, curPageState: IPageStates) {
         return true;
     }
     const sheetDsp = curPageState.pageDetails.dataRows
-        .filter(x => ((!x.matched || x.needUpdate || curPageState.showMatchedItems)) && belongsToOwner(x.importSheetData))  //!x.sheetDataInvalidDontShowReason && add this to not show bad data
+        .filter(x => ((!x.matched || x.needUpdate || curPageState.showMatchedItems)) && belongsToOwner(x.importSheetData) && !x.ignoreThisSheetRowData)  //!x.sheetDataInvalidDontShowReason && add this to not show bad data
         .map((sheetRow, ind) => {
             const showItem = (dc: IDisplayColumnInfo) => {
                 const field = dc.field;
@@ -374,7 +374,7 @@ function displayBackFillOptions(pagePrms: IPageParms, curPageState: IPageStates)
         return true;
     }
     const needBackFillItems = curPageState.pageDetails.dataRows
-        .filter(x => ((x.needBackUpdateSheetWithId)) && belongsToOwner(x.importSheetData))  //!x.sheetDataInvalidDontShowReason && add this to not show bad data
+        .filter(x => ((x.needBackUpdateSheetWithId)) && belongsToOwner(x.importSheetData) && !x.ignoreThisSheetRowData)  //!x.sheetDataInvalidDontShowReason && add this to not show bad data
             
     if (!needBackFillItems.length) return null;
     //const rootCtx = useRootPageContext();
