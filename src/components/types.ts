@@ -91,7 +91,7 @@ export interface IDBFieldDef {
     size?: string;
     required?: boolean;
     isId?: boolean;
-    def?: string;
+    def?: string | number;
     unique?: boolean;
     ident?: boolean;
     dontUpdate?: boolean;
