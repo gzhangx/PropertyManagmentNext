@@ -186,6 +186,9 @@ export const leaseInfoDef: ITableAndSheetMappingInfo<unknown> = {
             'rentDueDay',
         ],
     },
+    otherFieldOverrideFields: {
+        rentDueDay: 5,
+    },
     editTitle: 'Add/Edit Lease Record',
     displayFields: 
         [
@@ -227,6 +230,18 @@ const ownerInfoDef: ITableAndSheetMappingInfo<unknown> = {
 }
 
 import { paymentInfoDef } from './rentpaymentInfoDef'
+
+const expenseCategoryDef: ITableAndSheetMappingInfo<unknown> = {
+    table: 'expenseCategories',
+    displayFields: [
+        //{ field: 'userID', desc: 'Owner', foreignKey: { table: 'userInfo', field: 'userID' }, required: true, isId: true, },
+        { field: 'expenseCategoryID', desc: 'ExpensiveCategoryID', required: true, },
+        { field: 'expenseCategoryName', desc: 'Name' },
+        { field: 'mappedToTaxExpenseCategoryName', desc: 'Map to IRS Type', },        
+        { field: 'doNotIncludeInTax', desc:'Dont include in expense tax'}
+    ]
+}
+
 import { customHeaderFilterFuncWithHouseIDLookup, genericCustomerHeaderFilterFuncForString, genericCustomHeaderFilterFunc } from "./util";
 
 export const paymentInfoDefinition = paymentInfoDef;
@@ -234,6 +249,7 @@ export const paymentInfoDefinition = paymentInfoDef;
 export const tableNameToDefinitions = [tenantInfoDef, houseInfoDef, paymentInfoDef, workerInfoDef, maintenanceInfoDef,
     leaseInfoDef,
     ownerInfoDef,
+    expenseCategoryDef,
 ].reduce((acc, pp) => {
     acc.set(pp.table, pp as any);
     return acc;

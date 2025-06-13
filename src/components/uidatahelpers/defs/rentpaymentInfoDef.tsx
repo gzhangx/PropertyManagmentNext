@@ -8,6 +8,7 @@ import { formateEmail } from "../../utils/leaseEmailUtil";
 import { orderBy } from "lodash";
 import { customHeaderFilterFuncWithHouseIDLookup, genericCustomHeaderFilterFunc } from "./util";
 import { IDBFieldDef } from "../../types";
+import { TextFieldOutlined } from "../wrappers/muwrappers";
 
 const table = 'rentPaymentInfo';
 
@@ -15,6 +16,7 @@ export interface ICustEmailInfo {
     html: string;
     subject: string;
     to: string[];
+    cc: string;
     edit: boolean;
 }
 export const paymentInfoDef: ITableAndSheetMappingInfo<ICustEmailInfo> = {
@@ -171,12 +173,14 @@ export const paymentInfoDef: ITableAndSheetMappingInfo<ICustEmailInfo> = {
             html: 'testtest',
             subject: 'testsub',
             to: ['testot'],
+            cc: '',
             edit: false,
         };
         const emailPreview: {
             html: string;
             subject: string;
             to: string[];
+            cc: string;
             edit: boolean;
         } = cust.paymentUIRelated || emailPreviewDef;
         const closePreview = () => {
@@ -197,7 +201,7 @@ export const paymentInfoDef: ITableAndSheetMappingInfo<ICustEmailInfo> = {
             setShow={closePreview}
             footer={<div className="modal-footer">
                 <button type="button" className="btn btn-secondary" data-dismiss="modal" onClick={async () => {
-                    await api.sendEmail(emailPreview.to, emailPreview.subject, emailPreview.html);
+                    await api.sendEmail(emailPreview.to, emailPreview.cc, emailPreview.subject, emailPreview.html);
                     closePreview();
                 }}>Send</button>
                 <button type="button" className="btn btn-secondary" data-dismiss="modal" onClick={async () => {
@@ -234,6 +238,11 @@ export const paymentInfoDef: ITableAndSheetMappingInfo<ICustEmailInfo> = {
                                 })
                             }}></input>
 
+                    </td>
+                </tr>
+                <tr>
+                    <td colSpan={2}>
+                        <TextFieldOutlined label='cc' value={emailPreview.cc}/>
                     </td>
                 </tr>
                 <tr>
@@ -306,7 +315,8 @@ export const paymentInfoDef: ITableAndSheetMappingInfo<ICustEmailInfo> = {
                         html: formatedData.body,
                         subject: formatedData.subject,
                         to: formatedData.mailtos,
-                        edit: false,                        
+                        edit: false,
+                        cc: formatedData.paymentEmailContactEmail,
                     }
                 }
             })

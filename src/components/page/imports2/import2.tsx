@@ -154,6 +154,14 @@ export function ImportPage() {
                                                             };
                                                         })
                                                     }
+                                                    const otherFieldOverrideFields = curPage.otherFieldOverrideFields;
+                                                    if (otherFieldOverrideFields) {
+                                                        fieldDefs.forEach(f => {
+                                                            if (otherFieldOverrideFields[f.field]) {
+                                                                f.forceDefaultIfEmpty = otherFieldOverrideFields[f.field];
+                                                            }
+                                                        })
+                                                    }
                                                 }
                                                 dispatchCurPageState(state => {
                                                     return {
@@ -234,13 +242,17 @@ function stdTryDisplayItemForCreate(params: IPageParms, state: IPageStates, shee
         if (sheetRow.invalid) invalidInfo += ' Invalid: ' + sheetRow.invalid; 
         if (sheetRow.sheetDataInvalidDontShowReason) invalidInfo += sheetRow.sheetDataInvalidDontShowReason;
         const doCreate = sheetRow.matchedToId ? false : true;
-        const debugTitle = `(fieldNme=${field} val=${itemVal}) ${invalidInfo} ${sheetRow.sheetDataInvalidDontShowReason}`;
-        const title = doCreate ? `Click to Create ${debugTitle}` : `Click to Update ${debugTitle}`;
+        const debugTitle = `(fieldNme=${field} val=${itemVal}) ${invalidInfo ? 'InvalidInfo=>' + invalidInfo:''} ${sheetRow.sheetDataInvalidDontShowReason || ''}`;
+        const title = doCreate ? `Click to Create ${debugTitle}` : `Click to Update ${debugTitle} MatchIdff ${sheetRow.matchedToIdDataDiffCompInfo}`;
         return <button disabled={!sheetRow.needUpdate || !!sheetRow.invalid} onClick={async () => {
             //setProgressStr('processing')
             if (sheetRow.invalid || !sheetRow.needUpdate) return;
             params.showProgress('processing');
-            await updateRowData(params, state.curPage.table, sheetRow, 'updated by button')
+            const res = await updateRowData(params, state.curPage.table, sheetRow, 'updated by button')
+            
+            if (res.message) {
+                params.setErrorStr(res.message);
+            }
             // try {
             //     await dbInserter.createEntity(sheetRow.importSheetData);
             //     sheetRow.needUpdate = false;
@@ -283,7 +295,7 @@ function displayItems(pagePrms: IPageParms, curPageState: IPageStates) {
         return true;
     }
     const sheetDsp = curPageState.pageDetails.dataRows
-        .filter(x => ((!x.matched || x.needUpdate || curPageState.showMatchedItems)) && belongsToOwner(x.importSheetData))  //!x.sheetDataInvalidDontShowReason && add this to not show bad data
+        .filter(x => ((!x.matched || x.needUpdate || curPageState.showMatchedItems)) && belongsToOwner(x.importSheetData) && !x.ignoreThisSheetRowData)  //!x.sheetDataInvalidDontShowReason && add this to not show bad data
         .map((sheetRow, ind) => {
             const showItem = (dc: IDisplayColumnInfo) => {
                 const field = dc.field;
@@ -362,7 +374,7 @@ function displayBackFillOptions(pagePrms: IPageParms, curPageState: IPageStates)
         return true;
     }
     const needBackFillItems = curPageState.pageDetails.dataRows
-        .filter(x => ((x.needBackUpdateSheetWithId)) && belongsToOwner(x.importSheetData))  //!x.sheetDataInvalidDontShowReason && add this to not show bad data
+        .filter(x => ((x.needBackUpdateSheetWithId)) && belongsToOwner(x.importSheetData) && !x.ignoreThisSheetRowData)  //!x.sheetDataInvalidDontShowReason && add this to not show bad data
             
     if (!needBackFillItems.length) return null;
     //const rootCtx = useRootPageContext();

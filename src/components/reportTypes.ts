@@ -1,5 +1,5 @@
 import { AllDateTypes, FieldValueType, IDBFieldDef, IGetModelReturn, IPageState, ISqlDeleteResponse, ISqlOrderDef, ISqlRequestWhereItem, TableNames, TimeZoneType } from './types'
-import { IGoogleSheetAuthInfo } from './api';
+
 import { IEditTextDropdownItem } from './generic/GenericDropdown';
 import { ItemType, ItemTypeDict } from './uidatahelpers/datahelperTypes';
 import { NotifyIconItem } from './page/tinyIconNotify';
@@ -53,6 +53,7 @@ export interface IHouseInfo {
     state: string;
     zip: string;
     disabled?: 'Y' | 'N' | null;
+    cost?: number;
 }
 
 
@@ -240,6 +241,18 @@ export type TopBarIconNotifyCfg = {
     setTopBarItems: React.Dispatch<React.SetStateAction<NotifyIconItem[]>>;
 }
 
+interface IGoogleAuthInfo {
+    private_key_id: string;
+    private_key: string;
+    client_email: string;
+}
+
+
+export type IGoogleSheetAuthInfo = {
+    googleSheetId: string;
+    error?: string;
+} & IGoogleAuthInfo;
+
 export interface IPageRelatedState {
     pageState: IPageState;    
     googleSheetAuthInfo: IGoogleSheetAuthInfo;
@@ -274,4 +287,41 @@ export interface IPageRelatedState {
     loadingDlgContent: string | JSX.Element | null;
     loadingDlgTitle: string;
 }
+
+
+
+export const TaxExpenseCategories = [
+    'Advertising',
+    'Auto and Travel',
+    'Cleaning and Maintenance', // 'Cleaning', // ,
+    'Commissions',
+    'Insurance',
+    'Legal and Other Profession Fees',
+    'Management fees', //HOA fees
+    'Mortgage interest paid to banks, etc',
+    'Other interest',
+    'Repairs', //Repair
+    'Supplies',
+    'Taxes', //Tax
+    'Utilities', //Utitlities
+    'Other', //Others
+] as const;
+
+export type TaxExpenseCategoryNameType = (typeof TaxExpenseCategories)[number];
+
+//Entertainment
+//Food / Drink
+//Inspection / Checking
+//Lawn Maintenance
+//medical
+//Pest Control
+//Return of Deposit
+
+export type TaxExpenseCategoryDataType = {
+    expenseCategoryID: string;
+    expenseCategoryName: string;
+    mappedToTaxExpenseCategoryName: TaxExpenseCategoryNameType;
+    doNotIncludeInTax: boolean;
+    displayOrder: string;
+};
 

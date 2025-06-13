@@ -6,14 +6,14 @@ import {
     IStringDict,
     IPageInfo} from './types'
 
-import { matchItems, loadPageSheetDataRaw, stdProcessSheetData, getHouseState } from './utils'
+import { matchItems, loadPageSheetDataRaw, stdProcessSheetData, getHouseState, ImportMatchkeyDebugRemove } from './utils'
 //const sheetId = '1UU9EYL7ZYpfHV6Jmd2CvVb6oBuQ6ekTR7AWXIlMvNCg';
 
 import * as inserter from './loads/inserter';
 import { deleteById, updateSheet } from '../../api';
 import { IDBFieldDef, TableNames } from '../../types';
 import { stdFormatValue } from '../../uidatahelpers/datahelpers';
-import { Fragment } from 'react';
+
 
 export async function createEntity(params: IPageParms, changeRow: ISheetRowData, inserter: IDbInserter, fields: IDBFieldDef[]) {
     //const state = curPageState;
@@ -105,6 +105,15 @@ export async function genericPageLoader(prms: IPageParms, pageState: IPageStates
         if (fd.foreignKey && fd.foreignKey.table) {
             await prms.pageCtx.loadForeignKeyLookup(fd.foreignKey.table);
         }
+
+        if (fd.forceDefaultIfEmpty) {
+            pageDetails.dataRows.forEach(r => {
+                if (r.ignoreThisSheetRowData) return;
+                if (!r.importSheetData[fd.field]) {
+                    r.importSheetData[fd.field] = fd.forceDefaultIfEmpty as string;
+                }
+            })
+        }
     }
 
     const canHaveNullPrimaryIdTables = {
@@ -115,7 +124,19 @@ export async function genericPageLoader(prms: IPageParms, pageState: IPageStates
         'tenantInfo': true,
     }
 
-    stdProcessSheetData(pageDetails.dataRows, {
+    const mappedFields: IDBFieldDef[] = (pageState.curPage.sheetMapping?.mapping.map(fname => {
+        const fld = pageState.curPage.allFields?.find(f => f.field === fname);
+        return fld;
+    }).filter(x => x)) as IDBFieldDef[] || [];
+    if (mappedFields) {
+        pageDetails.dataRows.forEach(r => {
+            if (r.ignoreThisSheetRowData) return;
+            mappedFields.forEach(f => {
+                if (r.importSheetData[f.field] === undefined) r.importSheetData[f.field] = null as any;
+            })
+        });
+    }
+    stdProcessSheetData(pageDetails.dataRows.filter(r=>!r.ignoreThisSheetRowData), {
         ...pageState,
         ...hi,
     }, prms.pageCtx, canHaveNullPrimaryIdTables[pageState.curPage.table as 'tenantInfo']);
@@ -124,7 +145,8 @@ export async function genericPageLoader(prms: IPageParms, pageState: IPageStates
     const rowComparer: IRowComparer =
     {
         name: 'Payment Row Comparer',
-        getRowKey: (data: IDbSaveData, makeIdFieldNull: boolean, source: 'DB' | 'Sheet') => {
+        getMappingColumnInfo: () => mappingColumnInfo,
+        getRowKey: (data: IDbSaveData, makeIdFieldNull: boolean, source: 'DB' | 'Sheet') => {            
             const parts = mappingColumnInfo.map(fd => {
                 if (fd.isId && makeIdFieldNull) {
                     return '';
@@ -135,9 +157,9 @@ export async function genericPageLoader(prms: IPageParms, pageState: IPageStates
                         //return YYYYMMDDFormater(data[fd.field] as string)
                     case 'decimal':
                         //return parseFloat(data[fd.field] as string).toFixed(2);
-                        return stdFormatValue(fd, data[fd.field], fd.field, source=== 'DB'? prms.pageCtx: undefined).v;
+                        return (data[fd.field] && ImportMatchkeyDebugRemove ? fd.field + '_' : '') + stdFormatValue(fd, data[fd.field], fd.field, source=== 'DB'? prms.pageCtx: undefined).v;
                     default:
-                        return (data[fd.field] as string || '').toString().trim();
+                        return (data[fd.field] && ImportMatchkeyDebugRemove ?fd.field + '_':'') + (data[fd.field] as string || '').toString().trim();
                 }
             })                        
             return parts.join('-');
@@ -242,6 +264,7 @@ export function getDisplayHeaders(params: IPageParms, curPageState: IPageStates)
                     let processedCount = 0, updatedCount = 0;
                     for (let i = 0; i < curPageState.pageDetails.dataRows.length; i++) {
                         const curRow = curPageState.pageDetails.dataRows[i];
+                        if (curRow.ignoreThisSheetRowData) continue;
                         processedCount++;                       
                         params.showProgress(`processing ${i}/${curPageState.pageDetails.dataRows.length} updated=${updatedCount}`);
                         if (curRow.dataType === 'Sheet') {

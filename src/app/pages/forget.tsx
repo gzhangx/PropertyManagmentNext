@@ -3,10 +3,12 @@ import { useRouter, usePathname, useSearchParams } from 'next/navigation'
 import * as api from '../../components/api';
 import Link from 'next/link';
 import { GetInfoDialogHelper } from '../../components/generic/basedialog';
+import { navgateToWithState, useRootPageContext } from '@/src/components/states/RootState';
 
 export default function ForgetPassword() {
     const router = useRouter();
     const infoDlg = GetInfoDialogHelper();
+    const rState = useRootPageContext();
     
     const [state, setState] = useState({
         email: '',
@@ -69,13 +71,16 @@ export default function ForgetPassword() {
                                 <hr/>
                                     <div className="text-center">
                                     <Link href="register" legacyBehavior>
-                                            <a className="small" href="#">Create an Account!</a>
+                                            <a className="small" href="#" onClick={e => {
+                                                navgateToWithState(rState, 'register', e);
+                                            }}>Create an Account!</a>
                                         </Link>
                                 </div>
                                     <div className="text-center">
-                                    <Link href="Login" legacyBehavior>
-                                            <a className="small" href="#">Already have an account? Login!</a>
-                                    </Link>
+                                    
+                                        <a className="small" href="#" onClick={e => {
+                                            navgateToWithState(rState, 'login', e);
+                                        }}>Already have an account? Login!</a>                                    
                                 </div>
                             </div>
                         </div>

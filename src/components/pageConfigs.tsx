@@ -6,7 +6,8 @@ import YearlyMaintenanceReport from '../app/pages/reports/yearlyMaintenanceRepor
 import RentReport from '../app/pages/reports/rentReport';
 import CashFlowRpt from '../app/pages/reports/cashFlowReport';
 import { getLeasePage } from '../app/pages/reports/autoAssignLeases'
-import { RenterEmailConfig } from './page/inputs/renterEmailConfig'
+import { RenterEmailConfig } from '../app/pages/config/renterEmailConfig'
+import { CommonConfig } from '../app/pages/config/commonConfig';
 import EstimatedTaxReport from '../app/pages/reports/taxReport';
 
 import * as dev2 from '../app/pages/util/dev2'
@@ -17,6 +18,10 @@ import { TableNames } from './types'
 import GoogleSheetConfigPage from '../app/pages/config/googleSheetConfig'
 
 import NewLeaseReport from '../app/pages/reports/leaseReport'
+
+import Register from '../app/pages/register'
+import ForgetPassword from '../app/pages/forget';
+import BrowserControl from '../app/pages/config/browserControl';
 
 type LocalPageInfo = {
     name: string;
@@ -113,6 +118,18 @@ const allSections: {
                 page: <RenterEmailConfig></RenterEmailConfig>,
                 pageOuterStyles: {},
                 
+            },
+            {
+                name: 'ExpenseCategories',
+                table: 'expenseCategories',
+            },
+            {
+                name: 'Puppeeter Configs',
+                page: <CommonConfig></CommonConfig>
+            },
+            {
+                name: 'Browser Control',
+                page: <BrowserControl></BrowserControl>
             }
         ]
     }, {
@@ -150,6 +167,8 @@ const { sections, sideBarContentLookup } = allSections.reduce((acc, sec) => {
     sectionsByName: {} as {[name:string]:IMainSideBarSection},
 });
 
+sideBarContentLookup.set('register', { name: 'register',  page: <Register/> });
+sideBarContentLookup.set('forget-password', { name: 'forget', page: <ForgetPassword/> });
 
 const otherPages = <></>
 export {

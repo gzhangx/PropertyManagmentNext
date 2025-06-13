@@ -1,13 +1,14 @@
 import react, {useState} from 'react';
-import { useRouter, usePathname, useSearchParams } from 'next/navigation'
+//import { useRouter, usePathname, useSearchParams } from 'next/navigation'
 import * as api from '../../components/api';
 import { Dialog, createDialogPrms } from '../../components/dialog';
-import { useRootPageContext } from "../../components/states/RootState"
+import { navgateToWithState, useRootPageContext } from "../../components/states/RootState"
 import Link from 'next/link';
 import { usePageRelatedContext } from '../../components/states/PageRelatedState';
+import { navgateTo } from '@/src/components/nav/consts';
 
 export default function Login() {    
-    const router = useRouter();
+    //const router = useRouter();
 
     const mainCtx = usePageRelatedContext();
 
@@ -36,7 +37,8 @@ export default function Login() {
                 console.log(`login set state`, res);
                 rState.setUserInfo(res);
                 mainCtx.reloadGoogleSheetAuthInfo();
-                router.push('/dashboard');
+                //router.push('/dashboard');
+                navgateTo('dashboard');
             } else {
                 dlgPrm.setDialogInfo({
                     show: true,
@@ -129,24 +131,26 @@ export default function Login() {
                                             </a>
                                         </form>
                                         <hr />
-                                        <div className="text-center">
-                                                <Link href="forget" legacyBehavior>
-                                                    <a className="small" href="forgot-password.html">Forgot Password?</a>
-                                                </Link>
+                                        <div className="text-center">                                                
+                                            <a className="small" href="forgot-password.html" onClick={e => {
+                                                
+                                                navgateToWithState(rState, 'forget-password', e);
+                                                    }}>Forgot Password?</a>                                                
+                                        </div>
+                                        <div className="text-center">                                            
+                                            <a className="small" href="#" onClick={e => {
+                                                navgateToWithState(rState, 'register', e);
+                                            }}>Create an Account!</a>
+                                            
                                         </div>
                                         <div className="text-center">
-                                            <Link href="register" legacyBehavior>
-                                                <a className="small" href="#">Create an Account!</a>
-                                            </Link>
-                                        </div>
-                                        <div className="text-center">
-                                            <Link href="register" legacyBehavior>
+                                            
                                                 <a className="small" href="#" onClick={e => {
                                                     localStorage.removeItem('login.token');    
                                                     localStorage.clear();
                                                     e.preventDefault();
                                                 }}>Clear</a>
-                                            </Link>
+                                            
                                         </div>
                                     </div>
                                 </div>

@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
-import * as api from '../../api'
-import { getPaymentEmailConfig, getPaymentEmailDesc, googleSmtpPass, googleSmtpUser, IPaymentEmailConfig, paymentEmailProps, paymentEmailSubject, paymentEmailText } from "../../utils/leaseEmailUtil";
-import { TextFieldOutlined } from "../../uidatahelpers/wrappers/muwrappers";
+import * as api from '../../../components/api'
+import { getPaymentEmailConfig, getPaymentEmailDesc, googleSmtpPass, googleSmtpUser, IPaymentEmailConfig, paymentEmailProps, paymentEmailSubject, paymentEmailText } from "../../../components/utils/leaseEmailUtil";
+import { TextFieldOutlined } from "../../../components/uidatahelpers/wrappers/muwrappers";
 
 
 import { createTheme, ThemeProvider } from '@mui/material/styles';
@@ -39,7 +39,7 @@ export function RenterEmailConfigUnthemed() {
                 <div className="col-lg-12  ">
                     <div className="p-5 gg-modal-dialog-scrollable">
                         <div className="text-center">
-                            <h1 className="h4 text-gray-900 mb-4">Email Config</h1>
+                            <h1 className="h4 text-white-900 mb-4">Email Config</h1>
                         </div>
                         <form className="user">
                             {

@@ -15,7 +15,7 @@ import {get, keyBy} from "lodash";
 import * as lutil from "./loads/util";
 import { stdFormatValue } from '../../uidatahelpers/datahelpers';
 import { IPageRelatedState } from '../../reportTypes';
-
+export const ImportMatchkeyDebugRemove = true;
 
 export async function loadPageSheetDataRaw(sheetId: string, pageState: IPageStates): Promise<IPageDataDetails> {
     const curPage: IPageInfo = pageState.curPage;
@@ -48,7 +48,7 @@ export async function loadPageSheetDataRaw(sheetId: string, pageState: IPageStat
         //     }
         // })        
         const dataRows: ISheetRowData[] = r.values.slice(1).map(rr => {
-            const importSheetData = curPage.sheetMapping?.mapping.reduce((acc, f, ind) => {
+            const importSheetData: IStringDict = curPage.sheetMapping!.mapping.reduce((acc, f, ind) => {
                 if (f) {
                     acc[f] = rr[ind];
                     //const specFunc = specialFields.get(f);
@@ -66,15 +66,17 @@ export async function loadPageSheetDataRaw(sheetId: string, pageState: IPageStat
                 matchedToId: '',
                 needBackUpdateSheetWithId: '',
                 importSheetData,
-                matched: null,
+                matched: null as any as IDbSaveData,
                 matcherName: '',
                 displayData: {},
                 sheetIdField,
-            } as any as ISheetRowData;
-        }).filter(x => x.importSheetData[curPage.sheetMustExistField as any]);
+                ignoreThisSheetRowData: !importSheetData[curPage.sheetMustExistField as any],
+            }  as ISheetRowData;
+        });
         if (sheetIdField) {
             const duplicateIds = new Map<string, number>();
             dataRows.forEach(r => {
+                if (r.ignoreThisSheetRowData) return;
                 const id = ((r as any)[sheetIdField] || '').trim();
                 if (id) {
                     duplicateIds.set(id, (duplicateIds.get(id) || 0) + 1);
@@ -146,6 +148,11 @@ export function matchItems(pageDetails: IPageDataDetails, dbData: IDbSaveData[],
         }
 
         const key = cmp.getRowKey(sd.importSheetData, false, 'Sheet');  //don't make id null, assume we have id
+        if (ImportMatchkeyDebugRemove) {
+            if (key.indexOf('2024-08-01') >= 0) {
+                console.log('debugremove key', key, Object.keys(dbDataKeyed).filter(k => k.indexOf('2024-08-01') >= 0));
+            }
+        }
         const matchedAll = dbDataKeyed[key];
 
         if (sheetIdField) {
@@ -156,6 +163,18 @@ export function matchItems(pageDetails: IPageDataDetails, dbData: IDbSaveData[],
                 if (matchedItemById) {
                     sd.matchToKey = id;
                     sd.matchedToId = id;
+                    //sd.matchedToIdDataDiffCompInfo = `Sheet:${key} DB ${cmp.getRowKey(matchedItemById.dbItemData, false, 'DB') }`;
+                    sd.matchedToIdDataDiffCompInfo = cmp.getMappingColumnInfo().map(f => {
+                        const sheetVal = sd.importSheetData[f.field];
+                        const dbVal = matchedItemById.dbItemData[f.field];
+                        if (sheetVal !== dbVal) {
+                            if ((sheetVal !== undefined && sheetVal != null && sheetVal !== '') ||
+                                (dbVal !== undefined && dbVal !== null && dbVal !== '')) {
+                                return ` ${f.field} sheet=${sheetVal} db=${dbVal}`;   
+                            }
+                        }
+                        return '';
+                    }).join('');
                     sd.matched = matchedItemById.dbItemData;
                     sd.matcherName = cmp.name + '_byId';
                     matchedItemById.matchedToKey = id;
@@ -181,7 +200,7 @@ export function matchItems(pageDetails: IPageDataDetails, dbData: IDbSaveData[],
                 }
             }
         } else {
-            {
+            if (ImportMatchkeyDebugRemove) {
                 const dkeys = cmp.getRowKeys(sd.importSheetData, 'Sheet');
                 //debug starts
                 let curFiltered = debugItems;

@@ -50,6 +50,8 @@ export interface ITableAndSheetMappingInfo<T> {
     editTitle?: string; 
     sortFields?: string[];
 
+    otherFieldOverrideFields?: Record<string, string | number>;
+
     //customDisplayFunc?: (value: any, fieldDef: IDBFieldDef) => React.JSX.Element; //function to display data in the list, if not provided, default is to use the field name
     customAddNewDefaults?: (mainCtx: IPageRelatedState, columnInfo: IDBFieldDef[], editItem: ItemType) => Promise<void>;  //edit item is actuall ItemType
     customEditItemOnChange?: (mainCtx: IPageRelatedState, fieldName: string, setCustomFieldMapping: React.Dispatch<React.SetStateAction<ICrudAddCustomObj<T>>>, editItem: ItemType, isNew: boolean) => Promise<ItemType>;  //edit item is actuall ItemType

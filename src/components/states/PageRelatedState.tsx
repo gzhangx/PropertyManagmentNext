@@ -1,16 +1,20 @@
 'use client'
 import React, { useState, useEffect, useContext, JSX } from 'react';
-import { getModel, getSheetAuthInfo, IGoogleSheetAuthInfo, sqlGet } from '../api';
+import { getModel, getSheetAuthInfo, sqlGet } from '../api';
 
 import { AllDateTypes, IDBFieldDef, IGetModelReturn, IPagePropsByTable, TableNames } from '../types'
 
 import {    
     IForeignKeyCombo,
     IForeignKeyLookupMap,
+    IGoogleSheetAuthInfo,
     ILeaseInfo,
     IModelsDict,
     IPageRelatedState,
     IWorkerInfo,
+    TaxExpenseCategories,
+    TaxExpenseCategoryDataType,
+    TaxExpenseCategoryNameType,
     TopBarIconNotifyCfg,
 } from '../reportTypes';
 import { useRootPageContext } from './RootState';
@@ -26,6 +30,93 @@ const PageRelatedContext = React.createContext({} as IPageRelatedState);
 
 export function usePageRelatedContext() {
     return useContext(PageRelatedContext);
+}
+
+
+function getInitialExpenseCategoryModel() {
+    const model: IModelsDict = new Map();
+    const fields: IDBFieldDef[] = [
+        {
+            field: 'expenseCategoryID',
+            type: 'string',
+            isId: true,            
+        },
+        {
+            field: 'expenseCategoryName',
+            type: 'string',
+            isId: false,            
+        },
+        {
+            field: 'mappedToTaxExpenseCategoryName',
+            type: 'string',
+            isId: false,
+            foreignKey: {
+                table: 'InMemIRSExpenseCategories',
+                field: 'irsExpenseCategoryId',
+            }
+        },
+        {
+            field: 'doNotIncludeInTax',
+            type: 'int',
+        }
+    ];
+    const expModel: IGetModelReturn = {
+        fields,
+        fieldMap: fields.reduce((acc, f) => {
+            acc[f.field] = f;
+            return acc;
+        }, {} as Record<string, IDBFieldDef>),
+    }
+    model.set('expenseCategories', expModel);
+
+    const inMemIrsExpFields: IDBFieldDef[] = [
+        {
+            field: 'irsExpenseCategoryId',
+            type: 'string',
+            isId: true,
+        },
+        {
+            field: 'desc',
+            type: 'string',
+            isId: false,
+        },
+    ];
+    const inMemIrsCatModel: IGetModelReturn = {
+        fields: inMemIrsExpFields,
+        fieldMap: inMemIrsExpFields.reduce((acc, f) => {
+            acc[f.field] = f;
+            return acc;
+        }, {} as Record<string, IDBFieldDef>),
+    };
+    model.set('InMemIRSExpenseCategories', inMemIrsCatModel);
+
+    const foreignKeyLoopkup: IForeignKeyLookupMap = new Map();
+
+    const inMemIRSExpenseCategories: IForeignKeyCombo = {
+        rows: [],
+        idObj: new Map(),
+        idDesc: new Map(),
+        descToId: new Map(),
+    }
+    foreignKeyLoopkup.set('InMemIRSExpenseCategories', inMemIRSExpenseCategories);
+    inMemIRSExpenseCategories.rows = TaxExpenseCategories.map(id => ({
+        id,
+        desc: id,
+    }));
+    inMemIRSExpenseCategories.rows = [{
+        id: '',
+        desc: 'NA',
+    }].concat(inMemIRSExpenseCategories.rows);
+    inMemIRSExpenseCategories.rows.forEach(r => {
+        inMemIRSExpenseCategories.idObj.set(r.id, r);
+        inMemIRSExpenseCategories.idDesc.set(r.id, r);
+        inMemIRSExpenseCategories.descToId.set(r.desc, r);
+    });
+    return {
+        model,
+        foreignKeyLoopkup,
+    };    
+
 }
 export function PageRelatedContextWrapper(props: {
     children: any
@@ -45,15 +136,16 @@ export function PageRelatedContextWrapper(props: {
         private_key_id: '',
     } );
 
-    //month selection states    
+    //month selection states
 
-    const [models, setModels] = useState<IModelsDict>(new Map());
+    const initialVals = getInitialExpenseCategoryModel();
+    const [models, setModels] = useState<IModelsDict>(initialVals.model);
 
     const [loadingDlgContent, setLoadingDlgContent] = useState<string | JSX.Element | null>(null);
 
     const [loadingDlgTitle, setLoadingDlgTitle] = useState<string>('Loading');
 
-    const [foreignKeyLoopkup, setForeignKeyLookup] = useState<IForeignKeyLookupMap>(new Map());
+    const [foreignKeyLoopkup, setForeignKeyLookup] = useState<IForeignKeyLookupMap>(initialVals.foreignKeyLoopkup);
 
     function generateTopBarNotifyOpt(): TopBarIconNotifyCfg {
         const [topBarMessages, setTopBarItems] = useState<NotifyIconItem[]>([]);
@@ -101,7 +193,7 @@ export function PageRelatedContextWrapper(props: {
     }
 
     async function loadForeignKeyLookup(table: TableNames, forceReload?: boolean): Promise<IForeignKeyCombo> {
-        if (!forceReload) {
+        if (!forceReload || table === 'InMemIRSExpenseCategories') {
             const lookup = foreignKeyLoopkup.get(table);
             if (lookup) return lookup;
         }
@@ -193,6 +285,30 @@ export function PageRelatedContextWrapper(props: {
                 desc: parser.descGetter(r),
             };
         })
+
+        switch (table) {
+            case 'expenseCategories':
+                //use irs tax categories, and use irs ID, use desc from table if matches id
+                const expenseCatDbRows = (sqlRes.rows as TaxExpenseCategoryDataType[]);
+                res.rows = TaxExpenseCategories.map(catName => {
+                    const cat = {
+                        id: catName,
+                        desc: catName,
+                    };
+                    return cat;
+                });
+                expenseCatDbRows.forEach(dbData => {
+                    if (!TaxExpenseCategories.includes(dbData.expenseCategoryID as TaxExpenseCategoryNameType)) {
+                        //no matching dbData, 
+                        res.rows.push({
+                            id: dbData.expenseCategoryID,
+                            desc: dbData.expenseCategoryName,
+                        });                     
+                    } 
+                    // else means we have matchind id in DB, this is taken care of
+                });
+                break;
+        }
         //const map: IForeignKeyIdDesc = new Map();
         //const descToId: IForeignKeyIdDesc = new Map();
         res.rows.forEach(r => {

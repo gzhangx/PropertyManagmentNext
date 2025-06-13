@@ -74,6 +74,7 @@ export interface ISheetRowData {
     dataType: ROWDataType;
     matchToKey: string;
     matchedToId: string; //if it is matched to an id.
+    matchedToIdDataDiffCompInfo?: string;
     needBackUpdateSheetWithId: string;  //has id in db but not in sheet (for example payment), need to update sheet with id
     matched: IDbSaveData;
     matcherName: string;
@@ -81,6 +82,8 @@ export interface ISheetRowData {
     sheetIdField: SheetIdFieldNames;
     sheetDataInvalidDontShowReason?: string;
 
+
+    ignoreThisSheetRowData: boolean; //if a row is blank, ignore it but keep it in as we need the counts to back update
     //matchedById: SheetIdFieldNames; //when it is matched by Id for items that has an id on sheet, replaced with MatchedToId, actual id, not just name of id field
 }
 
@@ -141,6 +144,7 @@ export interface IPageParms {
 
 export interface IRowComparer {
     name: string;
+    getMappingColumnInfo: () => IDBFieldDef[];
     getRowKey: (data: IDbSaveData, makeIdFieldNull: boolean, source: 'DB' | 'Sheet') => string;
     getRowKeys: (data: IDbSaveData, source: 'DB' | 'Sheet') => string[];
     getSheetInvalidValues: (data: IDbSaveData) => string;

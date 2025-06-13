@@ -23,11 +23,19 @@ export default function MainDashboard() {
   }, [])
   if (!isClient) return <div>pre rendered</div>
   
-  if (!rstate.isLoggedIn()) return <Login></Login>
-
-  //const [pageState, setPageState] = pstate;
   const currentActivePage = getSideBarCurrentSelectedItemName(rstate);
   const sideBarItem = sideBarContentLookup.get(currentActivePage as string);
+  //console.log('currentActivePage', currentActivePage, sideBarItem, rstate.isLoggedIn());
+  if (!rstate.isLoggedIn()) {
+    switch (currentActivePage) {      
+      case 'register':        
+      case 'forget-password':
+        return sideBarItem?.page || <div> Register page not found</div>;
+    }
+    return <Login></Login>
+  }
+
+  //const [pageState, setPageState] = pstate;      
   //console.log('-----------> sidebar item ', sideBarItem.name, sideBarItem.table, currentActivePage)
   let page = sideBarItem?.page;
   const pageStyles = sideBarItem?.pageOuterStyles || { margin: '30px' };

@@ -1,15 +1,30 @@
 'use client'
-import { DataGrid, GridCellEditStopParams, GridCellEditStopReasons, GridColDef, GridSingleSelectColDef, MuiEvent } from '@mui/x-data-grid';
-import React, { ChangeEvent, useEffect, useRef, useState } from "react";
+import React, { ChangeEvent, Fragment, use, useEffect, useRef, useState } from "react";
 import { IPdfTextItem, parsePdfFile, PdfScript } from "../../../components/utils/pdfFileUtil";
 import { startCase } from "lodash";
-import { getUserOptions } from "../../../components/api";
+import { getUserOptions, updateUserOptions, getExpenseCategories } from "../../../components/api";
 import Box from '@mui/material/Box';
-import { Button, TextField } from '@mui/material';
+import { Button, Checkbox, FormControlLabel, FormGroup, InputAdornment, MenuItem, Select, TextField, Theme, useTheme } from '@mui/material';
+import { filterPaymentsForRent, formatAccounting, getMonthAry, IPaymentWithDateMonthPaymentType, loadDataWithMonthRange, loadMaintenanceData, loadPayment, MonthSelections } from '@/src/components/utils/reportUtils';
+import * as uuid from 'uuid';
+import Table from '@mui/material/Table';
+import TableBody from '@mui/material/TableBody';
+import TableCell from '@mui/material/TableCell';
+import TableContainer from '@mui/material/TableContainer';
+import TableHead from '@mui/material/TableHead';
+import TableRow from '@mui/material/TableRow';
+import Paper from '@mui/material/Paper';
+import { CurrencyFormatTextField, MultipleSelectChip, NumberFormatTextField } from '@/src/components/uidatahelpers/wrappers/muwrappers';
+import { round2 } from '@/src/components/report/util/utils';
+
+
+import { IExpenseData, IHouseInfo, TaxExpenseCategories, TaxExpenseCategoryDataType, TaxExpenseCategoryNameType } from "@/src/components/reportTypes";
+import { useRootPageContext } from "@/src/components/states/RootState";
+import { usePageRelatedContext } from "@/src/components/states/PageRelatedState";
 
 
 interface W2Info {
-    id: number;
+    id: string;
     income: number;
     fedTax: number;
     stateTax: number;
@@ -116,7 +131,7 @@ function getPdfLocTracker() {
     function parseW2(lines: string[][]): W2Info {
         let state: 'find-fed' | 'fed' | 'find-state' | 'state' | 'done' = 'find-fed';
         const res = {
-            id: 0,
+            id: '',
             income: 0,
             fedTax: 0,
             stateTax: 0,
@@ -332,29 +347,192 @@ export async function getPaymentEmailConfigRaw(): Promise<ITaxReportDBConfig> {
 }
 
 
+const W2Fields = ['income', 'fedTax', 'stateTax'] as const;
+type W2FieldsTypes = typeof W2Fields[number];
+async function saveIncomeInfoToDb(snap: AllTaxSnapShot) {
+    await updateUserOptions('estimatedTaxReportW2Information', JSON.stringify(snap));
+    return snap;
+}
+
+
+
+
+type RentReportIncomeExpenseRowData = {    
+    payments: IPaymentWithDateMonthPaymentType[];    
+    totalIncome: number;
+}
+
+type AllRentReportData = {
+    [houseID: string]: RentReportIncomeExpenseRowData;
+}
+
+
+type ExpenseCellData = {
+    amount: number;
+    expenses: IExpenseData[];
+}
+type RentReportExpenseRowData = {
+    expense: { [paymentType: string]: ExpenseCellData };
+    totalExpense: number;
+}
+type ExpenseReportData = {
+    [houseID: string]: RentReportExpenseRowData;
+}
+
 export default function TaxReport() {
-    const [w2s, setW2s] = useState<W2Info[]>([]);
+    const [allTaxSnap, setAllTaxSnap] = useState<AllTaxSnapShot>(initializeAllTaxSnapShot());
     const [newItem, setNewItem] = useState({
         income: '',
         fedTax: '',
         stateTax: '',
-      });
+    });
+        
+    const rootCtx = useRootPageContext();
+    const mainCtx = usePageRelatedContext();
+
+    const [curMonthSelection, setCurMonthSelection] = useState<MonthSelections>('Y2D');
+    const [selectedMonths, setSelectedMonths] = useState<string[]>(getMonthAry(curMonthSelection));
+    const [allOwners, setAllOwners] = useState<{ label: string; value: string; }[]>([]);
+
+    const [allRentReportData, setAllRentReportData] = useState<AllRentReportData>({});
+    const [expenseReportData, setExpenseReportData] = useState<ExpenseReportData>({});
+    
     useEffect(() => {
         getPaymentEmailConfigRaw().then(strDict => {
-            const w2InfoStr = strDict['estimatedTaxReportW2Information'];
-            if (w2InfoStr) {
-                setW2s(JSON.parse(w2InfoStr));
+            const incomeInfoStr = strDict['estimatedTaxReportW2Information'];
+            if (incomeInfoStr) {
+                const initial = initializeAllTaxSnapShot();
+                let loaded: AllTaxSnapShot = JSON.parse(incomeInfoStr);
+                if (!loaded || !loaded.incomeInfo) {
+                    loaded = initial;
+                }
+                setAllTaxSnap({
+                    ...initial,
+                    ...loaded,
+                });
             }
         })
     }, []);
+
+
+    const loadData = async () => {
+        if (selectedMonths.length === 0) return;
+            
+            
+        const paymentData: IPaymentWithDateMonthPaymentType[] = await loadDataWithMonthRange(rootCtx, mainCtx, loadPayment, selectedMonths, 'receivedDate', 'Rent Payment');
+        //setAllPaymentData(paymentData);
+            
+        const ownerDc = paymentData.reduce((acc, pmt) => {
+            const ownerName = pmt.addressObj?.ownerName;
+            if (!acc.dict[ownerName]) {
+                acc.owners.push(ownerName);
+                acc.dict[ownerName] = true;
+            }
+            return acc;
+        }, {
+            dict: {} as { [owner: string]: boolean; },
+            owners: [] as string[],
+        });
+        ownerDc.owners.sort((a, b) => a.localeCompare(b));
+        setAllOwners([
+            { label: 'All', value: '' },
+        ].concat(ownerDc.owners.map(o => ({
+            label: o,
+            value: o,
+        }))));
     
-    // Columns configuration
-    const columns: GridColDef<W2Info, any, any>[] = [
-        { field: 'id', headerName: 'ID', width: 70 },
-        { field: 'income', headerName: 'Income ($)', width: 130, type: 'number', editable: true, },
-        { field: 'fedTax', headerName: 'Federal Tax ($)', width: 150, type: 'number', editable: true, },
-        { field: 'stateTax', headerName: 'State Tax ($)', width: 150, type: 'number', editable: true, },        
-    ];
+            
+        //const allHouses = mainCtx.getAllForeignKeyLookupItems('houseInfo') as IHouseInfo[];
+        //selectedMonths        
+            
+        const allRentReportDataAndMisc = paymentData.filter(filterPaymentsForRent).reduce((acc, pmt) => {
+            let houseIcomExp = acc.rptData[pmt.houseID];
+            if (!houseIcomExp) {
+                houseIcomExp = {
+                    payments: [],
+                    totalIncome: 0,
+                };
+                acc.rptData[pmt.houseID] = houseIcomExp;
+            }
+            houseIcomExp.payments.push(pmt);
+            houseIcomExp.totalIncome = round2(houseIcomExp.totalIncome + pmt.amount);
+            return acc;
+        }, {
+            rptData: {} as AllRentReportData,
+        });
+    
+        setAllRentReportData(allRentReportDataAndMisc.rptData);
+    }
+    
+    
+    async function loadExpenseData() {
+        const expCatsAry = await getExpenseCategories();
+        const expenseCatMap: Map<string, TaxExpenseCategoryDataType> = new Map();
+        expCatsAry.forEach(cat => {
+            expenseCatMap.set(cat.expenseCategoryName, cat);
+        });
+        const expenseData: IExpenseData[] = await loadDataWithMonthRange(rootCtx, mainCtx, loadMaintenanceData, selectedMonths, 'date', 'ExpenseData');
+        const expenseRes = expenseData.reduce((acc, exp) => {
+            const expCat = expenseCatMap.get(exp.expenseCategoryName);
+            if (!expCat) {
+                console.log('Warning!!! expense category not found', exp.expenseCategoryName, exp);
+                throw new Error(`Expense category ${exp.expenseCategoryName} not found in expense categories.`);
+            }
+            if (expCat.doNotIncludeInTax) {
+                console.log(`Skipping expense ${exp.expenseCategoryName} as it is marked as doNotIncludeInTax.`, exp);
+                return acc;
+            }
+            const expCatName = expCat.mappedToTaxExpenseCategoryName || expCat.expenseCategoryName;
+            let houseExp = acc.expenseData[exp.houseID];
+            if (!houseExp) {
+                houseExp = {
+                    expense: {},
+                    totalExpense: 0,
+                };
+                acc.expenseData[exp.houseID] = houseExp;
+            }
+    
+            let expCatData = houseExp.expense[expCatName];
+            if (!expCatData) {
+                expCatData = {
+                    amount: 0,
+                    expenses: [],
+                };
+                houseExp.expense[expCatName] = expCatData;
+            }
+    
+            expCatData.amount = round2(expCatData.amount + exp.amount);
+            houseExp.totalExpense = round2(houseExp.totalExpense + exp.amount);
+            expCatData.expenses.push(exp);
+    
+            if (!acc.expenseCatData.existing[expCatName]) {
+                acc.expenseCatData.expenseCats.push(expCatName);
+                acc.expenseCatData.existing[expCatName] = true;
+            }
+            return acc;
+        }, {
+            expenseData: {} as ExpenseReportData,
+            expenseCatData: {
+                existing: {} as { [expenseCat: string]: boolean; },
+                expenseCats: [] as string[],
+            }
+        });
+    
+        setExpenseReportData(expenseRes.expenseData);
+    }
+    
+        async function loadAll() {
+            await mainCtx.checkLoadForeignKeyForTable('maintenanceRecords');
+            await loadData();
+            await loadExpenseData();
+            mainCtx.showLoadingDlg('');        
+        }
+        useEffect(() => {
+            mainCtx.showLoadingDlg('Loading Rent Report...');
+            loadAll();
+        }, [selectedMonths.join(',')]);
+    
+    
 
     // Handle input change for new item
     const handleInputChange = (e: any) => {
@@ -363,33 +541,87 @@ export default function TaxReport() {
     };
 
     // Add new item to the grid
-    const handleAddItem = () => {
+    const handleAddItem = async () => {
         if (newItem.income && newItem.fedTax && newItem.stateTax) {
             const itemToAdd = {
-                id: 0,
+                id: uuid.v1(),
                 income: parseFloat(newItem.income),
                 fedTax: parseFloat(newItem.fedTax),
                 stateTax: parseFloat(newItem.stateTax),
             };
-            setW2s([...w2s, itemToAdd].map((itm, idx) => {
-                return {                    
-                    ...itm,
-                    id: idx,
-                }
-            }));
+            allTaxSnap.incomeInfo.w2s = [...allTaxSnap.incomeInfo.w2s, itemToAdd]
+            await saveAllTaxSnaps();
             setNewItem({ income: '', fedTax: '', stateTax: '' });
         }
     };
 
-    const handleCellEditCommit = (params: any) => {
-        setW2s(w2s.map(item =>
-            item.id === params.id
-                ? { ...item, [params.field]: params.value }
-                : item
-        ));
-    };
+    async function saveAllTaxSnaps() {
+        await saveIncomeInfoToDb(allTaxSnap);
+        setAllTaxSnap({ ...allTaxSnap });
+    }
+
+
+    const allHouses = (mainCtx.getAllForeignKeyLookupItems('houseInfo') || []).map(r => r.data) as IHouseInfo[];
+    
+    const properties: IPropertyTaxInfo[] = allHouses.filter(h => allTaxSnap.incomeInfo.selectedHouseIDs.includes(h.houseID)).map(h => {
+        const propInfo: IPropertyTaxInfo = {
+            houseID: h.houseID,
+            address: h.address,
+            cost: h.cost || 0,
+            expenses: {} as any,
+            depreciation: 0,
+            totalExpenses: 0,
+
+            income: allRentReportData[h.houseID]?.totalIncome || 0,
+            finalOutputIncomeOrLoss: 0,
+        };
+
+        TaxExpenseCategories.forEach(cat => {
+            const found = expenseReportData[h.houseID]?.expense[cat];
+            if (!found) {
+
+                propInfo.expenses[cat] = 0;                
+                return;    
+            }
+            propInfo.expenses[cat] = found.amount;
+            propInfo.totalExpenses = round2(propInfo.totalExpenses + found.amount);
+        });
+        propInfo.depreciation = round2(propInfo.cost / 27.5); // 27.5 years for residential property
+        propInfo.totalExpenses = round2(propInfo.totalExpenses + propInfo.depreciation);
+        //TODO: add auto miles
+
+        propInfo.finalOutputIncomeOrLoss = round2(propInfo.income - propInfo.totalExpenses);
+        return propInfo;
+    });
+    const adjustedGrossIncome = calculateTotalIncome(allTaxSnap, properties);
+
+    const yearSelections = ['All', 'LastMonth', 'Last3Month', 'Y2D', 'LastYear'].map(value => ({
+        value,
+        label: value,
+        selected: value === curMonthSelection
+    }));
     return (
         <div style={{ height: 500, width: '100%' }}>
+            <Box mb={2} display={'flex'} gap={2} alignItems={"flex-end"}>
+                <Select
+                    value={curMonthSelection}
+                    label="Year Selection"
+                    onChange={e => {
+                        const tv = e.target.value;
+                        let selected: string = '';
+                        if (typeof tv === 'string') {
+                            selected = tv;
+                        }
+                        setCurMonthSelection(selected as MonthSelections);
+                        setSelectedMonths(getMonthAry(selected as MonthSelections));
+                    }}
+                    
+                >
+                    {
+                        yearSelections.map((item) => (<MenuItem key={item.value} value={item.value}>{ item.label}</MenuItem>))
+                    }
+                </Select>
+            </Box>
             <Box mb={2} display="flex" gap={2} alignItems="flex-end">
                 <TextField
                     name="income"
@@ -423,26 +655,508 @@ export default function TaxReport() {
                     Add Entry
                 </Button>
             </Box>
-            <DataGrid
-                rows={w2s}
-                columns={columns}
-                onCellEditStop={(params: GridCellEditStopParams, event: MuiEvent) => {
-                    if (params.reason === GridCellEditStopReasons.cellFocusOut) {
-                        //event.defaultMuiPrevented = true;
-                    }
-                    console.log('edit stop prms ', params)
-                }}
-                processRowUpdate={(updatedRow, originalRow) => {
-                    console.log(updatedRow, originalRow)
-                    return updatedRow;
+            <TableContainer component={Paper}>
+                <Table sx={{ minWidth: 650 }} aria-label="simple table">
+                    <TableHead>
+                        <TableRow>                            
+                            <TableCell align="right">Income</TableCell>
+                            <TableCell align="right">Federal Tax</TableCell>
+                            <TableCell align="right">State Tax</TableCell>
+                            <TableCell align="right">Action</TableCell>
+                        </TableRow>
+                    </TableHead>
+                    <TableBody>
+                        {allTaxSnap.incomeInfo.w2s.map((row) => (
+                            <TableRow
+                                key={row.id}
+                                sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
+                            >                                
+                                <TableCell align="right">{formatAccounting(row.income)}</TableCell>
+                                <TableCell align="right">{formatAccounting(row.fedTax)}</TableCell>
+                                <TableCell align="right">
+                                    <CurrencyFormatTextField variant='standard' value={row.stateTax} onChange={async e => {
+                                        row.stateTax = parseFloat(e.target.value);
+                                    }}
+                                        onBlur={async e => {                                            
+                                            await saveAllTaxSnaps();
+                                        }
+                                        }
+                                    ></CurrencyFormatTextField>
+                                </TableCell>     
+                                <TableCell><i className='fas fa-xmark' onClick={async () => {
+                                    allTaxSnap.incomeInfo.w2s = allTaxSnap.incomeInfo.w2s.filter(w => w.id !== row.id);
+                                    await saveAllTaxSnaps();
+                                }}></i> </TableCell>
+                            </TableRow>
+                        ))}
+                    </TableBody>
+                </Table>
+            </TableContainer>
+            <Box sx={{
+                display: "flex",
+                flexDirection: "row",
+                flexWrap: "wrap",
+                gap: 2, // Spacing between inputs
+                //maxWidth: 400,
+                margin: "auto",
+                padding: 2,
+                border: "1px solid #ccc",
+                borderRadius: 2,
+                boxShadow: 2,
+            }}>
+                <NumberFormatTextField label='Number of Kids' value={allTaxSnap.numberOfKidsUnder17} decimalScale={0}
+                    onChange={async e => {
+                        allTaxSnap.numberOfKidsUnder17 = e.target.value ? parseInt(e.target.value) : 0;
+                        await saveAllTaxSnaps();
+                    }}
+                ></NumberFormatTextField>                
+                {
+                    generateAccountingTextField('Interests', allTaxSnap.incomeInfo, 'taxableInterest2b')
                 }
+                {
+                    generateAccountingTextField('Dividents', allTaxSnap.incomeInfo, 'ordinaryDividends3b')
+                }
+                {
+                    generateAccountingTextField('Real Estate Tax', allTaxSnap.expenseInfo, 'realEstateTax')
+                }
+                {
+                    generateAccountingTextField('Chariable donations', allTaxSnap.expenseInfo, 'cashDonations')
+                }
+                <div>
+                    <MultipleSelectChip
+                        label="Houses"
+                        allItems={
+                            allHouses.map(h=>({id: h.houseID, name: h.address}))
+                            
+                        }
+                        selectedIds={allTaxSnap.incomeInfo.selectedHouseIDs || []}
+                        onChange={async (items) => { 
+                            allTaxSnap.incomeInfo.selectedHouseIDs = items.map(i => i.id);
+                            await saveAllTaxSnaps();
+                        }}
+                    />
+                </div>
+
+                <div>
+                    <label>Calculated adjustedGrossIncome</label>
+                    <label style={{ margin: 4 }}>{adjustedGrossIncome }</label>
+                </div>
+                <div>
+                    <label>Calculated Total Income</label>
+                    <label style={{ margin: 4 }}>{allTaxSnap.calculated.totalIncome_1040line15}</label>
+                </div>
+                <div>
+                    <label>Calculated Tax</label>
+                    <label style={{ margin: 4 }}>{allTaxSnap.calculated.calculatedTax_16}</label>
+                </div>
+                <div>
+                    <label>Child Tax Credit</label>
+                    <label style={{ margin: 4 }}>{allTaxSnap.calculated.childTaxCredit_19}</label>
+                </div>
+                <div>
+                    <label>Form 1040 line 22 tax after child</label>
+                    <label style={{ margin: 4 }}>{allTaxSnap.calculated.totalTax_form1040_line24}</label>
+                </div>
+                <div>
+                    <label>Form 1040 line 237 tax due</label>
+                    <label style={{ margin: 4 }}>{allTaxSnap.calculated.form1040_line237_taxDue}</label>
+                </div>
+            </Box>
+            <Box sx={{
+                display: "flex",
+                flexDirection: "column",
+                gap: 2, // Spacing between inputs
+                //maxWidth: 400,
+                margin: "auto",
+                padding: 2,
+                border: "1px solid #ccc",
+                borderRadius: 2,
+                boxShadow: 2,
+            }}                
+            >
+                <div style={{
+                    display: 'grid', 
+                    gridTemplateColumns:'auto auto  repeat(14, 1fr)',
+                }}>
+                    <Fragment key={'header'}>
+                        <div>House</div>
+                        <div>Income</div>
+                        {
+                            TaxExpenseCategories.map(cat => {
+                                return <div key={cat} >{startCase(cat)}</div>;
+                            })
+                        }
+                        </Fragment>
+                    <Fragment key={'data'}>
+                        {                            
+                        (allTaxSnap.incomeInfo.selectedHouseIDs || []).map((houseID) => {
+                            const house = allHouses.find(h => h.houseID === houseID);                            
+                            return <Fragment key={houseID}>
+                                <FormControlLabel control={<Checkbox />} label={house?.address} />
+                                <div>{allRentReportData[houseID]?.totalIncome || 0}</div>
+                                {
+                                    TaxExpenseCategories.map(cat => {
+                                        return <div key={cat}>
+                                            {
+                                                expenseReportData[houseID] && expenseReportData[houseID].expense[cat] ? expenseReportData[houseID].expense[cat].amount : 0
+                                            }
+                                        </div>
+                                    })
+                                }
+                            </Fragment>
+                        })
+                        }
+                    </Fragment>
+                </div>
+                <div>test</div>
+                <FormGroup>
+                    {
+                        (allTaxSnap.incomeInfo.selectedHouseIDs || []).map((houseID) => {
+                            const house = allHouses.find(h => h.houseID === houseID);
+                            return <FormControlLabel key={houseID} control={<Checkbox />} label={ house?.address} />
+                        })
+                    }
                     
-                  }
-                initialState={{
-                    pagination: { paginationModel: { pageSize: 5, page: 0 } }
-                }}
-                pageSizeOptions={[5]}
-            />
+                    
+                </FormGroup>
+            </Box>
         </div>
     );
+
+    function generateAccountingTextField<T, K extends keyof T >(label: string, obj: T, path: K) {
+        const val = obj[path];
+        return <CurrencyFormatTextField variant='outlined' label={label} value={formatAccounting(val as string)} onChange={async e => {
+            const resVal = e.target.value;
+            let setVal = 0;
+            if (resVal) {
+                setVal = parseFloat(resVal.replace(/[^0-9.-]+/g, ''));                
+            }
+            obj[path] = setVal as T[K];
+            await saveAllTaxSnaps();
+        }}                                            
+        />
+    }
+    
 }
+
+
+
+interface IncomeInfo {    
+    taxableInterest2b: number;
+    qualifiedDividends3a: number;
+    ordinaryDividends3b: number;
+    section199ADividents: number;
+    w2s: W2Info[];
+
+    selectedHouseIDs: string[];
+}
+
+
+interface CalculateInfo {
+    lineNumber: string;
+    amount: number;
+    description?: string;
+}
+interface AllTaxSnapShot {
+    fillingStatus: 'married';
+    numberOfKidsUnder17: number;
+    incomeInfo: IncomeInfo;
+    expenseInfo: {
+        medicalExpenses: number;
+        realEstateTax: number;
+        personalPropertyTax: number;
+        cashDonations: number;
+    };
+    calculated: {        
+        adjustedGrossIncome_1040line11: number;
+        totalIncome_1040line15: number;
+        calculatedTax_16: number;
+        childTaxCredit_19: number;
+        form1040_line22_taxAfterChild: number;
+        totalTax_form1040_line24: number;
+
+        form1040_line237_taxDue: number;
+
+        scheduleACalcInfo: CalculateInfo[];
+        scheduleADeduction: number;
+
+        //form8582LossLimitionsTotalLossAllowed: number;  //if 0, no loss allowed
+    };
+}
+
+function initializeAllTaxSnapShot(): AllTaxSnapShot {
+    return {
+        fillingStatus: 'married',
+        numberOfKidsUnder17: 0,
+        incomeInfo: {
+            taxableInterest2b: 0,
+            qualifiedDividends3a: 0,
+            ordinaryDividends3b: 0,
+            section199ADividents: 0,
+            w2s: [],
+            selectedHouseIDs: [],
+        },
+        expenseInfo: {
+            medicalExpenses: 0,
+            realEstateTax: 0,
+            personalPropertyTax: 0,
+            cashDonations: 0,
+        },
+        calculated: {
+            adjustedGrossIncome_1040line11: 0,
+            totalIncome_1040line15: 0,
+            calculatedTax_16: 0,
+            childTaxCredit_19: 0,
+            form1040_line22_taxAfterChild: 0,
+            totalTax_form1040_line24: 0,
+            form1040_line237_taxDue: 0,
+
+            scheduleACalcInfo: [],
+            scheduleADeduction: 0,
+
+            //form8582LossLimitionsTotalLossAllowed: 0,
+        }
+    };
+}   
+
+
+type IPropertyTaxInfo = {
+    houseID: string;
+    address: string;
+    cost: number;
+    expenses: Record<TaxExpenseCategoryNameType, number>;    
+    depreciation: number;
+    totalExpenses: number;
+
+    income: number; //calculated income or loss for the property
+
+    finalOutputIncomeOrLoss: number; //final income or loss after all calculations
+}
+function calculateTotalIncome(snap: AllTaxSnapShot, properties: IPropertyTaxInfo[]): number {
+    const incomeInfo = snap.incomeInfo;
+    let adjustedGrossIncome = round2(incomeInfo.taxableInterest2b + incomeInfo.ordinaryDividends3b);
+    let stateIncomeTax = 0;
+    for (const w2 of incomeInfo.w2s) {
+        adjustedGrossIncome = round2(adjustedGrossIncome + w2.income);
+        stateIncomeTax = round2(stateIncomeTax + (w2.stateTax || 0));
+    }
+
+    let totalPropertyIncome = 0;
+    for (const prop of properties) {
+        if (prop.finalOutputIncomeOrLoss >= 0) {
+            totalPropertyIncome = round2(totalPropertyIncome + prop.finalOutputIncomeOrLoss);
+            console.log('debugremove Property income added', prop.address, prop.finalOutputIncomeOrLoss, 'for property', prop.address);
+        } else {
+            const limit = form8582Limitions(adjustedGrossIncome, prop.finalOutputIncomeOrLoss, 0);
+            totalPropertyIncome = round2(totalPropertyIncome + Math.min(limit, prop.finalOutputIncomeOrLoss));
+            console.log('debugremove Property loss limited to', prop.address, limit, 'for property', prop.address, 'with final output income/loss', prop.finalOutputIncomeOrLoss);
+        }
+    }
+    snap.calculated.adjustedGrossIncome_1040line11 = round2(adjustedGrossIncome + totalPropertyIncome);
+
+
+    function calculateScheduleA() {
+        const scheduleACalcInfo: CalculateInfo[] = [];
+        scheduleACalcInfo.push({
+            lineNumber: '1',
+            amount: snap.expenseInfo.medicalExpenses,
+            description: 'Medical and dental expenses',
+        });
+        scheduleACalcInfo.push({
+            lineNumber: '2',
+            amount: adjustedGrossIncome,
+            description: '1040 line 11, adjusted gross income',
+        });
+        scheduleACalcInfo.push({
+            lineNumber: '3',
+            amount: adjustedGrossIncome * 0.075,
+            description: 'adjusted gross income * 7.5%',
+        });
+
+        //i.e. only medical expenses over 7.5% of AGI are deductible
+        let line4 = snap.expenseInfo.medicalExpenses - adjustedGrossIncome * 0.075;
+        if (line4 < 0) {
+            line4 = 0;
+        }
+        scheduleACalcInfo.push({
+            lineNumber: '4',
+            amount: line4,
+            description: 'Subtract line 3 from line 1. If line 3 is more than line 1, enter -0',
+        });
+        scheduleACalcInfo.push({
+            lineNumber: '5a',
+            amount: stateIncomeTax,
+            description: 'state and local taxes or sales tax',
+        });
+        scheduleACalcInfo.push({
+            lineNumber: '5b',
+            amount: snap.expenseInfo.realEstateTax || 0,
+            description: 'state and local real estate taxes',
+        });
+        scheduleACalcInfo.push({
+            lineNumber: '5c',
+            amount: snap.expenseInfo.personalPropertyTax || 0,
+            description: 'state and local personal property taxes',
+        });
+        const line5d = stateIncomeTax + (snap.expenseInfo.realEstateTax || 0) + (snap.expenseInfo.personalPropertyTax || 0);
+        scheduleACalcInfo.push({
+            lineNumber: '5d',
+            amount: line5d,
+            description: 'add 5a-c, ',
+        });
+
+        const StdDED5e = snap.fillingStatus === 'married' ? 10000 : 5000;
+        const line5e = line5d > StdDED5e ? StdDED5e : line5d;
+        //Depend on status!!!!!!!!  
+        scheduleACalcInfo.push({
+            lineNumber: '5e',
+            amount: line5e,
+            description: 'Enter the smaller of line 5d or $10,000 ($5,000 if married filing ',
+        });
+
+        //home mortgage interest nothing
+        //points from 1098
+        //investment intersst form 4952
+        //total interest paid ==> 0
+
+        scheduleACalcInfo.push({
+            lineNumber: '14',
+            amount: snap.expenseInfo.cashDonations || 0,
+            description: 'Donations to charity',
+        });
+        snap.calculated.scheduleADeduction = line5e + (snap.expenseInfo.cashDonations || 0);
+        snap.calculated.scheduleACalcInfo = scheduleACalcInfo;
+
+        const stdDed = snap.fillingStatus === 'married' ? 21900 : 14600;
+        if (snap.calculated.scheduleADeduction < stdDed) {
+            snap.calculated.scheduleADeduction = stdDed;
+        }   
+        console.log('scheduleADeduction', snap.calculated.scheduleADeduction, line5e, snap.expenseInfo.cashDonations);
+    }
+
+    calculateScheduleA();
+    
+    snap.calculated.totalIncome_1040line15 = adjustedGrossIncome - snap.calculated.scheduleADeduction;
+
+    snap.calculated.calculatedTax_16 = calculateTax2024TaxtTable(snap.calculated.totalIncome_1040line15);// calculateTax(bracketsMarriedFileJoinyly, snap.calculated.totalIncome_1040line15);
+
+
+    calculateForm8812CreditsForQualifyingChildren(snap);
+
+    snap.calculated.totalTax_form1040_line24 = snap.calculated.calculatedTax_16 - snap.calculated.childTaxCredit_19;
+    snap.calculated.form1040_line237_taxDue = round2(snap.calculated.totalTax_form1040_line24 - (snap.incomeInfo.w2s.reduce((acc, w2) => acc + (w2.fedTax || 0), 0) || 0));
+
+
+    function form8582Limitions(
+        adjustedGrossIncome_1040line11: number,
+        line1bTotalLosses: number, //only losses allowed,
+        //line1aIncomes: number,
+        line1cPriorYearLosses: number, //TODO: add prior year losses
+    ) {        
+        if (line1bTotalLosses > 0) line1bTotalLosses = 0;
+        const line1d = round2(line1bTotalLosses + line1cPriorYearLosses); //line1aIncomes
+        const line4Loss = line1d> 0? 0: Math.abs(line1d);
+        const part2Line5 = 150000;
+        const part2Line6AGI = adjustedGrossIncome_1040line11;
+        let line7 = part2Line5 - part2Line6AGI;
+        if (line7 < 0) line7 = 0;
+        const line8 = line7 * 0.5;
+        const line9 = Math.min(Math.abs(line4Loss), line8);
+
+        //const line10 = line1aIncomes;
+        //const line11TotalLossAllowed = line1bTotalLosses + line9;
+
+        //snap.calculated.form8582LossLimitionsTotalLossAllowed = line11TotalLossAllowed;
+        return -line9;
+    }
+
+    //form8582Limitions(0, 0, 0); //TODO: add totall income/loss
+    return adjustedGrossIncome;
+}
+
+
+function calculateForm8812CreditsForQualifyingChildren(snap: AllTaxSnapShot) {
+    const line3 = snap.calculated.adjustedGrossIncome_1040line11;
+    const line5 = (snap.numberOfKidsUnder17 || 0) * 2000;
+    const line8 = line5;
+
+    const line9 = snap.fillingStatus === 'married' ? 400000 : 200000;
+    let line10 = line3 - line9;
+    if (line10 < 0) {
+        line10 = 0;
+    } else {
+        line10 = Math.trunc(line10 + 999 / 1000) * 1000;
+    }
+    const line11 = line10 * 0.05;
+    if (line8 < line11) return;
+
+    const line12 = line8 - line11;
+    const line13 = snap.calculated.calculatedTax_16;
+    const line14 = Math.min(line12, line13);
+    snap.calculated.childTaxCredit_19 = line14;
+    //Child Tax Credit Limit Worksheets A and  ignored, assume  taxes is the one
+
+}
+
+
+function calculateTax2024TaxtTable(income: number): number {
+    // 2024 Tax Brackets for Married Filing Jointly
+    let rate = 0;
+    let sub = 0;
+    if (income < 201050) {
+        rate = 0.22;
+        sub = 9894;
+    } else if (income < 383900) {
+        rate = 0.24;
+        sub = 13915;
+    } else if (income < 243725) {
+        rate = 0.32;
+        sub = 22313.5;
+    } else if (income < 609350) {
+        rate = 0.35;
+        sub = 29625.25;
+    } else {
+        rate = 0.37;
+        sub = 41812.25;
+    }
+    return round2(income * rate - sub);
+ 
+}
+interface TaxBracket {
+    
+    upper: number;
+    rate: number;
+}
+
+
+const bracketsMarriedFileJoinyly: TaxBracket[] = [
+    { upper: 23200, rate: 0.10 },
+    { upper: 94300, rate: 0.12 },
+    { upper: 201050, rate: 0.22 },
+    { upper: 383900, rate: 0.24 },
+    { upper: 487450, rate: 0.32 },
+    { upper: 731200, rate: 0.35 },
+    { upper: Infinity, rate: 0.37 }
+];
+
+function calculateTax(brackets: TaxBracket[], income: number): number {
+    // 2023 Tax Brackets for Married Filing Jointly
+    
+
+    let tax = 0;
+    let previousLimit = 0;
+
+    for (const bracket of brackets) {
+        if (income > previousLimit) {
+            const taxableAmount = Math.min(income, bracket.upper) - previousLimit;
+            if (taxableAmount > 0) {
+                tax = round2(tax + taxableAmount * bracket.rate);
+            } else break;
+            previousLimit = bracket.upper;
+        } else break;
+    }
+
+    return round2(tax);
+}
+
+

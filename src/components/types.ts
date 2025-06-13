@@ -1,5 +1,5 @@
 import React from "react";
-import { ItemTypeDict } from "./uidatahelpers/datahelperTypes";
+import { ALLFieldNames, ItemTypeDict } from "./uidatahelpers/datahelperTypes";
 
 //export type TYPEDBTables = 'ownerInfo' | 'rentPaymentInfo' | 'houseInfo';
 
@@ -7,6 +7,7 @@ export type TableNames = 'rentPaymentInfo' | 'houseInfo' | 'maintenanceRecords' 
     | 'googleApiCreds' | 'workerInfo' | 'userOptions'
     | 'expenseCategories'
     | 'paymentType'
+    | 'InMemIRSExpenseCategories'  //in memory fake table for expensive category mapping
     ;
 export interface ISqlDeleteResponse {
     affectedRows: number;
@@ -90,7 +91,7 @@ export interface IDBFieldDef {
     size?: string;
     required?: boolean;
     isId?: boolean;
-    def?: string;
+    def?: string | number;
     unique?: boolean;
     ident?: boolean;
     dontUpdate?: boolean;
@@ -108,6 +109,8 @@ export interface IDBFieldDef {
 
     displayType?: 'currency' | 'date'; 
     displayCustomFormatField?: (row: ItemTypeDict, field: string) => string; //format the cell to some combiation of fields.  sfield should be ALLFieldNames
+
+    forceDefaultIfEmpty?: string|number;
 }
 
 export const DisplayCustomFormatFieldOriginalDataSufix = '_OrigData'; //save original data.
