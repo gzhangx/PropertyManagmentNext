@@ -1,5 +1,5 @@
 import * as api from '../../../components/api'
-import { gatherLeaseInfomation, getLeaseUtilForHouse, HouseWithLease, ILeaseInfoWithPaymentDueHistory, ILeaseInfoWithPmtInfo } from '../../../components/utils/leaseUtil';
+import { fixBadLeaseIds, gatherLeaseInfomation, getLeaseUtilForHouse, HouseWithLease, ILeaseInfoWithPaymentDueHistory, ILeaseInfoWithPmtInfo } from '../../../components/utils/leaseUtil';
 import { IHouseInfo, ILeaseInfo, IPayment } from '../../../components/reportTypes';
 import { Fragment, useEffect, useState } from 'react';
 import { usePageRelatedContext } from '../../../components/states/PageRelatedState';
@@ -7,7 +7,7 @@ import Link from 'next/link';
 import { formateEmail } from '../../../components/utils/leaseEmailUtil';
 import { CloseableDialog } from '../../../components/generic/basedialog';
 import { formatAccounting } from '../../../components/utils/reportUtils';
-import { Checkbox, FormControlLabel } from '@mui/material';
+import { Button, Checkbox, FormControlLabel } from '@mui/material';
 import { orderBy } from 'lodash';
 import moment from 'moment';
 
@@ -292,6 +292,11 @@ export default function AutoAssignLeases() {
                 </div>
             </div>
         </CloseableDialog>
+        <div>
+            <Button onClick={async () => {
+                await fixBadLeaseIds();
+            }}>Fix Bad leases</Button>
+        </div>
         <table className="table">
             <thead>
                 <tr>

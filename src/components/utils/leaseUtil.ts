@@ -518,3 +518,35 @@ function calculateLeaseBalancesNew(
 
     return paymentDuesAndBalanceInfo
 }
+
+
+
+//find all leases and check if those leases are bad
+export async function fixBadLeaseIds() {
+
+    const counts = await api.getPaymnents({
+        fields: ['leaseID', { op: 'count', field: 'leaseID', name: 'countOfThisLease' }],
+        groupByArray: [{
+            field: 'leaseID'
+        }]
+    }) as unknown as {
+        leaseID: string;
+        countOfThisLease: number;
+    }[];
+    console.log('counts', counts);
+    const badLeases = [];
+    for (const cnt of counts) {
+        if (!cnt.leaseID) continue;
+        const lease = await api.getLeases({
+            fields: ['leaseID','startDate', 'houseID', 'tenant1'],
+            whereArray: [
+                { field: 'leaseID', op: '=', val: cnt.leaseID }
+            ]
+        });
+        if (lease.length === 0) {
+            console.log('debugremove lease', lease)
+            badLeases.push(cnt);
+        }
+    }
+    return badLeases;
+}
