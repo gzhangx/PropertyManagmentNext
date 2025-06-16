@@ -289,12 +289,20 @@ export async function gatherLeaseInfomation(house: HouseWithLease, fixAllLeases:
     }
     
     let previousBalance = 0;
+    const allLeaseAndLeaseBalanceDueInfos: {
+        lease: ILeaseInfo;
+        leaseBalanceDueInfo: ILeaseInfoWithPaymentDueHistory;
+    }[] = [];
     if (fixAllLeases) {
         const leasesAndPayments = await finder.loadAllLeaesAndPayments(lease);
         for (const lp of leasesAndPayments) {
             const leaseBalanceDueInfo = finder.calculateLeaseBalancesNew(lp.payments, previousBalance, lp.lease, new Date());            
             console.log('debugremove for lease ', lp.lease.startDate, ' totalBalance ', leaseBalanceDueInfo.totalBalance);            
             previousBalance = leaseBalanceDueInfo.totalBalance;
+            allLeaseAndLeaseBalanceDueInfos.push({
+                lease: lp.lease,
+                leaseBalanceDueInfo,
+            })
             if (lp.lease.leaseID === lease.leaseID) {
                 break;
             }
@@ -312,6 +320,7 @@ export async function gatherLeaseInfomation(house: HouseWithLease, fixAllLeases:
         lease,
         leaseBalance,
         leaseBalanceDueInfo,
+        allLeaseAndLeaseBalanceDueInfos,
     };
 }
 

@@ -1,5 +1,5 @@
 import * as api from '../../../components/api'
-import { gatherLeaseInfomation, getLeaseUtilForHouse, HouseWithLease, ILeaseInfoWithPmtInfo } from '../../../components/utils/leaseUtil';
+import { gatherLeaseInfomation, getLeaseUtilForHouse, HouseWithLease, ILeaseInfoWithPaymentDueHistory, ILeaseInfoWithPmtInfo } from '../../../components/utils/leaseUtil';
 import { IHouseInfo, ILeaseInfo, IPayment } from '../../../components/reportTypes';
 import { Fragment, useEffect, useState } from 'react';
 import { usePageRelatedContext } from '../../../components/states/PageRelatedState';
@@ -16,6 +16,11 @@ export function getLeasePage() {
 
 type HouseWithLeaseAndConfig = {
     addPreviousLeaseBalance: boolean;
+    allLeaseAndLeaseBalanceDueInfos: {
+        lease: ILeaseInfo;
+        leaseBalanceDueInfo: ILeaseInfoWithPaymentDueHistory;
+    }[];
+
 } & HouseWithLease;
 export default function AutoAssignLeases() {
         
@@ -108,6 +113,7 @@ export default function AutoAssignLeases() {
             setHouses(houses.map(h => ({
                 ...h,
                 addPreviousLeaseBalance: true,
+                allLeaseAndLeaseBalanceDueInfos: [],
             })));
             setTopBarMessages(state => {
                 return [...state, {
@@ -140,7 +146,7 @@ export default function AutoAssignLeases() {
         }
         setProcessingHouseId(house.houseID);
         const lease = await gatherLeaseInfomation(house, house.addPreviousLeaseBalance);
-
+        
         if (lease === 'Lease not found') {
             setTopBarErrors(state => {
                 return [
@@ -155,6 +161,7 @@ export default function AutoAssignLeases() {
             })
             return;
         }
+        house.allLeaseAndLeaseBalanceDueInfos = lease.allLeaseAndLeaseBalanceDueInfos;
         const leaseID = lease.lease.leaseID;
         //if (leaseExpanded[leaseID]) {
         //    setLeaseExpanded({
@@ -386,7 +393,10 @@ export default function AutoAssignLeases() {
                                                     }
                                                 </tbody>
                                             </table>
-                                        </div>
+                                            </div>                                            
+                                            {
+                                                
+                                            }
                                     </div>
                                 </td>
                             </tr>
@@ -398,6 +408,24 @@ export default function AutoAssignLeases() {
         </table>
     </div>
 
+}
+
+
+function showLeaseBalance(lease: ILeaseInfo, leaseBalanceDueInfo: ILeaseInfoWithPaymentDueHistory) {
+    return <div className="card-body">
+        <table className='table'>
+            <tbody>
+                <tr><td> Date</td><td> Payments</td><td colSpan={2}> </td></tr>
+                <tr><td>{lease.startDate}</td><td>{ leaseBalanceDueInfo.totalPaid}</td><td colSpan={2}>{leaseBalanceDueInfo.totalBalance}</td></tr>
+                <tr><td>date</td><td>type</td><td>Amount</td><td>Balance</td></tr>
+                {
+                    leaseBalanceDueInfo.paymnetDuesInfo.map(info => {
+                        return <tr><td>{info.date}</td><td>{(info.paymentOrDueTransactionType)}</td><td>{formatAccounting(info.paymentOrDueAmount)}</td><td>{formatAccounting(info.newBalance)}</td></tr>
+                    })
+                }
+            </tbody>
+        </table>
+    </div>
 }
 
 
