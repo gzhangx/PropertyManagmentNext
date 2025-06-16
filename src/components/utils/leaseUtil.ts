@@ -301,18 +301,16 @@ export async function gatherLeaseInfomation(house: HouseWithLease, fixAllLeases:
                 lease: lp.lease,
                 leaseBalanceDueInfo,
             })
-            if (lp.lease.leaseID === lease.leaseID) {
-                break;
-            }
         }
     }
     const payments = await finder.loadLeasePayments(lease);
     const leaseBalance = finder.calculateLeaseBalances(lease, payments || [], 5, new Date());
-    const leaseBalanceDueInfo = finder.calculateLeaseBalancesNew(payments || [], previousBalance, lease, new Date());
+    //const leaseBalanceDueInfo = finder.calculateLeaseBalancesNew(payments || [], previousBalance, lease, new Date());
 
     leaseBalance.monthlyInfo.reverse();
     house.lease = lease;
     house.leaseInfo = leaseBalance;
+    const leaseBalanceDueInfo = allLeaseAndLeaseBalanceDueInfos.find(l => l.lease.leaseID === lease.leaseID)?.leaseBalanceDueInfo;
     house.leaseBalanceDueInfo = leaseBalanceDueInfo;
     return {
         lease,
