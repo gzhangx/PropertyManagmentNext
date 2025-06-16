@@ -156,19 +156,16 @@ export default function AutoAssignLeases() {
             return;
         }
 
-        const leaseBalance = lease.leaseBalance;
-        for (let i = 0; i < 2; i++) {
-            const mi = leaseBalance.monthlyInfo[i];
-            if (mi) {
-                setTopBarMessages(state => {
-                    return [...state, {
-                        clsColor: 'bg-success',
-                        clsIcon: 'fa-donate',
-                        //subject: 'December 7, 2021',
-                        text: `${mi.month} balance=${mi.balance}`
-                    }]
-                });
-            }
+        const leaseBalanceDueInfo = lease.leaseBalanceDueInfo;
+        if (leaseBalanceDueInfo) {
+            setTopBarMessages(state => {
+                return [...state, {
+                    clsColor: 'bg-success',
+                    clsIcon: 'fa-donate',
+                    //subject: 'December 7, 2021',
+                    text: `${leaseBalanceDueInfo.lastPaymentDate} balance=${leaseBalanceDueInfo.totalBalance}`
+                }]
+            });
         }
 
         setHouses(houses);
@@ -296,7 +293,7 @@ export default function AutoAssignLeases() {
                                     })                                   
                                  }}>E</button>
                             </td>
-                            <td>{house.leaseInfo? house.leaseInfo.totalBalance : 'NA'}</td><td>{house.ownerName}</td><td className={processingHouseId === house.houseID ? 'bg-warning' : ''}>{house.houseID}</td>
+                            <td>{house.leaseBalanceDueInfo ? house.leaseBalanceDueInfo.totalBalance : 'NA'}</td><td>{house.ownerName}</td><td className={processingHouseId === house.houseID ? 'bg-warning' : ''}>{house.houseID}</td>
                             <td><button disabled={disableProcessing} className='btn btn-primary'
                             onClick={() => {
                                 setDisableProcessing(true);
@@ -309,7 +306,7 @@ export default function AutoAssignLeases() {
                             >Fix</button></td>                            
                         </tr>
                         {
-                            house.lease && leaseExpanded[house.lease.leaseID] && house.leaseInfo && <tr>
+                            house.lease && leaseExpanded[house.lease.leaseID] && house.leaseBalanceDueInfo && <tr>
                                 <td colSpan={4}>
                                     <div className="card shadow mb-4">
                                         <div className="card-header py-3">
@@ -362,11 +359,11 @@ export default function AutoAssignLeases() {
                                             <table className='table'>
                                                 <tbody>
                                                     <tr><td colSpan={2}> lease.totalPayments</td><td colSpan={2}> lease.totalMissing</td></tr>
-                                                    <tr><td colSpan={2}>{house.leaseInfo.totalPayments}</td><td colSpan={2}>{house.leaseInfo.totalBalance}</td></tr>
-                                                    <tr><td>month</td><td>Paid</td><td>Balance</td></tr>
+                                                        <tr><td colSpan={2}>{house.leaseBalanceDueInfo.totalPaid}</td><td colSpan={2}>{house.leaseBalanceDueInfo.totalBalance}</td></tr>
+                                                        <tr><td>date</td><td>type</td><td>Amount</td><td>Balance</td></tr>
                                                     {
-                                                        house.leaseInfo.monthlyInfo.map(info => {
-                                                            return <tr><td>{info.month}</td><td>{formatAccounting(info.paid)}</td><td>{info.balance}</td></tr>
+                                                            house.leaseBalanceDueInfo.paymnetDuesInfo.map(info => {
+                                                                return <tr><td>{info.date}</td><td>{(info.paymentOrDueTransactionType)}</td><td>{formatAccounting(info.paymentOrDueAmount)}</td><td>{ formatAccounting(info.newBalance)}</td></tr>
                                                         })
                                                     }
                                                 </tbody>
