@@ -66,6 +66,7 @@ export function OriginalDashboard() {
                 if (hlInfo !== 'Lease not found') {
                     console.log('gatherLeaseInfomation done', h.address);
                     h.leaseInfo = hlInfo.leaseBalance;
+                    h.leaseBalanceDueInfo = hlInfo.leaseBalanceDueInfo;
                 }
     
                 if (h.payments) {
@@ -79,8 +80,8 @@ export function OriginalDashboard() {
 
                 if (h.lease) {
                     h.tenants = await getTenantsForHouse(mainCtx, h);
-                    if (h.leaseInfo || h.payments) {
-                        const h = orderBy([...ht], h => h.leaseInfo?.totalBalance || 0, 'desc');
+                    if (h.leaseBalanceDueInfo || h.payments) {
+                        const h = orderBy([...ht], h => h.leaseBalanceDueInfo?.totalBalance || 0, 'desc');
                         setAllHouses([...h]);
                     }
                 } else {
@@ -251,7 +252,7 @@ function HouseWithRenterAndLeaseInfo(props: {
     const textClsName = ` text-xs font-weight-bold text-uppercase mb-1 text-primary`;
     const h = props.house;
 
-    const valueClsName = h.leaseInfo?.totalBalance as number > 0 ? 'text-danger' : '';
+    const valueClsName = h.leaseBalanceDueInfo?.totalBalance as number > 0 ? 'text-danger' : '';
 
     function showLeaseDate(date: string | null | undefined, who: string) {
         if (!date) return `Unknown ${who}Date`;
@@ -276,7 +277,7 @@ function HouseWithRenterAndLeaseInfo(props: {
                     
                      <div className="col mr-2">
                          <div className={' font-weight-bold text-uppercase mb-1 text-primary fas fa-home'}>{h.address}</div> 
-                        <div className={"h5 mb-0 font-weight-bold  " + (valueClsName || 'text-gray-800')}>{formatAccounting(h.leaseInfo?.totalBalance) ?? 'Loading'}</div>
+                        <div className={"h5 mb-0 font-weight-bold  " + (valueClsName || 'text-gray-800')}>{formatAccounting(h.leaseBalanceDueInfo?.totalBalance) ?? 'Loading'}</div>
                      
                      </div>
                     
