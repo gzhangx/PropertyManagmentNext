@@ -8,6 +8,8 @@ import { formateEmail } from '../../../components/utils/leaseEmailUtil';
 import { CloseableDialog } from '../../../components/generic/basedialog';
 import { formatAccounting } from '../../../components/utils/reportUtils';
 import { Checkbox, FormControlLabel } from '@mui/material';
+import { orderBy } from 'lodash';
+import moment from 'moment';
 
 
 export function getLeasePage() {
@@ -18,9 +20,12 @@ type HouseWithLeaseAndConfig = {
     addPreviousLeaseBalance: boolean;
     allLeaseAndLeaseBalanceDueInfos: {
         lease: ILeaseInfo;
-        leaseBalanceDueInfo: ILeaseInfoWithPaymentDueHistory;
+        leaseBalanceDueInfo: ILeaseInfoWithPaymentDueHistory;        
     }[];
 
+    showLeaseIndexs: {
+        [index: string]: boolean;
+    };
 } & HouseWithLease;
 export default function AutoAssignLeases() {
         
@@ -114,6 +119,9 @@ export default function AutoAssignLeases() {
                 ...h,
                 addPreviousLeaseBalance: true,
                 allLeaseAndLeaseBalanceDueInfos: [],
+                showLeaseIndexs: {
+                    0: true,
+                },
             })));
             setTopBarMessages(state => {
                 return [...state, {
@@ -380,22 +388,21 @@ export default function AutoAssignLeases() {
                                                     }} />} label="Add Previous lease balance" />
                                                 </div>                                                
                                         </div>
-                                        <div className="card-body">
-                                            <table className='table'>
-                                                <tbody>
-                                                    <tr><td colSpan={2}> lease.totalPayments</td><td colSpan={2}> lease.totalMissing</td></tr>
-                                                        <tr><td colSpan={2}>{house.leaseBalanceDueInfo.totalPaid}</td><td colSpan={2}>{house.leaseBalanceDueInfo.totalBalance}</td></tr>
-                                                        <tr><td>date</td><td>type</td><td>Amount</td><td>Balance</td></tr>
-                                                    {
-                                                            house.leaseBalanceDueInfo.paymnetDuesInfo.map(info => {
-                                                                return <tr><td>{info.date}</td><td>{(info.paymentOrDueTransactionType)}</td><td>{formatAccounting(info.paymentOrDueAmount)}</td><td>{ formatAccounting(info.newBalance)}</td></tr>
-                                                        })
-                                                    }
-                                                </tbody>
-                                            </table>
-                                            </div>                                            
+                                        
                                             {
-                                                
+                                                orderBy(house.allLeaseAndLeaseBalanceDueInfos, l => l.lease.startDate, 'desc').map((allDues, index) => {
+                                                    console.log('index',index, house.showLeaseIndexs)
+                                                    return <div key={index}>
+                                                        <div style={{ display: 'flex' }}>
+                                                            <div>{allDues.lease.startDate}</div>
+                                                            <FormControlLabel control={<Checkbox checked={house.showLeaseIndexs[index] ===true} onChange={e => {
+                                                                house.showLeaseIndexs[index] = e.target.checked;
+                                                                setHouses([...houses,])                                                                
+                                                            }} />} label="Show" />
+                                                        </div>
+                                                        {house.showLeaseIndexs[index] && showLeaseBalance(allDues.lease, allDues.leaseBalanceDueInfo) }
+                                                    </div>
+                                                })
                                             }
                                     </div>
                                 </td>
@@ -416,7 +423,7 @@ function showLeaseBalance(lease: ILeaseInfo, leaseBalanceDueInfo: ILeaseInfoWith
         <table className='table'>
             <tbody>
                 <tr><td> Date</td><td> Payments</td><td colSpan={2}> </td></tr>
-                <tr><td>{lease.startDate}</td><td>{ leaseBalanceDueInfo.totalPaid}</td><td colSpan={2}>{leaseBalanceDueInfo.totalBalance}</td></tr>
+                <tr><td>{moment(lease.startDate).format('YYYY-MM-DD')}</td><td>{ leaseBalanceDueInfo.totalPaid}</td><td colSpan={2}>{leaseBalanceDueInfo.totalBalance}</td></tr>
                 <tr><td>date</td><td>type</td><td>Amount</td><td>Balance</td></tr>
                 {
                     leaseBalanceDueInfo.paymnetDuesInfo.map(info => {
