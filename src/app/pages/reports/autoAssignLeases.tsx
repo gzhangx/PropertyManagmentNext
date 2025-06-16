@@ -7,18 +7,23 @@ import Link from 'next/link';
 import { formateEmail } from '../../../components/utils/leaseEmailUtil';
 import { CloseableDialog } from '../../../components/generic/basedialog';
 import { formatAccounting } from '../../../components/utils/reportUtils';
+import { Checkbox, FormControlLabel } from '@mui/material';
 
 
 export function getLeasePage() {
     return <AutoAssignLeases></AutoAssignLeases>
 }
+
+type HouseWithLeaseAndConfig = {
+    addPreviousLeaseBalance: boolean;
+} & HouseWithLease;
 export default function AutoAssignLeases() {
         
 
     const mainCtx = usePageRelatedContext();
     const setTopBarMessages = mainCtx.topBarMessagesCfg.setTopBarItems;
     const setTopBarErrors = mainCtx.topBarErrorsCfg.setTopBarItems;
-    const [houses, setHouses] = useState<HouseWithLease[]>([]);
+    const [houses, setHouses] = useState<HouseWithLeaseAndConfig[]>([]);
     const [processingHouseId, setProcessingHouseId] = useState('');
     const [disableProcessing, setDisableProcessing] = useState(false);
 
@@ -100,7 +105,10 @@ export default function AutoAssignLeases() {
         ]);
         setTopBarErrors([]);
         api.getHouseInfo().then(houses => {
-            setHouses(houses);
+            setHouses(houses.map(h => ({
+                ...h,
+                addPreviousLeaseBalance: true,
+            })));
             setTopBarMessages(state => {
                 return [...state, {
                     clsColor: 'bg-success',
@@ -114,7 +122,7 @@ export default function AutoAssignLeases() {
 
 
 
-    const processOneHouse = async (house: HouseWithLease, expand = false) => {
+    const processOneHouse = async (house: HouseWithLeaseAndConfig, expand = false) => {
         if (house.leaseInfo && house.lease) {
             const leaseID = house.lease.leaseID;
             if (expand) {
@@ -131,7 +139,7 @@ export default function AutoAssignLeases() {
             ]);
         }
         setProcessingHouseId(house.houseID);
-        const lease = await gatherLeaseInfomation(house);
+        const lease = await gatherLeaseInfomation(house, house.addPreviousLeaseBalance);
 
         if (lease === 'Lease not found') {
             setTopBarErrors(state => {
@@ -148,13 +156,13 @@ export default function AutoAssignLeases() {
             return;
         }
         const leaseID = lease.lease.leaseID;
-        if (leaseExpanded[leaseID]) {
-            setLeaseExpanded({
-                ...leaseExpanded,
-                [leaseID]: false,
-            });
-            return;
-        }
+        //if (leaseExpanded[leaseID]) {
+        //    setLeaseExpanded({
+        //        ...leaseExpanded,
+        //        [leaseID]: false,
+        //    });
+        //    return;
+        //}
 
         const leaseBalanceDueInfo = lease.leaseBalanceDueInfo;
         if (leaseBalanceDueInfo) {
@@ -309,9 +317,10 @@ export default function AutoAssignLeases() {
                             house.lease && leaseExpanded[house.lease.leaseID] && house.leaseBalanceDueInfo && <tr>
                                 <td colSpan={4}>
                                     <div className="card shadow mb-4">
-                                        <div className="card-header py-3">
+                                            <div className="card-header py-3">
+                                                <div style={{display:'flex'}}>
                                                 <h6 className="m-0 font-weight-bold text-primary">Details</h6>
-                                                <Link href='#' onClick={async e => {
+                                                <Link style={{marginLeft: '5px', marginTop: '0px'}} href='#' onClick={async e => {
 
                                                     const formatedData = await formateEmail(mainCtx, house, err => {
                                                         mainCtx.topBarErrorsCfg.setTopBarItems(itm => {
@@ -353,7 +362,16 @@ export default function AutoAssignLeases() {
                                                     })
                                                     //await api.sendEmail(formatedData.mailtos, formatedData.subject, formatedData.body);
                                                     e.preventDefault();
-                                                }}>Email</Link>
+                                                    }}>Email</Link>
+                                                    <FormControlLabel control={<Checkbox checked={house.addPreviousLeaseBalance || false} onChange={e => {
+                                                        house.addPreviousLeaseBalance = e.target.checked;
+                                                        setHouses([ ...houses, ])
+                                                        mainCtx.showLoadingDlg('fixing');
+                                                        processOneHouse(house).then(() => {
+                                                            mainCtx.showLoadingDlg(null);
+                                                        })
+                                                    }} />} label="Add Previous lease balance" />
+                                                </div>                                                
                                         </div>
                                         <div className="card-body">
                                             <table className='table'>
