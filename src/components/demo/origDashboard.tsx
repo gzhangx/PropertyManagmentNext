@@ -67,6 +67,7 @@ export function OriginalDashboard() {
                     console.log('gatherLeaseInfomation done', h.address);
                     h.leaseInfo = hlInfo.leaseBalance;
                     h.leaseBalanceDueInfo = hlInfo.leaseBalanceDueInfo;
+                    console.log('debugremove house ', h.address, 'totalbal', h.leaseBalanceDueInfo?.totalBalance)
                 }
     
                 if (h.payments) {

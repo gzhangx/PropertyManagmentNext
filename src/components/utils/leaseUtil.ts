@@ -250,8 +250,7 @@ export async function getLeaseUtilForHouse(houseID: string) {
                 payments: IPayment[];
             }[] = [];
             for (const l of allleasesWithTenant) {                
-                const pmts = await loadLeasePayments(l);
-                console.log('debugremove got pmts for lease ' + l.startDate, pmts);
+                const pmts = await loadLeasePayments(l);                
                 if (pmts) {          
                     leaseAndPayments.push({
                         lease: l,
@@ -296,8 +295,7 @@ export async function gatherLeaseInfomation(house: HouseWithLease, fixAllLeases:
     if (fixAllLeases) {
         const leasesAndPayments = await finder.loadAllLeaesAndPayments(lease);
         for (const lp of leasesAndPayments) {
-            const leaseBalanceDueInfo = finder.calculateLeaseBalancesNew(lp.payments, previousBalance, lp.lease, new Date());            
-            console.log('debugremove for lease ', lp.lease.startDate, ' totalBalance ', leaseBalanceDueInfo.totalBalance);            
+            const leaseBalanceDueInfo = finder.calculateLeaseBalancesNew(lp.payments, previousBalance, lp.lease, new Date());                        
             previousBalance = leaseBalanceDueInfo.totalBalance;
             allLeaseAndLeaseBalanceDueInfos.push({
                 lease: lp.lease,
