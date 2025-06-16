@@ -1,5 +1,5 @@
 import * as api from '../../../components/api'
-import { gatherLeaseInfomation, getLeaseUtilForHouse, HouseWithLease, ILeaseInfoWithPmtInfo } from '../../../components/utils/leaseUtil';
+import { fixBadLeaseIds, gatherLeaseInfomation, getLeaseUtilForHouse, HouseWithLease, ILeaseInfoWithPaymentDueHistory, ILeaseInfoWithPmtInfo } from '../../../components/utils/leaseUtil';
 import { IHouseInfo, ILeaseInfo, IPayment } from '../../../components/reportTypes';
 import { Fragment, useEffect, useState } from 'react';
 import { usePageRelatedContext } from '../../../components/states/PageRelatedState';
@@ -7,18 +7,33 @@ import Link from 'next/link';
 import { formateEmail } from '../../../components/utils/leaseEmailUtil';
 import { CloseableDialog } from '../../../components/generic/basedialog';
 import { formatAccounting } from '../../../components/utils/reportUtils';
+import { Button, Checkbox, FormControlLabel } from '@mui/material';
+import { orderBy } from 'lodash';
+import moment from 'moment';
 
 
 export function getLeasePage() {
     return <AutoAssignLeases></AutoAssignLeases>
 }
+
+type HouseWithLeaseAndConfig = {
+    addPreviousLeaseBalance: boolean;
+    allLeaseAndLeaseBalanceDueInfos: {
+        lease: ILeaseInfo;
+        leaseBalanceDueInfo: ILeaseInfoWithPaymentDueHistory;        
+    }[];
+
+    showLeaseIndexs: {
+        [index: string]: boolean;
+    };
+} & HouseWithLease;
 export default function AutoAssignLeases() {
         
 
     const mainCtx = usePageRelatedContext();
     const setTopBarMessages = mainCtx.topBarMessagesCfg.setTopBarItems;
     const setTopBarErrors = mainCtx.topBarErrorsCfg.setTopBarItems;
-    const [houses, setHouses] = useState<HouseWithLease[]>([]);
+    const [houses, setHouses] = useState<HouseWithLeaseAndConfig[]>([]);
     const [processingHouseId, setProcessingHouseId] = useState('');
     const [disableProcessing, setDisableProcessing] = useState(false);
 
@@ -100,7 +115,14 @@ export default function AutoAssignLeases() {
         ]);
         setTopBarErrors([]);
         api.getHouseInfo().then(houses => {
-            setHouses(houses);
+            setHouses(houses.map(h => ({
+                ...h,
+                addPreviousLeaseBalance: true,
+                allLeaseAndLeaseBalanceDueInfos: [],
+                showLeaseIndexs: {
+                    0: true,
+                },
+            })));
             setTopBarMessages(state => {
                 return [...state, {
                     clsColor: 'bg-success',
@@ -114,7 +136,7 @@ export default function AutoAssignLeases() {
 
 
 
-    const processOneHouse = async (house: HouseWithLease, expand = false) => {
+    const processOneHouse = async (house: HouseWithLeaseAndConfig, expand = false) => {
         if (house.leaseInfo && house.lease) {
             const leaseID = house.lease.leaseID;
             if (expand) {
@@ -131,8 +153,8 @@ export default function AutoAssignLeases() {
             ]);
         }
         setProcessingHouseId(house.houseID);
-        const lease = await gatherLeaseInfomation(house);
-
+        const lease = await gatherLeaseInfomation(house, house.addPreviousLeaseBalance);
+        
         if (lease === 'Lease not found') {
             setTopBarErrors(state => {
                 return [
@@ -147,28 +169,26 @@ export default function AutoAssignLeases() {
             })
             return;
         }
+        house.allLeaseAndLeaseBalanceDueInfos = lease.allLeaseAndLeaseBalanceDueInfos;
         const leaseID = lease.lease.leaseID;
-        if (leaseExpanded[leaseID]) {
-            setLeaseExpanded({
-                ...leaseExpanded,
-                [leaseID]: false,
-            });
-            return;
-        }
+        //if (leaseExpanded[leaseID]) {
+        //    setLeaseExpanded({
+        //        ...leaseExpanded,
+        //        [leaseID]: false,
+        //    });
+        //    return;
+        //}
 
-        const leaseBalance = lease.leaseBalance;
-        for (let i = 0; i < 2; i++) {
-            const mi = leaseBalance.monthlyInfo[i];
-            if (mi) {
-                setTopBarMessages(state => {
-                    return [...state, {
-                        clsColor: 'bg-success',
-                        clsIcon: 'fa-donate',
-                        //subject: 'December 7, 2021',
-                        text: `${mi.month} balance=${mi.balance}`
-                    }]
-                });
-            }
+        const leaseBalanceDueInfo = lease.leaseBalanceDueInfo;
+        if (leaseBalanceDueInfo) {
+            setTopBarMessages(state => {
+                return [...state, {
+                    clsColor: 'bg-success',
+                    clsIcon: 'fa-donate',
+                    //subject: 'December 7, 2021',
+                    text: `${leaseBalanceDueInfo.lastPaymentDate} balance=${leaseBalanceDueInfo.totalBalance}`
+                }]
+            });
         }
 
         setHouses(houses);
@@ -272,6 +292,11 @@ export default function AutoAssignLeases() {
                 </div>
             </div>
         </CloseableDialog>
+        <div>
+            <Button onClick={async () => {
+                await fixBadLeaseIds();
+            }}>Fix Bad leases</Button>
+        </div>
         <table className="table">
             <thead>
                 <tr>
@@ -296,7 +321,7 @@ export default function AutoAssignLeases() {
                                     })                                   
                                  }}>E</button>
                             </td>
-                            <td>{house.leaseInfo? house.leaseInfo.totalBalance : 'NA'}</td><td>{house.ownerName}</td><td className={processingHouseId === house.houseID ? 'bg-warning' : ''}>{house.houseID}</td>
+                            <td>{house.leaseBalanceDueInfo ? house.leaseBalanceDueInfo.totalBalance : 'NA'}</td><td>{house.ownerName}</td><td className={processingHouseId === house.houseID ? 'bg-warning' : ''}>{house.houseID}</td>
                             <td><button disabled={disableProcessing} className='btn btn-primary'
                             onClick={() => {
                                 setDisableProcessing(true);
@@ -309,12 +334,13 @@ export default function AutoAssignLeases() {
                             >Fix</button></td>                            
                         </tr>
                         {
-                            house.lease && leaseExpanded[house.lease.leaseID] && house.leaseInfo && <tr>
+                            house.lease && leaseExpanded[house.lease.leaseID] && house.leaseBalanceDueInfo && <tr>
                                 <td colSpan={4}>
                                     <div className="card shadow mb-4">
-                                        <div className="card-header py-3">
+                                            <div className="card-header py-3">
+                                                <div style={{display:'flex'}}>
                                                 <h6 className="m-0 font-weight-bold text-primary">Details</h6>
-                                                <Link href='#' onClick={async e => {
+                                                <Link style={{marginLeft: '5px', marginTop: '0px'}} href='#' onClick={async e => {
 
                                                     const formatedData = await formateEmail(mainCtx, house, err => {
                                                         mainCtx.topBarErrorsCfg.setTopBarItems(itm => {
@@ -356,22 +382,33 @@ export default function AutoAssignLeases() {
                                                     })
                                                     //await api.sendEmail(formatedData.mailtos, formatedData.subject, formatedData.body);
                                                     e.preventDefault();
-                                                }}>Email</Link>
-                                        </div>
-                                        <div className="card-body">
-                                            <table className='table'>
-                                                <tbody>
-                                                    <tr><td colSpan={2}> lease.totalPayments</td><td colSpan={2}> lease.totalMissing</td></tr>
-                                                    <tr><td colSpan={2}>{house.leaseInfo.totalPayments}</td><td colSpan={2}>{house.leaseInfo.totalBalance}</td></tr>
-                                                    <tr><td>month</td><td>Paid</td><td>Balance</td></tr>
-                                                    {
-                                                        house.leaseInfo.monthlyInfo.map(info => {
-                                                            return <tr><td>{info.month}</td><td>{formatAccounting(info.paid)}</td><td>{info.balance}</td></tr>
+                                                    }}>Email</Link>
+                                                    <FormControlLabel control={<Checkbox checked={house.addPreviousLeaseBalance || false} onChange={e => {
+                                                        house.addPreviousLeaseBalance = e.target.checked;
+                                                        setHouses([ ...houses, ])
+                                                        mainCtx.showLoadingDlg('fixing');
+                                                        processOneHouse(house).then(() => {
+                                                            mainCtx.showLoadingDlg(null);
                                                         })
-                                                    }
-                                                </tbody>
-                                            </table>
+                                                    }} />} label="Add Previous lease balance" />
+                                                </div>                                                
                                         </div>
+                                        
+                                            {
+                                                orderBy(house.allLeaseAndLeaseBalanceDueInfos, l => l.lease.startDate, 'desc').map((allDues, index) => {
+                                                    console.log('index',index, house.showLeaseIndexs)
+                                                    return <div key={index}>
+                                                        <div style={{ display: 'flex' }}>
+                                                            <div>{allDues.lease.startDate}</div>
+                                                            <FormControlLabel control={<Checkbox checked={house.showLeaseIndexs[index] ===true} onChange={e => {
+                                                                house.showLeaseIndexs[index] = e.target.checked;
+                                                                setHouses([...houses,])                                                                
+                                                            }} />} label="Show" />
+                                                        </div>
+                                                        {house.showLeaseIndexs[index] && showLeaseBalance(allDues.lease, allDues.leaseBalanceDueInfo) }
+                                                    </div>
+                                                })
+                                            }
                                     </div>
                                 </td>
                             </tr>
@@ -383,6 +420,24 @@ export default function AutoAssignLeases() {
         </table>
     </div>
 
+}
+
+
+function showLeaseBalance(lease: ILeaseInfo, leaseBalanceDueInfo: ILeaseInfoWithPaymentDueHistory) {
+    return <div className="card-body">
+        <table className='table'>
+            <tbody>
+                <tr><td> Date</td><td> Payments</td><td colSpan={2}> </td></tr>
+                <tr><td>{moment(lease.startDate).format('YYYY-MM-DD')}</td><td>{ leaseBalanceDueInfo.totalPaid}</td><td colSpan={2}>{leaseBalanceDueInfo.totalBalance}</td></tr>
+                <tr><td>date</td><td>type</td><td>Amount</td><td>Balance</td></tr>
+                {
+                    leaseBalanceDueInfo.paymnetDuesInfo.map(info => {
+                        return <tr><td>{info.date}</td><td>{(info.paymentOrDueTransactionType)}</td><td>{formatAccounting(info.paymentOrDueAmount)}</td><td>{formatAccounting(info.newBalance)}</td></tr>
+                    })
+                }
+            </tbody>
+        </table>
+    </div>
 }
 
 

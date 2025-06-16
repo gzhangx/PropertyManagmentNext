@@ -216,23 +216,51 @@ export async function getLeaseUtilForHouse(houseID: string) {
         return result;
     }
 
+    const loadLeasePayments = (lease: ILeaseInfo) => {
+        return api.getPaymnents({
+            whereArray: [
+                {
+                    field: 'leaseID',
+                    op: '=',
+                    val: lease.leaseID,
+                }
+            ]
+        });
+    };
+
     return {
         allLeases,
         findLeaseForDate,
         matchAllTransactions,
         calculateLeaseBalances,
         calculateLeaseBalancesNew, //new one to replace calculateLeaseBalance
-        loadLeasePayments: (lease: ILeaseInfo) => {
-            return api.getPaymnents({
+        loadLeasePayments, 
+        loadAllLeaesAndPayments: async (lease: ILeaseInfo) => {            
+            const allleasesWithTenant = await api.getLeases({
                 whereArray: [
                     {
-                        field: 'leaseID',
+                        field: 'tenant1',
                         op: '=',
-                        val: lease.leaseID,
+                        val: lease.tenant1,
                     }
                 ]
-            });
-        }, 
+            });            
+            const leaseAndPayments: {
+                lease: ILeaseInfo;
+                payments: IPayment[];
+            }[] = [];
+            for (const l of allleasesWithTenant) {                
+                const pmts = await loadLeasePayments(l);                
+                if (pmts) {          
+                    leaseAndPayments.push({
+                        lease: l,
+                        payments: pmts,
+                    })
+                }
+            }
+            
+            return orderBy(leaseAndPayments, l => l.lease.startDate, 'asc');
+        },
         matchAndAddLeaseToTransactions: async (onProgress: (pos: number, pmt?: IPayment) => void) => {
             const all = await matchAllTransactions();
             if (!all) return all;
@@ -251,25 +279,44 @@ export async function getLeaseUtilForHouse(houseID: string) {
 }
 
 
-export async function gatherLeaseInfomation(house: HouseWithLease, date?: Date) {
+export async function gatherLeaseInfomation(house: HouseWithLease, fixAllLeases: boolean = true,  date?: Date) {
     const finder = await getLeaseUtilForHouse(house.houseID);
     const lease = await finder.findLeaseForDate(date || new Date());
 
     if (!lease) {
         return 'Lease not found';
     }
+    
+    let previousBalance = 0;
+    const allLeaseAndLeaseBalanceDueInfos: {
+        lease: ILeaseInfo;
+        leaseBalanceDueInfo: ILeaseInfoWithPaymentDueHistory;
+    }[] = [];
+    if (fixAllLeases) {
+        const leasesAndPayments = await finder.loadAllLeaesAndPayments(lease);
+        for (const lp of leasesAndPayments) {
+            const leaseBalanceDueInfo = finder.calculateLeaseBalancesNew(lp.payments, previousBalance, lp.lease, new Date());                        
+            previousBalance = leaseBalanceDueInfo.totalBalance;
+            allLeaseAndLeaseBalanceDueInfos.push({
+                lease: lp.lease,
+                leaseBalanceDueInfo,
+            })
+        }
+    }
     const payments = await finder.loadLeasePayments(lease);
     const leaseBalance = finder.calculateLeaseBalances(lease, payments || [], 5, new Date());
-    const leaseBalanceDueInfo = finder.calculateLeaseBalancesNew(payments || [], lease, new Date());
+    //const leaseBalanceDueInfo = finder.calculateLeaseBalancesNew(payments || [], previousBalance, lease, new Date());
 
     leaseBalance.monthlyInfo.reverse();
     house.lease = lease;
     house.leaseInfo = leaseBalance;
+    const leaseBalanceDueInfo = allLeaseAndLeaseBalanceDueInfos.find(l => l.lease.leaseID === lease.leaseID)?.leaseBalanceDueInfo;
     house.leaseBalanceDueInfo = leaseBalanceDueInfo;
     return {
         lease,
         leaseBalance,
         leaseBalanceDueInfo,
+        allLeaseAndLeaseBalanceDueInfos,
     };
 }
 
@@ -304,11 +351,10 @@ export async function getAllMaintenanceForHouse(houseID: string) {
 
 function calculateLeaseBalancesNew(
     payments: IPaymentForLease[],
+    previousBalanceFromPreviousLease: number,
     lease: ILeaseInfo,
     endDateOverride?: string | Date | moment.Moment
-): ILeaseInfoWithPaymentDueHistory {
-    const paymnetDuesInfo: INewLeaseBalance[] = [];
-
+): ILeaseInfoWithPaymentDueHistory {    
     // Determine the effective end date (override takes precedence, then termination, then lease end)
     // Collect all potential end dates (excluding null values)
     const potentialEndDates: moment.Moment[] = [];
@@ -329,6 +375,15 @@ function calculateLeaseBalancesNew(
     const rentDueDates: INewLeaseBalance[] = [];
     const startDate = moment(lease.startDate);
 
+    if (previousBalanceFromPreviousLease) {
+        rentDueDates.push({
+            date: startDate.format('YYYY-MM-DD'),            
+            paymentOrDueAmount: previousBalanceFromPreviousLease,
+            paymentOrDueTransactionType: 'Due',
+            previousBalance: 0, // Will be updated later
+            newBalance: 0       // Will be updated later
+        })
+    }
     payments = payments.filter(p => {
         if (p.houseID !== lease.houseID) return false;
         if (!filterPaymentsForRent(p)) return false;
@@ -393,6 +448,7 @@ function calculateLeaseBalancesNew(
         return dateDiff;
     });
 
+    const paymnetDuesInfo: INewLeaseBalance[] = [];
     // Calculate balances in chronological order
     let balance = 0;
     for (const transaction of allTransactions) {
@@ -457,4 +513,36 @@ function calculateLeaseBalancesNew(
     }
 
     return paymentDuesAndBalanceInfo
+}
+
+
+
+//find all leases and check if those leases are bad
+export async function fixBadLeaseIds() {
+
+    const counts = await api.getPaymnents({
+        fields: ['leaseID', { op: 'count', field: 'leaseID', name: 'countOfThisLease' }],
+        groupByArray: [{
+            field: 'leaseID'
+        }]
+    }) as unknown as {
+        leaseID: string;
+        countOfThisLease: number;
+    }[];
+    console.log('counts', counts);
+    const badLeases = [];
+    for (const cnt of counts) {
+        if (!cnt.leaseID) continue;
+        const lease = await api.getLeases({
+            fields: ['leaseID','startDate', 'houseID', 'tenant1'],
+            whereArray: [
+                { field: 'leaseID', op: '=', val: cnt.leaseID }
+            ]
+        });
+        if (lease.length === 0) {
+            console.log('debugremove lease', lease)
+            badLeases.push(cnt);
+        }
+    }
+    return badLeases;
 }

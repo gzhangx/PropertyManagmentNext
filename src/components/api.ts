@@ -325,7 +325,11 @@ export async function getPaymentRecords(): Promise<IPayment[]> {
 
 type QueryConstraints = {
     fields ?: (ISqlRequestFieldDef | string)[];
-    whereArray ?: ISqlRequestWhereItem[];
+    whereArray?: ISqlRequestWhereItem[];
+        
+    groupByArray?: {
+        field: string;
+    }[];
 }
 
 // Used by cashflow
