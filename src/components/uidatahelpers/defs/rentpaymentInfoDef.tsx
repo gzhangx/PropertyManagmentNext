@@ -238,7 +238,18 @@ export const paymentInfoDef: ITableAndSheetMappingInfo<ICustEmailInfo> = {
                 <tr>
                     <td className="td20PercentWidth">Email From:</td>
                     <td className="td80PercentWidth">
-                        <Select defaultValue={cust.paymentUIRelated?.smtpConfig?.smtpUser} >
+                        <Select defaultValue={cust.paymentUIRelated?.smtpConfig?.smtpUser} onChange={e => {
+                            e.target.value;
+                            setCustomFieldMapping(prev => {
+                                return {
+                                    ...prev,
+                                    paymentUIRelated: {
+                                        ...(prev.paymentUIRelated || emailPreviewDef),
+                                        smtpConfig: prev.paymentUIRelated?.smtpConfigSelections.find(s=>s.smtpUser === e.target.value),
+                                    }
+                                }
+                            })
+                        }} >
                             {
                                 cust.paymentUIRelated?.smtpConfigSelections.map(s => {
                                     return <MenuItem value={s.smtpUser}>{s.smtpUser}</MenuItem>
