@@ -508,8 +508,12 @@ export async function updateUserOptions(name: string, value: string) {
     }, true, true);
 }
 
+export type ISmtpConfig = {
+    smtpUser: string;
+    smtpPass: string;
+}
 
-export async function sendEmail(userPass: { smtpUser: string; smtpPass: string; },to: string[], cc: string, subject: string, html?: string) {
+export async function sendEmail(userPass: ISmtpConfig,to: string[], cc: string, subject: string, html?: string) {
     return await doPost('util/sendMail', {
         user: userPass.smtpUser,
         pass: userPass.smtpPass,

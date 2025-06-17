@@ -13,13 +13,10 @@ import { MenuItem, Select } from "@mui/material";
 
 const table = 'rentPaymentInfo';
 
-type ISmtpConfig = {
-    smtpUser: string;
-    smtpPass: string;
-}
+
 export interface ICustEmailInfo {
-    smtpConfig?: ISmtpConfig;
-    smtpConfigSelections: ISmtpConfig[];
+    smtpConfig?: api.ISmtpConfig;
+    smtpConfigSelections: api.ISmtpConfig[];
     html: string;
     subject: string;
     to: string[];
@@ -189,7 +186,7 @@ export const paymentInfoDef: ITableAndSheetMappingInfo<ICustEmailInfo> = {
             edit: false,
         };
         const emailPreview: {
-            smtpConfig?: ISmtpConfig;
+            smtpConfig?: api.ISmtpConfig;
             html: string;
             subject: string;
             to: string[];
@@ -351,7 +348,7 @@ export const paymentInfoDef: ITableAndSheetMappingInfo<ICustEmailInfo> = {
                 })
             });
             const owners = await api.getOwnerInfo();
-            const smtpConfigSelections: (ISmtpConfig & { ownerName: string; })[] = owners.map(o => {
+            const smtpConfigSelections: (api.ISmtpConfig & { ownerName: string; })[] = owners.map(o => {
                 return {
                     smtpUser: o.smtpEmailUser,
                     smtpPass: o.smtpEmailPass,
