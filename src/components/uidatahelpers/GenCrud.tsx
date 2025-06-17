@@ -466,7 +466,7 @@ export const GenCrud = (props: IGenGrudProps) => {
             }}></GenCrudAdd>            
             }
             {
-                props.customScreen && crudAddCustomObjMap.paymentUIRelated_showRenterConfirmationScreen && props.customScreen(crudAddCustomObjMap, setCrudAddCustomObjMap)
+                props.customScreen && crudAddCustomObjMap.paymentUIRelated_showRenterConfirmationScreen && props.customScreen(mainCtx, crudAddCustomObjMap, setCrudAddCustomObjMap)
             }
         </div>
     )

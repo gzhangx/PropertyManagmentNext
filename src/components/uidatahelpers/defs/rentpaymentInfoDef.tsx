@@ -1,6 +1,6 @@
 import { CloseableDialog } from "../../generic/basedialog";
 import { IEditTextDropdownItem } from "../../generic/GenericDropdown";
-import { IHouseInfo, ILeaseInfo, ITenantInfo } from "../../reportTypes";
+import { IHouseInfo, ILeaseInfo, IPageRelatedState, ITenantInfo } from "../../reportTypes";
 import { gatherLeaseInfomation, HouseWithLease } from "../../utils/leaseUtil";
 import { ALLFieldNames, ICrudAddCustomObj, ITableAndSheetMappingInfo, ItemType, ItemTypeDict } from "../datahelperTypes";
 import * as api from '../../api'
@@ -172,7 +172,7 @@ export const paymentInfoDef: ITableAndSheetMappingInfo<ICustEmailInfo> = {
         const lasts = cols.filter(c => !orders.includes(c.field));
         return firsts.concat(lasts);
     },
-    customScreen: (cust: ICrudAddCustomObj<ICustEmailInfo>, setCustomFieldMapping: React.Dispatch<React.SetStateAction<ICrudAddCustomObj<ICustEmailInfo>>>) => {
+    customScreen: (mainCtx: IPageRelatedState, cust: ICrudAddCustomObj<ICustEmailInfo>, setCustomFieldMapping: React.Dispatch<React.SetStateAction<ICrudAddCustomObj<ICustEmailInfo>>>) => {
         const emailPreviewDef: ICustEmailInfo = {
             smtpConfig: {
                 smtpUser: '',
@@ -216,7 +216,7 @@ export const paymentInfoDef: ITableAndSheetMappingInfo<ICustEmailInfo> = {
                             emailPreview.to, emailPreview.cc, emailPreview.subject, emailPreview.html);
                         closePreview();
                     } else {
-                        console.log('debugremove no email available');
+                        mainCtx.showLoadingDlg('Error no email configed');
                         closePreview();
                     }
                 }}>Send</button>
