@@ -9,10 +9,17 @@ import { orderBy } from "lodash";
 import { customHeaderFilterFuncWithHouseIDLookup, genericCustomHeaderFilterFunc } from "./util";
 import { IDBFieldDef } from "../../types";
 import { TextFieldOutlined } from "../wrappers/muwrappers";
+import { MenuItem, Select } from "@mui/material";
 
 const table = 'rentPaymentInfo';
 
+type ISmtpConfig = {
+    smtpUser: string;
+    smtpPass: string;
+}
 export interface ICustEmailInfo {
+    smtpConfig?: ISmtpConfig;
+    smtpConfigSelections: ISmtpConfig[];
     html: string;
     subject: string;
     to: string[];
@@ -169,7 +176,12 @@ export const paymentInfoDef: ITableAndSheetMappingInfo<ICustEmailInfo> = {
         return firsts.concat(lasts);
     },
     customScreen: (cust: ICrudAddCustomObj<ICustEmailInfo>, setCustomFieldMapping: React.Dispatch<React.SetStateAction<ICrudAddCustomObj<ICustEmailInfo>>>) => {
-        const emailPreviewDef = {
+        const emailPreviewDef: ICustEmailInfo = {
+            smtpConfig: {
+                smtpUser: '',
+                smtpPass: '',
+            },
+            smtpConfigSelections: [],
             html: 'testtest',
             subject: 'testsub',
             to: ['testot'],
@@ -177,6 +189,7 @@ export const paymentInfoDef: ITableAndSheetMappingInfo<ICustEmailInfo> = {
             edit: false,
         };
         const emailPreview: {
+            smtpConfig?: ISmtpConfig;
             html: string;
             subject: string;
             to: string[];
@@ -201,8 +214,14 @@ export const paymentInfoDef: ITableAndSheetMappingInfo<ICustEmailInfo> = {
             setShow={closePreview}
             footer={<div className="modal-footer">
                 <button type="button" className="btn btn-secondary" data-dismiss="modal" onClick={async () => {
-                    await api.sendEmail(emailPreview.to, emailPreview.cc, emailPreview.subject, emailPreview.html);
-                    closePreview();
+                    if (emailPreview.smtpConfig) {
+                        await api.sendEmail(emailPreview.smtpConfig,
+                            emailPreview.to, emailPreview.cc, emailPreview.subject, emailPreview.html);
+                        closePreview();
+                    } else {
+                        console.log('debugremove no email available');
+                        closePreview();
+                    }
                 }}>Send</button>
                 <button type="button" className="btn btn-secondary" data-dismiss="modal" onClick={async () => {
                     setCustomFieldMapping(prev => {
@@ -219,7 +238,19 @@ export const paymentInfoDef: ITableAndSheetMappingInfo<ICustEmailInfo> = {
             </div>}
         >
             <table className="table-NOborder centered-table ">
-                <tr >
+                <tr>
+                    <td className="td20PercentWidth">Email From:</td>
+                    <td className="td80PercentWidth">
+                        <Select defaultValue={cust.paymentUIRelated?.smtpConfig?.smtpUser} >
+                            {
+                                cust.paymentUIRelated?.smtpConfigSelections.map(s => {
+                                    return <MenuItem value={s.smtpUser}>{s.smtpUser}</MenuItem>
+                                })
+                            }
+                        </Select>
+                    </td>
+                </tr>
+                <tr >                    
                     <td className="td20PercentWidth">Email To:</td>
                     <td className="td80PercentWidth">
                         <input type='text'
@@ -298,6 +329,19 @@ export const paymentInfoDef: ITableAndSheetMappingInfo<ICustEmailInfo> = {
             const house: HouseWithLease = {
                 houseID,
             } as HouseWithLease;
+
+            const houseInfo =  await mainCtx.translateForeignLeuColumnToObject({
+                field: 'houseID',
+                foreignKey: {
+                    field: 'houseID',
+                    table: 'houseInfo',
+                }
+            }, item);
+            let ownerName = '';
+            if (typeof houseInfo !== 'string') {
+                ownerName = houseInfo.data['ownerName'] as string;
+            }
+            console.log('debugremove ownername is ', ownerName);
             
             const formatedData = await formateEmail(mainCtx, house, err => {
                 mainCtx.topBarErrorsCfg.setTopBarItems(itm => {
@@ -306,12 +350,23 @@ export const paymentInfoDef: ITableAndSheetMappingInfo<ICustEmailInfo> = {
                     }]
                 })
             });
-            console.log('format email res',house,formatedData)
+            const owners = await api.getOwnerInfo();
+            const smtpConfigSelections: (ISmtpConfig & { ownerName: string; })[] = owners.map(o => {
+                return {
+                    smtpUser: o.smtpEmailUser,
+                    smtpPass: o.smtpEmailPass,
+                    ownerName: o.ownerName,
+                }
+            }).filter(s => s.smtpUser && s.smtpPass);
+            //console.log('format email res',house,formatedData)
+            console.log('smtp config ', smtpConfigSelections, 'selected', smtpConfigSelections.find(s => s.ownerName === ownerName))
             setCustomFieldMapping(prev => {
                 return {
                     ...prev,
                     paymentUIRelated_showRenterConfirmationScreen: true,
                     paymentUIRelated: {
+                        smtpConfig: smtpConfigSelections.find(s=>s.ownerName === ownerName) || smtpConfigSelections[0],
+                        smtpConfigSelections,
                         html: formatedData.body,
                         subject: formatedData.subject,
                         to: formatedData.mailtos,
