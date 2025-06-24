@@ -1,6 +1,6 @@
 import * as api from '../../../components/api'
 import { fixBadLeaseIds, gatherLeaseInfomation, getLeaseUtilForHouse, HouseWithLease, ILeaseInfoWithPaymentDueHistory, ILeaseInfoWithPmtInfo } from '../../../components/utils/leaseUtil';
-import { IHouseInfo, ILeaseInfo, IPayment } from '../../../components/reportTypes';
+import { IHouseInfo, ILeaseInfo, IOwnerInfo, IPayment } from '../../../components/reportTypes';
 import { Fragment, useEffect, useState } from 'react';
 import { usePageRelatedContext } from '../../../components/states/PageRelatedState';
 import Link from 'next/link';
@@ -46,6 +46,13 @@ export default function AutoAssignLeases() {
         html: '',
         edit: false,
     })
+
+    const [owners, setOwners] = useState<IOwnerInfo[]>([]);
+
+    async function getOwners() {
+        const owners = await api.getOwnerInfo();
+        setOwners(owners);                    
+    }
     async function fixHouses(house: HouseWithLease) {
         const houseID = house.houseID;
         setProcessingHouseId(houseID);
@@ -132,6 +139,8 @@ export default function AutoAssignLeases() {
                 }]
             });
         })
+
+        getOwners();
     }, []);
 
 
@@ -211,6 +220,15 @@ export default function AutoAssignLeases() {
         });
     };
 
+    const smtpConfigSelections: (api.ISmtpConfig & { ownerName: string; })[] = owners.map(o => {
+        return {
+            smtpUser: o.smtpEmailUser,
+            smtpPass: o.smtpEmailPass,
+            ownerName: o.ownerName,
+        }
+    }).filter(s => s.smtpUser && s.smtpPass);
+
+    const activeConfig = smtpConfigSelections.find(s => s.ownerName === '') || smtpConfigSelections[0];
     return <div>
             <CloseableDialog show={!!emailPreview.html}
             rootDialogStyle={{
@@ -219,7 +237,7 @@ export default function AutoAssignLeases() {
             setShow={closePreview}
             footer={<div className="modal-footer">
                 <button type="button" className="btn btn-secondary" data-dismiss="modal" onClick={async () => {
-                    await api.sendEmail(emailPreview.to.split(','), emailPreview.subject, emailPreview.html);
+                    await api.sendEmail(activeConfig, emailPreview.to.split(','), emailPreview.subject, emailPreview.html);
                 }}>Send</button>
                 <button type="button" className="btn btn-secondary" data-dismiss="modal" onClick={async () => {
                     setEmailPreview(state => {

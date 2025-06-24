@@ -58,7 +58,7 @@ export interface ITableAndSheetMappingInfo<T> {
 
     orderColunmInfo?: (cols: IDBFieldDef[]) => IDBFieldDef[];
 
-    customScreen?: (cust: ICrudAddCustomObj<T>, setCustomFieldMapping: React.Dispatch<React.SetStateAction<ICrudAddCustomObj<T>>>) => React.JSX.Element | string | boolean;
+    customScreen?: (mainCtx: IPageRelatedState, cust: ICrudAddCustomObj<T>, setCustomFieldMapping: React.Dispatch<React.SetStateAction<ICrudAddCustomObj<T>>>) => React.JSX.Element | string | boolean;
     customFooterButton?: (mainCtx: IPageRelatedState, cust: ICrudAddCustomObj<T>, setCustomFieldMapping: React.Dispatch<React.SetStateAction<ICrudAddCustomObj<T>>>, editItem: ItemType) => {
         customFooterFunc: () => Promise<void>;
         customFooterUI: React.JSX.Element;

@@ -109,6 +109,8 @@ export interface IOwnerInfo {
     zip: string;
     email: string;
     phone: string;
+    smtpEmailUser: string;
+    smtpEmailPass: string;
 }
 
 export interface ILeaseInfo {
