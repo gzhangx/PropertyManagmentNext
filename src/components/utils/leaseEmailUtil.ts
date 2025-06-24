@@ -6,7 +6,7 @@ import { IStringLogger } from '../types';
 import { formatAccounting } from './reportUtils';
 import { renderRenderBalanceEmailBodyToText } from './DirectEmailBodyContent';
 import { startCase } from 'lodash';
-import { RenterEmailConfig } from '../page/inputs/renterEmailConfig';
+
 
 
 export const paymentEmailSubject = 'paymentEmailSubject';
