@@ -27,7 +27,6 @@ export interface IPayment {
     receivedDate: string;
     source: string;
     leaseID?: string;
-    applyPaymentAfterDate: string;
 }
 
 /*export interface IPageProps {
