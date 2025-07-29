@@ -400,7 +400,7 @@ function calculateLeaseBalancesNew(
         // If lease started after due day, first rent is due next month
         isFirstMonth = false;
         rentDueDates.push({
-            paymentOrDueAmount: lease.firstMonthProratedRent ||  lease.monthlyRent,
+            paymentOrDueAmount: lease.firstMonthProratedRent || 0, // lease.monthlyRent,
             paymentOrDueTransactionType: 'Due',
             date: currentDueDate.format('YYYY-MM-DD'),
             previousBalance: 0, // Will be updated later
@@ -413,8 +413,10 @@ function calculateLeaseBalancesNew(
     // Generate all due dates until effective end date
     while (currentDueDate.isSameOrBefore(effectiveEndDate)) {
         let rentDue = lease.monthlyRent;
-        if (isFirstMonth && lease.firstMonthProratedRent) {
-            rentDue = lease.firstMonthProratedRent;
+        if (isFirstMonth && startDate.date() > 1) {
+            if (lease.firstMonthProratedRent || lease.firstMonthProratedRent === 0) {
+                rentDue = lease.firstMonthProratedRent || 0;
+            } 
         }        
         rentDueDates.push({
             paymentOrDueAmount: rentDue,
