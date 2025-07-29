@@ -198,13 +198,31 @@ export default function RentReport() {
                                     selectedMonths.map(mon => {
                                         const monthData = allRentReportData[house.houseID]?.[mon];
                                         const amt = monthData?.amount || 0;
-                                        return <td key={mon} className="text-end td-center" onClick={() => {
+                                        return <td key={mon} className="text-end accounting-alright" onClick={() => {
                                             setShowDetail(monthData);
                                         }}>{amtDsp(amt)}</td>
                                     })
                                 }
                             </tr>
                         })
+                    }
+                    {
+                        <>
+                            <tr><td colSpan={selectedMonths.length + 1}></td></tr>
+                            <tr>
+                                <td>Total</td>
+                                {
+                                    selectedMonths.map(mon => {
+                                        
+                                        const amt = selectedHouses.reduce((acc, house) => {
+                                            const amt = allRentReportData[house.houseID]?.[mon]?.amount || 0;
+                                            return acc + amt;
+                                        }, 0);
+                                        return <td key={mon} className="text-end accounting-alright">{amtDsp(amt)}</td>
+                                    })
+                                }
+                            </tr>
+                        </>
                     }
                 </tbody>
             </table>
