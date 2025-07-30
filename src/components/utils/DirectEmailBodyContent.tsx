@@ -53,7 +53,10 @@ export function DirectEmailBodyContent(props: RenderProps) {
                     <td style={emailtableCss}> {formatAccounting(leaseBalanceDueInfo.balanceForwarded)}</td >
                 </tr >
                 {
-                    leaseBalanceDueInfo.lastNPaymentAndDue.slice(1).map((info, key) => {
+                    leaseBalanceDueInfo.lastNPaymentAndDue
+                                  .filter(p => p.paymentOrDueTransactionType === 'Payment') //only show payments
+                                  .slice(0, 1) //show only the last payment
+                                  .map((info, key) => {
                         let amt = info.paymentOrDueAmount;
                         let type: string = info.paymentOrDueTransactionType;
                         if (info.paymentOrDueTransactionType === 'Payment') {
