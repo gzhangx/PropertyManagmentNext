@@ -353,7 +353,8 @@ function calculateLeaseBalancesNew(
     payments: IPaymentForLease[],
     previousBalanceFromPreviousLease: number,
     lease: ILeaseInfo,
-    endDateOverride?: string | Date | moment.Moment
+    endDateOverride?: string | Date | moment.Moment,
+    lastNPaymentAndDue: number = 3,
 ): ILeaseInfoWithPaymentDueHistory {    
     // Determine the effective end date (override takes precedence, then termination, then lease end)
     // Collect all potential end dates (excluding null values)
@@ -503,7 +504,7 @@ function calculateLeaseBalancesNew(
         return reversed;
     }
 
-    paymentDuesAndBalanceInfo.lastNPaymentAndDue = paymentDuesAndBalanceInfo.getLastNMonth(3); //default to 3.  This is needed as balance forward is setup here here
+    paymentDuesAndBalanceInfo.lastNPaymentAndDue = paymentDuesAndBalanceInfo.getLastNMonth(lastNPaymentAndDue); //default to 3.  This is needed as balance forward is setup here here
 
     for (const pdi of paymnetDuesInfo) {
         if (pdi.paymentOrDueTransactionType === 'Payment') {
