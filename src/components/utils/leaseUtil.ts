@@ -548,3 +548,23 @@ export async function fixBadLeaseIds() {
     }
     return badLeases;
 }
+
+export async function clearLeaseIds(houseID: string) {
+    const allPayments = await api.getPaymnents({
+        whereArray: [
+            {
+                field: 'houseID',
+                op: '=',
+                val: houseID,
+            }
+        ]
+    });
+    if (!allPayments) return 0;
+    const paymentsToUpdate = allPayments.filter(p => p.leaseID);
+    for (const p of paymentsToUpdate) {
+        p.leaseID = null;
+        await api.sqlAdd('rentPaymentInfo', p as any, false, true);
+    }
+    return paymentsToUpdate.length;
+
+}

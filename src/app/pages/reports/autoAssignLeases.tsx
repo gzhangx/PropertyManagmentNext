@@ -1,5 +1,5 @@
 import * as api from '../../../components/api'
-import { fixBadLeaseIds, gatherLeaseInfomation, getLeaseUtilForHouse, HouseWithLease, ILeaseInfoWithPaymentDueHistory, ILeaseInfoWithPmtInfo } from '../../../components/utils/leaseUtil';
+import { clearLeaseIds, fixBadLeaseIds, gatherLeaseInfomation, getLeaseUtilForHouse, HouseWithLease, ILeaseInfoWithPaymentDueHistory, ILeaseInfoWithPmtInfo } from '../../../components/utils/leaseUtil';
 import { IHouseInfo, ILeaseInfo, IOwnerInfo, IPayment } from '../../../components/reportTypes';
 import { Fragment, useEffect, useState } from 'react';
 import { usePageRelatedContext } from '../../../components/states/PageRelatedState';
@@ -349,7 +349,16 @@ export default function AutoAssignLeases() {
                                     mainCtx.showLoadingDlg(null);
                                 })
                             }}
-                            >Fix</button></td>                            
+                            >Fix</button>
+                                <button className='btn btn-secondary' style={{ marginLeft: '5px' }}
+                                    onClick={() => {
+                                        setDisableProcessing(true);
+                                        clearLeaseIds(house.houseID).then(() => {
+                                            setDisableProcessing(false);
+                                            mainCtx.showLoadingDlg(null);
+                                        });
+                                    }}>Clear Lease Ids</button>
+                            </td>                            
                         </tr>
                         {
                             house.lease && leaseExpanded[house.lease.leaseID] && house.leaseBalanceDueInfo && <tr>
