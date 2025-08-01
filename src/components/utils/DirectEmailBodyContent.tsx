@@ -54,8 +54,7 @@ export function DirectEmailBodyContent(props: RenderProps) {
                 </tr >
                 {
                     leaseBalanceDueInfo.lastNPaymentAndDue
-                                  .filter(p => p.paymentOrDueTransactionType === 'Payment') //only show payments
-                                  .slice(0, 1) //show only the last payment
+                                  //.filter(p => p.paymentOrDueTransactionType === 'Payment') //only show payments
                                   .map((info, key) => {
                         let amt = info.paymentOrDueAmount;
                         let type: string = info.paymentOrDueTransactionType;

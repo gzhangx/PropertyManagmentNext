@@ -295,7 +295,7 @@ export async function gatherLeaseInfomation(house: HouseWithLease, fixAllLeases:
     if (fixAllLeases) {
         const leasesAndPayments = await finder.loadAllLeaesAndPayments(lease);
         for (const lp of leasesAndPayments) {
-            const leaseBalanceDueInfo = finder.calculateLeaseBalancesNew(lp.payments, previousBalance, lp.lease, new Date());                        
+            const leaseBalanceDueInfo = finder.calculateLeaseBalancesNew(lp.payments, previousBalance, lp.lease, new Date(), 1);                        
             previousBalance = leaseBalanceDueInfo.totalBalance;
             allLeaseAndLeaseBalanceDueInfos.push({
                 lease: lp.lease,
