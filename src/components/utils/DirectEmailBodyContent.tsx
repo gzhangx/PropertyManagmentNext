@@ -35,20 +35,41 @@ export function DirectEmailBodyContent(props: RenderProps) {
         ...emailtableCss, 
     };
 
-    const lastLeaseDue = leaseBalanceDueInfo.paymnetDuesInfo[leaseBalanceDueInfo.paymnetDuesInfo.length - 1];
+    const lastLeaseDue = leaseBalanceDueInfo.paymnetDuesInfo[leaseBalanceDueInfo.paymnetDuesInfo.length - 1];    
     let leaseDueSeg: React.JSX.Element | null = null;
     if (lastLeaseDue) {
+        let prevSeg = lastLeaseDue;
+        //assuming it is due
+        let dueOrPaymentSeg = <tr style={emailtableCss}>
+                    <td style={emailtableCss}>{standardFormatDate(lastLeaseDue.date)} </td>
+                    <td style={emailtableCss}>{lastLeaseDue.paymentOrDueTransactionType}</td>
+                    <td style={emailtableCss}>{formatAccounting(lastLeaseDue.paymentOrDueTransactionType === 'Payment'?
+                    -lastLeaseDue.paymentOrDueAmount
+                :lastLeaseDue.paymentOrDueAmount)} </td>
+                </tr >
+        let confirmedDueSeg : React.JSX.Element | null = null;
+        if (lastLeaseDue.paymentOrDueTransactionType === 'Payment') {
+            //but if it is payment, need to lookup for one more due
+            const possibleDue = leaseBalanceDueInfo.paymnetDuesInfo[leaseBalanceDueInfo.paymnetDuesInfo.length - 2];            
+            if (possibleDue && possibleDue.paymentOrDueTransactionType === 'Due') {
+                prevSeg = possibleDue;
+                confirmedDueSeg = <tr style={emailtableCss}>
+                    <td style={emailtableCss}>{standardFormatDate(possibleDue.date)} </td>
+                    <td style={emailtableCss}>{possibleDue.paymentOrDueTransactionType}</td>
+                    <td style={emailtableCss}>{formatAccounting(possibleDue.paymentOrDueAmount)} </td>
+                </tr >
+            }
+        }
         leaseDueSeg = <>
             <tr style={emailtableCss}>
                 <td colSpan={2} style={{ textAlign: 'right', }}> Previous Balance: </td>
-                <td style={emailtableCss}> {formatAccounting(lastLeaseDue.previousBalance)}</td >
+                <td style={emailtableCss}> {formatAccounting(prevSeg.previousBalance)}</td >
             </tr >
             {
-                lastLeaseDue.paymentOrDueTransactionType === 'Payment' && <tr style={emailtableCss}>
-                    <td style={emailtableCss}>{standardFormatDate(lastLeaseDue.date)} </td>
-                    <td style={emailtableCss}>{lastLeaseDue.paymentOrDueTransactionType}</td>
-                    <td style={emailtableCss}>{formatAccounting(lastLeaseDue.paymentOrDueAmount)} </td>
-                </tr >
+                confirmedDueSeg
+            }
+            {
+                dueOrPaymentSeg
             }
             <tr style={emailtableCss}>
                 <td colSpan={2} style={emailtableCss}>Current Balance:</td>
