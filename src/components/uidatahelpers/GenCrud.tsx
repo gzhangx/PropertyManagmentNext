@@ -61,6 +61,12 @@ export interface IGenGrudProps extends ITableAndSheetMappingInfo<unknown> {
     fullTextSearchInTyping: IFullTextSearchPart;
     setFullTextSearchInTyping: ReactSetStateType<IFullTextSearchPart>;
     //customDisplayFunc?: (value: any, fieldDef: IDBFieldDef) => React.JSX.Element;
+
+    customEndColAddDel?: (cfg: {
+        add: React.JSX.Element | null;
+        del: React.JSX.Element | null;
+        row: ItemType;
+    })=> React.JSX.Element;
 }
 
 export const GenCrud = (props: IGenGrudProps) => {
@@ -73,6 +79,7 @@ export const GenCrud = (props: IGenGrudProps) => {
         paggingInfo, setPaggingInfo,
     } = props;
 
+    const customEndColAddDel = props.customEndColAddDel || ((cfg) => <>{cfg.add} {cfg.del}</>);
     const [dspState, setDspState] = useState<'Add' | 'Update' | 'dsp'>('dsp');
     const [editItem, setEditItem] = useState<ItemType>({
         data: {},
@@ -422,23 +429,25 @@ export const GenCrud = (props: IGenGrudProps) => {
                                                 })
                                             }
                                             <td>
-                                                {idCols.length && <button className="btn btn-primary outline-primary" type="button"  onClick={() => {
-                                                    setEditItem(row);
-                                                    setDspState('Update');
-                                                }}>Edit</button>
-                                                }
-                                                {' ' //className="btn-xs"
-                                                }
-                                                {idCols.length && <button className="btn btn-primary outline-danger" type="button" onClick={
-                                                    () => {
-                                                        setDeleteConfirm({
-                                                            showDeleteConfirmation: true,
-                                                            deleteIds: idCols.map(c => row.data[c.field as ALLFieldNames]) as string[],
-                                                            deleteRowData: row,
-                                                        });
-                                                        //props.doDelete(idCols.map(c => row[c.field]), row)
-                                                    }
-                                                }>Delete</button>}
+                                                {
+                                                    customEndColAddDel({
+                                                        add: idCols.length ?<button className="btn btn-primary outline-primary" type="button" onClick={() => {
+                                                            setEditItem(row);
+                                                            setDspState('Update');
+                                                        }}>Edit</button> : null,
+                                                        del: idCols.length ?<button className="btn btn-primary outline-danger" type="button" onClick={
+                                                            () => {
+                                                                setDeleteConfirm({
+                                                                    showDeleteConfirmation: true,
+                                                                    deleteIds: idCols.map(c => row.data[c.field as ALLFieldNames]) as string[],
+                                                                    deleteRowData: row,
+                                                                });
+                                                                //props.doDelete(idCols.map(c => row[c.field]), row)
+                                                            }
+                                                        }>Delete</button> : null,
+                                                        row
+                                                    })
+                                                }                                                                                 
                                             </td>
                                         </tr>
                                     )
