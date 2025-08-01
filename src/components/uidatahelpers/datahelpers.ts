@@ -349,8 +349,12 @@ function getSheetMappingFuncs(fields: IDBFieldDef[], sheetMapping: DataToDbSheet
     });
     
     function formatFieldValue(fieldName: string, val: string) {
-        if (helperState.dateFields.includes(fieldName))
-            return moment(val).format('YYYY-MM-DD');
+        if (helperState.dateFields.includes(fieldName)) {
+            if (val)
+                return moment(val).format('YYYY-MM-DD');
+            else
+                return ''; //don't format empty date
+        }
         return val;
     }
     function getSheetValuesFromData(data: ItemTypeDict) {
