@@ -19,6 +19,7 @@ import * as tenantLoader from './loads/tenants';
 import { ALLFieldNames } from '../../uidatahelpers/datahelperTypes';
 
 import * as allDefs from '../../uidatahelpers/defs/allDefs';
+import { leaseInfoDef } from '../../uidatahelpers/defs/leaseInfoDef';
 
 export function getPageDefs() {
     //const basicDef = getBasicPageDefs();
@@ -36,7 +37,7 @@ export function getPageDefs() {
         } as IPageInfo,
         houseLoader.housePageInfo,        
         {
-            ...allDefs.leaseInfoDef,            
+            ...leaseInfoDef,            
             dbLoader: () => theApi.getLeases().then(r => r as any as IDbSaveData[]),
             sheetMustExistField: 'houseID',
             showCreateButtonColumn: 'houseID',
