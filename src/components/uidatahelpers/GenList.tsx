@@ -101,11 +101,19 @@ export function GenList(props: ITableAndSheetMappingInfo<unknown>) {
         }
         const fullTextSearchs = pfse.fullTextSearchs;
 
+        function getDirOrder() {
+            if (order && order.length) {
+                return order.filter(o => o.op);
+            }
+            if (pfse && pfse.sorts && pfse.sorts.length) {
+                return pfse.sorts.filter(o => o.op);
+            }            
+            return null;
+        }
         function doSortAndOrderOperations(allDataRows: ItemType[]) {
             let orderedRows = allDataRows;
-            if (order && order.length) {
-                const dirOrder = order.filter(o => o.op);
-
+            const dirOrder = getDirOrder();
+            if (dirOrder && dirOrder.length) {                
                 const orderStr = JSON.stringify(dirOrder);
                 if (orderStr !== lastDataRowOrder) {
                     setLastDataRowOrder(orderStr);
