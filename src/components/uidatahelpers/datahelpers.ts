@@ -311,7 +311,7 @@ export function createHelper(rootCtx: RootState.IRootPageState, ctx: IPageRelate
             const deleteRes = await sqlDelete(table, ids);
             if (sheetMapping) {
                 const mapFuns = getSheetMappingFuncs(accModelFields(), sheetMapping, foreignKeyLookup, '', ctx);
-                const foundRow = await mapFuns.findItemOnSheet(data, googleSheetId, ids[0]); //TODO: fix this
+                const foundRow = await mapFuns.findItemOnSheet(data, googleSheetId, ids.length === 1?ids[0]:ids[1]); //should change everything to be user primary key composite
                 if (foundRow === 'NOT FOUND') {
                 } else {
                     await deleteSheetRow(googleSheetId, sheetMapping.sheetName, foundRow);
