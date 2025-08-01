@@ -5,7 +5,7 @@ import { EditTextDropdown } from '../generic/EditTextDropdown';
 import { GenCrudAdd } from './GenCrudAdd';
 import { ISqlOrderDef, SortOps, IPageFilter, IPageState, IDBFieldDef, TableNames, SQLOPS, FieldValueType, IFullTextSearchPart, ReactSetStateType,  } from '../types'
 //import { IFKDefs} from './GenCrudTableFkTrans'
-import { ALLFieldNames, ICrudAddCustomObj, ITableAndSheetMappingInfo, ItemType } from './datahelperTypes';
+import { ALLFieldNames, GenCrudCustomEndColAddDelType, ICrudAddCustomObj, ITableAndSheetMappingInfo, ItemType } from './datahelperTypes';
 import { usePageRelatedContext } from '../states/PageRelatedState';
 import moment from 'moment';
 import { BaseDialog } from '../generic/basedialog';
@@ -62,11 +62,7 @@ export interface IGenGrudProps extends ITableAndSheetMappingInfo<unknown> {
     setFullTextSearchInTyping: ReactSetStateType<IFullTextSearchPart>;
     //customDisplayFunc?: (value: any, fieldDef: IDBFieldDef) => React.JSX.Element;
 
-    customEndColAddDel?: (cfg: {
-        add: React.JSX.Element | null;
-        del: React.JSX.Element | null;
-        row: ItemType;
-    })=> React.JSX.Element;
+    //customEndColAddDel?: GenCrudCustomEndColAddDelType;
 }
 
 export const GenCrud = (props: IGenGrudProps) => {

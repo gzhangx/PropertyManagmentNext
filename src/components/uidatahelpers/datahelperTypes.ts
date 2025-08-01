@@ -38,6 +38,12 @@ export interface ICrudAddCustomObj<T> {
     }
 };
     
+export type GenCrudCustomEndColAddDelType = (cfg: {
+    add: React.JSX.Element | null;
+    del: React.JSX.Element | null;
+    row: ItemType;
+}) => React.JSX.Element;
+
 export interface ITableAndSheetMappingInfo<T> {
     table: TableNames;
     allFields?: IDBFieldDef[];  //TODO: check who is using this
@@ -63,7 +69,8 @@ export interface ITableAndSheetMappingInfo<T> {
         customFooterFunc: () => Promise<void>;
         customFooterUI: React.JSX.Element;
     };
-    customHeaderFilterFunc?: (mainCtx: IPageRelatedState, pageState: IPageState, field:IDBFieldDef) => React.JSX.Element | null;
+    customHeaderFilterFunc?: (mainCtx: IPageRelatedState, pageState: IPageState, field: IDBFieldDef) => React.JSX.Element | null;
+    customEndColAddDel?: GenCrudCustomEndColAddDelType;
 }
 
 export type ItemTypeDict = { [p in ALLFieldNames]?: FieldValueType; };
