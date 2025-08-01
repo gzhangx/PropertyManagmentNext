@@ -49,7 +49,7 @@ export function DirectEmailBodyContent(props: RenderProps) {
                     <td style={emailtableCss}>Amount </td>
                 </tr >
                 <tr  style={emailtableCss}>
-                    <td colSpan={2} style={{textAlign:'right',}}> Previous Balance: </td>
+                    <td colSpan={2} style={{textAlign:'right',}}> Previous Balance:&nbsp;&nbsp; </td>
                     <td style={emailtableCss}> {formatAccounting(leaseBalanceDueInfo.balanceForwarded)}</td >
                 </tr >
                 {
