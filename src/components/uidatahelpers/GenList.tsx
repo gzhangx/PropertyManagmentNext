@@ -55,7 +55,13 @@ export function GenList(props: ITableAndSheetMappingInfo<unknown>) {
     if (!secCtx.googleSheetAuthInfo.googleSheetId || secCtx.googleSheetAuthInfo.googleSheetId === 'NA') {
         secCtx.reloadGoogleSheetAuthInfo();
     }
+
+    function getDisplayColumnns() {
+        const columnInfo = helper.getModelFields() as IDBFieldDef[];
+        return getDspFieldInfo(props, columnInfo) as IDBFieldDef[];
+    }
     const reload = async (columnInf: IDBFieldDef[], forceReload = false) => {
+        const displayColumns: IDBFieldDef[] = getDisplayColumnns();
         let whereArray = (getPageFilters(pageState, table) as any) as ISqlRequestWhereItem[];
         const order = getPageSorts(pageState, table);        
         const pfse = getPageFilterSorterErrors(pageState, table);
@@ -98,7 +104,7 @@ export function GenList(props: ITableAndSheetMappingInfo<unknown>) {
         const sortPagingProps = {
             fullTextSearchs,
             fullTextSearchInTyping,
-            displayColumnInfo: displayColumnByTable[table]?.displayColumns,
+            displayColumnInfo: displayColumns, //displayColumnByTable[table]?.displayColumns,
             offset,
             paggingInfo,
             setMainData,
@@ -168,7 +174,7 @@ export function GenList(props: ITableAndSheetMappingInfo<unknown>) {
             //setMainData(dspRows)
         }
     }
-
+    
     useEffect(() => {
         if (!table) return;
         //if (!helper) return;
@@ -178,37 +184,38 @@ export function GenList(props: ITableAndSheetMappingInfo<unknown>) {
             if (props.orderColunmInfo) {
                 columnInfo = props.orderColunmInfo(columnInfo);
             }
-            const displayColumns = getDspFieldInfo(props, columnInfo) as IDBFieldDef[];
+            const displayColumns = getDisplayColumnns();
             setDisplayColumnByTable(prev => ({
                 ...prev,
                 [table]: {
                     displayColumns,
                 }
             }))
-        }
-        
-        ld();        
-    }, [table || 'NA']); //paggingInfo.pos, paggingInfo.total
-
-
-    useEffect(() => {
-        if (!table) return;
-        //if (!helper) return;
-        const ld=async () => {                        
-            await helper.loadModel();
-            let columnInfo = helper.getModelFields() as IDBFieldDef[];
-            if (props.orderColunmInfo) {
-                columnInfo = props.orderColunmInfo(columnInfo);
-            }
-            setColumnInf(columnInfo);
-            //if(columnInfo) {
-            //    setColumnInf(columnInfo);
-            //}
             reload(columnInfo);
         }
         
         ld();        
-    }, [table || 'NA', pageState.pageProps.reloadCount, secCtx.googleSheetAuthInfo.googleSheetId, paggingInfo.pos, fullTextSearchInTyping]); //paggingInfo.pos, paggingInfo.total
+    }, [table || 'NA', pageState.pageProps.reloadCount, paggingInfo.pos, fullTextSearchInTyping]); //paggingInfo.pos, paggingInfo.total
+
+
+    // useEffect(() => {
+    //     if (!table) return;
+    //     //if (!helper) return;
+    //     const ld=async () => {                        
+    //         await helper.loadModel();
+    //         let columnInfo = helper.getModelFields() as IDBFieldDef[];
+    //         if (props.orderColunmInfo) {
+    //             columnInfo = props.orderColunmInfo(columnInfo);
+    //         }
+    //         setColumnInf(columnInfo);
+    //         //if(columnInfo) {
+    //         //    setColumnInf(columnInfo);
+    //         //}
+    //         reload(columnInfo);
+    //     }
+        
+    //     ld();        
+    // }, [table || 'NA', pageState.pageProps.reloadCount, secCtx.googleSheetAuthInfo.googleSheetId, paggingInfo.pos, fullTextSearchInTyping]); //paggingInfo.pos, paggingInfo.total
 
     const doAdd = (data: ItemType, id: FieldValueType) => {
         return helper.saveData(data,id, true, secCtx.foreignKeyLoopkup).then(res => {
