@@ -101,6 +101,24 @@ export function GenList(props: ITableAndSheetMappingInfo<unknown>) {
         }
         const fullTextSearchs = pfse.fullTextSearchs;
 
+        function doSortAndOrderOperations(allDataRows: ItemType[]) {
+            let orderedRows = allDataRows;
+            if (order && order.length) {
+                const dirOrder = order.filter(o => o.op);
+
+                const orderStr = JSON.stringify(dirOrder);
+                if (orderStr !== lastDataRowOrder) {
+                    setLastDataRowOrder(orderStr);
+                    orderedRows = orderBy(allDataRows, dirOrder.map(o => `data.${o.name}`), dirOrder.map(o => o.op) as 'asc'[]);
+                    setAllData(orderedRows);
+                }
+
+            }
+            calcAllDataSortAndPaggingInfo({
+                allDataRows: orderedRows,
+                ...sortPagingProps,
+            });
+        }
         const sortPagingProps = {
             fullTextSearchs,
             fullTextSearchInTyping,
@@ -141,12 +159,8 @@ export function GenList(props: ITableAndSheetMappingInfo<unknown>) {
                     return ret;
                 })
                 if (paggingInfo.enableFullTextSearch || (fullTextSearchInTyping.val)) {
-                    setAllData(rowsParsed);
-                    //setMainData(rowsParsed.slice(offset, offset + paggingInfo.PageSize))
-                    calcAllDataSortAndPaggingInfo({
-                        allDataRows: rowsParsed,
-                        ...sortPagingProps,
-                    });
+                    //setAllData(rowsParsed);
+                    doSortAndOrderOperations(rowsParsed);
                 } else {
                     setMainData(rowsParsed);
                 }
@@ -154,22 +168,7 @@ export function GenList(props: ITableAndSheetMappingInfo<unknown>) {
                 //setLoading(false);
             });
         } else {
-            let orderedRows = allDataRows;
-            if (order && order.length) {
-                const dirOrder = order.filter(o => o.op);
-
-                const orderStr = JSON.stringify(dirOrder);
-                if (orderStr !== lastDataRowOrder) {
-                    setLastDataRowOrder(orderStr);
-                    orderedRows = orderBy(allDataRows, dirOrder.map(o => `data.${o.name}`), dirOrder.map(o => o.op) as 'asc'[]);                    
-                    setAllData(orderedRows);
-                }
-
-            }
-            calcAllDataSortAndPaggingInfo({
-                allDataRows: orderedRows,
-                ...sortPagingProps,
-            });
+            doSortAndOrderOperations(allDataRows);
             //const dspRows = orderedRows.slice(offset, offset + paggingInfo.PageSize);
             //setMainData(dspRows)
         }
