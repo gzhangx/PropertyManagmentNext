@@ -5,6 +5,7 @@ import { ITenantInfo } from '../reportTypes';
 import { HouseWithLease } from './leaseUtil';
 import { formatAccounting, standardFormatDate } from './reportUtils';
 import { TextAlignment } from 'pdf-lib';
+import { last } from 'lodash';
 
 
 interface RenderProps {
@@ -33,6 +34,28 @@ export function DirectEmailBodyContent(props: RenderProps) {
     {
         ...emailtableCss, 
     };
+
+    const lastLeaseDue = leaseBalanceDueInfo.paymnetDuesInfo[leaseBalanceDueInfo.paymnetDuesInfo.length - 1];
+    let leaseDueSeg: React.JSX.Element | null = null;
+    if (lastLeaseDue) {
+        leaseDueSeg = <>
+            <tr style={emailtableCss}>
+                <td colSpan={2} style={{ textAlign: 'right', }}> Previous Balance: </td>
+                <td style={emailtableCss}> {formatAccounting(lastLeaseDue.previousBalance)}</td >
+            </tr >
+            {
+                lastLeaseDue.paymentOrDueTransactionType === 'Payment' && <tr style={emailtableCss}>
+                    <td style={emailtableCss}>{standardFormatDate(lastLeaseDue.date)} </td>
+                    <td style={emailtableCss}>{lastLeaseDue.paymentOrDueTransactionType}</td>
+                    <td style={emailtableCss}>{formatAccounting(lastLeaseDue.paymentOrDueAmount)} </td>
+                </tr >
+            }
+            <tr style={emailtableCss}>
+                <td colSpan={2} style={emailtableCss}>Current Balance:</td>
+                <td style={emailtableCss}>{formatAccounting(lastLeaseDue.newBalance)}</td >
+            </tr>
+        </>
+    }
       return <>
         <div>Dear {props.tenants.map(t => t.firstName).join(' and  ')}, <br /><br></br>
 
@@ -48,30 +71,9 @@ export function DirectEmailBodyContent(props: RenderProps) {
                     <td style={emailtableCss}>Transaction</td >
                     <td style={emailtableCss}>Amount </td>
                 </tr >
-                <tr  style={emailtableCss}>
-                    <td colSpan={2} style={{textAlign:'right',}}> Previous Balance:&nbsp;&nbsp; </td>
-                    <td style={emailtableCss}> {formatAccounting(leaseBalanceDueInfo.balanceForwarded)}</td >
-                </tr >
-                {
-                    leaseBalanceDueInfo.lastNPaymentAndDue.map((info, key) => {
-                        let amt = info.paymentOrDueAmount;
-                        let type: string = info.paymentOrDueTransactionType;
-                        if (info.paymentOrDueTransactionType === 'Payment') {
-                            amt = -amt;
-                        } else {
-                            type = 'Rent Due';
-                        }
-                        return <tr key={key}  style={emailtableCss}>
-                                    <td style={emailtableCss}>{standardFormatDate(info.date)} </td>
-                                    <td style={emailtableCss}>{type}</td> 
-                                    <td style={emailtableCss}>{ formatAccounting(amt)} </td>
-                                </tr >
-                    })
-                }
-                <tr  style={emailtableCss}>
-                    <td colSpan={2} style={emailtableCss}>Current Balance:</td>
-                    <td style={emailtableCss}>{formatAccounting(leaseBalanceDueInfo.totalBalance)}</td >
-                </tr>
+                    {
+                        leaseDueSeg
+                    }                
                 
             </table>
             <br></br>

@@ -295,7 +295,7 @@ export async function gatherLeaseInfomation(house: HouseWithLease, fixAllLeases:
     if (fixAllLeases) {
         const leasesAndPayments = await finder.loadAllLeaesAndPayments(lease);
         for (const lp of leasesAndPayments) {
-            const leaseBalanceDueInfo = finder.calculateLeaseBalancesNew(lp.payments, previousBalance, lp.lease, new Date());                        
+            const leaseBalanceDueInfo = finder.calculateLeaseBalancesNew(lp.payments, previousBalance, lp.lease, new Date(), 1);                        
             previousBalance = leaseBalanceDueInfo.totalBalance;
             allLeaseAndLeaseBalanceDueInfos.push({
                 lease: lp.lease,
@@ -353,7 +353,8 @@ function calculateLeaseBalancesNew(
     payments: IPaymentForLease[],
     previousBalanceFromPreviousLease: number,
     lease: ILeaseInfo,
-    endDateOverride?: string | Date | moment.Moment
+    endDateOverride?: string | Date | moment.Moment,
+    lastNPaymentAndDue: number = 3,
 ): ILeaseInfoWithPaymentDueHistory {    
     // Determine the effective end date (override takes precedence, then termination, then lease end)
     // Collect all potential end dates (excluding null values)
@@ -503,7 +504,7 @@ function calculateLeaseBalancesNew(
         return reversed;
     }
 
-    paymentDuesAndBalanceInfo.lastNPaymentAndDue = paymentDuesAndBalanceInfo.getLastNMonth(3); //default to 3.  This is needed as balance forward is setup here here
+    paymentDuesAndBalanceInfo.lastNPaymentAndDue = paymentDuesAndBalanceInfo.getLastNMonth(lastNPaymentAndDue); //default to 3.  This is needed as balance forward is setup here here
 
     for (const pdi of paymnetDuesInfo) {
         if (pdi.paymentOrDueTransactionType === 'Payment') {
@@ -547,4 +548,24 @@ export async function fixBadLeaseIds() {
         }
     }
     return badLeases;
+}
+
+export async function clearLeaseIds(houseID: string) {
+    const allPayments = await api.getPaymnents({
+        whereArray: [
+            {
+                field: 'houseID',
+                op: '=',
+                val: houseID,
+            }
+        ]
+    });
+    if (!allPayments) return 0;
+    const paymentsToUpdate = allPayments.filter(p => p.leaseID);
+    for (const p of paymentsToUpdate) {
+        p.leaseID = null;
+        await api.sqlAdd('rentPaymentInfo', p as any, false, true);
+    }
+    return paymentsToUpdate.length;
+
 }
