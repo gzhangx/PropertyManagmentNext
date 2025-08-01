@@ -205,7 +205,7 @@ export const GenCrud = (props: IGenGrudProps) => {
 
     const idCols = columnInfo.filter(c => c.isId);
 
-    const addNew = async () => {
+    const addNew = async (moreProcesses?: (editItem: ItemType)=>Promise<void>) => {
         columnInfo.map((c, cind) => {
             if (c.type === 'date' || c.type === 'datetime') {
                 editItem.data[c.field as ALLFieldNames] = moment().format('YYYY-MM-DD');
@@ -217,6 +217,9 @@ export const GenCrud = (props: IGenGrudProps) => {
         });
         if (props.customAddNewDefaults) {
             await props.customAddNewDefaults(mainCtx, columnInfo, editItem);
+        }
+        if (moreProcesses) {
+            await moreProcesses(editItem);
         }
         setEditItem({
             ...editItem,
@@ -372,7 +375,7 @@ export const GenCrud = (props: IGenGrudProps) => {
                                         </th>
                                     })
                                 }
-                                    <th><button className="btn btn-primary" type="button" onClick={addNew}>Add</button></th>
+                                    <th><button className="btn btn-primary" type="button" onClick={()=>addNew()}>Add</button></th>
                             </tr>
                         </thead>
                         <tbody>
@@ -427,11 +430,12 @@ export const GenCrud = (props: IGenGrudProps) => {
                                             <td>
                                                 {
                                                     customEndColAddDel({
+                                                        addNew,
                                                         add: idCols.length ?<button className="btn btn-primary outline-primary" type="button" onClick={() => {
                                                             setEditItem(row);
                                                             setDspState('Update');
                                                         }}>Edit</button> : null,
-                                                        del: idCols.length ?<button className="btn btn-primary outline-danger" type="button" onClick={
+                                                        del: idCols.length ?<button className="btn btn-secondary outline-danger" type="button" onClick={
                                                             () => {
                                                                 setDeleteConfirm({
                                                                     showDeleteConfirmation: true,

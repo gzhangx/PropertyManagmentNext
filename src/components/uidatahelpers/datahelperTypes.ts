@@ -41,6 +41,7 @@ export interface ICrudAddCustomObj<T> {
 export type GenCrudCustomEndColAddDelType = (cfg: {
     add: React.JSX.Element | null;
     del: React.JSX.Element | null;
+    addNew: (moreProcesses?: (editItem: ItemType) => Promise<void>)=> Promise<void>;
     row: ItemType;
 }) => React.JSX.Element;
 

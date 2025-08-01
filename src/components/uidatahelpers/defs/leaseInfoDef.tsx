@@ -1,5 +1,5 @@
 import { ITableAndSheetMappingInfo } from "../datahelperTypes";
-
+import moment from "moment";
 export const leaseInfoDef: ITableAndSheetMappingInfo<unknown> = {
     table: 'leaseInfo',
     sheetMapping: {
@@ -51,4 +51,30 @@ export const leaseInfoDef: ITableAndSheetMappingInfo<unknown> = {
             //console.log('debugremove lease', c.field, editItem.data[c.field as ALLFieldNames])
         }
     },
+
+    customEndColAddDel: ({ add, del, row, addNew }) => {
+        return (
+            <>
+                {add}                
+                <span style={{ marginLeft: '3px' }}></span>
+                <button className="btn btn-primary outline-primary" type="button" onClick={() => {
+                    console.log('Renew lease', row);
+                    addNew(async item => {
+                        console.log('Renew lease new item', item);
+                        item.data.houseID = row.data.houseID;
+                        item.data.startDate = moment(row.data.endDate).add(1, 'month').startOf('month').format('YYYY-MM-DD');
+                        item.data.endDate = moment(item.data.startDate).add(1, 'year').endOf('month').format('YYYY-MM-DD');
+                        item.data.rentDueDay = 5;
+                        item.data.monthlyRent = row.data.monthlyRent;
+                        item.data.comment = `Renewed from ${moment(item.data.endDate).format('YYYY-MM-DD')}`;
+                        for (const field of ['tenant1', 'tenant2', 'tenant3', 'tenant4', 'tenant5']) {
+                            item.data[field as 'tenant1' | 'tenant2' | 'tenant3' | 'tenant4' | 'tenant5'] = row.data[field as 'tenant1' | 'tenant2' | 'tenant3' | 'tenant4' | 'tenant5'];
+                        }
+                    });
+                }}>Renew</button>
+                <span style={{marginLeft:'10px'}}></span>
+                {del}
+            </>
+        );
+    }
 }
