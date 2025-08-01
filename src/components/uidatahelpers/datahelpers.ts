@@ -372,7 +372,7 @@ function getSheetMappingFuncs(fields: IDBFieldDef[], sheetMapping: DataToDbSheet
                     console.log(`Translating for field ${name} value ${val}`);
                     const origVal = val;
                     val = fkCombo.idDesc.get(val as string)?.desc as FieldValueType;
-                    if (!val) {
+                    if (!val && origVal) { //only throw error when fail to translate if origVal is not empty
                         const message = `Error, foreign key lookup for ${name} failed for val ${origVal}`;
                         console.log(message);
                         throw new Error(message);
