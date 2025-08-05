@@ -33,7 +33,7 @@ export function GenList(props: ITableAndSheetMappingInfo<unknown>) {
     // ];
     const [mainDataRows, setMainData] = useState<ItemType[]>([]);
     const [allDataRows, setAllData] = useState<ItemType[]>([]);
-    const [columnInf, setColumnInf] = useState<IDBFieldDef[]>([]);
+    //const [columnInf, setColumnInf] = useState<IDBFieldDef[]>([]);
 
     const [lastDataLoadWhereClaus, setLastDataLoadWhereClaus] = useState('');
     const [lastDataRowOrder, setLastDataRowOrder] = useState('');
@@ -56,8 +56,11 @@ export function GenList(props: ITableAndSheetMappingInfo<unknown>) {
         secCtx.reloadGoogleSheetAuthInfo();
     }
 
+    function getColumnInfos() {
+        return helper.getModelFields() as IDBFieldDef[];
+    }
     function getDisplayColumnns() {
-        const columnInfo = helper.getModelFields() as IDBFieldDef[];
+        const columnInfo = getColumnInfos();
         return getDspFieldInfo(props, columnInfo) as IDBFieldDef[];
     }
     const reload = async (columnInf: IDBFieldDef[], forceReload = false) => {
@@ -228,7 +231,7 @@ export function GenList(props: ITableAndSheetMappingInfo<unknown>) {
         return helper.saveData(data,id, true, secCtx.foreignKeyLoopkup).then(res => {
             //const isUpdateExisting = !!id;  //if  we have id it is updateExisting
             //setLoading(true);
-            reload(columnInf, true);  //force reload on everything //force reload on update (for google sheet comp)
+            reload(getColumnInfos(), true);  //force reload on everything //force reload on update (for google sheet comp)
             return res;
         }).catch(err => {
             //setLoading(false);
@@ -239,24 +242,24 @@ export function GenList(props: ITableAndSheetMappingInfo<unknown>) {
     const doDelete=( ids: string[], data: ItemType ) => {
         //setLoading(true);
         helper.deleteData(ids, secCtx.foreignKeyLoopkup, data).then(() => {
-            reload(columnInf, true);
+            reload(getColumnInfos(), true);
         })
     }
     const displayFields=  displayColumnByTable[table]?.displayColumns || props.displayFields||helper.getModelFields().map(f => f.isId? null:f).filter(x => x);
     return <div>
         <p className='subHeader'>{props.title}</p>
         {
-            (!columnInf)? <p>Loading</p>:
+            (!getColumnInfos())? <p>Loading</p>:
                 <div>
                     <GenCrud
                         //fkDefs={getFKDefs()}
                     paggingInfo={paggingInfo} setPaggingInfo={setPaggingInfo}
-                    reload = {(forceFullReload)=>reload(columnInf, forceFullReload)}
+                        reload={(forceFullReload) => reload(getColumnInfos(), forceFullReload)}
                     pageState = {pageState}
                         {...props}
                         displayFields={displayFields}
                         columnInfo={
-                            columnInf
+                            getColumnInfos()
                         }
                         doAdd={doAdd}
                         doDelete={doDelete}
