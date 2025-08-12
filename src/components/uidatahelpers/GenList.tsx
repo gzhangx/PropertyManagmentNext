@@ -57,7 +57,12 @@ export function GenList(props: ITableAndSheetMappingInfo<unknown>) {
     }
 
     function getColumnInfos() {
-        return helper.getModelFields() as IDBFieldDef[];
+        //return helper.getModelFields() as IDBFieldDef[];
+        const columnInfo = helper.getModelFields() as IDBFieldDef[];
+        if (props.orderColunmInfo) {
+            return props.orderColunmInfo(columnInfo);
+        }
+        return columnInfo;
     }
     function getDisplayColumnns() {
         const columnInfo = getColumnInfos();
@@ -190,10 +195,10 @@ export function GenList(props: ITableAndSheetMappingInfo<unknown>) {
         //if (!helper) return;
         const ld=async () => {                        
             await helper.loadModel();
-            let columnInfo = helper.getModelFields() as IDBFieldDef[];
-            if (props.orderColunmInfo) {
-                columnInfo = props.orderColunmInfo(columnInfo);
-            }
+            //let columnInfo = helper.getModelFields() as IDBFieldDef[];
+            //if (props.orderColunmInfo) {
+            //    columnInfo = props.orderColunmInfo(columnInfo);
+            //}
             const displayColumns = getDisplayColumnns();
             setDisplayColumnByTable(prev => ({
                 ...prev,
@@ -201,7 +206,8 @@ export function GenList(props: ITableAndSheetMappingInfo<unknown>) {
                     displayColumns,
                 }
             }))
-            reload(columnInfo);
+            //reload(columnInfo);
+            reload(getColumnInfos());
         }
         
         ld();        
