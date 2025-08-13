@@ -174,17 +174,16 @@ export function GenList(props: ITableAndSheetMappingInfo<unknown>) {
                     ret.searchInfo = getStdSearchInfo(secCtx, ret, dcinf);
                     return ret;
                 })
+                setMainData(rowsParsed);
                 if (paggingInfo.enableFullTextSearch || (fullTextSearchInTyping.val)) {
                     //setAllData(rowsParsed);
                     doSortAndOrderOperations(rowsParsed);
-                } else {
-                    setMainData(rowsParsed);
                 }
                 return rowsParsed;
                 //setLoading(false);
             });
         } else {
-            doSortAndOrderOperations(allDataRows);
+            doSortAndOrderOperations(mainDataRows);
             //const dspRows = orderedRows.slice(offset, offset + paggingInfo.PageSize);
             //setMainData(dspRows)
         }
