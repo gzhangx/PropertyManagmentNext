@@ -174,7 +174,7 @@ export function GenList(props: ITableAndSheetMappingInfo<unknown>) {
                     ret.searchInfo = getStdSearchInfo(secCtx, ret, dcinf);
                     return ret;
                 })
-                setMainData(rowsParsed);
+                setAllData(rowsParsed);
                 if (paggingInfo.enableFullTextSearch || (fullTextSearchInTyping.val)) {
                     //setAllData(rowsParsed);
                     doSortAndOrderOperations(rowsParsed);
@@ -183,7 +183,7 @@ export function GenList(props: ITableAndSheetMappingInfo<unknown>) {
                 //setLoading(false);
             });
         } else {
-            doSortAndOrderOperations(mainDataRows);
+            doSortAndOrderOperations(allDataRows);
             //const dspRows = orderedRows.slice(offset, offset + paggingInfo.PageSize);
             //setMainData(dspRows)
         }
