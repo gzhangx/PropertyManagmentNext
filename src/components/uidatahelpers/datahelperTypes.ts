@@ -55,7 +55,9 @@ export interface IHtmlElementWithPreventDefault {
     preventDefault: () => void;
 }
 export interface ICustFooterParams<T> extends ContexAndCustObject<T> {
+    columnInfo: IDBFieldDef[];
     editItem: ItemType;
+    setEditItem: React.Dispatch<React.SetStateAction<ItemType>>;
     internalCancel: () => void;
     handleSubmit: (e: IHtmlElementWithPreventDefault) => Promise<void>;//React.FormEvent<HTMLFormElement>
     addUpdateLabel: 'Add' | 'Update';

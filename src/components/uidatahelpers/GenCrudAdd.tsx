@@ -218,9 +218,11 @@ export const GenCrudAdd = (props: IGenGrudAddProps) => {
 
     const customFooterParam: ICustFooterParams<unknown> = {
         mainCtx,
+        columnInfo,
         crudAddCustomObjMap, 
         setCrudAddCustomObjMap, 
         editItem,
+        setEditItem,
         internalCancel,
         handleSubmit,
         addUpdateLabel,

@@ -1,4 +1,5 @@
-import { ITableAndSheetMappingInfo } from "../datahelperTypes";
+import moment from "moment";
+import { ALLFieldNames, ITableAndSheetMappingInfo } from "../datahelperTypes";
 import { customHeaderFilterFuncWithHouseIDLookup } from "./util";
 
 export const maintenanceInfoDef: ITableAndSheetMappingInfo<unknown> = {
@@ -33,4 +34,30 @@ editTitle:'Add/Edit Maintenance Record',
         return customHeaderFilterFuncWithHouseIDLookup(mainCtx, pageState, colInfo, 'maintenanceRecords');
         },
 
+    customFooterButton(params) {
+        const { mainCtx, crudAddCustomObjMap, setCrudAddCustomObjMap, editItem } = params;        
+        
+        const customFooterUI = <>
+            <button type="button" className="btn btn-primary" data-dismiss="modal" onClick={async e => {
+                e.preventDefault();
+                params.columnInfo.map((c) => {
+                    if (c.isId) {
+                        delete editItem.data[c.field as ALLFieldNames];
+                    } else if (c.field === 'date') {
+                        editItem.data[c.field as ALLFieldNames] = moment().format('YYYY-MM-DD');
+                    }
+                });
+                //await params.handleSubmit(e);
+                params.setEditItem({ ...editItem, data: { ...editItem.data } });
+            }}>Duplicate</button>
+            <button type="button" className="btn btn-primary" data-dismiss="modal" onClick={
+                async e => {
+                    await params.handleSubmit(e);                    
+                }
+            }>{params.addUpdateLabel}</button>
+        </>
+        return {
+            customFooterUI,
+        }
+    },
 }
