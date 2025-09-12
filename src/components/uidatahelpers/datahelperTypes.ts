@@ -45,6 +45,16 @@ export type GenCrudCustomEndColAddDelType = (cfg: {
     row: ItemType;
 }) => React.JSX.Element;
 
+export interface ContexAndCustObject<T> {
+    mainCtx: IPageRelatedState;
+    crudAddCustomObjMap: ICrudAddCustomObj<T>;
+    setCrudAddCustomObjMap: React.Dispatch<React.SetStateAction<ICrudAddCustomObj<T>>>;
+}
+
+export interface ICustFooterParams<T> extends ContexAndCustObject<T> {
+    editItem: ItemType;
+}
+
 export interface ITableAndSheetMappingInfo<T> {
     table: TableNames;
     allFields?: IDBFieldDef[];  //TODO: check who is using this
@@ -66,7 +76,7 @@ export interface ITableAndSheetMappingInfo<T> {
     orderColunmInfo?: (cols: IDBFieldDef[]) => IDBFieldDef[];
 
     customScreen?: (mainCtx: IPageRelatedState, cust: ICrudAddCustomObj<T>, setCustomFieldMapping: React.Dispatch<React.SetStateAction<ICrudAddCustomObj<T>>>) => React.JSX.Element | string | boolean;
-    customFooterButton?: (mainCtx: IPageRelatedState, cust: ICrudAddCustomObj<T>, setCustomFieldMapping: React.Dispatch<React.SetStateAction<ICrudAddCustomObj<T>>>, editItem: ItemType) => {
+    customFooterButton?: (params: ICustFooterParams<T>) => {
         customFooterFunc: () => Promise<void>;
         customFooterUI: React.JSX.Element;
     };

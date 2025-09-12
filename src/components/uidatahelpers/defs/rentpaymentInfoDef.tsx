@@ -330,9 +330,11 @@ export const paymentInfoDef: ITableAndSheetMappingInfo<ICustEmailInfo> = {
             </table>
         </CloseableDialog>
     },
-    customFooterButton(mainCtx, cust, setCustomFieldMapping, item) {
+    customFooterButton(params) {
+        const {mainCtx, crudAddCustomObjMap, setCrudAddCustomObjMap, editItem} = params;
+        const cust = crudAddCustomObjMap;
         const customFooterFunc = async () => {
-            const houseID = item.data.houseID as string;
+            const houseID = editItem.data.houseID as string;
             if (!houseID) return;
             const house: HouseWithLease = {
                 houseID,
@@ -344,7 +346,7 @@ export const paymentInfoDef: ITableAndSheetMappingInfo<ICustEmailInfo> = {
                     field: 'houseID',
                     table: 'houseInfo',
                 }
-            }, item);
+            }, editItem);
             let ownerName = '';
             if (typeof houseInfo !== 'string') {
                 ownerName = houseInfo.data['ownerName'] as string;
@@ -368,7 +370,7 @@ export const paymentInfoDef: ITableAndSheetMappingInfo<ICustEmailInfo> = {
             }).filter(s => s.smtpUser && s.smtpPass);
             //console.log('format email res',house,formatedData)
             console.log('smtp config ', smtpConfigSelections, 'selected', smtpConfigSelections.find(s => s.ownerName === ownerName))
-            setCustomFieldMapping(prev => {
+            setCrudAddCustomObjMap(prev => {
                 return {
                     ...prev,
                     paymentUIRelated_showRenterConfirmationScreen: true,
