@@ -397,8 +397,7 @@ export const paymentInfoDef: ITableAndSheetMappingInfo<ICustEmailInfo> = {
                                 }
                             }>{params.addUpdateLabel}</button>
         </>
-        return {
-            customFooterFunc,
+        return {            
             customFooterUI,
         }
     },
