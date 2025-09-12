@@ -12,6 +12,7 @@ import * as theApi from '../../../api'
 // import type { JSX } from "react";
 // import { ALLFieldNames } from '../../../uidatahelpers/datahelperTypes';
 import * as allDefs from '../../../uidatahelpers/defs/allDefs';
+import { maintenanceInfoDef } from '@/src/components/uidatahelpers/defs/maintenanceInfoDef';
 // function fixDates(date: string): string {
 //     const mnt = moment(date);
 //     if (mnt.isValid()) return mnt.format('YYYY-MM-DD');
@@ -136,7 +137,7 @@ export const maintenceRecordDef: IPageInfo = {
     //tableName: 'maintenanceRecords',
     //pageName: 'MaintainessRecord',
     //range: 'A1:G',
-    ...allDefs.maintenanceInfoDef,    
+    ...maintenanceInfoDef,    
     /*
     displayColumnInfo: [
         {
