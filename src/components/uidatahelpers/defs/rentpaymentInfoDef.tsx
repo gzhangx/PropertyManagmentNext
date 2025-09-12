@@ -386,10 +386,17 @@ export const paymentInfoDef: ITableAndSheetMappingInfo<ICustEmailInfo> = {
                 }
             })
         };
-        const customFooterUI = <button type="button" className="btn btn-primary" data-dismiss="modal" onClick={async e => {
+        const customFooterUI = <><button type="button" className="btn btn-primary" data-dismiss="modal" onClick={async e => {
             e.preventDefault();
             await customFooterFunc();
         }}>Email</button>
+        <button type="button" className="btn btn-primary" data-dismiss="modal" onClick={
+                                async e => {
+                                    await params.handleSubmit(e);                                    
+                                    await customFooterFunc();                                    
+                                }
+                            }>{params.addUpdateLabel}</button>
+        </>
         return {
             customFooterFunc,
             customFooterUI,

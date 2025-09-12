@@ -6,7 +6,7 @@ import { IEditTextDropdownItem } from '../generic/GenericDropdown';
 import { IGenGrudProps } from './GenCrud';
 import * as RootState from '../states/RootState'
 import moment from 'moment';
-import { ALLFieldNames, DataToDbSheetMapping, ICrudAddCustomObj, ICustFooterParams, ItemType, } from './datahelperTypes';
+import { ALLFieldNames, DataToDbSheetMapping, ICrudAddCustomObj, ICustFooterParams, IHtmlElementWithPreventDefault, ItemType, } from './datahelperTypes';
 import { usePageRelatedContext } from '../states/PageRelatedState';
 import GrkEditableDropdown from '../generic/GrkEditableDropdown';
 
@@ -93,9 +93,7 @@ export const GenCrudAdd = (props: IGenGrudAddProps) => {
          });
     }
 
-    const handleSubmit = async (e:{ 
-        preventDefault: () => void;
-    }) => {
+    const handleSubmit = async (e:IHtmlElementWithPreventDefault) => {
         e.preventDefault();
 
         if (!editItem) return;
@@ -222,8 +220,12 @@ export const GenCrudAdd = (props: IGenGrudAddProps) => {
         mainCtx,
         crudAddCustomObjMap, 
         setCrudAddCustomObjMap, 
-        editItem
+        editItem,
+        internalCancel,
+        handleSubmit,
+        addUpdateLabel,
     };
+    const customFooterUI = isUpdateExisting && props.customFooterButton && props.customFooterButton(customFooterParam).customFooterUI
     return <div className={dspClassName} tabIndex={-1} role="dialog" >
         <Dialog dialogInfo={errDlgPrm}></Dialog>        
         <div className="modal-dialog gg-modal-dialog-scrollable" role="document">
@@ -351,16 +353,14 @@ export const GenCrudAdd = (props: IGenGrudAddProps) => {
                     <div className="modal-footer">
                         {
                             //addUpdateLabel === 'Update'
-                        isUpdateExisting && props.customFooterButton && props.customFooterButton(customFooterParam).customFooterUI
-                        }
-                        <button type="button" className="btn btn-primary" data-dismiss="modal" onClick={
-                            async e => {
-                                await handleSubmit(e);
-                                if (props.customFooterButton) {
-                                    await props.customFooterButton(customFooterParam).customFooterFunc();
+                    
+                        
+                            customFooterUI? customFooterUI : <button type="button" className="btn btn-primary" data-dismiss="modal" onClick={
+                                async e => {
+                                    await handleSubmit(e);                                    
                                 }
-                            }
-                        }>{addUpdateLabel}</button>
+                            }>{addUpdateLabel}</button>
+                        }
                         <button type="button" className="btn btn-secondary" data-dismiss="modal" onClick={internalCancel}>Cancel</button>
                     </div>             
             }

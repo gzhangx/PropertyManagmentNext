@@ -51,8 +51,14 @@ export interface ContexAndCustObject<T> {
     setCrudAddCustomObjMap: React.Dispatch<React.SetStateAction<ICrudAddCustomObj<T>>>;
 }
 
+export interface IHtmlElementWithPreventDefault {
+    preventDefault: () => void;
+}
 export interface ICustFooterParams<T> extends ContexAndCustObject<T> {
     editItem: ItemType;
+    internalCancel: () => void;
+    handleSubmit: (e: IHtmlElementWithPreventDefault) => Promise<void>;//React.FormEvent<HTMLFormElement>
+    addUpdateLabel: 'Add' | 'Update';
 }
 
 export interface ITableAndSheetMappingInfo<T> {
