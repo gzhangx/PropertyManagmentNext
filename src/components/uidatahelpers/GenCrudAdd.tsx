@@ -30,6 +30,7 @@ export interface IGenGrudAddProps extends IGenGrudProps {
 
     crudAddCustomObjMap: ICrudAddCustomObj<unknown>;
     setCrudAddCustomObjMap: React.Dispatch<React.SetStateAction<ICrudAddCustomObj<unknown>>>;
+    setDspState: React.Dispatch<React.SetStateAction<'Add' | 'Update' | 'dsp'>>;
 }
 export const GenCrudAdd = (props: IGenGrudAddProps) => {
 
@@ -226,6 +227,7 @@ export const GenCrudAdd = (props: IGenGrudAddProps) => {
         internalCancel,
         handleSubmit,
         addUpdateLabel,
+        setDspState: props.setDspState,
     };
     const customFooterUI = isUpdateExisting && props.customFooterButton && props.customFooterButton(customFooterParam).customFooterUI
     return <div className={dspClassName} tabIndex={-1} role="dialog" >

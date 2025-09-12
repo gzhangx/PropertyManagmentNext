@@ -469,6 +469,7 @@ export const GenCrud = (props: IGenGrudProps) => {
                     ...props,
                         crudAddCustomObjMap, setCrudAddCustomObjMap,
                         editItem, setEditItem,
+                        setDspState,
                 }
             } show={true} operation={dspState}  onCancel={r => {
                 setDspState('dsp')

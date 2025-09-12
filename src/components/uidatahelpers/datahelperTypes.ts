@@ -61,6 +61,7 @@ export interface ICustFooterParams<T> extends ContexAndCustObject<T> {
     internalCancel: () => void;
     handleSubmit: (e: IHtmlElementWithPreventDefault) => Promise<void>;//React.FormEvent<HTMLFormElement>
     addUpdateLabel: 'Add' | 'Update';
+    setDspState: (st:'Add' | 'Update')=> void;
 }
 
 export interface ITableAndSheetMappingInfo<T> {

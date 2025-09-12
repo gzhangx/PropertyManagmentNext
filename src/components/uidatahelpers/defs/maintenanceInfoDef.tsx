@@ -49,6 +49,7 @@ editTitle:'Add/Edit Maintenance Record',
                 });
                 //await params.handleSubmit(e);
                 params.setEditItem({ ...editItem, data: { ...editItem.data } });
+                params.setDspState('Add');
             }}>Duplicate</button>
             <button type="button" className="btn btn-primary" data-dismiss="modal" onClick={
                 async e => {
