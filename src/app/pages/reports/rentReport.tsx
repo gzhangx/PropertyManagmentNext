@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 
 import { EditTextDropdown  } from '../../../components/generic/EditTextDropdown';
 import {    
+    IExpenseData,
     IHouseInfo,
 } from '../../../components/reportTypes';
 
@@ -10,7 +11,7 @@ import { useRootPageContext } from "../../../components/states/RootState";
 import { IEditTextDropdownItem } from "../../../components/generic/GenericDropdown";
 import { CloseableDialog } from "../../../components/generic/basedialog";
 import { orderBy } from "lodash";
-import { filterPaymentsForRent, formatAccounting, getMonthAry, IPaymentWithDateMonthPaymentType, loadDataWithMonthRange, loadPayment, MonthSelections } from "../../../components/utils/reportUtils";
+import { filterPaymentsForRent, formatAccounting, getMonthAry, IPaymentWithDateMonthPaymentType, loadDataWithMonthRange, loadMaintenanceData, loadPayment, MonthSelections } from "../../../components/utils/reportUtils";
 
 
 const amtDsp = (amt: number) => {
@@ -25,6 +26,9 @@ const amtDsp = (amt: number) => {
 type RentReportCellData = {
     amount: number;
     payments: IPaymentWithDateMonthPaymentType[];
+
+    expenseAmount: number;
+    expenses: IExpenseData[];
 }
 
 type RentReportMonthRowData = {
@@ -35,6 +39,12 @@ type AllRentReportData = {
     [houseID: string]: RentReportMonthRowData;
 }
 
+type MonthSummaryDict = {
+    [month: string]: {
+        totalPayments: number;
+        totalExpenses: number;
+    };
+}
 
 export default function RentReport() {
     const rootCtx = useRootPageContext();
@@ -51,7 +61,9 @@ export default function RentReport() {
 
     const [allRentReportData, setAllRentReportData] = useState<AllRentReportData>({});
 
-    const [showDetail, setShowDetail] = useState<RentReportCellData | null>(null);   
+    const [showDetail, setShowDetail] = useState<RentReportCellData | null>(null);
+
+    const [monthSummaryDict, setMonthSummaryDict] = useState<MonthSummaryDict>({});
 
     const loadData = async () => {        
         //if (selectedMonths.length === 0) return;
@@ -102,35 +114,60 @@ export default function RentReport() {
 
         const monthInfos = {
             monthAry: [] as string[],
-            monthDict: {} as { [month: string]: boolean; },
+            monthDict: {} as MonthSummaryDict,
         }
-        const allRentReportData: AllRentReportData = paymentData.filter(filterPaymentsForRent).reduce((acc,pmt) => {            
-            let houseMOnth = acc[pmt.houseID];
+
+        function pushPaymentOrExpense(allRentReportData: AllRentReportData, pmt: IPaymentWithDateMonthPaymentType | IExpenseData, type: 'payment' | 'expense') {
+            let houseMOnth = allRentReportData[pmt.houseID];
             if (!houseMOnth) {
                 houseMOnth = {};
-                acc[pmt.houseID] = houseMOnth;
+                allRentReportData[pmt.houseID] = houseMOnth;
             }
             let monthData = houseMOnth[pmt.month];
-            if (!monthData) {   
+            if (!monthData) {
                 monthData = {
                     amount: 0,
                     payments: [],
+                    expenseAmount: 0,
+                    expenses: [],
                 };
                 houseMOnth[pmt.month] = monthData;
-            }
-            monthData.amount += pmt.amount;
-            monthData.payments.push(pmt);
+            }            
+            // Type guard based on unique property
+            
 
 
-            if (!monthInfos.monthDict[pmt.month]) {                
-                monthInfos.monthDict[pmt.month] = true;
-                monthInfos.monthAry.push(pmt.month);                
+            if (!monthInfos.monthDict[pmt.month]) {
+                monthInfos.monthDict[pmt.month] = {
+                    totalExpenses: 0,
+                    totalPayments: 0,
+                };
+                monthInfos.monthAry.push(pmt.month);                        
             }
+
+            if (type === 'payment') { //
+                monthData.amount += pmt.amount;
+                monthData.payments.push(pmt as IPaymentWithDateMonthPaymentType);
+                monthInfos.monthDict[pmt.month].totalPayments += pmt.amount;
+            } else {
+                monthData.expenseAmount += pmt.amount;
+                monthData.expenses.push(pmt as IExpenseData);
+                monthInfos.monthDict[pmt.month].totalExpenses += pmt.amount;
+            }
+        }
+        const allRentReportData: AllRentReportData = paymentData.filter(filterPaymentsForRent).reduce((acc,pmt) => {            
+            pushPaymentOrExpense(acc, pmt, 'payment');
             return acc;
         }, {} as AllRentReportData);
 
+        const maintenanceData: IExpenseData[] = await loadDataWithMonthRange(rootCtx, mainCtx, loadMaintenanceData, selectedMonths, 'date', 'Expense Data');
+        maintenanceData.forEach(m => {            
+            pushPaymentOrExpense(allRentReportData, m, 'expense');
+        });
+
         setAllRentReportData(allRentReportData);
 
+        setMonthSummaryDict(monthInfos.monthDict);
         if (curMonthSelection === 'All') {
             monthInfos.monthAry.sort((a,b)=> -a.localeCompare(b));
             setSelectedMonths(monthInfos.monthAry);
@@ -218,7 +255,22 @@ export default function RentReport() {
                                             const amt = allRentReportData[house.houseID]?.[mon]?.amount || 0;
                                             return acc + amt;
                                         }, 0);
+                                        // switch to { amtDsp(monthSummaryDict[mon]?.totalPayments || 0) }
                                         return <td key={mon} className="text-end accounting-alright">{amtDsp(amt)}</td>
+                                    })
+                                }
+                            </tr>
+                        </>
+                    }
+
+                    {
+                        <>
+                            <tr><td colSpan={selectedMonths.length + 1}></td></tr>
+                            <tr>
+                                <td>Total Expenses</td>
+                                {
+                                    selectedMonths.map(mon => {                                        
+                                        return <td key={mon} className="text-end accounting-alright">{amtDsp(monthSummaryDict[mon]?.totalExpenses || 0)}</td>
                                     })
                                 }
                             </tr>
